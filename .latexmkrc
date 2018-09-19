@@ -1,3 +1,7 @@
-$pdf_previewer = 'start evince';
 $pdf_mode = 1;
 @default_files = ('main.tex');
+
+# To create all output in the build dir instead of source dir
+$pdflatex="pdflatex -interaction=nonstopmode %O %S";
+$out_dir = 'build';
+
