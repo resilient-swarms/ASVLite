@@ -7,7 +7,7 @@ should be able to capture the dynamics of marine environment and its influence
 on the ASV's motion.
 
 There are two approaches for estimating the response motion of a body in waves - 
-time domain analysis, and frequency domain analysis. In time domain analysis 
+time domain analysis, and frequency domain analysis. In time domain analysis the 
 force exerted by wave on the hull and the corresponding vessel response motion 
 is calculated for each instance of time (or simulation step). The wave force is
 estimated by integrating the wave pressure along the wetted surface of the hull.
@@ -29,7 +29,7 @@ frequencies. In the second part the irregular wave is broken down into regular
 component waves and the vessel response to each of the component wave is 
 obtained by scaling the response from the table in the first part. The actual
 vessel response is then obtained as resultant of the motion response to
-individual component.
+individual wave component.
 
 Time domain analysis is the most commonly used method for simulating vessel 
 motion in waves but this method is resource intensive since the calculations for
@@ -46,11 +46,58 @@ simulation time.
 Frequency domain analysis has some limitations. It is only suitable in the case
 where the sea surface is linear superposition of regular waves and vessel motion
 varies linearly to wave amplitude. 
+\todo[inline]{Add example cases where frequency domain analysis is not suitable.}
 
-TODO: Add example cases where frequency domain analysis is not suitable.
+The following sections gradually unfolds the theoretical concepts used in motion
+simulation using frequency domain analysis. The first section presents the basic 
+concepts of a regular sea wave and ASV's motion as a response to the regular sea 
+wave. The subsequent section then develops on these ideas to present concepts 
+for representing an irregular sea. This is then followed by a section that
+presents the procedure for calculating vessel response motion in irregular sea
+and the final section provides a flow chart describing the implementation of
+frequency domain analysis in simulation of ASV motion.
 
+\section{Regular sea waves}
+A regular sea wave is a harmonic waves having sinusoidal shape with crests that 
+are infinitely long, parallel and equally spaced and having constant wave 
+heights. Motion of a water particle in the wave can be described using:
 
-\section{Procedure for frequency domain analysis based simulation}
-\subsection{The sea surface}
-\subsection{Vessel response motion}
+\begin{equation} 
+  \zeta = \zeta_a \frac{\cosh k(-z + h)}{\cosh k h} \cos k(x - V_w t)
+  \label{eq: RegularWave_1}
+\end{equation}
+where: \\
+$\zeta_a$ is the wave amplitude at the water surface\\
+$k = \frac{2 \pi}{L_w}$; $L_w$ is the wave length\\
+$z$ is the vertical distance of the water particle from the surface and is 
+measured positive in the downward direction\\
+$h$ is the water depth\\
+$V_w$ is the wave velocity (or celerity)\\
+$t$ is time\\
+Figure \ref{fig: RegularWave_1} shows the propagation of wave defined in
+equation \ref{eq: RegularWave_1}.
+
+\begin{figure} 
+  \missingfigure{Bhattacharyya Figure 3.13}
+  \caption{Propagation of a sine wave}
+  \label{fig: RegularWave_1}
+\end{figure}
+
+The wave causes variation of hydrostatic pressure and the equation for
+hydrostatic pressure in wave at any depth is:
+
+\begin{equation}
+  p = \rho g z - \zeta_a \rho g \frac{\cosh k(-z + h)}{\cosh kh} \cos k(x -
+  V_wt)
+  \label{eq: RegularWave_2}
+\end{equation}
+
+\section{Motion in regular sea waves}
+
+\section{Irregular sea}
+
+\section{Motion in irregular sea waves}
+
+\section{Simulation of motion in irregular sea}
+
 
