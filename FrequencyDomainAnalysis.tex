@@ -1,96 +1,182 @@
-\section{Introduction}
-The marine environment in which an autonomous surface vehicle (ASV) operates is 
-highly dynamic in nature. An ASV in sea is subjected to forces due to wave, wind 
-and surface current. These forces vary with time in intensity and direction and 
-affects the motion of the ASV. A simulator that simulates the motion of an ASV 
-should be able to capture the dynamics of marine environment and its influence 
+\section{Introduction} 
+
+The marine environment in which an autonomous surface vehicle (ASV) operates is
+highly dynamic in nature. An ASV in sea is subjected to forces due to wave, wind
+and surface current. These forces vary with time in intensity and direction and
+affects the motion of the ASV. A simulator that simulates the motion of an ASV
+should be able to capture the dynamics of marine environment and its influence
 on the ASV's motion.
 
-There are two approaches for estimating the response motion of a body in waves - 
-time domain analysis, and frequency domain analysis. In time domain analysis the 
-force exerted by wave on the hull and the corresponding vessel response motion 
-is calculated for each instance of time (or simulation step). The wave force is
-estimated by integrating the wave pressure along the wetted surface of the hull.
-The wetted surface is the hull surface below the water surface (or the wave
-profile) and is obtained by finding the intersection of the hull geometry with
-the geometry representing the wave profile. The response motion for each time
-step is then obtained by solving the equations of motion of rigid body dynamics. 
+The commonly used method for ASV motion simulation is to analyse the dynamic
+forces acting on the ASV and the related response motion of the vessel for each
+instant of time (or simulation step). This is often referred to as time domain
+analysis of response motion. The irregular wave exerts a force on the ASV and
+this force is estimated by integrating the wave pressure along the wetted
+surface of the hull.  The wetted surface is the hull surface below the water
+surface (or the wave profile) and is obtained by finding the intersection of the
+hull geometry with the geometry representing the wave profile. The response
+motion for each time step is then obtained by solving the equations of motion of
+rigid body dynamics. 
 
-In frequency domain analysis, unlike time domain analysis, there are two key
-assumptions regarding the wave and the vessel response to the wave. The 
-irregular wave is considered as a result of superposition of many regular waves
-and the vessel response motion is considered as the resultant of the vessel's 
-response to each individual regular component of the exciting force. It is also 
-assumed that the vessel response motion varies linearly to the amplitude of the 
+Time domain analysis can be very resource intensive since the calculations for
+finding the intersection of the 3D hull geometry with the irregular wave
+geometry and the integration of the wave pressure force along the wetted hull
+surface are to be performed for each time step. This is a disadvantage in cases
+where high real time to simulation time ratio is required.
+
+An alternative approach is to use frequency domain analysis. Like in time domain
+analysis, in frequency domain analysis the wave forces acting on the vessel is
+found by integrating the wave pressure force along the wetted hull surface.
+However, frequency domain analysis make two key assumptions regarding nature of
+the irregular sea wave and the nature of vessel response motion to the sea wave.
+It is considered that the irregular sea is a result of superposition of many
+regular waves and the vessel response motion is considered as the resultant of
+the vessel's response to each individual regular wave component. It is also
+assumed that the vessel response motion varies linearly to the amplitude of the
 exciting wave force. These two assumptions makes it possible to split the entire
-calculation procedure into two parts. The first part is to create a reference 
+calculation procedure into two parts. The first part is to create a reference
 table of vessel response motion to regular waves of unit amplitude and varying
 frequencies. In the second part the irregular wave is broken down into regular
-component waves and the vessel response to each of the component wave is 
+component waves and the vessel response to each of the component wave is
 obtained by scaling the response from the table in the first part. The actual
-vessel response is then obtained as resultant of the motion response to
+vessel response is then obtained as a resultant of the motion response to
 individual wave component.
-
-Time domain analysis is the most commonly used method for simulating vessel 
-motion in waves but this method is resource intensive since the calculations for
-finding the intersection of the 3D hull geometry with the irregular wave 
-geometry and the integration of the wave pressure force along the wetted hull 
-surface are to be performed for each time step. This is a disadvantage in cases 
-where high real time to simulation time ratio is required. Frequency domain 
-analysis, on the other hand, has an advantage with respect to simulation speed. 
-This is mainly due to the fact that the complex, resource intensive part of 
-calculating vessel response to regular wave components needs to be performed 
-only once for a vessel and the data can be saved and referred during actual 
-simulation time.   
 
 Frequency domain analysis has some limitations. It is only suitable in the case
 where the sea surface is linear superposition of regular waves and vessel motion
-varies linearly to wave amplitude. 
-\todo[inline]{Add example cases where frequency domain analysis is not suitable.}
+varies linearly to wave amplitude.  \todo[inline]{Add example cases where
+frequency domain analysis is not suitable.}
 
-The following sections gradually unfolds the theoretical concepts used in motion
-simulation using frequency domain analysis. The first section presents the basic 
-concepts of a regular sea wave and ASV's motion as a response to the regular sea 
-wave. The subsequent section then develops on these ideas to present concepts 
-for representing an irregular sea. This is then followed by a section that
-presents the procedure for calculating vessel response motion in irregular sea
-and the final section provides a flow chart describing the implementation of
-frequency domain analysis in simulation of ASV motion.
+The following sections, which are based on references
+\cite{lewis1988principles},
+\cite{hughes2010ship} and
+\cite{bhattacharyya1978dynamics}, 
+gradually unfolds the theoretical concepts used in motion simulation using
+frequency domain analysis. The first section presents the basic concepts of a
+regular sea wave and ASV's motion as a response to the regular sea wave. The
+subsequent section then develops on these ideas to present concepts for
+representing an irregular sea. This is then followed by a section that presents
+the procedure for calculating vessel response motion in irregular sea and the
+final section provides a flow chart describing the implementation of frequency
+domain analysis in simulation of ASV motion.
 
-\section{Regular sea waves}
-A regular sea wave is a harmonic waves having sinusoidal shape with crests that 
-are infinitely long, parallel and equally spaced and having constant wave 
-heights. Motion of a water particle in the wave can be described using:
+\section{Ocean Waves} 
 
-\begin{equation} 
-  \zeta = \zeta_a \frac{\cosh k(-z + h)}{\cosh k h} \cos k(x - V_w t)
-  \label{eq: RegularWave_1}
+The outstanding visible characteristic of an open sea surface is its 
+irregularity. The waves on the surface do not repeat periodically in time or 
+space. Yet, over a wide area and for a period of time, the sea surface maintains
+a characteristic appearance. Study on wave data have shown that even though the
+sea surface is irregular, the wave elevation is Gaussian in nature and is 
+statistically a constant for a given area for a certain period of time. 
+
+For the purpose of this research we consider waves generated due to storms, that
+is waves that are generated by the interaction of wind and water surface. The
+two main physical process involved in the generation of storm waves are the
+friction between air and water and the local variation of pressure field due to
+wind. Even though there are many processes that will affect the growth and
+propagation of waves, for waves of small amplitude, it is primarily governed by
+the principle of superposition. So if $\zeta_1(x,y,t)$ and $\zeta_2(x,y,t)$ are
+two wave systems then $\zeta_1(x,y,t) + \zeta_2(x,y,t)$ is also a wave system.
+Based on this assumption a sea surface can be defined as a linear superposition
+of waves having different amplitude, frequency, wave length and direction. 
+However, it should be noted that the assumption regarding the linear 
+superimposability of waves fails when the wave system is too steep and wave 
+breaking occurs.
+
+\subsection{2D regular sea waves}
+
+A regular sea wave is a harmonic waves with crests that are infinitely long, 
+parallel and equally spaced and having constant wave heights. Such waves are
+considered as two dimensional because the variation in surface elevation are
+only along two coordinates, $x$ coordinate and $z$ coordinate, and is a constant
+along the $y$ coordinate. The wave system travels perpendicular to the line of
+crests with a velocity $V_c$. It is assumed that water is
+incompressible and has zero viscosity. Based on these assumptions the motion of 
+water particle in the wave can be described using a quantity called *velocity
+potential* which is defined as a function whose negative derivative in any
+direction yields the velocity component of the fluid in that direction. Given
+below is a simplified equation for velocity potential:
+\begin{equation}
+  \phi = - \zeta_a V_c \frac{\cosh k(z+h)}{\sinh kh} \sin k(x - V_c t)
+  \label {eq: 2D wave velocity potential}
 \end{equation}
-where: \\
-$\zeta_a$ is the wave amplitude at the water surface\\
-$k = \frac{2 \pi}{L_w}$; $L_w$ is the wave length\\
+Where: \\ 
+$\zeta_a$ is the wave amplitude at the water surface\\ 
+$k = \frac{2 \pi}{L_w}$; $L_w$ is the wave length\\ 
 $z$ is the vertical distance of the water particle from the surface and is 
-measured positive in the downward direction\\
-$h$ is the water depth\\
-$V_w$ is the wave velocity (or celerity)\\
-$t$ is time\\
-Figure \ref{fig: RegularWave_1} shows the propagation of wave defined in
-equation \ref{eq: RegularWave_1}.
-
+measured negative in the downward direction\\ 
+$h$ is the water depth (distance from sea surface to seabed)\\ 
+$V_c$ is the wave velocity (or celerity)\\ 
+$t$ is time\\ 
+$x$ is the x-coordinate of the water particle\\
+Figure \ref{fig: RegularWave-1} shows the propagation of wave defined in 
+equation \ref{eq: 2D wave velocity potential}.
 \begin{figure} 
-  \missingfigure{Bhattacharyya Figure 3.13}
-  \caption{Propagation of a sine wave}
-  \label{fig: RegularWave_1}
+  \missingfigure{Bhattacharyya Figure 3.13} 
+  \caption{Propagation of 2D regular sea wave} 
+  \label{fig: RegularWave-1} 
 \end{figure}
 
-The wave causes variation of hydrostatic pressure and the equation for
-hydrostatic pressure in wave at any depth is:
-
+For deep water, ie. where $h \gg \frac{L_w}{2}$, 
 \begin{equation}
-  p = \rho g z - \zeta_a \rho g \frac{\cosh k(-z + h)}{\cosh kh} \cos k(x -
-  V_wt)
-  \label{eq: RegularWave_2}
+  \frac{\cosh k(z + h)}{\sinh kh} \approx e^{kz}
+  \label{eq: ratio approx for deep water}
 \end{equation}
+
+Substituting equation \ref{eq: ratio approx for deep water} in equation 
+\ref{eq: 2D wave velocity potential} we get:
+\begin{equation}
+  \phi = - \zeta_a V_c e^{k z} \sin k(x - V_c t)
+  \label{eq: 2D wave velocity potential for deep water}
+\end{equation}
+
+The wave causes variation in the distribution of pressure below the water
+surface and the equation for variation of pressure head due to waves is:
+\begin{equation}
+  \zeta = \frac{k \zeta_a {V_c}^2}{g} \frac{\cosh k(z + h)}{\sinh kh} \cos k(x
+  - V_c t)
+  \label{eq: pressure head variation}
+\end{equation}
+
+For deep water the above equation can be approximated as:
+\begin{equation}
+  \zeta = \zeta_a e^{k z} \cos k(x - V_c t)
+  \label{eq: pressure head variation for deep water}
+\end{equation}
+
+For simple harmonic motion: 
+\begin{equation}
+  \omega = \frac{2 \pi}{T_w} = k V_c
+  \label{eq: simple harmonic motion}
+\end{equation}
+where: \\
+$T_w$ is the time period of the simple harmonic wave\\
+$\omega$ is the circular frequency of the simple harmonic wave\\
+
+Substituting equation \ref{eq: simple harmonic motion} in 
+\ref{eq: 2D wave velocity potential} and 
+\ref{eq: pressure head variation}:
+\begin{equation}
+  \phi = - \zeta_a V_c \frac{\cosh k(z+h)}{\sinh kh} \sin (kx - \omega t)
+  \label {eq: 2D wave velocity potential wrt frequency}
+\end{equation}
+\begin{equation}
+  \zeta = \frac{k \zeta_a {V_c}^2}{g} \frac{\cosh k(z + h)}{\sinh kh} \cos (kx
+  - \omega t)
+  \label{eq: pressure head variation wrt frequency}
+\end{equation}
+
+The pressure at any point is given by:
+\begin{equation}
+  p = \rho g (-z + \zeta)
+\end{equation}
+\begin{equation}
+  p = - \rho g z + \frac{k \zeta_a {V_c}^2}{g} \frac{\cosh k(z + h)}{\sinh kh} 
+  \cos (kx - \omega t)
+  \label{eq: pressure variation}
+\end{equation}
+
+Energy in waves - PNA page 8 top-left 1st para.
 
 \section{Motion in regular sea waves}
 
