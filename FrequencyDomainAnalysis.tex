@@ -85,19 +85,25 @@ breaking occurs.
 
 \subsection{2D regular sea waves}
 
-A regular sea wave is a harmonic waves with crests that are infinitely long, 
-parallel and equally spaced and having constant wave heights. Such waves are
-considered as two dimensional because the variation in surface elevation are
-only along two coordinates, $x$ coordinate and $z$ coordinate, and is a constant
-along the $y$ coordinate. The wave system travels perpendicular to the line of
-crests with a velocity $V_c$. It is assumed that water is
-incompressible and has zero viscosity. Based on these assumptions the motion of 
-water particle in the wave can be described using a quantity called *velocity
-potential* which is defined as a function whose negative derivative in any
-direction yields the velocity component of the fluid in that direction. Given
+A regular sea wave is a harmonic waves with crests that are infinitely long,
+parallel and equally spaced and having constant wave heights. The general 
+equation of a regular long crested wave travelling at a angle $\mu$ to the 
+$x$-axis is:
+\begin{equation}
+  \zeta (x,y,t) = \zeta_a \cos[k(x \cos \mu + y \sin \mu) - \omega t + \epsilon]
+  \label {eq: 2D wave equation}
+\end{equation}
+Where $\epsilon$ is a phase angle. 
+
+The wave system travels perpendicular to the line of crests with a velocity
+$V_c$. It is assumed that water is incompressible and has zero viscosity. Based
+on these assumptions the motion of water particle in the wave can be described
+using a quantity called *velocity potential* which is defined as a function
+whose negative derivative in any direction yields the velocity component of the
+fluid in that direction. Given
 below is a simplified equation for velocity potential:
 \begin{equation}
-  \phi = - \zeta_a V_c \frac{\cosh k(z+h)}{\sinh kh} \sin k(x - V_c t)
+  \phi = - \zeta_a V_c \frac{\cosh k(z + h)}{\sinh k h} \sin k(x - V_c t)
   \label {eq: 2D wave velocity potential}
 \end{equation}
 Where: \\ 
@@ -119,7 +125,7 @@ equation \ref{eq: 2D wave velocity potential}.
 
 For deep water, ie. where $h \gg \frac{L_w}{2}$, 
 \begin{equation}
-  \frac{\cosh k(z + h)}{\sinh kh} \approx e^{kz}
+  \frac{\cosh k(z + h)}{\sinh k h} \approx e^{k z}
   \label{eq: ratio approx for deep water}
 \end{equation}
 
@@ -133,7 +139,7 @@ Substituting equation \ref{eq: ratio approx for deep water} in equation
 The wave causes variation in the distribution of pressure below the water
 surface and the equation for variation of pressure head due to waves is:
 \begin{equation}
-  \zeta = \frac{k \zeta_a {V_c}^2}{g} \frac{\cosh k(z + h)}{\sinh kh} \cos k(x
+  \zeta = \frac{k \zeta_a {V_c}^2}{g} \frac{\cosh k(z + h)}{\sinh k h} \cos k(x
   - V_c t)
   \label{eq: pressure head variation}
 \end{equation}
@@ -153,17 +159,29 @@ where: \\
 $T_w$ is the time period of the simple harmonic wave\\
 $\omega$ is the circular frequency of the simple harmonic wave\\
 
-Substituting equation \ref{eq: simple harmonic motion} in 
-\ref{eq: 2D wave velocity potential} and 
-\ref{eq: pressure head variation}:
+Substituting equation \ref{eq: simple harmonic motion} in equations  
+\ref{eq: 2D wave velocity potential} to
+\ref{eq: pressure head variation for deep water}:\\
+Velocity potential for any water depth: 
 \begin{equation}
-  \phi = - \zeta_a V_c \frac{\cosh k(z+h)}{\sinh kh} \sin (kx - \omega t)
+  \phi = - \zeta_a V_c \frac{\cosh k(z + h)}{\sinh k h} \sin (kx - \omega t)
   \label {eq: 2D wave velocity potential wrt frequency}
 \end{equation}
+Velocity potential for deep water: 
+\begin{equation}
+  \phi = - \zeta_a V_c e^{k z} \sin (k x - \omega t)
+  \label {eq: 2D wave velocity potential wrt frequency deep water}
+\end{equation}
+Pressure head variation due to wave for any water depth:
 \begin{equation}
   \zeta = \frac{k \zeta_a {V_c}^2}{g} \frac{\cosh k(z + h)}{\sinh kh} \cos (kx
   - \omega t)
   \label{eq: pressure head variation wrt frequency}
+\end{equation}
+Pressure head variation due to wave for deep water:
+\begin{equation}
+  \zeta = \zeta_a e^{k z} \cos (k x - \omega t)
+  \label{eq: pressure head variation wrt frequency deep water}
 \end{equation}
 
 The pressure at any point is given by:
@@ -171,16 +189,83 @@ The pressure at any point is given by:
   p = \rho g (-z + \zeta)
 \end{equation}
 \begin{equation}
-  p = - \rho g z + \frac{k \zeta_a {V_c}^2}{g} \frac{\cosh k(z + h)}{\sinh kh} 
+  p = - \rho g z + \frac{k \zeta_a {V_c}^2}{g} \frac{\cosh k(z + h)}{\sinh k h} 
   \cos (kx - \omega t)
   \label{eq: pressure variation}
 \end{equation}
 
-Energy in waves - PNA page 8 top-left 1st para.
+The total wave energy per unit area is:
+\begin{equation}
+  E = \frac{1}{2} \rho g {\zeta_a}^2
+  \label{eq: energy per unit area}
+\end{equation}
 
-\section{Motion in regular sea waves}
+The variance, or mean-square value of surface elevation as a function of time
+is:
+\begin{equation}
+  S = 
+  \langle\zeta (t)^2 \rangle = 
+  \lim_{T \to \infty} 
+  \frac{1}{T} 
+  \int\limits_{-\frac{T}{2}}^{\frac{T}{2}} 
+  \zeta^2(t) dt
+  \label{eq: variance}
+\end{equation}
+For simple harmonic motion of frequency $\omega$, the above equation for 
+variance can be written as:
+\begin{equation}
+  S(\omega) = 
+  \langle\zeta (t)^2 \rangle = 
+  \frac{1}{2} {\zeta_a}^2
+  \label{eq: variance for simple harmonic}
+\end{equation}
+
+Based on equation \ref{eq: variance for simple harmonic}, equation 
+\ref{eq: energy per unit area} can be written as:
+\begin{equation}
+  E = \rho g S(\omega)
+\end{equation}
+
 
 \section{Irregular sea}
+
+Oceanographers have found that irregular sea can be described by statistical
+mathematics on the basis of the assumption that a large number of regular waves
+having different wave lengths, direction, frequency and amplitude are linearly
+superimposed. It is convenient to begin with a simple case of wave pattern
+observed at a single point (ie. $x = y = 0$) and assuming that all component
+waves are travelling in the same direction ($\mu = 0$). Based on equation 
+\ref{eq: 2D wave equation}, the simplified equation of a compound wave (ie. a 
+wave that consist of many component waves) is:
+\begin{equation}
+  \zeta(t) = \sum _{i} (\zeta_a)_i \cos(-\omega_i t + \epsilon_i)
+  \label{eq: 2D irregular wave equation}
+\end{equation}
+
+It is convenient to define wave components in terms of a function called 
+\textit{variance spectrum, $S(\omega)$}. For any particular wave frequency,
+$\omega_i$, the variance of the wave amplitudes for a narrow band of frequency,
+$\delta \omega$, centred on $\omega_i$ is given by:
+\begin{equation}
+  \langle \zeta_i (t)^2 \rangle = S(\omega_i) \delta \omega
+  \label{eq: variance of a narrow band}
+\end{equation}
+As $\delta \omega \to 0$, it becomes a simple harmonic wave. The mean value for
+a wave elevations for a simple harmonic wave is $0$ (wave does not increase the
+mean water level) and the variance is given by:
+\begin{equation}
+  \langle \zeta_i (t)^2 \rangle = \frac{1}{2} {(\zeta_a)_i }^2
+\end{equation}
+Applying this is equation \ref{eq: vaiance of a narrow band}, we get:
+\begin{equation}
+  \frac{1}{2} {(\zeta_a)_i}^2 = S(\omega_i) \delta \omega
+\end{equation}
+\begin{equation}
+  (\zeta_a)_i = \sqrt{2 S(\omega_i) \delta \omega}
+\end{equation}
+
+
+\section{Motion in regular sea waves}
 
 \section{Motion in irregular sea waves}
 
