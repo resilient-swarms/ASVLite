@@ -1,0 +1,63 @@
+\section{Introduction} 
+
+The marine environment in which an autonomous surface vehicle (ASV) operates is
+highly dynamic in nature. An ASV in sea is subjected to forces due to wave, wind
+and surface current. These forces vary with time in intensity and direction and
+affects the motion of the ASV. A simulator that simulates the motion of an ASV
+should be able to capture the dynamics of marine environment and its influence
+on the ASV's motion.
+
+The commonly used method for ASV motion simulation is to analyse the dynamic
+forces acting on the ASV and the related response motion of the vessel for each
+instant of time (or simulation step). This is often referred to as time domain
+analysis of response motion. The irregular wave exerts a force on the ASV and
+this force is estimated by integrating the wave pressure along the wetted
+surface of the hull.  The wetted surface is the hull surface below the water
+surface (or the wave profile) and is obtained by finding the intersection of the
+hull geometry with the geometry representing the wave profile. The response
+motion for each time step is then obtained by solving the equations of motion of
+rigid body dynamics. 
+
+Time domain analysis can be very resource intensive since the calculations for
+finding the intersection of the 3D hull geometry with the irregular wave
+geometry and the integration of the wave pressure force along the wetted hull
+surface are to be performed for each time step. This is a disadvantage in cases
+where high real time to simulation time ratio is required.
+
+An alternative approach is to use frequency domain analysis. Like in time domain
+analysis, in frequency domain analysis the wave forces acting on the vessel is
+found by integrating the wave pressure force along the wetted hull surface.
+However, frequency domain analysis make two key assumptions regarding nature of
+the irregular sea wave and the nature of vessel response motion to the sea wave.
+It is considered that the irregular sea is a result of superposition of many
+regular waves and the vessel response motion is considered as the resultant of
+the vessel's response to each individual regular wave component. It is also
+assumed that the vessel response motion varies linearly to the amplitude of the
+exciting wave force. These two assumptions makes it possible to split the entire
+calculation procedure into two parts. The first part is to create a reference
+table of vessel response motion to regular waves of unit amplitude and varying
+frequencies. In the second part the irregular wave is broken down into regular
+component waves and the vessel response to each of the component wave is
+obtained by scaling the response from the table in the first part. The actual
+vessel response is then obtained as a resultant of the motion response to
+individual wave component.
+
+Frequency domain analysis has some limitations. It is only suitable in the case
+where the sea surface is linear superposition of regular waves and vessel motion
+varies linearly to wave amplitude.  \todo[inline]{Add example cases where
+frequency domain analysis is not suitable.}
+
+The following sections, which are based on references
+\cite{lewis1988principles},
+\cite{hughes2010ship} and
+\cite{bhattacharyya1978dynamics}, 
+gradually unfolds the theoretical concepts used in motion simulation using
+frequency domain analysis. The first section presents the basic concepts of a
+regular sea wave and ASV's motion as a response to the regular sea wave. The
+subsequent section then develops on these ideas to present concepts for
+representing an irregular sea. This is then followed by a section that presents
+the procedure for calculating vessel response motion in irregular sea and the
+final section provides a flow chart describing the implementation of frequency
+domain analysis in simulation of ASV motion.
+
+
