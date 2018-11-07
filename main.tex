@@ -19,6 +19,10 @@
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
 
+% Start each section in a new page
+\usepackage{titlesec}
+\newcommand{\sectionbreak}{\clearpage}
+
 % Path to images directory
 \graphicspath{{images/}}
 
@@ -32,7 +36,10 @@
 %\maketitle
 
 \input{waves_theory.tex}
+\input{waves_simulation.tex}
 
+% Breakpage and set bibliography
+\pagebreak
 \bibliographystyle{ieeetr}
 \bibliography{reference}
 
