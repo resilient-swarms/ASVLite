@@ -1,0 +1,124 @@
+\section{Simulation of ocean waves} \label{Simulation of ocean waves}
+
+This section presents a rough structure of the classes and how the data are 
+grouped under each class. It also captures the main functions that will be
+called when simulating the ocean waves. The aim of this documentation is only to
+provide a rough overview and does not aim to mirror the actual implementation. 
+The source code documentation will contain the most accurate and in-depth 
+description of the classes, its variables. 
+
+The ocean is represented by a surface. The contour of the surface is controlled
+by an $n \times n$ matrix of points called the \textit{control points}· The sea
+surface is represented by the class \textit{SeaSurface} (section 
+\ref{Class SeaSurface}) and the control points are represented by the class
+\textit{SeaSurfaceControlPoint} (section \ref{Class SeaSurfaceControlPoint}). 
+Random waves are generated on the surface by the interaction of several regular 
+waves which are represented by the class \textit{RegularWave} (section 
+\ref{Class RegularWave}). The statistically property of the random sea generated 
+through the regular waves is controlled by a directional spectrum, which is 
+represented by the class \textit{DirectionalSpectrum} (section 
+\ref{Class DirectionalSpectrum}). The directional spectrum is a collection of 
+point spectrum for each direction ranging from $\sfrac{-\pi}{2}$ to 
+$\sfrac{\pi}{2}$.  The directional spectrum contains a table where each row 
+represents a point spectrum for a direction and the columns of the table relate 
+to each frequency.
+
+\subsection{Class SeaSurface} \label{Class SeaSurface}
+
+The class \textit{SeaSurface} is used to define a square patch of the sea 
+surface.
+
+\textbf{Member variables in the class:}
+\begin{itemize}
+  \item seaPatchSize - size of the square sea patch represented by 
+    \textit{SeaSurface}.
+  \item seaSurfaceControPoints - an array of points to control the contour of 
+    the sea surface.
+  \item directionalSpectrum - contains a table of variance values for each
+    direction and frequency.
+  \item regularWaves - array of all regular waves on the sea surface.
+\end{itemize}
+
+\textbf{Methods in the class:}
+\begin{itemize}
+  \item SetCtrlPointMatSize() - sets the number of control points on the
+    surface.
+  \item Init()\\
+    $>$ Initialise the directional spectrum.\\
+    $>$ Create the regular waves in the sea as described below:\\
+    $>>$ for each row in directional spectrum (ie: direction):\\
+    $>>>$ for each column in directional spectrum (ie: frequency):\\
+  	$>>>>$ Get the variance value from the directional spectrum.\\
+  	$>>>>$ Calculate the amplitude from variance.\\
+    $>>>>$ Generate a random value for wave phase.\\
+    $>>>>$ Create a regular wave with the amplitude, phase, frequency and 
+          direction.\\
+    $>>>>$ Insert the regular wave created into the array regularWaves.
+  \item Simulate() \\
+    $>$ Initialise time = 0.\\ 
+  	$>$ for each point in the array seaSurfaceControlPoints:\\
+  	$>>$ for each wave in array regularWaves:\\
+  	$>>>$ Calculate displacement due to each wave.\\
+    $>>$ Sum the displacements for all waves.\\
+    $>>$ Set SeaSurfaceControlPoint.z = sum of displacements.\\
+  	$>$ Increment time and continue above loop.
+\end{itemize}
+
+\subsection{Class DirectionalSpectrum} \label{Class DirectionalSpectrum}
+Class to generate a directional spectrum.
+
+\textbf{Member variable in the class:} 
+\begin{itemize} 
+  \item countDirections - the number of directions for which point spectrum data 
+    will be generated.  
+  \item countFrequencies - the number of frequencies bands that will be used for 
+    each point spectrum.  
+  \item directions - array containing direction angles.
+  \item frequencies - array containing the frequency intervals.
+  \item spectrum - table containing variance values. Each row corresponds to 
+    a direction and each column corresponds to a frequency band.  
+\end{itemize}
+
+\textbf{Methods in the class:}
+\begin{itemize}
+	\item SetCountDirections() - sets value for member variable countDirections.
+	\item SetCountFrequencies() - sets value for member variable countFrequencies.
+	\item Init()\\
+    $>$ Set values for the array directions. \\
+		$>$ Set values for the array frequencies. \\
+		$>$ For each angle:\\
+		$>>$ For each frequency:\\
+		$>>>$ Calculate variance $S(\omega)G(\mu)$\\
+    $>>>$ Enter the variance into the table spectrum. 
+\end{itemize}
+
+\subsection{Class RegularWave} \label{Class RegularWave}
+Class to represent a regular wave.
+
+\textbf{Member variables in the class:}
+\begin{itemize}
+	\item direction - direction of travel of the wave.
+	\item phase - the random generated phase value of the wave.
+	\item frequency - the circular frequency of the regular wave.
+	\item amplitude - the amplitude of the regular wave.
+\end{itemize}
+
+\subsection{Class SeaSurfaceControlPoint} \label{Class SeaSurfaceControlPoint}
+Class to contain the geographic coordinates of a control point on the sea 
+surface. 
+
+\textbf{Member variables in the class:} 
+\begin{itemize} 
+  \item x - the x coordinate 
+  \item y - the y coordinate
+  \item z - the z coordinate
+\end{itemize}
+
+\subsection{Steps for simulating the random sea} 
+\label{Process for simulating the random sea}
+\begin{itemize}
+	\item Create an object of class SeaSurface.
+	\item Set the sea patch dimension.
+	\item Call SeaSurface.Init() which in turn calls DirectionalSpectrum.Init().
+	\item Call SeaSurface.Simulate().
+\end{itemize}
