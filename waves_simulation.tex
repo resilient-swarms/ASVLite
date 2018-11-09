@@ -5,7 +5,7 @@ grouped under each class. It also captures the main functions that will be
 called when simulating the ocean waves. The aim of this documentation is only to
 provide a rough overview and does not aim to mirror the actual implementation. 
 The source code documentation will contain the most accurate and in-depth 
-description of the classes, its variables. 
+description of the classes and its members. 
 
 The ocean is represented by a surface. The contour of the surface is controlled
 by an $n \times n$ matrix of points called the \textit{control points}· The sea
@@ -22,6 +22,18 @@ point spectrum for each direction ranging from $\sfrac{-\pi}{2}$ to
 $\sfrac{\pi}{2}$.  The directional spectrum contains a table where each row 
 represents a point spectrum for a direction and the columns of the table relate 
 to each frequency.
+
+\subsection{Steps for simulating the random sea} 
+Following are the main steps to initialise the sea surface to a wave spectrum
+and start simulation.
+\label{Process for simulating the random sea}
+\begin{itemize}
+  \item Create an object of the class \textit{SeaSurface}.
+	\item Initialise the seas surface to a wave spectrum by calling 
+    \textit{SeaSurface.Init()}. A call to the method \textit{SeaSurface.Init()} 
+    will also generate and initialise all the regular waves in the sea surface.
+  \item Start simulation by calling \texit{SeaSurface.Simulate()}.
+\end{itemize}
 
 \subsection{Class SeaSurface} \label{Class SeaSurface}
 
@@ -58,9 +70,9 @@ surface.
     $>$ Initialise time = 0.\\ 
   	$>$ for each point in the array seaSurfaceControlPoints:\\
   	$>>$ for each wave in array regularWaves:\\
-  	$>>>$ Calculate displacement due to each wave.\\
-    $>>$ Sum the displacements for all waves.\\
-    $>>$ Set SeaSurfaceControlPoint.z = sum of displacements.\\
+  	$>>>$ Calculate elevation due to each wave.\\
+    $>>$ Sum the elevations for all waves.\\
+    $>>$ Set SeaSurfaceControlPoint.z = sum of elevations.\\
   	$>$ Increment time and continue above loop.
 \end{itemize}
 
@@ -114,11 +126,3 @@ surface.
   \item z - the z coordinate
 \end{itemize}
 
-\subsection{Steps for simulating the random sea} 
-\label{Process for simulating the random sea}
-\begin{itemize}
-	\item Create an object of class SeaSurface.
-	\item Set the sea patch dimension.
-	\item Call SeaSurface.Init() which in turn calls DirectionalSpectrum.Init().
-	\item Call SeaSurface.Simulate().
-\end{itemize}
