@@ -1,2 +1,4 @@
+.directory
 documentation/build/
-documentation/.latexmkrc
+documentation/makefile
+
