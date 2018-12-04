@@ -1,7 +1,7 @@
 \section{ASV motion in waves} \label{ASV motion in waves}
 This section presents a summary of the theory of ASV response motion in waves
-and and is mainly based on \cite{lewis1988principles} and
-\cite{bhattacharyya1978dynamics}.
+and and is mainly based on \cite{lewis1988principles},
+\cite{bhattacharyya1978dynamics} and \cite{barltrop2013dynamics}.
 
 ASV in waves experiences oscillatory motions and these motions have six degrees
 of freedom that is three transitional components - surge (in longitudinal
@@ -23,13 +23,88 @@ Since the ASV is longitudinally asymmetric, the heave motion will also induce
 pitching motion. The relationship between each motion in each degrees of freedom
 is explored in the section \todo[inline]{Link to section for coupled motion}.
 
-\subsection{Equations of motion}
+\subsection{Equation of motion}
 
-The equations of motions are based on Newton's second law of motion. For each
-transitional motions components, this means that the force acting on the vessel
+The equation of motion is based on Newton's second law of motion. For each
+transitional motion component, this means that the force acting on the vessel
 should be equal the product of mass and acceleration in that direction and for
 each angular motion components it means that the moment acting on the vessel
-equals the product of mass moment of inertia and angular acceleration. 
+equals the product of mass moment of inertia and angular acceleration. The
+general equation of motion for forced oscillation is:
+\begin{equation}
+  M\ddot{x} + C\dot{x} + Kx = F_0 \cos{\omega t}
+  \label{eq: equation of motion}
+\end{equation}
+where, $x$ is the displacement (Note: $x$ here referrers to displacement in any
+particular direction and not just along the $X$-coordinate.). $Kx$ is the
+restoring force and $K$ is the hydrostatic stiffness. A body oscillating in a
+viscous medium will experience damping force due to dissipation of energy to the
+surrounding medium. The term $C\dot{x}$ referrers to the damping force
+experienced by the body. $C$ is the damping coefficient and $\dot{x}$ is the
+velocity. $M\ddot{x}$ is the inertia force where $M$ is the mass and $\ddot{x}$
+is the acceleration. $F_0$ is the magnitude of the periodic force that act on
+the body with a frequency $\omege$.
+
+It is more convenient to represent the cyclic force term using complex numbers
+as shown below: 
+\begin{equation}
+  F_0(\omega, t) = F_0 \cos{\omega t} + i F_0 \sin{\omega t} = F_0 e^{i \omega t}
+  \label{eq: force for simple harmoic motion}
+\end{equation}
+The observed value of force at any instant of time is the real part of $F_0$. It
+is assumed that the wave excitation forces and the resultant oscillatory motions
+are linear and hormonic. Also the frequency of the motion is assumed to be same
+as the frequency of wave encounter but with phase lag of $\phi$. Therefore at
+any instant of time $t$, the displacement for an encounter wave frequency of
+$\omega$ is:
+\begin{equation}
+  x(\omega, \phi, t) = x_0 \cos(\omega t - \phi) + i x_0 \sin(\omega t - \phi) = x_0 e^{i (\omega t - \phi)}
+  \label{eq: displacement for simple harmonic motion}
+\end{equation}
+\begin{equation}
+  \dot{x} = i \omega x_0 e^{i(\omega t - \phi)} = i \omega x
+  \label{eq: velocity for simple harmonic motion}
+\end{equation}
+\begin{equation}
+  \ddot{x} = i^2 \omega^2 x_0 e^{i(\omega t - \phi)} = - \omega^2 x 
+  \label{eq: acceleration for simple harmonic motion}
+\end{equation}
+Applying equations \ref{eq: force for simple harmoic motion}, \ref{eq:
+displacement for simple harmonic motion}, \ref{eq: velocity for simple harmonic
+motion} and \ref{eq: acceleration for simple harmonic motion} in \ref{eq:
+equation of motion}, we get:
+\begin{equation}
+  -M \omega^2 x + i C \omega x + Kx = F_0 e^{i \omega t}
+\end{equation}
+Therefore:
+\begin{equation}
+  (-M \omega^2 + i C \omega + K)x = F_0 e^{i \omega t}
+\end{equation}
+\begin{equation}
+  x = \frac{F_0 e^{i \omega t}}{-M \omega^2 + i C \omega + K}
+\end{equation}
+Or:
+\begin{equation}
+  x = H F_0 e^(i \omega t)
+\end{equation}
+where: 
+\begin{equation}
+  H = \frac{1}{-M \omega^2 + i C \omega + K}
+  \label{eq: complex transfer function}
+\end{equation}
+$H$ is called the \textit{complex transfer function}, because it transfers input
+force to output deflection and maintains phase information. The phase lag:
+\begin{equation}  
+  \phi = \tan^{-1} \bigg( \frac{C \omega}{K - M \omega^2} \bigg)
+  \label{eq: phase lag for simple harmonic motion}
+\end{equation}  
+and amplitude:
+\begin{equation}
+  x_0 = \frac{F_0}{\sqrt{(K - M \omega^2)^2 + (C \omega)^2}}
+\end{equation}
+
+
+\subsection{Force}
 
 Since the focus of this section is vessel response motion due to waves, the
 forces and moments considered are only the fluid forces and moments due to waves
