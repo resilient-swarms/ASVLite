@@ -7,7 +7,7 @@
 # make clean 	: clean all build files 
 
 # Name of output pdf file
-TARGET ?= main
+TARGET ?= documentation
 
 # Name of main tex file which includes all the other tex files.
 MAIN ?= main
