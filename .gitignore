@@ -1,4 +1,4 @@
 .directory
+.vscode
 documentation/build/
-documentation/makefile
 
