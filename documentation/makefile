@@ -1,20 +1,21 @@
 # A simple makefile to compile the tex files to a pdf document.
-# Commands provided:
-# -----------------
-# make 				: compile the tex files to pdf with minimal output message
-# make verbose: compile with detailed output messages
-# make view 	: compile, if required, and view pdf file 
-# make clean 	: clean all build files 
+# Build targets provided:
+# -----------------------
+# make			: default compile option is make quiet.
+# make quiet	: compile the tex files to pdf with minimal output message.
+# make verbose	: compile with detailed output messages.
+# make view 	: compile, if required, and view pdf file. 
+# make clean 	: clean all build files.
 
 # Name of output pdf file
-TARGET ?= documentation
+TARGET := documentation
 
 # Name of main tex file which includes all the other tex files.
-MAIN ?= main
+MAIN := main
 
 # Set the source and build directory
-SRC_DIRS ?= ./
-BUILD_DIR ?= ./build
+SRC_DIRS := ./
+BUILD_DIR := ./build
 
 # Collect all tex files and bib files.
 SRCS := $(wildcard *.tex) \
@@ -42,9 +43,16 @@ endif
 # || true 					: to suppress the "make: error ....(ignored)" output message.
 #
 # The last part '> /dev/null 2>&1 || true' is to make the output quiet
-# Set QUIET as default compile method
-QUIET = > /dev/null 2>&1 || true
 
+# Quiet compile
+quiet: QUIET := > /dev/null 2>&1 || true
+quiet: $(BUILD_DIR)/$(TARGET).pdf
+
+# Verbous compile
+verbose: QUIET := 
+verbose: $(BUILD_DIR)/$(TARGET).pdf
+
+# Compile pdf 
 $(BUILD_DIR)/$(TARGET).pdf: $(SRCS)
 	-@echo "--> Checking if pdflatex and bibtex are installed"
 ifdef PDFLATEX_VERSION 
@@ -87,10 +95,6 @@ endif
 else
 	-@echo "--> Missing dependencies. Cannot compile."
 endif
-
-# Verbous compile
-verbose: QUIET = ""
-verbose: $(BUILD_DIR)/$(TARGET).pdf
 
 # View the pdf 
 view: $(BUILD_DIR)/$(TARGET).pdf
