@@ -1,11 +1,11 @@
 # A simple makefile to compile the tex files to a pdf document.
 # Build targets provided:
 # -----------------------
-# make			: default compile option is make quiet.
-# make quiet	: compile the tex files to pdf with minimal output message.
-# make verbose	: compile with detailed output messages.
-# make view 	: compile, if required, and view pdf file. 
-# make clean 	: clean all build files.
+# make        : default compile option is make quiet.
+# make quiet  : compile the tex files to pdf with minimal output message.
+# make verbose: compile with detailed output messages.
+# make view   : compile, if required, and view pdf file. 
+# make clean  : clean all build files.
 
 # Name of output pdf file
 TARGET := documentation
@@ -19,7 +19,7 @@ BUILD_DIR := ./build
 
 # Collect all tex files and bib files.
 SRCS := $(wildcard *.tex) \
-				$(wildcard *.bib)
+        $(wildcard *.bib)
 
 # Get versions of pdflatex and bibtex. This will be used to check if these applications exist.
 PDFLATEX_VERSION := $(shell pdflatex --version 2>/dev/null)
@@ -35,12 +35,12 @@ endif
 # ---------------------
 # Each line of the build script has the following structure:
 # -@command > /dev/null 2>&1 || true
-# -                 : to ignore the exit status of the command that is executed
-#                   	and continue even if error encountered.
-# @ 								: to suppresses the 'echo' of the command that is executed.
-# > /dev/null 			: to redirect output (1) to /dev/null
-# 2>&1							: to redirect error (2) to /dev/null 
-# || true 					: to suppress the "make: error ....(ignored)" output message.
+# -           : to ignore the exit status of the command that is executed
+#               and continue even if error encountered.
+# @           : to suppresses the 'echo' of the command that is executed.
+# > /dev/null : to redirect output (1) to /dev/null
+# 2>&1        : to redirect error (2) to /dev/null 
+# || true     : to suppress the "make: error ....(ignored)" output message.
 #
 # The last part '> /dev/null 2>&1 || true' is to make the output quiet
 
