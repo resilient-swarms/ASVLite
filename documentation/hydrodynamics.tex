@@ -1,4 +1,4 @@
-\section{ASV motion in waves} \label{ASV motion in waves}
+\section{Hydrodynamics} \label{Hydrodynamics}
 This section presents a summary of the theory of ASV response motion in waves
 and and is mainly based on \cite{lewis1988principles},
 \cite{bhattacharyya1978dynamics} and \cite{barltrop2013dynamics}.
@@ -103,13 +103,18 @@ and amplitude:
   x_0 = \frac{F_0}{\sqrt{(K - M \omega^2)^2 + (C \omega)^2}}
 \end{equation}
 
+A key point to note is that when the ASV is moving at velocity of $U_0$ at an angle $\mu$ with respect to wave then the frequency of oscillation will shift from the wave frequency to the encountered wave frequency. In this case the $\omega$ term in the above equations should be replaced by encountered wave frequency,$\omega_e$:
+\begin{equation}
+  \omega_e = \omega_0 - \frac{\omega_0^2}{g} U_0 \cos \mu 
+  \label{eq: encountered wave frequency }  
+\end{equation}
 
-\subsection{Force}
+
+\subsection{Exciting force}
 
 Since the focus of this section is vessel response motion due to waves, the
 forces and moments considered are only the fluid forces and moments due to waves
-acting on the vessel. The forces and moments can be subdivided into two types -
-Froude-Krylov and diffraction excitation. Froude-Krylov excitation force and
+acting on the vessel. Fluid forces and moments can be subdivided into two types - Froude-Krylov and diffraction excitation. Froude-Krylov excitation force and
 moment is obtained by integrating the pressure due to wave on the wetted surface
 area of the hull. Froude-Krylov does not consider the effects vessel on the
 incident wave. On the other hand, diffraction excitation are forces and moments
@@ -118,3 +123,12 @@ where the length of the incident wave is longer than the vessel length, the
 diffraction excitation forces and moments will be of small magnitude and hence
 is often ignored. 
 
+Froude-Krylov force it obtained by integrating the pressure due to wave along the wetted surface of the hull. For a regular sea wave, equation \ref{eq: pressure head variation wrt frequency deep water} in section \ref{Regular sea waves} provides the formula for pressure head variation due to the wave. The Froude-Krylov force on the hull can then be obtained as given below:
+\begin{equation}
+  \int_X \int_Y \rho g \zeta_a e^{k z} \cos (k x - \omega t) \,dx \,dy 
+\end{equation}
+Since we consider each component motion separately, instead of considering the total pressure force, we consider the component of the pressure force acting in component direction. So for hear the above formula will be modified only to take the vertical component of the pressure force. So, if the surface $\,dx \,dy$ has an angle $\theta$ with the vertical plane, them the formula for Froude-Krylov force for heave is: 
+\begin{equation}
+  \int_X \int_Y \rho g \zeta_a e^{k z} \cos (k x - \omega t) \cos \theta \,dx \,dy 
+\end{equation}  
+Similarly for surge and sway motion (which are not harmonic motion) the Froude-Krylov force can be obtained by taking the component in each direction.
