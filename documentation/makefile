@@ -52,6 +52,12 @@ quiet: $(BUILD_DIR)/$(TARGET).pdf
 verbose: QUIET := 
 verbose: $(BUILD_DIR)/$(TARGET).pdf
 
+# View the pdf 
+# quiet is the build option for view
+view: QUIET := > /dev/null 2>&1 || true
+view: $(BUILD_DIR)/$(TARGET).pdf
+	-@xdg-open $(BUILD_DIR)/$(TARGET).pdf > /dev/null 2>&1 || true &
+
 # Compile pdf 
 $(BUILD_DIR)/$(TARGET).pdf: $(SRCS)
 	-@echo "--> Checking if pdflatex and bibtex are installed"
@@ -95,10 +101,6 @@ endif
 else
 	-@echo "--> Missing dependencies. Cannot compile."
 endif
-
-# View the pdf 
-view: $(BUILD_DIR)/$(TARGET).pdf
-	-@xdg-open $(BUILD_DIR)/$(TARGET).pdf > /dev/null 2>&1 || true &
 
 # Clean the build directory
 .PHONY: clean
