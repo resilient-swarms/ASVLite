@@ -21,7 +21,7 @@ of others. That is, for example, it is assumed that the heave motion is not
 affect by and does not affect any other motion. In reality this is not true.
 Since the ASV is longitudinally asymmetric, the heave motion will also induce
 pitching motion. The relationship between each motion in each degrees of freedom
-is explored in the section \todo[inline]{Link to section for coupled motion}.
+is explored in the section \todo[inline]{To do: Link to section for coupled motion}.
 
 \subsection{Equation of motion}
 
@@ -48,7 +48,8 @@ the body with a frequency $\omege$.
 It is more convenient to represent the cyclic force term using complex numbers
 as shown below: 
 \begin{equation}
-  F_0(\omega, t) = F_0 \cos{\omega t} + i F_0 \sin{\omega t} = F_0 e^{i \omega t}
+  F_0(\omega, t) = F_0 \cos{\omega t} + i F_0 \sin{\omega t} = 
+  F_0 e^{i \omega t}
   \label{eq: force for simple harmoic motion}
 \end{equation}
 The observed value of force at any instant of time is the real part of $F_0$. It
@@ -58,7 +59,9 @@ as the frequency of wave encounter but with phase lag of $\phi$. Therefore at
 any instant of time $t$, the displacement for an encounter wave frequency of
 $\omega$ is:
 \begin{equation}
-  x(\omega, \phi, t) = x_0 \cos(\omega t - \phi) + i x_0 \sin(\omega t - \phi) = x_0 e^{i (\omega t - \phi)}
+  x(\omega, \phi, t) 
+  = x_0 \cos(\omega t - \phi) + i x_0 \sin(\omega t - \phi) 
+  = x_0 e^{i (\omega t - \phi)}
   \label{eq: displacement for simple harmonic motion}
 \end{equation}
 \begin{equation}
@@ -103,18 +106,23 @@ and amplitude:
   x_0 = \frac{F_0}{\sqrt{(K - M \omega^2)^2 + (C \omega)^2}}
 \end{equation}
 
-A key point to note is that when the ASV is moving at velocity of $U_0$ at an angle $\mu$ with respect to wave then the frequency of oscillation will shift from the wave frequency to the encountered wave frequency. In this case the $\omega$ term in the above equations should be replaced by encountered wave frequency,$\omega_e$:
+A key point to note is that when the ASV is moving at velocity of $U_0$ at an
+angle $\mu$ with respect to wave then the frequency of oscillation will shift
+from the wave frequency to the encountered wave frequency. In this case the
+$\omega$ term in the above equations should be replaced by encountered wave
+frequency,$\omega_e$:
 \begin{equation}
   \omega_e = \omega_0 - \frac{\omega_0^2}{g} U_0 \cos \mu 
   \label{eq: encountered wave frequency }  
 \end{equation}
 
-
-\subsection{Exciting force}
+\subsection{Exciting force and moment}
+\label{Exciting force and moment}
 
 Since the focus of this section is vessel response motion due to waves, the
 forces and moments considered are only the fluid forces and moments due to waves
-acting on the vessel. Fluid forces and moments can be subdivided into two types - Froude-Krylov and diffraction excitation. Froude-Krylov excitation force and
+acting on the vessel. Fluid forces and moments can be subdivided into two types
+- Froude-Krylov and diffraction excitation. Froude-Krylov excitation force and
 moment is obtained by integrating the pressure due to wave on the wetted surface
 area of the hull. Froude-Krylov does not consider the effects vessel on the
 incident wave. On the other hand, diffraction excitation are forces and moments
@@ -123,12 +131,37 @@ where the length of the incident wave is longer than the vessel length, the
 diffraction excitation forces and moments will be of small magnitude and hence
 is often ignored. 
 
-Froude-Krylov force it obtained by integrating the pressure due to wave along the wetted surface of the hull. For a regular sea wave, equation \ref{eq: pressure head variation wrt frequency deep water} in section \ref{Regular sea waves} provides the formula for pressure head variation due to the wave. The Froude-Krylov force on the hull can then be obtained as given below:
+Froude-Krylov force it obtained by integrating the pressure due to wave along
+the wetted surface of the hull. For a regular sea wave, equation \ref{eq:
+pressure head variation wrt frequency deep water} in section \ref{Regular sea
+waves} provides the formula for pressure head variation due to the wave. The
+Froude-Krylov force on the hull can then be obtained as given below:
 \begin{equation}
-  \int_X \int_Y \rho g \zeta_a e^{k z} \cos (k x - \omega t) \,dx \,dy 
+  \int_{\frac{-L}{2}}^{\frac{L}{2}} 
+  \int_{\frac{-B}{2}}^{\frac{B}{2}} 
+  \rho g \zeta_a e^{k z} \cos (k x - \omega t) 
+  \,dx \,dy 
 \end{equation}
-Since we consider each component motion separately, instead of considering the total pressure force, we consider the component of the pressure force acting in component direction. So for hear the above formula will be modified only to take the vertical component of the pressure force. So, if the surface $\,dx \,dy$ has an angle $\theta$ with the vertical plane, them the formula for Froude-Krylov force for heave is: 
+Since we consider each component motion separately, instead of considering the
+total pressure force, we consider the component of the pressure force acting in
+component direction. So for hear the above formula will be modified only to take
+the vertical component of the pressure force. So, if the surface $\,dx \,dy$ has
+an angle $\phi$ with the vertical plane, them the formula for Froude-Krylov
+force for heave is: 
 \begin{equation}
-  \int_X \int_Y \rho g \zeta_a e^{k z} \cos (k x - \omega t) \cos \theta \,dx \,dy 
+  \int_{\frac{-L}{2}}^{\frac{L}{2}} 
+  \int_{\frac{-B}{2}}^{\frac{B}{2}} 
+  \rho g \zeta_a e^{k z} \cos (k x - \omega t) \cos \phi 
+  \,dx \,dy 
 \end{equation}  
-Similarly for surge and sway motion (which are not harmonic motion) the Froude-Krylov force can be obtained by taking the component in each direction.
+Similarly, for surge and sway motion (which are not harmonic motion) the
+Froude-Krylov force can be obtained by taking the component in each direction.
+
+The exciting moments can similarly be calculated by taking the moments of the forces about the axis of rotations. For pitch, the exciting moment about the transverse axis of the ASV is:
+\begin{equation}
+  \int_{\frac{-L}{2}}^{\frac{L}{2}} 
+  \int_{\frac{-B}{2}}^{\frac{B}{2}} 
+  \rho g \zeta_a e^{k z} \cos (k x - \omega t) \cos \phi x
+  \,dx \,dy 
+\end{equation}
+The moments for roll and yaw can also be calculated similarly.
