@@ -1,0 +1,109 @@
+\section{Simulation of vessel motion in waves} 
+\label{Simulation of vessel motion in waves}
+
+This section describes{ simulation of vessel motion in waves. The first step is
+to generate all the waves and this is described in section \ref{Simulation of
+ocean waves}. After generating the ocean waves the vessel response motion is
+calculated for each wave for each heading angle and speed. The results are then
+saved in a series of tables. 
+
+\subsection{Calculating motion response for each wave}
+\label{Calculating motion response for each wave}
+
+\begin{algorithmic}
+  \FOR {each regular wave in the simulation field} 
+    \FOR {each heading angle between 0 and 360 degree}
+      \FOR {each vessel speed} 
+        \STATE calculate encounter frequency 
+        \STATE calculate total pressure by integrating pressure below the wetted
+        surface area 
+        \STATE calculate total added mass by integrating added mass along the
+        length of ASV 
+        \STATE calculate total damping coefficient by integrating damming 
+        coefficient along the length of ASV 
+        \STATE calculate hydrostatic stiffness 
+        \STATE calculate response amplitude 
+        \STATE calculate response motion phase lag
+      \ENDFOR
+    \ENDFOR
+  \ENDFOR
+\end{algorithmic}
+
+\subsection{Calculating total pressure force}
+\label{Calculating total pressure force}
+The total pressure force is calculated by integrating the pressure along the
+wetted surface area. The wetted surface area can be found by finding the
+intersection of the hull surface with the wave profile. 
+
+\begin{algorithmic}
+  \STATE let $totalPressureForce = 0$ 
+  \FOR {each element in the ASV hull mesh}
+    \STATE find if the mesh is above, below or intersecting the wave profile.
+    \IF{mesh above wave profile}
+      \STATE continue
+    \ELSIF{mesh below wave profile}
+      \STATE get mesh area and centroid 
+    \ELSE
+      \STATE find intersection of mesh with wave profile
+      \STATE find area and centroid for mesh area below the wave profile.
+    \ENDIF
+    \STATE calculate the pressure force using formula \ref{eq: Froude-Krylov 
+    force}. The pressure force should use the centroid of the the patch for 
+    coordinate location and area of the patch to get the force.
+    \STATE $totalPressureForce += pressureForceOnMesh $ 
+  \ENDFOR
+\end{algorithmic}
+
+\subsection{Calculating total added mass and total damping coefficient}
+\label{Calculating total added mass}
+The total added mass and total damping coefficient is calculated using strip
+theory. The full length of the ASV will be divided longitudinally into strips
+and the added mass and damping coefficients will be calculated for each strip.
+Sum of added mass of all strips will give the total added mass of the vessel and
+sum of damping coefficients of all strips will give the total damping
+coefficient.
+
+\subsection{Calculating response amplitude}
+\label{Calculating response amplitude}
+Response amplitude is calculated using equation \ref{eq: equation of motion} but instead of solving the equation of motion for each degree of freedom separately, we will use matrices to simultaneously solve the equations of motion for all degrees of freedom. 
+
+$M$ : Mass matrix
+\[
+\begin{bmatrix}
+  $\Delta$ & 0 & 0 & 0 & $+\Delta z_c$ & 0 \\
+  0 & $\Delta$ & 0 & $-\Delta z_c$ & 0 & $+\Delta x_c$ \\
+  0 & 0 & $\Delta$ & 0 & $-\Delta x_c$ & 0 \\
+  0 & $-\Delta z_c$ & 0 & $I_{44}$ & 0 & $-I_{46}$ \\
+  $+\Delta z_c$ & 0 & $-\Delta x_c$ & 0 & $I_{55}$ & 0 \\
+  0 & $+\Delta x_c$ & 0 & $-I_{46}$ & 0 & $I_{66}$
+\end{bmatrix} 
+\]
+where: \\
+$\Delta$ : is total mass of vessel \\
+$I_{44}, I_{55}, I_{66}$ : are moments of inertia around the longitudinal, transverse and vertical axis of the ASV. \\
+$I_{46} = I_{64}$ : is roll - yaw product of inertia.\\
+$x_c, z_c$ : are the coordinates of centre of gravity of the ASV. The ASV is assumed to be transversely symmetric and hence $y_c = 0$
+
+$C$ : Damping matrix
+\[
+\begin{bmatrix}
+\end{bmatrix} 
+\]
+
+$K$ : Stiffness matrix
+\[
+\begin{bmatrix}
+\end{bmatrix} 
+\]
+
+$F$ : Force vector
+\[
+\begin{bmatrix}
+\end{bmatrix} 
+\]
+
+$x$ : Displacement vector
+\[
+\begin{bmatrix}
+\end{bmatrix} 
+\]
