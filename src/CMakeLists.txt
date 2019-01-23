@@ -4,15 +4,15 @@ project(wave_dynamics VERSION 0.1.0)
 
 # Source files
 set(source  
-  wave_dynamics.cpp
   regular_wave.cpp)
 
-# Create the project build configuration file.
-if(unittest)
-  set(source ${source} unittest.cpp)
-  add_executable(wave_dynamics ${source})
-  target_link_libraries(wave_dynamics gtest)
-else(unittest)
-  add_library(wave_dynamics ${source})
-endif(unittest)
+# Unit test files
+set(unit_test
+  unit_test_runner.cpp)
 
+if(test)
+  add_executable(wave_dynamics ${source} ${unit_test})
+  target_link_libraries(wave_dynamics gtest)
+else(test)
+  add_library(wave_dynamics ${source})
+endif(test)
