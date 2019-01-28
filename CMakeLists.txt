@@ -2,13 +2,16 @@ cmake_minimum_required(VERSION 3.0.0)
 
 project(wave_dynamics VERSION 0.1.0)
 
+# Include directories
+include_directories(include)
+
 # Source files
 set(source  
-  regular_wave.cpp)
+  source/regular_wave.cpp)
 
 # Unit test files
 set(unit_test
-  unit_test_runner.cpp)
+  unit_tests/unit_test_runner.cpp)
 
 if(test)
   add_executable(wave_dynamics ${source} ${unit_test})

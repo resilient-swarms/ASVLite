@@ -1,4 +1,16 @@
+# System files
+# ------------
 .directory
+
+# VS Code config dir
+# ------------------
 .vscode
+
+# Vim config files
+# ----------------
+.ycm_extra_conf.py
+
+# build directory
+# ---------------
 build
 
