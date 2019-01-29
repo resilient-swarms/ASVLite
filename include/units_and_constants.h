@@ -1,6 +1,6 @@
 /**
  * This header file provides a wrapper for Boost.Units library for convenience.
- * Coding using Boost.Units can be verbose because of the multiple namespaces 
+ * Coding using Boost.Units can be verbose because of the nested namespaces 
  * used. This header file aims at making coding using Boost.Units more concise 
  * by providing shorter namespace aliases.
  * 
@@ -25,6 +25,7 @@
 #include<boost/units/systems/si/time.hpp>
 #include<boost/units/systems/si/frequency.hpp>
 #include<boost/units/systems/si/plane_angle.hpp>
+#include<boost/units/systems/angle/degrees.hpp>
 #include<boost/units/systems/si/dimensionless.hpp>
 #include<cmath>
 

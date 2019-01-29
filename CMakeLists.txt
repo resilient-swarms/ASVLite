@@ -11,7 +11,8 @@ set(source
 
 # Unit test files
 set(unit_test
-  unit_tests/unit_test_runner.cpp)
+  unit_tests/unit_test_runner.cpp
+  unit_tests/test_regular_wave.cpp)
 
 if(test)
   add_executable(wave_dynamics ${source} ${unit_test})

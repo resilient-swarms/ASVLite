@@ -16,9 +16,10 @@ class Regular_wave
 public:
   /**
    * Constructor for Regular_wave.
-   * @param amplitude of wave in meters. Data type: boost::units::si::length.
+   * @param amplitude of wave in meters. Data type:
+   * boost::units::si::length. Value should be greater than 0.0.
    * @param frequency of wave in radian/sec. Data type: 
-   * boost::units::si::frequency.
+   * boost::units::si::frequency. Value should be greater than 0.0.
    * @param direction wave heading in degree with respect to x-axis; angle
    * measured positive anti-clockwise. 
    * @param phase angle of the wave in radian.
@@ -30,26 +31,60 @@ public:
 
   /**
    * Method to get the wave length.
-   * @return wave length in m.
+   * @return wave length as object of type boost::units::length.
    */
-  Quantity<Units::length> get_wave_length();
+  Quantity<Units::length> get_wave_length(){return wave_length;}
 
   /**
    * Method to get wave number.
-   * @return wave number.
+   * @return wave number as object of type boost::units::wavenumber.
    */
-  Quantity<Units::dimensionless> get_wave_number();
+  Quantity<Units::wavenumber> get_wave_number(){return wave_number;}
 
   /**
    * Method to get wave period.
-   * @return wave period in sec.
+   * @return wave period as object of type boost::units::time.
    */
-  Quantity<Units::time> get_wave_period();
+  Quantity<Units::time> get_wave_period(){return wave_period;}
 
+  /**
+   * Method to get wave amplitude.
+   * @return wave amplitude as object of type boost::units::length.
+   */
+  Quantity<Units::length> get_wave_amplitude(){return amplitude;}
+
+  /**
+   * Method to get wave frequency.
+   * @return wave frequency as object of type boost::units::frequency.
+   */
+  Quantity<Units::frequency> get_wave_frequency(){return frequency;}
+
+  /**
+   * Method to get wave phase. The angle is measured positive anti-clockwise.
+   * @return wave phase as object of type boost::units::plane_angle.
+   */
+  Quantity<Units::plane_angle> get_phase(){return phase;}
+
+  /**
+   * Method to get wave heading direction.
+   * @return wave direction as object of type boost::units::plane_angle.
+   */
+  Quantity<Units::plane_angle> get_direction(){return direction;}
+
+  /**
+   * Method to get wave elevation at a given location, at a given time.
+   * @param x coordinate of the location as object of type boost::units::length.
+   * @param y coordinate of the location as object of type boost::units::length.
+   * @param t time as object of type boost::units::time.
+   * @return the wave elevation as object of type boost::units::length.
+   */
+  Quantity<Units::length> get_wave_elevation(Quantity<Units::length> x,
+                                             Quantity<Units::length> y,
+                                             Quantity<Units::time> t);
 
 private:
-  Quantity<Units::length> amp; /* Amplitude of the wave. */
-  Quantity<Units::frequency> freq; /* Circular frequency of the wave. */
+  Quantity<Units::length> amplitude; /* Amplitude of the wave. */
+  Quantity<Units::frequency> frequency; /* Circular frequency of the wave. */
   Quantity<Units::plane_angle> phase; /* Phase angle of the wave in radian. */
   Quantity<Units::plane_angle> direction; /* Direction of propagation of the 
   wave with respect to x-axis. Angle measured positive anti-clockwise. */
