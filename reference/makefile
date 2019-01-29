@@ -8,7 +8,7 @@
 # make clean  : clean all build files.
 
 # Name of output pdf file
-TARGET := documentation
+TARGET := hydrodynamics_reference
 
 # Name of main tex file which includes all the other tex files.
 MAIN := main
