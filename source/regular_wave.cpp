@@ -1,4 +1,5 @@
 #include "regular_wave.h"
+#include "exception.h"
 #include <boost/units/cmath.hpp>
 
 using namespace boost::units;
@@ -15,6 +16,13 @@ Regular_wave::Regular_wave( Quantity<Units::length> amplitude,
   wave_number {(2 * Const::PI)/wave_length},
   wave_period {(2.0*Const::PI)/frequency}
 {
+  // Check if inputs are valid. If not throw ValueError.
+  if( amplitude.value() <= 0.0 ||
+      frequency.value() <= 0.0 )
+  {
+    throw ValueError("Constructor error. Class: Regular_wave."
+                     "Invalid input value.");
+  }
 }
 
 Quantity<Units::length> Regular_wave::get_wave_elevation(

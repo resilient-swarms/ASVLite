@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "regular_wave.h"
+#include "exception.h"
 
 TEST(regular_wave, check_constructor)
 {
@@ -42,4 +43,29 @@ TEST(regular_wave, check_wave_elevation)
                                       3.0*Units::seconds).value(), 
               0.0001); 
 }
+
+ 
+TEST(regular_wave, check_exception_invalid_amplitude)
+{
+  //Check the wave elevation.
+  Quantity<Units::length> amplitude{0.0*Units::meter};
+  Quantity<Units::frequency> frequency{0.1*Units::hertz};
+  Quantity<Units::plane_angle> direction{(Const::PI/4)*Units::radian};
+  Quantity<Units::plane_angle> phase{(Const::PI/6)*Units::radian};
+  EXPECT_THROW(Regular_wave(amplitude, frequency, direction, phase), 
+               ValueError);  
+}
+
+TEST(regular_wave, check_exception_invalid_frequency)
+{
+  //Check the wave elevation.
+  Quantity<Units::length> amplitude{2.5*Units::meter};
+  Quantity<Units::frequency> frequency{0.0*Units::hertz};
+  Quantity<Units::plane_angle> direction{(Const::PI/4)*Units::radian};
+  Quantity<Units::plane_angle> phase{(Const::PI/6)*Units::radian};
+  EXPECT_THROW(Regular_wave(amplitude, frequency, direction, phase), 
+               ValueError);  
+}
+
+
    
