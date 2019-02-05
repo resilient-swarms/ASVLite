@@ -22,11 +22,13 @@
 #include<boost/units/systems/si/length.hpp>
 #include<boost/units/systems/si/wavenumber.hpp>
 #include<boost/units/systems/si/acceleration.hpp>
+#include<boost/units/systems/si/velocity.hpp>
 #include<boost/units/systems/si/time.hpp>
 #include<boost/units/systems/si/frequency.hpp>
 #include<boost/units/systems/si/plane_angle.hpp>
 #include<boost/units/systems/angle/degrees.hpp>
 #include<boost/units/systems/si/dimensionless.hpp>
+#include<boost/units/cmath.hpp>
 #include<cmath>
 
 /**
@@ -39,6 +41,12 @@ using Quantity = boost::units::quantity<T>;
  * Units, an alias for boost::units::si.
  */
 namespace Units = boost::units::si;
+
+/**
+ * SR, an alias for boost::units::static_rational.
+ */
+template<boost::units::integer_type N, boost::units::integer_type D>
+using SR = boost::units::static_rational<N, D>;
 
 /**
  * Numerical constants.
