@@ -21,7 +21,7 @@ Regular_wave::Regular_wave( Quantity<Units::length> amplitude,
       frequency.value() <= 0.0 )
   {
     throw ValueError("Constructor error. Class: Regular_wave."
-                     "Invalid input value.");
+                     "Invalid input.");
   }
 }
 

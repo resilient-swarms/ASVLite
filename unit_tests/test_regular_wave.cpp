@@ -44,7 +44,6 @@ TEST(regular_wave, check_wave_elevation)
               0.0001); 
 }
 
- 
 TEST(regular_wave, check_exception_invalid_amplitude)
 {
   //Check the wave elevation.
