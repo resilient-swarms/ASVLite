@@ -140,7 +140,7 @@ void Wave_spectrum::set_wave_spectrum()
                  exp(A) * 
                  pow(gamma, exp(B));  
       double G = (2/PI) * pow(cos(angle->value()), 2);
-      double amp = sqrt(2 * S * G);
+      double amp = sqrt(2 * S * G * f_step.value() * d_step.value());
       Quantity<Units::length> amplitude{amp* Units::meter};
       
       // Generate a random value for phase
