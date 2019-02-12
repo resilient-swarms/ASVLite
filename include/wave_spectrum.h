@@ -24,7 +24,11 @@ class Wave_spectrum
    * @param fetch length in Boost::units::si::length. Should be greater than 0.
    * @param wind_speed in Boost::units::si::velocity. Should be greater than 0.
    * @param wind_direction is the predominant wind direction measured in radian.
-   * Wind direction should be within the range (0, 2PI).
+   * Wind direction should be within the range (0, 2PI). The constructor also
+   * creates a spectrum of waves with min freq = 0.3Hz and max freq = 6.0 Hz,
+   * considering 50 frequency values between the min and max frequencies. Also
+   * the constructor considers 90 different angles between the min and max angle
+   * for wind direction. 
    */
   Wave_spectrum( Quantity<Units::length> fetch, 
                  Quantity<Units::velocity> wind_speed,
@@ -35,20 +39,37 @@ class Wave_spectrum
    * @param count, the number of frequencies in the spectrum.
    * @return true if value set else returns false.
    */
-  bool set_frequency_cont(unsigned int count);
+  void set_frequency_cont(unsigned int count);
 
   /**
    * Method to set the number of discrete directions in the spectrum.
    * @param count, the number of directions in the spectrum.
    * @return true if value set else returns false.
    */
-  bool set_direction_count(unsigned int count);
+  void set_direction_count(unsigned int count);
 
   /**
    * Method to initialise the wave spectrum.
    * @return true if spectrum initialised.
    */
-  bool set_wave_spectrum();
+  void set_wave_spectrum();
+
+  /**
+   * Return a table containing waves. Each row of the table is an array of wave
+   * for a given direction.
+   * @return table of waves for all directions.
+   */
+  std::vector<std::vector<Regular_wave>>& get_waves();
+
+  /**
+   * Returns a list of directions considered in the spectrum.
+   */
+  std::vector<Quantity<Units::plane_angle>>& get_directions();
+
+  /**
+   * Returns a list of frequencies considered in the spectrum.
+   */
+  std::vector<Quantity<Units::frequency>>& get_frequencies();
 
   private:
   Quantity<Units::length> fetch; /* The length of fetch in meter. */
@@ -71,6 +92,8 @@ class Wave_spectrum
   Quantity<Units::plane_angle> max_angle; /* Maximum angle in spectrum.
                                              Default value is
                                              wind_direction + PI/2. */
+  std::vector<Quantity<Units::plane_angle>> directions_list;
+  std::vector<Quantity<Units::frequency>> frequency_list;
 
 
 };
