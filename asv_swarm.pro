@@ -1,6 +1,6 @@
-QT       += core gui xml
+QT       += core
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets opengl xml
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = asv_swarm
 TEMPLATE = app
@@ -20,14 +20,19 @@ CONFIG += c++11
 
 
 SOURCES += \
+    source/geometry.cpp \
     source/regular_wave.cpp \
     source/sea_surface_dynamics.cpp \
-    source/wave_spectrum.cpp \
-    unit_tests/test_regular_wave.cpp \
-    unit_tests/test_sea_surface_dynamics.cpp \
-    unit_tests/test_wave_spectrum.cpp \
-    unit_tests/unit_test_runner.cpp
+    source/wave_spectrum.cpp
 
+# Additional files and lib for Test build
+CONFIG(test){
+SOURCES += \
+    unit_tests/unit_test_runner.cpp \
+    unit_tests/test_regular_wave.cpp
+
+LIBS += -lgtest
+}
 
 HEADERS += \
     include/exception.h \
@@ -39,14 +44,5 @@ HEADERS += \
 
 INCLUDEPATH += include
 
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
 
-unix:!macx: LIBS += -lCGAL \
-                    -lgtest \
-                    -lCGAL_Qt5 \
-                    -lmpfr \
-                    -lgmp
 
