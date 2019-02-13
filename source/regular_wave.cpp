@@ -2,7 +2,7 @@
 #include "exception.h"
 #include <boost/units/cmath.hpp>
 
-using namespace boost::units;
+using namespace asv_swarm;
 
 Regular_wave::Regular_wave( Quantity<Units::length> amplitude, 
                             Quantity<Units::frequency> frequency, 

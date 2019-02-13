@@ -17,4 +17,5 @@ build
 # qmake user config
 # -----------------
 *.pro.user
+.qmake.stash
 

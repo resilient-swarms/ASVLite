@@ -1,6 +1,8 @@
 #include"sea_surface_dynamics.h"
 #include"exception.h"
 
+using namespace asv_swarm;
+
 Sea_surface_dynamics::Sea_surface_dynamics
   (Quantity<Units::length> fetch):
     fetch {fetch},

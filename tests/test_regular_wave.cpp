@@ -2,6 +2,8 @@
 #include "regular_wave.h"
 #include "exception.h"
 
+using namespace asv_swarm;
+
 TEST(regular_wave, check_constructor)
 {
   // Check if the constructor sets the inputs passed correctly.

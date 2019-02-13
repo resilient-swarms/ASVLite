@@ -18,21 +18,15 @@ DEFINES += QT_DEPRECATED_WARNINGS CGAL_USE_BASIC_VIEWER
 
 CONFIG += c++11
 
-
-SOURCES += \
-    source/geometry.cpp \
-    source/regular_wave.cpp \
-    source/sea_surface_dynamics.cpp \
-    source/wave_spectrum.cpp
-
-# Additional files and lib for Test build
-CONFIG(test){
-SOURCES += \
-    unit_tests/unit_test_runner.cpp \
-    unit_tests/test_regular_wave.cpp
-
-LIBS += -lgtest
-}
+# Destination directories
+release: DESTDIR = build/release
+debug: DESTDIR = build/debug
+test: DESTDIR = build/test
+OBJECTS_DIR = $$DESTDIR/obj
+MOC_DIR = $$DESTDIR/moc
+RCC_DIR = $$DESTDIR/qrc
+UI_DIR = $$DESTDIR/ui
+MAKEFILE = $$DESTDIR/Makefile
 
 HEADERS += \
     include/exception.h \
@@ -40,9 +34,24 @@ HEADERS += \
     include/regular_wave.h \
     include/sea_surface_dynamics.h \
     include/units_and_constants.h \
-    include/wave_spectrum.h
+    include/wave_spectrum.h \
 
 INCLUDEPATH += include
+
+SOURCES += \
+    source/geometry.cpp \
+    source/regular_wave.cpp \
+    source/sea_surface_dynamics.cpp \
+    source/wave_spectrum.cpp
+
+# Additional source for unit tests
+test: SOURCES += \
+    tests/test_regular_wave.cpp \
+    tests/unit_test_runner.cpp
+
+# Additional lib for unit test
+test: LIBS += -lgtest
+
 
 
 

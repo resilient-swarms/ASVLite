@@ -4,16 +4,24 @@
 #include <exception>
 #include <string>
 
+namespace asv_swarm
+{
 class ValueError : public std::exception
 {
-  std::string errorMessage;
- public:
+public:
+  ValueError(std::string message = "Incorrect value passed.") : exception() 
+  {
+    errorMessage = message;
+  }
+
   virtual const char* what() const throw()
   {
     return errorMessage.c_str();
   }
- ValueError(std::string message = "Incorrect value passed.") : exception() 
- {errorMessage = message;}
-};
+
+private:
+  std::string errorMessage;
+}; //class ValueError
+} // namespace asv_swarm
 
 #endif // EXCEPTION_H

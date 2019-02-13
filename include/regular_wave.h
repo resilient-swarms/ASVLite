@@ -7,12 +7,13 @@
 
 #include "units_and_constants.h"
 
+namespace asv_swarm
+{
 /**
  * This class defines a regular sinusoidal wave. 
  */
 class Regular_wave
 {
-
 public:
   /**
    * Constructor for Regular_wave.
@@ -91,6 +92,7 @@ private:
   Quantity<Units::length> wave_length; /* Wave length in meter. */
   Quantity<Units::wavenumber> wave_number; /* Wave number */
   Quantity<Units::time> wave_period; /* Wave period in sec. */
-};
+}; // class Regular_wave
+} // namespace asv_swarm
 
 #endif // REGULAR_WAVE_H

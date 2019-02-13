@@ -9,6 +9,8 @@
 #include "regular_wave.h"
 #include <vector>
 
+namespace asv_swarm
+{
 /**
  * This class generates a list of waves such that the resultant irregular wave 
  * formed by linear super-positioning of all the regular waves have a specific
@@ -18,7 +20,7 @@
  */
 class Wave_spectrum
 {
-  public:
+public:
   /**
    * Constructor. 
    * @param fetch length in Boost::units::si::length. Should be greater than 0.
@@ -71,7 +73,7 @@ class Wave_spectrum
    */
   std::vector<Quantity<Units::frequency>>& get_frequencies();
 
-  private:
+private:
   Quantity<Units::length> fetch; /* The length of fetch in meter. */
   Quantity<Units::velocity> wind_speed; /* Wind speed in m/sec. */
   Quantity<Units::plane_angle> wind_direction; /* Predominant wind direction.*/
@@ -94,9 +96,8 @@ class Wave_spectrum
                                              wind_direction + PI/2. */
   std::vector<Quantity<Units::plane_angle>> directions_list;
   std::vector<Quantity<Units::frequency>> frequency_list;
-
-
-};
+}; // class Wave_spectrum
+} // namespace asv_swarm
 
 
 #endif // WAVE_SPECTRUM_H

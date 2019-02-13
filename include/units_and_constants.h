@@ -31,6 +31,8 @@
 #include<boost/units/cmath.hpp>
 #include<cmath>
 
+namespace asv_swarm
+{
 /**
  * Quantity<T>, an alias for boost::units::quantity<T>.
  */
@@ -53,11 +55,12 @@ using SR = boost::units::static_rational<N, D>;
  */
 namespace Const
 {
-  const Quantity<Units::acceleration> G = 
-  9.81 * (Units::meter / Units::second/ Units::second); /* Acceleration due to 
-  gravity. */
+const Quantity<Units::acceleration> G = 
+9.81 * (Units::meter / Units::second/ Units::second); /* Acceleration due to 
+                                                         gravity. */
 
-  const Quantity<Units::dimensionless> PI = M_PI;  /* Pi */
-}
+const Quantity<Units::dimensionless> PI = M_PI;  /* Pi */
+} // namespace Const
+} // namespace asv_swarm
 
 #endif // UNITS_H

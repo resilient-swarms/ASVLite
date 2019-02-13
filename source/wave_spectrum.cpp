@@ -4,7 +4,7 @@
 #include <random>
 #include <iostream>
 
-using namespace boost::units;
+using namespace asv_swarm;
 
 Wave_spectrum::Wave_spectrum( Quantity<Units::length> fetch,
                               Quantity<Units::velocity> wind_speed,
