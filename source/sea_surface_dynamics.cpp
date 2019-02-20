@@ -4,15 +4,15 @@
 using namespace asv_swarm;
 
 Sea_surface_dynamics::Sea_surface_dynamics
-  (Quantity<Units::length> fetch):
+  (Quantity<Units::length> fetch,
+   Quantity<Units::velocity> wind_speed,
+   Quantity<Units::plane_angle> wind_direction):
     fetch {fetch},
     field_length {fetch},
-    wind_speed{0.0*Units::meter_per_second},
-    wind_direction{0.0*Units::radian},
-    wave_spectrum{fetch, 
-                  0.0* Units::meter_per_second, 
-                  0.0* Units::radian},
-    control_points_count {100},
+    wind_speed{wind_speed},
+    wind_direction{wind_direction},
+    wave_spectrum{fetch, wind_speed, wind_direction},
+    control_points_count {10},
     continue_simulation{true}
 {
   set_control_points();
@@ -26,12 +26,14 @@ void Sea_surface_dynamics::set_wind_speed(Quantity<Units::velocity> wind_speed)
                      "Wind speed should be greater than or equal to 0.0m/s.");
   }
   this->wind_speed = wind_speed;
+  wave_spectrum = Wave_spectrum(fetch, this->wind_speed, wind_direction);
 }
 
 void Sea_surface_dynamics::set_wind_direction
   (Quantity<Units::plane_angle> wind_direction)
 {
   this->wind_direction = wind_direction;
+  wave_spectrum = Wave_spectrum(fetch, wind_speed, this->wind_direction);
 }
 
 void Sea_surface_dynamics::set_fetch(Quantity<Units::length> fetch)
@@ -47,6 +49,7 @@ void Sea_surface_dynamics::set_fetch(Quantity<Units::length> fetch)
     field_length = fetch;
     set_control_points();
   }
+  wave_spectrum = Wave_spectrum(this->fetch, wind_speed, wind_direction);
 }
 
 void Sea_surface_dynamics::set_field_length
@@ -96,34 +99,30 @@ Wave_spectrum& Sea_surface_dynamics::get_wave_spectrum()
   return wave_spectrum;
 }
 
-void Sea_surface_dynamics::simulate_wave_dynamics(
-    Quantity<Units::time> time_step)
+void Sea_surface_dynamics::set_sea_surface_profile(
+    Quantity<Units::time> current_time)
 {
   Quantity<Units::time> time{0*Units::second};
-  while(continue_simulation)
+  std::vector<std::vector<Regular_wave>> waves = wave_spectrum.get_waves();
+  // For each control point
+  for(int i = 0; i<control_points.size(); ++i)
   {
-    std::vector<std::vector<Regular_wave>> waves = wave_spectrum.get_waves();
-    // For each control point
-    for(int i = 0; i<control_points.size(); ++i)
+    for(int j = 0; j<control_points[i].size(); ++j)
     {
-      for(int j = 0; j<control_points[i].size(); ++j)
+      Quantity<Units::length> elevation{0*Units::meter};
+      // For each direction in the wave spectrum
+      for(int u = 0; u<waves.size(); ++u)
       {
-        Quantity<Units::length> elevation{0*Units::meter};
-        // For each direction in the wave spectrum
-        for(int u = 0; u<waves.size(); ++u)
+        // For each frequency in the wave spectrum
+        for(int v = 0; v<waves[u].size(); ++v)
         {
-          // For each frequency in the wave spectrum
-          for(int v = 0; v<waves[u].size(); ++v)
-          {
-            elevation += waves[u][v].get_wave_elevation(control_points[i][j].x,
-                                                        control_points[i][j].y,
-                                                        time);
-          }
+          elevation += waves[u][v].get_wave_elevation(control_points[i][j].x,
+                                                      control_points[i][j].y,
+                                                      time);
         }
-        control_points[i][j].z = elevation;
       }
+      control_points[i][j].z = elevation;
     }
-    time += time_step;
   }
 }
 

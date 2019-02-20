@@ -19,11 +19,17 @@ class Sea_surface_dynamics
 public:
   /**
    * Constructor. 
-   * @param surface_edge_length is the size of the edge of the square patch of
-   * sea surface being simulated. The size of the path should be less than or
-   * equal to the fetch length.
+   * @param fetch is the length over which the wind is blowing. The value should
+   * be greater than 0.
+   * @param wind_speed is the velocity of wind in meter_per_seconds. The value
+   * should be >= 0.
+   * @param wind_direction is the angle at which the wind is blowing measured in
+   * radians. The value should be between 0 and 2PI and is measured with respect
+   * to north direction. 
    */
-  Sea_surface_dynamics(Quantity<Units::length> fetch);
+  Sea_surface_dynamics(Quantity<Units::length> fetch,
+                       Quantity<Units::velocity> wind_speed,
+                       Quantity<Units::plane_angle> wind_direction);
 
   /**
    * Method to set the wind speed. 
@@ -87,9 +93,9 @@ public:
    * move up or down based on the waves in the field.
    * @param time_step is the simulation time step.
    */
-  void simulate_wave_dynamics(Quantity<Units::time> time_step);
+  void set_sea_surface_profile(Quantity<Units::time> current_time);
 
-private:
+protected:
   std::vector<std::vector<Point>> control_points;
   unsigned int control_points_count;
   Wave_spectrum wave_spectrum;
