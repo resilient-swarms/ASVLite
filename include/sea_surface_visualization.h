@@ -45,9 +45,9 @@ public:
                vtkRenderWindow* window, 
                vtkRenderWindowInteractor* interactor);
 
-  void Execute(vtkObject* caller, 
-               unsigned long vtkNotUsed(eventId), 
-               void* vtkNotUsed(callData))override {window->Render();}
+  virtual void Execute(vtkObject* caller, 
+                       unsigned long vtkNotUsed(eventId), 
+                       void* vtkNotUsed(callData))override; 
 
 protected:
   /**
