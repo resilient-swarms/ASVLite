@@ -15,7 +15,6 @@
 #include <vtkPolyDataAlgorithm.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
-#include <vtkCommand.h>
 
 namespace asv_swarm
 {
@@ -26,8 +25,7 @@ namespace asv_swarm
  */
 class Sea_surface_visualization : 
   public Sea_surface_dynamics,
-  public vtkPolyDataAlgorithm,
-  public vtkCommand
+  public vtkPolyDataAlgorithm
 {
 public:
   /**
@@ -44,10 +42,6 @@ public:
   void set_gui(vtkRenderer* renderer, 
                vtkRenderWindow* window, 
                vtkRenderWindowInteractor* interactor);
-
-  virtual void Execute(vtkObject* caller, 
-                       unsigned long vtkNotUsed(eventId), 
-                       void* vtkNotUsed(callData))override; 
 
 protected:
   /**
@@ -66,8 +60,6 @@ private:
   vtkSmartPointer<vtkRenderer> renderer {nullptr};
   vtkSmartPointer<vtkRenderWindow> window {nullptr};
   vtkSmartPointer<vtkRenderWindowInteractor> interactor {nullptr};
-  unsigned int timer_count; 
-
 }; // class Sea_surface_visualization
 } // namespace asv_swarm
 

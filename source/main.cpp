@@ -1,6 +1,33 @@
-#include"sea_surface_visualization.h"
+#include "sea_surface_visualization.h"
+#include <vtkCommand.h>
 
 using namespace asv_swarm;
+
+unsigned int timer_count{0u};
+Sea_surface_visualization* p_sea_surface_visualization{nullptr};
+
+class CommandSubclass : public vtkCommand
+{
+  public:
+  vtkTypeMacro(CommandSubclass, vtkCommand);
+  static CommandSubclass *New()
+  {
+    return new CommandSubclass;
+  }
+
+  void Execute(vtkObject *caller, 
+               unsigned long vtkNotUsed(eventId),
+               void *vtkNotUsed(callData)) override
+  {
+    ++timer_count;
+    p_sea_surface_visualization->Modified();
+    p_sea_surface_visualization->Update();
+    
+    vtkRenderWindowInteractor *iren =
+      static_cast<vtkRenderWindowInteractor*>(caller);
+    iren->Render();
+  }
+};
 
 int main()
 {
@@ -13,6 +40,7 @@ int main()
   /* Initialize visualization for sea surface */
   Sea_surface_visualization sea_surface_visualization {
     fetch, wind_speed, wind_direction};
+  p_sea_surface_visualization = &sea_surface_visualization;
 
   /* Create the renderer, window and interactor */
   vtkSmartPointer<vtkRenderer> renderer = 
@@ -26,9 +54,13 @@ int main()
 
   /* Initialize must be called prior to creating timer events */
   interactor->Initialize();
-  interactor->AddObserver(vtkCommand::TimerEvent, &sea_surface_visualization);
   interactor->CreateRepeatingTimer(10); /* Repeating timer event at every 
                                            10 milliseconds */
+
+  /* Add observer to timer event */
+  vtkSmartPointer<CommandSubclass> timerCallback =
+  vtkSmartPointer<CommandSubclass>::New();
+  interactor->AddObserver(vtkCommand::TimerEvent, timerCallback);
 
   /* Render and interact */
   sea_surface_visualization.set_gui(renderer, window, interactor);

@@ -1,15 +1,14 @@
 #include "sea_surface_visualization.h"
 
 using namespace asv_swarm;
+extern unsigned int timer_count;
 
 Sea_surface_visualization::Sea_surface_visualization(
     Quantity<Units::length> fetch,
     Quantity<Units::velocity> wind_speed,
     Quantity<Units::plane_angle> wind_direction) :
   vtkPolyDataAlgorithm{},
-  vtkCommand{},
-  Sea_surface_dynamics{fetch, wind_speed, wind_direction},
-  timer_count{0}
+  Sea_surface_dynamics{fetch, wind_speed, wind_direction}
 {
   /* This filter does not need an input port */
   SetNumberOfInputPorts(0);
@@ -21,14 +20,6 @@ Sea_surface_visualization::Sea_surface_visualization(
   sea_surface_actor->SetMapper(sea_surface_mesh_mapper);
   sea_surface_actor->GetProperty()->SetRepresentationToWireframe();
   sea_surface_actor->GetProperty()->SetColor(0,0,255); // blue waves
-}
-
-void Sea_surface_visualization::Execute(vtkObject* caller,
-                                        unsigned long vtkNotUsed(eventId),
-                                        void* vtkNotUsed(callData))
-{
-  ++timer_count;
-  window->Render();
 }
 
 void Sea_surface_visualization::set_gui(vtkRenderer* renderer,
@@ -50,7 +41,7 @@ int Sea_surface_visualization::RequestData(vtkInformation* request,
   
   /* Get output*/
   vtkPolyData* output = vtkPolyData::GetData(outputVector,0);
-  
+
   /* Get the timer count */ 
   Quantity<Units::time> time {timer_count * Units::milli * Units::seconds};
 
@@ -63,26 +54,20 @@ int Sea_surface_visualization::RequestData(vtkInformation* request,
     /* Points already made no need to create again. Only need to modify the 
      * z coordinates.
      */
-    for(unsigned int i{0u}; i<sea_surface_mesh_points->GetNumberOfPoints(); ++i)
+    unsigned int sea_surface_mesh_point_id = 0u;
+    for(auto control_points_row : control_points)
     {
-      /*Get the row and col for the control point from point id*/
-      unsigned int col = int(i / control_points_count);
-      unsigned int row = int(i % control_points_count);
- 
-      double* p;
-      p = sea_surface_mesh_points->GetPoint(i);
-      /* p[0] is the x coordinate
-       * p[1] is the y coordinate
-       * p[2] is the z coordinate
-       * Set p[2] it the z coordinate of the corresponding control point.
-       */
-      double z = control_points[row][col].z.value();
-      p[2] = z;
+      for(auto control_point : control_points_row)
+      {
+        double x = control_point.x.value();
+        double y = control_point.y.value();
+        double z = control_point.z.value();
+        sea_surface_mesh_points->SetPoint(sea_surface_mesh_point_id,x,y,z); 
+        ++sea_surface_mesh_point_id;
+      }
     }
-
-    /* Create the mesh */
-    output->SetPoints(sea_surface_mesh_points);
-    output->SetPolys(sea_surface_mesh_cells);
+    /* Update the cells */
+    sea_surface_mesh_cells->Modified();
   }
   else
   {
@@ -139,11 +124,12 @@ int Sea_surface_visualization::RequestData(vtkInformation* request,
         sea_surface_mesh_cells->InsertCellPoint(i*control_points_count+j);
       }
     }
-
-    /* Create the mesh */
-    output->SetPoints(sea_surface_mesh_points);
-    output->SetPolys(sea_surface_mesh_cells);
   }
+  
+  /* Create the mesh */
+  output->SetPoints(sea_surface_mesh_points);
+  output->SetPolys(sea_surface_mesh_cells);
+  output->Modified();
   return 1;
 }
 
