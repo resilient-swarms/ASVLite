@@ -26,11 +26,13 @@ int main()
 
   /* Initialize must be called prior to creating timer events */
   interactor->Initialize();
+  interactor->AddObserver(vtkCommand::TimerEvent, &sea_surface_visualization);
   interactor->CreateRepeatingTimer(10); /* Repeating timer event at every 
                                            10 milliseconds */
 
   /* Render and interact */
   sea_surface_visualization.set_gui(renderer, window, interactor);
+  window->SetSize(window->GetScreenSize());
   window->Render();
   interactor->Start();
 
