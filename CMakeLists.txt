@@ -29,6 +29,9 @@ VTK_MODULE_CONFIG( VTK
   vtkFiltersGeometry
   vtkInteractionStyle
   vtkRenderingOpenGL2
+  vtkInteractionStyle
+  vtkRenderingCore
+  vtkRenderingFreeType
 )
 INCLUDE(${VTK_USE_FILE})
 
