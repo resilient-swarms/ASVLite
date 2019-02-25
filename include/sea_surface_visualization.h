@@ -12,6 +12,9 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkRenderer.h>
+#include <vtkPolyDataAlgorithm.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkCommand.h>
 
 namespace asv_swarm
@@ -23,7 +26,8 @@ namespace asv_swarm
  */
 class Sea_surface_visualization : 
   public Sea_surface_dynamics,
-  private vtkCommand
+  public vtkPolyDataAlgorithm,
+  public vtkCommand
 {
 public:
   /**
@@ -32,30 +36,37 @@ public:
   Sea_surface_visualization(Quantity<Units::length> fetch,
                             Quantity<Units::velocity> wind_speed,
                             Quantity<Units::plane_angle> wind_direction);
-  
+
   /**
-   * Method to run the visualization.
+   * Sets renderer, window and interactor and adds the sea surface actor to the
+   * renderer.
    */
-  void start_visualization();
+  void set_gui(vtkRenderer* renderer, 
+               vtkRenderWindow* window, 
+               vtkRenderWindowInteractor* interactor);
+
+  void Execute(vtkObject* caller, 
+               unsigned long vtkNotUsed(eventId), 
+               void* vtkNotUsed(callData))override {window->Render();}
 
 protected:
   /**
-   * Method to get the sea surface profile based on the frame to be rendered.
+   * Method to set the z values of the control points for the time passed as
+   * argument.
    */
-  virtual void Execute(vtkObject* caller, 
-                       unsigned long enentId,
-                       void* vtkNotUsed(callData)) override;
-
+  virtual int RequestData(vtkInformation* request,
+                          vtkInformationVector** inputVector,
+                          vtkInformationVector* outputVector) override;
+  
 private:
-  vtkSmartPointer<vtkPoints> sea_surface_mesh_points;
-  vtkSmartPointer<vtkCellArray> sea_surface_mesh_cells; 
-  vtkSmartPointer<vtkPolyData> sea_surface_mesh;
-  vtkSmartPointer<vtkPolyDataMapper> sea_surface_mesh_mapper;
-  vtkSmartPointer<vtkActor> sea_surface_actor;
-  vtkSmartPointer<vtkRenderer> renderer;
-  vtkSmartPointer<vtkRenderWindow> window;
-  vtkSmartPointer<vtkRenderWindowInteractor> interactor;
-  unsigned int time_count;
+  vtkSmartPointer<vtkPoints> sea_surface_mesh_points {nullptr};
+  vtkSmartPointer<vtkCellArray> sea_surface_mesh_cells {nullptr}; 
+  vtkSmartPointer<vtkPolyDataMapper> sea_surface_mesh_mapper {nullptr};
+  vtkSmartPointer<vtkActor> sea_surface_actor {nullptr};
+  vtkSmartPointer<vtkRenderer> renderer {nullptr};
+  vtkSmartPointer<vtkRenderWindow> window {nullptr};
+  vtkSmartPointer<vtkRenderWindowInteractor> interactor {nullptr};
+  unsigned int timer_count; 
 
 }; // class Sea_surface_visualization
 } // namespace asv_swarm
