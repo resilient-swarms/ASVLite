@@ -23,6 +23,14 @@ Sea_surface_visualization::Sea_surface_visualization(
   sea_surface_actor->GetProperty()->SetColor(0,0,255); // blue waves
 }
 
+void Sea_surface_visualization::Execute(vtkObject* caller,
+                                        unsigned long vtkNotUsed(eventId),
+                                        void* vtkNotUsed(callData))
+{
+  ++timer_count;
+  window->Render();
+}
+
 void Sea_surface_visualization::set_gui(vtkRenderer* renderer,
                                         vtkRenderWindow* window,
                                         vtkRenderWindowInteractor* interactor)
@@ -44,8 +52,7 @@ int Sea_surface_visualization::RequestData(vtkInformation* request,
   vtkPolyData* output = vtkPolyData::GetData(outputVector,0);
   
   /* Get the timer count */ 
-  Quantity<Units::time> time {
-    interactor->GetTimerEventId() * Units::milli * Units::seconds};
+  Quantity<Units::time> time {timer_count * Units::milli * Units::seconds};
 
   /* Set the sea surface profile for the current time step */
   this->set_sea_surface_profile(time);
@@ -97,10 +104,10 @@ int Sea_surface_visualization::RequestData(vtkInformation* request,
     {
       for(auto control_point : control_points_row)
       {
-        sea_surface_mesh_points->SetPoint(sea_surface_mesh_point_id, 
-                                          control_point.x.value(), 
-                                          control_point.y.value(),
-                                          control_point.z.value()*1000);
+        double x = control_point.x.value();
+        double y = control_point.y.value();
+        double z = control_point.z.value()*1000*100;
+        sea_surface_mesh_points->InsertPoint(sea_surface_mesh_point_id,x,y,z); 
         ++sea_surface_mesh_point_id;
       }
     }
@@ -137,7 +144,6 @@ int Sea_surface_visualization::RequestData(vtkInformation* request,
     output->SetPoints(sea_surface_mesh_points);
     output->SetPolys(sea_surface_mesh_cells);
   }
-
   return 1;
 }
 
