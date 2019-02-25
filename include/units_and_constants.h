@@ -29,6 +29,7 @@
 #include<boost/units/systems/si/plane_angle.hpp>
 #include<boost/units/systems/angle/degrees.hpp>
 #include<boost/units/systems/si/dimensionless.hpp>
+#include<boost/units/systems/si/prefixes.hpp>
 #include<boost/units/cmath.hpp>
 #include<cmath>
 
