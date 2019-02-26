@@ -43,6 +43,7 @@ SET( SOURCE
   source/wave_spectrum.cpp
   source/sea_surface_dynamics.cpp
   source/sea_surface_actor.cpp
+  source/visualization.cpp
 )
 
 # Additional source files for test build
