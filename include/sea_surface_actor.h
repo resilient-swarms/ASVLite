@@ -36,6 +36,18 @@ public:
                     Quantity<Units::plane_angle> wind_direction);
 
   /**
+   * Increment time.
+   */
+  void increment_time(){++timer_count;}
+
+  /**
+   * Set the step size for time increment.
+   */
+  void set_timer_step_size(unsigned int timer_step_size){
+    this->timer_step_size = timer_step_size;
+  }
+
+  /**
    * Returns pointer to sea surface actor.
    */
   vtkSmartPointer<vtkActor> get_actor(){return sea_surface_actor;}
@@ -50,6 +62,8 @@ protected:
                           vtkInformationVector* outputVector) override;
   
 private:
+  unsigned long timer_count;
+  unsigned int timer_step_size;
   vtkSmartPointer<vtkPoints> sea_surface_mesh_points {nullptr};
   vtkSmartPointer<vtkCellArray> sea_surface_mesh_cells {nullptr}; 
   vtkSmartPointer<vtkPolyDataMapper> sea_surface_mapper {nullptr};

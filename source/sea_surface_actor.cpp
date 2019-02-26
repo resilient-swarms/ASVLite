@@ -1,14 +1,15 @@
 #include "sea_surface_actor.h"
 
 using namespace asv_swarm;
-extern unsigned int timer_count;
 
 Sea_surface_actor::Sea_surface_actor(
     Quantity<Units::velocity> wind_speed,
     Quantity<Units::length> fetch,
     Quantity<Units::plane_angle> wind_direction) :
   vtkPolyDataAlgorithm{},
-  Sea_surface_dynamics{fetch, wind_speed, wind_direction}
+  Sea_surface_dynamics{fetch, wind_speed, wind_direction},
+  timer_count{0u},
+  timer_step_size{0u}
 {
   /* This filter does not need an input port */
   SetNumberOfInputPorts(0);
@@ -35,7 +36,10 @@ int Sea_surface_actor::RequestData(vtkInformation* request,
   // multiply when calculating time. Maybe a good way would be the
   // callback::Execute() set the time in sea_surface_viz and then call
   // requestdata.
-  Quantity<Units::time> time {timer_count *10 * Units::milli*  Units::seconds};
+  Quantity<Units::time> time { timer_count * 
+                               timer_step_size * 
+                               Units::milli *  
+                               Units::seconds};
 
   /* Set the sea surface profile for the current time step */
   this->set_sea_surface_profile(time);
