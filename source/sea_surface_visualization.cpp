@@ -14,10 +14,10 @@ Sea_surface_visualization::Sea_surface_visualization(
   SetNumberOfInputPorts(0);
 
   /* Initialize the mapper and actor */
-  sea_surface_mesh_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-  sea_surface_mesh_mapper->SetInputConnection(this->GetOutputPort());
+  sea_surface_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+  sea_surface_mapper->SetInputConnection(this->GetOutputPort());
   sea_surface_actor = vtkSmartPointer<vtkActor>::New();
-  sea_surface_actor->SetMapper(sea_surface_mesh_mapper);
+  sea_surface_actor->SetMapper(sea_surface_mapper);
   sea_surface_actor->GetProperty()->SetRepresentationToWireframe();
   sea_surface_actor->GetProperty()->SetColor(0,0,255); // blue waves
 }
@@ -43,7 +43,11 @@ int Sea_surface_visualization::RequestData(vtkInformation* request,
   vtkPolyData* output = vtkPolyData::GetData(outputVector,0);
 
   /* Get the timer count */ 
-  Quantity<Units::time> time {timer_count * Units::milli * Units::seconds};
+  // TODO: Correct the time. It should get the repeat timer interval and
+  // multiply when calculating time. Maybe a good way would be the
+  // callback::Execute() set the time in sea_surface_viz and then call
+  // requestdata.
+  Quantity<Units::time> time {timer_count *  Units::seconds};
 
   /* Set the sea surface profile for the current time step */
   this->set_sea_surface_profile(time);
@@ -61,11 +65,13 @@ int Sea_surface_visualization::RequestData(vtkInformation* request,
       {
         double x = control_point.x.value();
         double y = control_point.y.value();
-        double z = control_point.z.value();
+        //TODO: Correct the formula for z by removing the scaling factor.
+        double z = control_point.z.value()*1000*timer_count*10;
         sea_surface_mesh_points->SetPoint(sea_surface_mesh_point_id,x,y,z); 
         ++sea_surface_mesh_point_id;
       }
     }
+    sea_surface_mesh_points->Modified();
     /* Update the cells */
     sea_surface_mesh_cells->Modified();
   }
@@ -91,6 +97,7 @@ int Sea_surface_visualization::RequestData(vtkInformation* request,
       {
         double x = control_point.x.value();
         double y = control_point.y.value();
+        //TODO: Correct the formula for z by removing the scaling factor.
         double z = control_point.z.value()*1000*100;
         sea_surface_mesh_points->InsertPoint(sea_surface_mesh_point_id,x,y,z); 
         ++sea_surface_mesh_point_id;

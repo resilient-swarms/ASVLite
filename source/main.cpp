@@ -21,11 +21,10 @@ class CommandSubclass : public vtkCommand
   {
     ++timer_count;
     p_sea_surface_visualization->Modified();
-    p_sea_surface_visualization->Update();
     
-    vtkRenderWindowInteractor *iren =
+    vtkRenderWindowInteractor *interactor =
       static_cast<vtkRenderWindowInteractor*>(caller);
-    iren->Render();
+    interactor->Render();
   }
 };
 

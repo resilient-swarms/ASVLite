@@ -55,7 +55,7 @@ protected:
 private:
   vtkSmartPointer<vtkPoints> sea_surface_mesh_points {nullptr};
   vtkSmartPointer<vtkCellArray> sea_surface_mesh_cells {nullptr}; 
-  vtkSmartPointer<vtkPolyDataMapper> sea_surface_mesh_mapper {nullptr};
+  vtkSmartPointer<vtkPolyDataMapper> sea_surface_mapper {nullptr};
   vtkSmartPointer<vtkActor> sea_surface_actor {nullptr};
   vtkSmartPointer<vtkRenderer> renderer {nullptr};
   vtkSmartPointer<vtkRenderWindow> window {nullptr};
