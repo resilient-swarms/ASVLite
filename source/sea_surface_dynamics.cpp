@@ -4,14 +4,14 @@
 using namespace asv_swarm;
 
 Sea_surface_dynamics::Sea_surface_dynamics
-  (Quantity<Units::length> fetch,
+  (Quantity<Units::length> wind_fetch,
    Quantity<Units::velocity> wind_speed,
    Quantity<Units::plane_angle> wind_direction):
-    fetch {fetch},
-    field_length {fetch},
+    wind_fetch {wind_fetch},
+    field_length {100*Units::meter},
     wind_speed{wind_speed},
     wind_direction{wind_direction},
-    wave_spectrum{fetch, wind_speed, wind_direction},
+    wave_spectrum{wind_fetch, wind_speed, wind_direction},
     control_points_count {10},
     continue_simulation{true}
 {
@@ -26,36 +26,36 @@ void Sea_surface_dynamics::set_wind_speed(Quantity<Units::velocity> wind_speed)
                      "Wind speed should be greater than or equal to 0.0m/s.");
   }
   this->wind_speed = wind_speed;
-  wave_spectrum = Wave_spectrum(fetch, this->wind_speed, wind_direction);
+  wave_spectrum = Wave_spectrum(wind_fetch, this->wind_speed, wind_direction);
 }
 
 void Sea_surface_dynamics::set_wind_direction
   (Quantity<Units::plane_angle> wind_direction)
 {
   this->wind_direction = wind_direction;
-  wave_spectrum = Wave_spectrum(fetch, wind_speed, this->wind_direction);
+  wave_spectrum = Wave_spectrum(wind_fetch, wind_speed, this->wind_direction);
 }
 
-void Sea_surface_dynamics::set_fetch(Quantity<Units::length> fetch)
+void Sea_surface_dynamics::set_fetch(Quantity<Units::length> wind_fetch)
 {
-  if(fetch.value() <= 0.0)
+  if(wind_fetch.value() <= 0.0)
   {
     throw ValueError("Sea_surface_dynamics::set_fetch."
                      "Fetch should be >= 0.0m.");
   } 
-  this->fetch = fetch;
-  if(field_length > fetch)
+  this->wind_fetch = wind_fetch;
+  if(field_length > wind_fetch)
   {
-    field_length = fetch;
+    field_length = wind_fetch;
     set_control_points();
   }
-  wave_spectrum = Wave_spectrum(this->fetch, wind_speed, wind_direction);
+  wave_spectrum = Wave_spectrum(this->wind_fetch, wind_speed, wind_direction);
 }
 
 void Sea_surface_dynamics::set_field_length
   (Quantity<Units::length> field_length)
 {
-  if(field_length > fetch || field_length.value() <= 0.0)
+  if(field_length > wind_fetch || field_length.value() <= 0.0)
   {
     throw ValueError("Sea_surface_dynamics::set_field_length."
                      "Field length should be positive and <= fetch.");

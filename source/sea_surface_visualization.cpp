@@ -47,7 +47,7 @@ int Sea_surface_visualization::RequestData(vtkInformation* request,
   // multiply when calculating time. Maybe a good way would be the
   // callback::Execute() set the time in sea_surface_viz and then call
   // requestdata.
-  Quantity<Units::time> time {timer_count *  Units::seconds};
+  Quantity<Units::time> time {timer_count *10 * Units::milli*  Units::seconds};
 
   /* Set the sea surface profile for the current time step */
   this->set_sea_surface_profile(time);
@@ -66,7 +66,7 @@ int Sea_surface_visualization::RequestData(vtkInformation* request,
         double x = control_point.x.value();
         double y = control_point.y.value();
         //TODO: Correct the formula for z by removing the scaling factor.
-        double z = control_point.z.value()*1000*10;
+        double z = control_point.z.value()*100;
         sea_surface_mesh_points->SetPoint(sea_surface_mesh_point_id,x,y,z); 
         ++sea_surface_mesh_point_id;
       }
@@ -98,7 +98,7 @@ int Sea_surface_visualization::RequestData(vtkInformation* request,
         double x = control_point.x.value();
         double y = control_point.y.value();
         //TODO: Correct the formula for z by removing the scaling factor.
-        double z = control_point.z.value()*1000*100;
+        double z = control_point.z.value()*100;
         sea_surface_mesh_points->InsertPoint(sea_surface_mesh_point_id,x,y,z); 
         ++sea_surface_mesh_point_id;
       }

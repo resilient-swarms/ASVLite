@@ -19,15 +19,15 @@ class Sea_surface_dynamics
 public:
   /**
    * Constructor. 
-   * @param fetch is the length over which the wind is blowing. The value should
-   * be greater than 0.
+   * @param wind_fetch is the length over which the wind is blowing. The value 
+   * should be greater than 0.
    * @param wind_speed is the velocity of wind in meter_per_seconds. The value
    * should be >= 0.
    * @param wind_direction is the angle at which the wind is blowing measured in
    * radians. The value should be between 0 and 2PI and is measured with respect
    * to north direction. 
    */
-  Sea_surface_dynamics(Quantity<Units::length> fetch,
+  Sea_surface_dynamics(Quantity<Units::length> wind_fetch,
                        Quantity<Units::velocity> wind_speed,
                        Quantity<Units::plane_angle> wind_direction);
 
@@ -49,10 +49,10 @@ public:
    * Method to set the fetch length. If the field length contained is greater
    * than the fetch length provided then this method will also set the field
    * length equal to fetch and reset the control points.
-   * @param fetch is the fetch length in meters. The value should be greater
-   * than 0.
+   * @param wind_fetch is the length of sea, in m, over which the wind blows.
+   *  The value should be greater than 0.
    */
-  void set_fetch(Quantity<Units::length> fetch);
+  void set_fetch(Quantity<Units::length> wind_fetch);
 
   /**
    * Method to set the length of the edge of the square sea surface being
@@ -101,7 +101,7 @@ protected:
   Wave_spectrum wave_spectrum;
   Quantity<Units::velocity> wind_speed;
   Quantity<Units::plane_angle> wind_direction;
-  Quantity<Units::length> fetch;
+  Quantity<Units::length> wind_fetch;
   Quantity<Units::length> field_length;
   bool continue_simulation;
 }; // class Sea_surface_dynamics
