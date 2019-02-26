@@ -1,9 +1,9 @@
-#include "sea_surface_visualization.h"
+#include "sea_surface_actor.h"
 
 using namespace asv_swarm;
 extern unsigned int timer_count;
 
-Sea_surface_visualization::Sea_surface_visualization(
+Sea_surface_actor::Sea_surface_actor(
     Quantity<Units::length> fetch,
     Quantity<Units::velocity> wind_speed,
     Quantity<Units::plane_angle> wind_direction) :
@@ -22,9 +22,9 @@ Sea_surface_visualization::Sea_surface_visualization(
   sea_surface_actor->GetProperty()->SetColor(0,0,255); // blue waves
 }
 
-int Sea_surface_visualization::RequestData(vtkInformation* request,
-                                            vtkInformationVector** inputVector,
-                                            vtkInformationVector* outputVector)
+int Sea_surface_actor::RequestData(vtkInformation* request,
+                                   vtkInformationVector** inputVector,
+                                   vtkInformationVector* outputVector)
 {
   
   /* Get output*/

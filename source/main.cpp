@@ -1,10 +1,10 @@
-#include "sea_surface_visualization.h"
+#include "sea_surface_actor.h"
 #include <vtkCommand.h>
 
 using namespace asv_swarm;
 
 unsigned int timer_count{0u};
-Sea_surface_visualization* p_sea_surface_visualization{nullptr};
+Sea_surface_actor* p_sea_surface_actor{nullptr};
 
 class CommandSubclass : public vtkCommand
 {
@@ -20,7 +20,7 @@ class CommandSubclass : public vtkCommand
                void *vtkNotUsed(callData)) override
   {
     ++timer_count;
-    p_sea_surface_visualization->Modified();
+    p_sea_surface_actor->Modified();
     
     vtkRenderWindowInteractor *interactor =
       static_cast<vtkRenderWindowInteractor*>(caller);
@@ -37,9 +37,9 @@ int main()
   Quantity<Units::plane_angle> wind_direction {Const::PI/6 * Units::radian};
 
   /* Initialize visualization for sea surface */
-  Sea_surface_visualization sea_surface_visualization {
+  Sea_surface_actor sea_surface_actor {
     fetch, wind_speed, wind_direction};
-  p_sea_surface_visualization = &sea_surface_visualization;
+  p_sea_surface_actor = &sea_surface_actor;
 
   /* Create the renderer, window and interactor */
   vtkSmartPointer<vtkRenderer> renderer = 
@@ -62,7 +62,7 @@ int main()
   interactor->AddObserver(vtkCommand::TimerEvent, timerCallback);
 
   /* Render and interact */
-  renderer->AddActor(sea_surface_visualization.get_actor());
+  renderer->AddActor(sea_surface_actor.get_actor());
   window->SetSize(window->GetScreenSize());
   window->Render();
   interactor->Start();

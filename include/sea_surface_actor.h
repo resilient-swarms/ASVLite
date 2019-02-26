@@ -1,5 +1,5 @@
-#ifndef SEA_SURFACE_VISUALIZATION_H
-#define SEA_SURFACE_VISUALIZATION_H
+#ifndef SEA_SURFACE_ACTOR_H
+#define SEA_SURFACE_ACTOR_H
 
 #include "sea_surface_dynamics.h"
 #include <vtkSmartPointer.h>
@@ -23,7 +23,7 @@ namespace asv_swarm
  * This class provides visualization for the data in the class
  * Sea_surface_dynamics.
  */
-class Sea_surface_visualization : 
+class Sea_surface_actor : 
   public Sea_surface_dynamics,
   public vtkPolyDataAlgorithm
 {
@@ -31,9 +31,9 @@ public:
   /**
    * Constructor.
    */
-  Sea_surface_visualization(Quantity<Units::length> fetch,
-                            Quantity<Units::velocity> wind_speed,
-                            Quantity<Units::plane_angle> wind_direction);
+  Sea_surface_actor(Quantity<Units::length> fetch,
+                    Quantity<Units::velocity> wind_speed,
+                    Quantity<Units::plane_angle> wind_direction);
 
   /**
    * Returns pointer to sea surface actor.
@@ -54,7 +54,7 @@ private:
   vtkSmartPointer<vtkCellArray> sea_surface_mesh_cells {nullptr}; 
   vtkSmartPointer<vtkPolyDataMapper> sea_surface_mapper {nullptr};
   vtkSmartPointer<vtkActor> sea_surface_actor {nullptr};
-}; // class Sea_surface_visualization
+}; // class Sea_surface_actor
 } // namespace asv_swarm
 
-#endif // SEA_SURFACE_VISUALIZATION_H
+#endif // SEA_SURFACE_ACTOR_H
