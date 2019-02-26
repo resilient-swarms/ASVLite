@@ -36,12 +36,9 @@ public:
                             Quantity<Units::plane_angle> wind_direction);
 
   /**
-   * Sets renderer, window and interactor and adds the sea surface actor to the
-   * renderer.
+   * Returns pointer to sea surface actor.
    */
-  void set_gui(vtkRenderer* renderer, 
-               vtkRenderWindow* window, 
-               vtkRenderWindowInteractor* interactor);
+  vtkSmartPointer<vtkActor> get_actor(){return sea_surface_actor;}
 
 protected:
   /**
@@ -57,9 +54,6 @@ private:
   vtkSmartPointer<vtkCellArray> sea_surface_mesh_cells {nullptr}; 
   vtkSmartPointer<vtkPolyDataMapper> sea_surface_mapper {nullptr};
   vtkSmartPointer<vtkActor> sea_surface_actor {nullptr};
-  vtkSmartPointer<vtkRenderer> renderer {nullptr};
-  vtkSmartPointer<vtkRenderWindow> window {nullptr};
-  vtkSmartPointer<vtkRenderWindowInteractor> interactor {nullptr};
 }; // class Sea_surface_visualization
 } // namespace asv_swarm
 

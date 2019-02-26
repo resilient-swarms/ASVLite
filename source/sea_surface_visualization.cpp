@@ -22,18 +22,6 @@ Sea_surface_visualization::Sea_surface_visualization(
   sea_surface_actor->GetProperty()->SetColor(0,0,255); // blue waves
 }
 
-void Sea_surface_visualization::set_gui(vtkRenderer* renderer,
-                                        vtkRenderWindow* window,
-                                        vtkRenderWindowInteractor* interactor)
-{
-  this->renderer = renderer;
-  this->window = window;
-  this->interactor = interactor;
-  
-  /* Add the actor to the scene */
-  renderer->AddActor(sea_surface_actor);
-}
-
 int Sea_surface_visualization::RequestData(vtkInformation* request,
                                             vtkInformationVector** inputVector,
                                             vtkInformationVector* outputVector)

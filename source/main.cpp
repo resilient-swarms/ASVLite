@@ -62,7 +62,7 @@ int main()
   interactor->AddObserver(vtkCommand::TimerEvent, timerCallback);
 
   /* Render and interact */
-  sea_surface_visualization.set_gui(renderer, window, interactor);
+  renderer->AddActor(sea_surface_visualization.get_actor());
   window->SetSize(window->GetScreenSize());
   window->Render();
   interactor->Start();
