@@ -4,8 +4,8 @@ using namespace asv_swarm;
 extern unsigned int timer_count;
 
 Sea_surface_actor::Sea_surface_actor(
-    Quantity<Units::length> fetch,
     Quantity<Units::velocity> wind_speed,
+    Quantity<Units::length> fetch,
     Quantity<Units::plane_angle> wind_direction) :
   vtkPolyDataAlgorithm{},
   Sea_surface_dynamics{fetch, wind_speed, wind_direction}

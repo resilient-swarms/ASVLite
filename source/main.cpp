@@ -4,15 +4,43 @@
 using namespace asv_swarm;
 
 unsigned int timer_count{0u};
-Sea_surface_actor* p_sea_surface_actor{nullptr};
 
-class CommandSubclass : public vtkCommand
+class Visualization : public vtkCommand
 {
-  public:
-  vtkTypeMacro(CommandSubclass, vtkCommand);
-  static CommandSubclass *New()
+public:
+  Visualization(): vtkCommand{}
   {
-    return new CommandSubclass;
+    /* Create the renderer, window and interactor */
+    renderer = vtkSmartPointer<vtkRenderer>::New();
+    window = vtkSmartPointer<vtkRenderWindow>::New();
+    window->AddRenderer(renderer);
+    interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
+    interactor->SetRenderWindow(window);
+
+  }
+
+  void set_sea_condition(Quantity<Units::velocity> wind_speed,
+                         Quantity<Units::length> wind_fetch,
+                         Quantity<Units::plane_angle> wind_direction)
+  {
+    sea_surface_actor = new Sea_surface_actor(wind_speed, 
+                                              wind_fetch, 
+                                              wind_direction);
+  }
+
+  void start()
+  {
+    /* Initialize must be called prior to creating timer events */
+    interactor->Initialize();
+    interactor->CreateRepeatingTimer(10); /* Repeating timer event at every 
+                                             10 milliseconds */
+    interactor->AddObserver(vtkCommand::TimerEvent, this);
+
+    /* Render and interact */
+    renderer->AddActor(sea_surface_actor->get_actor());
+    window->SetSize(window->GetScreenSize());
+    window->Render();
+    interactor->Start();
   }
 
   void Execute(vtkObject *caller, 
@@ -20,52 +48,32 @@ class CommandSubclass : public vtkCommand
                void *vtkNotUsed(callData)) override
   {
     ++timer_count;
-    p_sea_surface_actor->Modified();
+    sea_surface_actor->Modified();
     
     vtkRenderWindowInteractor *interactor =
       static_cast<vtkRenderWindowInteractor*>(caller);
     interactor->Render();
   }
+
+private:
+  Sea_surface_actor* sea_surface_actor{nullptr};
+  vtkSmartPointer<vtkRenderer> renderer;
+  vtkSmartPointer<vtkRenderWindow> window;
+  vtkSmartPointer<vtkRenderWindowInteractor> interactor;
 };
 
 int main()
 {
   /* Define sea condition */
-  Quantity<Units::length> fetch {100*Units::kilo*Units::meter};
+  Quantity<Units::length> wind_fetch {100*Units::kilo*Units::meter};
   Quantity<Units::velocity> wind_speed {15*Units::meter_per_second};
   /* wind direction is 30deg east of north*/
   Quantity<Units::plane_angle> wind_direction {Const::PI/6 * Units::radian};
 
-  /* Initialize visualization for sea surface */
-  Sea_surface_actor sea_surface_actor {
-    fetch, wind_speed, wind_direction};
-  p_sea_surface_actor = &sea_surface_actor;
-
-  /* Create the renderer, window and interactor */
-  vtkSmartPointer<vtkRenderer> renderer = 
-    vtkSmartPointer<vtkRenderer>::New();
-  vtkSmartPointer<vtkRenderWindow> window = 
-    vtkSmartPointer<vtkRenderWindow>::New();
-  window->AddRenderer(renderer);
-  vtkSmartPointer<vtkRenderWindowInteractor> interactor = 
-    vtkSmartPointer<vtkRenderWindowInteractor>::New();
-  interactor->SetRenderWindow(window);
-
-  /* Initialize must be called prior to creating timer events */
-  interactor->Initialize();
-  interactor->CreateRepeatingTimer(10); /* Repeating timer event at every 
-                                           10 milliseconds */
-
   /* Add observer to timer event */
-  vtkSmartPointer<CommandSubclass> timerCallback =
-  vtkSmartPointer<CommandSubclass>::New();
-  interactor->AddObserver(vtkCommand::TimerEvent, timerCallback);
-
-  /* Render and interact */
-  renderer->AddActor(sea_surface_actor.get_actor());
-  window->SetSize(window->GetScreenSize());
-  window->Render();
-  interactor->Start();
+  Visualization visualization;
+  visualization.set_sea_condition(wind_speed, wind_fetch, wind_direction);
+  visualization.start();
 
   return EXIT_SUCCESS;
 }
