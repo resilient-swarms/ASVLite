@@ -6,21 +6,21 @@
 
 using namespace asv_swarm;
 
-Wave_spectrum::Wave_spectrum( Quantity<Units::length> fetch,
+Wave_spectrum::Wave_spectrum( Quantity<Units::length> wind_fetch,
                               Quantity<Units::velocity> wind_speed,
                               Quantity<Units::plane_angle> wind_direction) : 
-  fetch{fetch},
+  wind_fetch{wind_fetch},
   wind_speed{wind_speed},
   wind_direction{wind_direction},
-  f_count {50},
-  d_count {90},
+  f_count {20},
+  d_count {10},
   min_freq {0.3 * Units::hertz},
   max_freq {6.0 * Units::hertz},
   min_angle {wind_direction - (Const::PI/2 * Units::radians)},
   max_angle {wind_direction + (Const::PI/2 * Units::radians)}
 {
   // Check if inputs are correct.
-  if( fetch.value() <= 0.0 || 
+  if( wind_fetch.value() <= 0.0 || 
       wind_speed.value() < 0.0 ||
       wind_direction.value() < 0.0 ||
       wind_direction.value() > 2*Const::PI)
@@ -127,7 +127,7 @@ void Wave_spectrum::set_wave_spectrum()
       double g = 9.81; 
       double PI = M_PI;
       double U = wind_speed.value();
-      double F = fetch.value();
+      double F = wind_fetch.value();
       double gamma = 3.3;
       double F_hat = g*F/(U*U);
       double f_p = (g/U)*pow(F_hat, -1/3);

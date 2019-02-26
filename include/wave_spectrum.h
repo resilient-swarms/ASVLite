@@ -22,17 +22,17 @@ class Wave_spectrum
 {
 public:
   /**
-   * Constructor. 
-   * @param fetch length in Boost::units::si::length. Should be greater than 0.
+   * Constructor. Creates a spectrum of waves with min freq = 0.3Hz and max 
+   * freq = 6.0 Hz, considering 20 frequency values between the min and max 
+   * frequencies. Also the constructor considers 10 different angles between 
+   * the min and max angle for wind direction. 
+   * @param wind_fetch length in Boost::units::si::length. Should be greater 
+   * than 0.
    * @param wind_speed in Boost::units::si::velocity. Should be greater than 0.
    * @param wind_direction is the predominant wind direction measured in radian.
-   * Wind direction should be within the range (0, 2PI). The constructor also
-   * creates a spectrum of waves with min freq = 0.3Hz and max freq = 6.0 Hz,
-   * considering 50 frequency values between the min and max frequencies. Also
-   * the constructor considers 90 different angles between the min and max angle
-   * for wind direction. 
+   * Wind direction should be within the range (0, 2PI). 
    */
-  Wave_spectrum( Quantity<Units::length> fetch, 
+  Wave_spectrum( Quantity<Units::length> wind_fetch, 
                  Quantity<Units::velocity> wind_speed,
                  Quantity<Units::plane_angle> wind_direction);
 
@@ -74,7 +74,7 @@ public:
   std::vector<Quantity<Units::frequency>>& get_frequencies();
 
 private:
-  Quantity<Units::length> fetch; /* The length of fetch in meter. */
+  Quantity<Units::length> wind_fetch; /* The length of fetch in meter. */
   Quantity<Units::velocity> wind_speed; /* Wind speed in m/sec. */
   Quantity<Units::plane_angle> wind_direction; /* Predominant wind direction.*/
   std::vector<std::vector<Regular_wave>> spectrum; /* Each row represents
