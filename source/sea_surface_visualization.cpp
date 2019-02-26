@@ -66,7 +66,7 @@ int Sea_surface_visualization::RequestData(vtkInformation* request,
         double x = control_point.x.value();
         double y = control_point.y.value();
         //TODO: Correct the formula for z by removing the scaling factor.
-        double z = control_point.z.value()*1000*timer_count*10;
+        double z = control_point.z.value()*1000*10;
         sea_surface_mesh_points->SetPoint(sea_surface_mesh_point_id,x,y,z); 
         ++sea_surface_mesh_point_id;
       }

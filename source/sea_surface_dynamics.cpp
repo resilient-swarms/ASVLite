@@ -102,7 +102,6 @@ Wave_spectrum& Sea_surface_dynamics::get_wave_spectrum()
 void Sea_surface_dynamics::set_sea_surface_profile(
     Quantity<Units::time> current_time)
 {
-  Quantity<Units::time> time{0*Units::second};
   std::vector<std::vector<Regular_wave>> waves = wave_spectrum.get_waves();
   // For each control point
   for(int i = 0; i<control_points.size(); ++i)
@@ -118,7 +117,7 @@ void Sea_surface_dynamics::set_sea_surface_profile(
         {
           elevation += waves[u][v].get_wave_elevation(control_points[i][j].x,
                                                       control_points[i][j].y,
-                                                      time);
+                                                      current_time);
         }
       }
       control_points[i][j].z = elevation;
