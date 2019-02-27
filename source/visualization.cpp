@@ -28,8 +28,7 @@ void Visualization::start()
 {
   /* Initialize must be called prior to creating timer events */
   interactor->Initialize();
-  interactor->CreateRepeatingTimer(10); /* Repeating timer event at every 
-                                           10 milliseconds */
+  interactor->CreateRepeatingTimer(timer_step_size);/* Repeating timer events */
   interactor->AddObserver(vtkCommand::TimerEvent, this);
   /* Render and interact */
   renderer->AddActor(sea_surface_actor->get_actor());
