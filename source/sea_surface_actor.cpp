@@ -43,7 +43,7 @@ int Sea_surface_actor::RequestData(vtkInformation* request,
                                Units::seconds};
 
   /* Set the sea surface profile for the current time step */
-  this->set_sea_surface_profile(time);
+  set_sea_surface_elevations(time);
 
   /* Create the points, cells and mesh */
   if(sea_surface_mesh_points)

@@ -15,7 +15,7 @@ namespace Hydrodynamics
 {
 /**
  * This class generates a collection of waves such that the resultant irregular 
- * wave formed by linear super-positioning of all the regular waves have a 
+ * wave formed by linear super-positioning of all the regular waves have the 
  * required statistical property in-line with the sea-state simulated.
  */
 class Wave_spectrum
@@ -27,9 +27,8 @@ public:
    * - frequency range = (0.3Hz, 6.0Hz)
    * - number of directions in the wave spectrum = 10 
    * - direction range = (wind direction - PI/2, wind direction + PI/2)  
-   * @param wind_fetch length in Boost::units::si::length. Should be greater 
-   * than 0.
-   * @param wind_speed in Boost::units::si::velocity. Should be greater than 0.
+   * @param wind_fetch length in meter. Should be greater than 0.
+   * @param wind_speed in meter/sec. Should be greater than 0.
    * @param wind_direction is the predominant wind direction measured in radian.
    * Wind direction should be within the range (0, 2PI). 
    */
@@ -69,7 +68,7 @@ public:
 
 protected:
   /**
-   * Method to initialise the wave spectrum.
+   * Method to generate all the regular waves forming the wave spectrum.
    * @return true if spectrum initialised.
    */
   void set_wave_spectrum();

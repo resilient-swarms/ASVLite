@@ -22,7 +22,7 @@ namespace Visualisation
 {
 /**
  * This class creates an actor for sea surface and provides visualization for 
- * class Sea_surface_dynamics.
+ * class Hydrodynamics::Sea_surface_dynamics.
  */
 class Sea_surface_actor : 
   public Hydrodynamics::Sea_surface_dynamics,

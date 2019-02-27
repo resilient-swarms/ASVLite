@@ -10,7 +10,7 @@ namespace Visualisation
 {
 /**
  * Class to coordinate visualisation. This class contains all actors. It also 
- * contains the VTK objects for rendering and animation.  
+ * contains the vtk objects for rendering and animation.  
  */
 class Scene : public vtkCommand
 {
@@ -25,8 +25,9 @@ public:
    * some default values for field size, number of grid points on the field
    * surface, number of wave frequencies considered in the wave spectrum and the 
    * number of directions considered in the wave spectrum. The default values
-   * can be found in the constructors Sea_surface_dynamics::Sea_surface_dynamics
-   * and Wave_spectrum::Wave_spectrum.
+   * can be found in the constructors 
+   * Hydrodynamics::Sea_surface_dynamics::Sea_surface_dynamics and
+   * Hydrodynamics::Wave_spectrum::Wave_spectrum.
    * @param wind_speed is the wind speed in m/s.
    * @param wind_fetch is the length of sea, in m, over which the wind blows.
    * @param wind_direction is the direction in which the wind blows measured in
@@ -49,8 +50,8 @@ public:
 
 protected:
   /**
-   * Method to call all actors and update their time by incrementing it by one
-   * time step.
+   * Synchronise time update for all actors. Method calls all actors and update 
+   * their time by incrementing it by one time step.
    */
   void increment_time();
 
