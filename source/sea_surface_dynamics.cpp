@@ -12,7 +12,7 @@ Sea_surface_dynamics::Sea_surface_dynamics
     wind_speed{wind_speed},
     wind_direction{wind_direction},
     wave_spectrum{wind_fetch, wind_speed, wind_direction},
-    control_points_count {10},
+    control_points_count {50},
     continue_simulation{true}
 {
   set_control_points();
