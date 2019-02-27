@@ -10,7 +10,7 @@ int main()
   /* Set the sea condition */
   Quantity<Units::length> wind_fetch {100*Units::kilo*Units::meter};
   Quantity<Units::velocity> wind_speed {15*Units::meter_per_second};
-  Quantity<Units::plane_angle> wind_direction {Const::PI/6 * Units::radian};
+  Quantity<Units::plane_angle> wind_direction {Const::PI * Units::radian};
 
   visualization.set_sea_condition(wind_speed, wind_fetch, wind_direction);
 
