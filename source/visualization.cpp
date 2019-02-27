@@ -4,7 +4,9 @@ using namespace asv_swarm;
 
 Visualization::Visualization(): vtkCommand{}
 {
-  timer_step_size = 10; //units in milliseconds
+  unsigned int frame_rate = 25; /* Required fps for animation */
+  timer_step_size = static_cast<int>(1000/frame_rate); // units in milliseconds. 
+
   /* Create the renderer, window and interactor */
   renderer = vtkSmartPointer<vtkRenderer>::New();
   window = vtkSmartPointer<vtkRenderWindow>::New();
