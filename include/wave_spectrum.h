@@ -12,20 +12,19 @@
 namespace asv_swarm
 {
 /**
- * This class generates a list of waves such that the resultant irregular wave 
- * formed by linear super-positioning of all the regular waves have a specific
- * statistical property in-line with the sea-state simulated. The wind direction
- * is measured from 0 deg to 360 deg. Wind blowing from north is considered as 
- * 0 deg, wind blowing from east is 90 deg and wind blowing from west is 270deg.
+ * This class generates a collection of waves such that the resultant irregular 
+ * wave formed by linear super-positioning of all the regular waves have a 
+ * required statistical property in-line with the sea-state simulated.
  */
 class Wave_spectrum
 {
 public:
   /**
-   * Constructor. Creates a spectrum of waves with min freq = 0.3Hz and max 
-   * freq = 6.0 Hz, considering 20 frequency values between the min and max 
-   * frequencies. Also the constructor considers 10 different angles between 
-   * the min and max angle for wind direction. 
+   * Constructor. Default values set by the constructor: 
+   * - number of frequencies in the wave spectrum = 20 
+   * - frequency range = (0.3Hz, 6.0Hz)
+   * - number of directions in the wave spectrum = 10 
+   * - direction range = (wind direction - PI/2, wind direction + PI/2)  
    * @param wind_fetch length in Boost::units::si::length. Should be greater 
    * than 0.
    * @param wind_speed in Boost::units::si::velocity. Should be greater than 0.
@@ -37,24 +36,17 @@ public:
                  Quantity<Units::plane_angle> wind_direction);
 
   /**
-   * Method to set the number of discrete frequencies in the spectrum.
+   * Method to override the default number of discrete frequencies in the 
+   * wave spectrum.
    * @param count, the number of frequencies in the spectrum.
-   * @return true if value set else returns false.
    */
   void set_frequency_cont(unsigned int count);
 
   /**
-   * Method to set the number of discrete directions in the spectrum.
+   * Method to override the number of discrete directions in the wave spectrum.
    * @param count, the number of directions in the spectrum.
-   * @return true if value set else returns false.
    */
   void set_direction_count(unsigned int count);
-
-  /**
-   * Method to initialise the wave spectrum.
-   * @return true if spectrum initialised.
-   */
-  void set_wave_spectrum();
 
   /**
    * Return a table containing waves. Each row of the table is an array of wave
@@ -72,6 +64,13 @@ public:
    * Returns a list of frequencies considered in the spectrum.
    */
   std::vector<Quantity<Units::frequency>>& get_frequencies();
+
+protected:
+  /**
+   * Method to initialise the wave spectrum.
+   * @return true if spectrum initialised.
+   */
+  void set_wave_spectrum();
 
 private:
   Quantity<Units::length> wind_fetch; /* The length of fetch in meter. */

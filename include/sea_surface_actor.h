@@ -20,8 +20,8 @@ namespace asv_swarm
 {
 
 /**
- * This class provides visualization for the data in the class
- * Sea_surface_dynamics.
+ * This class creates an actor for sea surface and provides visualization for 
+ * class Sea_surface_dynamics.
  */
 class Sea_surface_actor : 
   public Sea_surface_dynamics,
@@ -36,7 +36,7 @@ public:
                     Quantity<Units::plane_angle> wind_direction);
 
   /**
-   * Increment time.
+   * Increment time count.
    */
   void increment_time(){++timer_count;}
 
@@ -48,14 +48,15 @@ public:
   }
 
   /**
-   * Returns pointer to sea surface actor.
+   * Returns pointer to vtkActor object for sea surface.
    */
-  vtkSmartPointer<vtkActor> get_actor(){return sea_surface_actor;}
+  vtkSmartPointer<vtkActor> get_vtk_actor(){return sea_surface_actor;}
 
 protected:
   /**
-   * Method to set the z values of the control points for the time passed as
-   * argument.
+   * This method is called by vtk pipeline and it sets the z values for the
+   * control points in the mesh representing sea surface for the current time 
+   * step.
    */
   virtual int RequestData(vtkInformation* request,
                           vtkInformationVector** inputVector,

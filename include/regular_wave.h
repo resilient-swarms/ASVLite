@@ -17,12 +17,11 @@ class Regular_wave
 public:
   /**
    * Constructor for Regular_wave.
-   * @param amplitude of wave in meters. Data type:
-   * boost::units::si::length. Value should be greater than 0.0.
-   * @param frequency of wave in radian/sec. Data type: 
-   * boost::units::si::frequency. Value should be greater than 0.0.
-   * @param direction wave heading in degree with respect to x-axis; angle
-   * measured positive anti-clockwise. 
+   * @param amplitude of wave in meters. Value should be greater than 0.0.
+   * @param frequency of wave in radian/sec. Value should be greater than 0.0.
+   * @param direction of wave heading in degree with respect to global
+   * coordinate system's North direction. The direction of angle measurement
+   * should be such that the East is at PI/2 radians to North. 
    * @param phase angle of the wave in radian.
    */
   Regular_wave( Quantity<Units::length> amplitude, 
@@ -74,9 +73,9 @@ public:
 
   /**
    * Method to get wave elevation at a given location, at a given time.
-   * @param x coordinate of the location as object of type boost::units::length.
-   * @param y coordinate of the location as object of type boost::units::length.
-   * @param t time as object of type boost::units::time.
+   * @param x coordinate of the location.
+   * @param y coordinate of the location.
+   * @param t time measured in seconds since start of simulation.
    * @return the wave elevation as object of type boost::units::length.
    */
   Quantity<Units::length> get_wave_elevation(Quantity<Units::length> x,

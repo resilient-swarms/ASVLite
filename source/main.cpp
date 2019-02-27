@@ -12,7 +12,7 @@ int main()
   Quantity<Units::velocity> wind_speed {15*Units::meter_per_second};
   Quantity<Units::plane_angle> wind_direction {Const::PI * Units::radian};
 
-  visualization.set_sea_condition(wind_speed, wind_fetch, wind_direction);
+  visualization.initialise_sea_surface_actor(wind_speed, wind_fetch, wind_direction);
 
   /* Start visualization */
   visualization.start();

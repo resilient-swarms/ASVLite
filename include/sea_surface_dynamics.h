@@ -9,16 +9,17 @@
 namespace asv_swarm
 {
 /**
- * Class to represent the sea surface. The sea surface, which could be a mesh,
- * is represented using an array of points, called control points. The control
- * points move up or down for each time step and this represents the wave
- * motion.
+ * Class to represent the sea surface. The sea surface is represented using an 
+ * array of points, called control points. The control points move up or down 
+ * for each time step representing the wave motion.
  */
 class Sea_surface_dynamics
 {
 public:
   /**
-   * Constructor. 
+   * Constructor. Default values set by the constructor are:
+   * - field length = 100m
+   * - number of control points = 50 x 50
    * @param wind_fetch is the length over which the wind is blowing. The value 
    * should be greater than 0.
    * @param wind_speed is the velocity of wind in meter_per_seconds. The value
@@ -33,15 +34,16 @@ public:
 
   /**
    * Method to set the wind speed. 
-   * @param wind_speed is the wind speed in m/s and should be >= 0.0m/s.
+   * @param wind_speed is the wind speed in m/s and should be greater than or
+   * equal to 0.0m/s.
    */
   void set_wind_speed(Quantity<Units::velocity> wind_speed);
     
   /**
    * Method to set the wind direction.
-   * @param wind_direction is the direction in which the wind is blowing
-   * measured in radians with respect to North as 0 radian and East as PI/2
-   * radians.
+   * @param wind_direction is the direction in which the wind blows on the sea
+   * surface measured in radians with respect to North and the direction of 
+   * measurement should be such that East is at PI/2 radians to North.
    */
   void set_wind_direction(Quantity<Units::plane_angle> wind_direction);
     
@@ -53,34 +55,26 @@ public:
    *  The value should be greater than 0.
    */
   void set_fetch(Quantity<Units::length> wind_fetch);
-
+  
   /**
-   * Method to set the length of the edge of the square sea surface being
-   * simulated. By default the field length is set same as fetch but this
-   * method can be used to overwrite the default value. However the field
-   * length should be not be greater than fetch. This method also resets the
-   * control points on the surface after changing the field length.
-   * @param field_length is the length of the edge of the square sea surface
-   * being simulated and should be a positive value that is less than or equal 
-   * to fetch.
+   * Override the default edge length of the square sea surface displayed. Also
+   * resets the control points on the surface.
+   * @param field_length is the edge length in meter. Value of length should be 
+   * a non-zero positive value less than or equal to wind fetch.
    */
   void set_field_length(Quantity<Units::length> field_length);
 
   /**
    * Method to set he number of control points along both x and y directions
    * of the square field. The default value for number of control points is
-   * 100. A higher number for the count will result in more dense control
-   * points along the surface representing the sea surface.
+   * provided by constructor Sea_surface_dynamics::Sea_surface_dynamics. A 
+   * higher number for the count will result in more dense mesh representing the 
+   * sea surface. After updating the count the method resets all the control
+   * points as per the new count value.
    * @param count the number of control points along one edge of the sea
-   * surface. The value of count should be greater than 0. The method also
-   * resets the control points on the sea surface.
+   * surface. The value of count should be greater than 0.
    */
   void set_control_points_count(unsigned int count);
-
-  /**
-   * Method to set control points along the surface of the sea.
-   */
-  void set_control_points();
 
   /**
    * Method to get the wave spectrum.
@@ -95,7 +89,12 @@ public:
    */
   void set_sea_surface_profile(Quantity<Units::time> current_time);
 
-protected:
+protected:  
+  /**
+   * Method to set control points along the surface of the sea.
+   */
+  void set_control_points();
+
   std::vector<std::vector<Point>> control_points;
   unsigned int control_points_count;
   Wave_spectrum wave_spectrum;
