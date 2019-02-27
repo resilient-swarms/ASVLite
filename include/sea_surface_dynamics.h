@@ -8,6 +8,8 @@
 
 namespace asv_swarm
 {
+namespace Hydrodynamics
+{
 /**
  * Class to represent the sea surface. The sea surface is represented using an 
  * array of points, called control points. The control points move up or down 
@@ -66,13 +68,15 @@ protected:
   void set_control_points();
 
   /* member variables */
-  std::vector<std::vector<Point>> control_points;
+  std::vector<std::vector<Geometry::Point>> control_points;
   unsigned int control_points_count;
   Quantity<Units::velocity> wind_speed;
   Quantity<Units::plane_angle> wind_direction;
   Quantity<Units::length> wind_fetch;
   Quantity<Units::length> field_length;
 }; // class Sea_surface_dynamics
+
+} // namespace Hydrodynamics
 } // namespace asv_swarm
 
 #endif

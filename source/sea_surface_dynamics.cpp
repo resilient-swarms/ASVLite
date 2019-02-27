@@ -2,6 +2,7 @@
 #include"exception.h"
 
 using namespace asv_swarm;
+using namespace Hydrodynamics;
 
 Sea_surface_dynamics::Sea_surface_dynamics
   (Quantity<Units::velocity> wind_speed,
@@ -22,8 +23,8 @@ void Sea_surface_dynamics::set_field_length(
 {
   if(field_length > wind_fetch || field_length.value() <= 0.0)
   {
-    throw ValueError("Sea_surface_dynamics::set_field_length."
-                     "Field length should be positive and <= fetch.");
+    throw Exception::ValueError("Sea_surface_dynamics::set_field_length."
+                          "Field length should be positive and <= fetch.");
   }
   this->field_length = field_length;
   set_control_points();
@@ -33,8 +34,8 @@ void Sea_surface_dynamics::set_control_points_count(unsigned int count)
 {
   if(count <= 0)
   {
-    throw ValueError("Sea_surface_dynamics::set_control_points."
-                     "Count should be > 0");
+    throw Exception::ValueError("Sea_surface_dynamics::set_control_points."
+                                "Count should be > 0");
   }
   control_points_count = count;
   set_control_points();
@@ -47,13 +48,13 @@ void Sea_surface_dynamics::set_control_points()
   // Create a 2D array of control points.
   for(unsigned int i=0; i<control_points_count; ++i)
   {
-    std::vector<Point> control_points_row;
+    std::vector<Geometry::Point> control_points_row;
     for(unsigned int j=0; j<control_points_count; ++j)
     {
       Quantity<Units::length> x{patch_length*j*Units::meter};
       Quantity<Units::length> y{patch_length*i*Units::meter};
       Quantity<Units::length> z{0.0*Units::meter};
-      control_points_row.push_back(Point(x,y,z));
+      control_points_row.push_back(Geometry::Point(x,y,z));
     }
     control_points.push_back(control_points_row);
   }

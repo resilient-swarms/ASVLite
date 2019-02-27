@@ -6,6 +6,8 @@
 
 namespace asv_swarm
 {
+namespace Exception
+{
 class ValueError : public std::exception
 {
 public:
@@ -22,6 +24,8 @@ public:
 private:
   std::string errorMessage;
 }; //class ValueError
+
+} // namespace Exception
 } // namespace asv_swarm
 
 #endif // EXCEPTION_H

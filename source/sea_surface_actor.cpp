@@ -1,6 +1,7 @@
 #include "sea_surface_actor.h"
 
 using namespace asv_swarm;
+using namespace Visualisation;
 
 Sea_surface_actor::Sea_surface_actor(
     Quantity<Units::velocity> wind_speed,

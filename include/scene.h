@@ -1,23 +1,24 @@
-#ifndef VISUALIZATION_H
-#define VISUALIZATION_H
+#ifndef SCENE_H
+#define SCENE_H
 
 #include "sea_surface_actor.h"
 #include <vtkCommand.h>
 
 namespace asv_swarm
 {
+namespace Visualisation
+{
 /**
- * Class to coordinate visualization. The class provides interfaces to
- * initialise all actors. It also contains the VTK objects for rendering and
- * animation.  
+ * Class to coordinate visualisation. This class contains all actors. It also 
+ * contains the VTK objects for rendering and animation.  
  */
-class Visualization : public vtkCommand
+class Scene : public vtkCommand
 {
 public:
   /**
    * Constructor. Also initialises the renderer, window and interactor.
    */ 
-  Visualization();
+  Scene();
 
   /**
    * Set the sea condition and initialise the sea actor. The method also sets
@@ -63,11 +64,13 @@ protected:
 private:
   unsigned int timer_step_size;
   Sea_surface_actor* sea_surface_actor;
+  // Place holder for std::vector<asv_actor*> asv_actors;
   vtkSmartPointer<vtkRenderer> renderer;
   vtkSmartPointer<vtkRenderWindow> window;
   vtkSmartPointer<vtkRenderWindowInteractor> interactor;
-}; //class Visualization
+}; //class Scene
 
+} //namespace Visualisation
 } //namespace asv_swarm
 
-#endif // VISUALIZATION_H
+#endif // SCENE_H

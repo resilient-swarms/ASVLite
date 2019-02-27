@@ -5,6 +5,8 @@
 
 namespace asv_swarm
 {
+namespace Geometry
+{
 class Point
 {
 public:
@@ -16,6 +18,8 @@ public:
   Quantity<Units::length> y;
   Quantity<Units::length> z;
 }; // class Point
+
+} // namespace Geometry
 } // namespace asv_swarm
 
 #endif

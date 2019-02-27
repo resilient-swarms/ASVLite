@@ -3,6 +3,7 @@
 #include <boost/units/cmath.hpp>
 
 using namespace asv_swarm;
+using namespace Hydrodynamics;
 
 Regular_wave::Regular_wave( Quantity<Units::length> amplitude, 
                             Quantity<Units::frequency> frequency, 
@@ -12,16 +13,16 @@ Regular_wave::Regular_wave( Quantity<Units::length> amplitude,
   frequency {frequency},
   direction {direction},
   phase {phase},
-  wave_length {(2 * Const::PI * Const::G) / pow<2>(frequency)},
-  wave_number {(2 * Const::PI)/wave_length},
-  wave_period {(2.0*Const::PI)/frequency}
+  wave_length {(2 * Constant::PI * Constant::G) / pow<2>(frequency)},
+  wave_number {(2 * Constant::PI)/wave_length},
+  wave_period {(2.0*Constant::PI)/frequency}
 {
   // Check if inputs are valid. If not throw ValueError.
   if( amplitude.value() <= 0.0 ||
       frequency.value() <= 0.0 )
   {
-    throw ValueError("Constructor error. Class: Regular_wave."
-                     "Invalid input.");
+    throw Exception::ValueError("Constructor error. Class: Regular_wave."
+                                "Invalid input.");
   }
 }
 

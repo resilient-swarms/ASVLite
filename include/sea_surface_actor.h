@@ -18,13 +18,14 @@
 
 namespace asv_swarm
 {
-
+namespace Visualisation
+{
 /**
  * This class creates an actor for sea surface and provides visualization for 
  * class Sea_surface_dynamics.
  */
 class Sea_surface_actor : 
-  public Sea_surface_dynamics,
+  public Hydrodynamics::Sea_surface_dynamics,
   public vtkPolyDataAlgorithm
 {
 public:
@@ -70,6 +71,8 @@ private:
   vtkSmartPointer<vtkPolyDataMapper> sea_surface_mapper {nullptr};
   vtkSmartPointer<vtkActor> sea_surface_actor {nullptr};
 }; // class Sea_surface_actor
+
+} // namespace Visualisation
 } // namespace asv_swarm
 
 #endif // SEA_SURFACE_ACTOR_H

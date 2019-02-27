@@ -55,7 +55,7 @@ using SR = boost::units::static_rational<N, D>;
 /**
  * Numerical constants.
  */
-namespace Const
+namespace Constant
 {
 const Quantity<Units::acceleration> G = 
 9.81 * (Units::meter / Units::second/ Units::second); /* Acceleration due to 

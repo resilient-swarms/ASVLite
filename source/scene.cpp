@@ -1,8 +1,9 @@
-#include "visualization.h"
+#include "scene.h"
 
 using namespace asv_swarm;
+using namespace asv_swarm::Visualisation;
 
-Visualization::Visualization(): vtkCommand{}
+Scene::Scene(): vtkCommand{}
 {
   unsigned int frame_rate = 25; /* Required fps for animation */
   timer_step_size = static_cast<int>(1000/frame_rate); // units in milliseconds. 
@@ -20,7 +21,7 @@ Visualization::Visualization(): vtkCommand{}
   interactor->SetRenderWindow(window);
 }
 
-void Visualization::initialise_sea_surface_actor(
+void Scene::initialise_sea_surface_actor(
     Quantity<Units::velocity> wind_speed,
     Quantity<Units::length> wind_fetch,
     Quantity<Units::plane_angle> wind_direction)
@@ -32,7 +33,7 @@ void Visualization::initialise_sea_surface_actor(
   sea_surface_actor->set_timer_step_size(timer_step_size);
 }
 
-void Visualization::start()
+void Scene::start()
 {
   /* Initialize must be called prior to creating timer events */
   interactor->Initialize();
@@ -48,12 +49,12 @@ void Visualization::start()
   interactor->Start();
 }
 
-void Visualization::increment_time()
+void Scene::increment_time()
 {
   sea_surface_actor->increment_time();
 }
 
-void Visualization::Execute(vtkObject *caller, 
+void Scene::Execute(vtkObject *caller, 
                             unsigned long vtkNotUsed(eventId),
                             void *vtkNotUsed(callData))
 {

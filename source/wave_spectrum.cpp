@@ -5,6 +5,7 @@
 #include <iostream>
 
 using namespace asv_swarm;
+using namespace asv_swarm::Hydrodynamics;
 
 Wave_spectrum::Wave_spectrum( Quantity<Units::velocity> wind_speed,
                               Quantity<Units::length> wind_fetch,
@@ -16,16 +17,16 @@ Wave_spectrum::Wave_spectrum( Quantity<Units::velocity> wind_speed,
   d_count {10},
   min_freq {0.3 * Units::hertz},
   max_freq {6.0 * Units::hertz},
-  min_angle {wind_direction - (Const::PI/2 * Units::radians)},
-  max_angle {wind_direction + (Const::PI/2 * Units::radians)}
+  min_angle {wind_direction - (Constant::PI/2 * Units::radians)},
+  max_angle {wind_direction + (Constant::PI/2 * Units::radians)}
 {
   // Check if inputs are correct.
   if( wind_fetch.value() <= 0.0 || 
       wind_speed.value() < 0.0 ||
       wind_direction.value() < 0.0 ||
-      wind_direction.value() > 2*Const::PI)
+      wind_direction.value() > 2*Constant::PI)
   {
-    throw ValueError("Wave_spectrum::Wave_spectrum()."
+    throw Exception::ValueError("Wave_spectrum::Wave_spectrum()."
                      "Invalid input.");
   }
   set_wave_spectrum();
@@ -35,7 +36,7 @@ void Wave_spectrum::set_frequency_cont(unsigned int count)
 {
   if(count <= 0)
   {
-    throw ValueError("Wave_spectrum::set_frequency_cont()."
+    throw Exception::ValueError("Wave_spectrum::set_frequency_cont()."
                      "Count should be > 0.");
   }
   f_count = count;
@@ -46,7 +47,7 @@ void Wave_spectrum::set_direction_count(unsigned int count)
 {
   if(count <= 0)
   {
-    throw ValueError("Wave_spectrum::set_direction_count()."
+    throw Exception::ValueError("Wave_spectrum::set_direction_count()."
                      "Count should be > 0.");
   }
   d_count = count;
@@ -87,7 +88,7 @@ void Wave_spectrum::set_wave_spectrum()
   {
     if(angle.value() <0)
     {
-      directions_list.push_back(angle + (2*Const::PI*Units::radian));
+      directions_list.push_back(angle + (2*Constant::PI*Units::radian));
     }
     else
     {

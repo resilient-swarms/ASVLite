@@ -9,6 +9,8 @@
 
 namespace asv_swarm
 {
+namespace Hydrodynamics
+{
 /**
  * This class defines a regular sinusoidal wave. 
  */
@@ -92,6 +94,8 @@ private:
   Quantity<Units::wavenumber> wave_number; /* Wave number */
   Quantity<Units::time> wave_period; /* Wave period in sec. */
 }; // class Regular_wave
+
+} // namespace Hydrodynamics 
 } // namespace asv_swarm
 
 #endif // REGULAR_WAVE_H

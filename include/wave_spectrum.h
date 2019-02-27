@@ -11,6 +11,8 @@
 
 namespace asv_swarm
 {
+namespace Hydrodynamics
+{
 /**
  * This class generates a collection of waves such that the resultant irregular 
  * wave formed by linear super-positioning of all the regular waves have a 
@@ -95,6 +97,8 @@ protected:
   std::vector<Quantity<Units::plane_angle>> directions_list;
   std::vector<Quantity<Units::frequency>> frequency_list;
 }; // class Wave_spectrum
+
+} // namespace Hydrodynamics
 } // namespace asv_swarm
 
 
