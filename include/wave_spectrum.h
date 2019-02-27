@@ -31,8 +31,8 @@ public:
    * @param wind_direction is the predominant wind direction measured in radian.
    * Wind direction should be within the range (0, 2PI). 
    */
-  Wave_spectrum( Quantity<Units::length> wind_fetch, 
-                 Quantity<Units::velocity> wind_speed,
+  Wave_spectrum( Quantity<Units::velocity> wind_speed,
+                 Quantity<Units::length> wind_fetch, 
                  Quantity<Units::plane_angle> wind_direction);
 
   /**
@@ -72,7 +72,6 @@ protected:
    */
   void set_wave_spectrum();
 
-private:
   Quantity<Units::length> wind_fetch; /* The length of fetch in meter. */
   Quantity<Units::velocity> wind_speed; /* Wind speed in m/sec. */
   Quantity<Units::plane_angle> wind_direction; /* Predominant wind direction.*/

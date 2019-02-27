@@ -4,10 +4,10 @@ using namespace asv_swarm;
 
 Sea_surface_actor::Sea_surface_actor(
     Quantity<Units::velocity> wind_speed,
-    Quantity<Units::length> fetch,
+    Quantity<Units::length> wind_fetch,
     Quantity<Units::plane_angle> wind_direction) :
   vtkPolyDataAlgorithm{},
-  Sea_surface_dynamics{fetch, wind_speed, wind_direction},
+  Sea_surface_dynamics{wind_speed, wind_fetch, wind_direction},
   timer_count{0u},
   timer_step_size{0u}
 {

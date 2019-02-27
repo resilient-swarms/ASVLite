@@ -6,8 +6,8 @@
 
 using namespace asv_swarm;
 
-Wave_spectrum::Wave_spectrum( Quantity<Units::length> wind_fetch,
-                              Quantity<Units::velocity> wind_speed,
+Wave_spectrum::Wave_spectrum( Quantity<Units::velocity> wind_speed,
+                              Quantity<Units::length> wind_fetch,
                               Quantity<Units::plane_angle> wind_direction) : 
   wind_fetch{wind_fetch},
   wind_speed{wind_speed},

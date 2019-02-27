@@ -32,7 +32,7 @@ public:
    * Constructor.
    */
   Sea_surface_actor(Quantity<Units::velocity> wind_speed,
-                    Quantity<Units::length> fetch,
+                    Quantity<Units::length> wind_fetch,
                     Quantity<Units::plane_angle> wind_direction);
 
   /**
