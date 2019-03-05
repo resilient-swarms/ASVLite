@@ -1,4 +1,5 @@
 #include "scene.h"
+#include "exception.h"
 
 using namespace asv_swarm;
 using namespace asv_swarm::Visualisation;
@@ -21,14 +22,14 @@ Scene::Scene(): vtkCommand{}
   interactor->SetRenderWindow(window);
 }
 
-void Scene::initialise_sea_surface_actor(
-    Quantity<Units::velocity> wind_speed,
-    Quantity<Units::length> wind_fetch,
-    Quantity<Units::plane_angle> wind_direction)
+void Scene::add_actor(Sea_surface_actor* sea_surface_actor)
 {
-  sea_surface_actor = new Sea_surface_actor(wind_speed, 
-                                            wind_fetch, 
-                                            wind_direction);
+  if( !sea_surface_actor )
+  {
+    throw Exception::ValueError("Scene::add_actor. Parameter sea_surface_actor" 
+                                "should not be nullptr.");
+  }
+  this->sea_surface_actor = sea_surface_actor;
   /* set timer in sea surface actor*/
   sea_surface_actor->set_timer_step_size(timer_step_size);
 }

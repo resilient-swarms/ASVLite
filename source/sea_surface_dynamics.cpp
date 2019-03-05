@@ -4,27 +4,27 @@
 using namespace asv_swarm;
 using namespace Hydrodynamics;
 
-Sea_surface_dynamics::Sea_surface_dynamics
-  (Quantity<Units::velocity> wind_speed,
-   Quantity<Units::length> wind_fetch,
-   Quantity<Units::plane_angle> wind_direction):
-     Wave_spectrum{wind_speed, wind_fetch, wind_direction},
-     wind_fetch {wind_fetch},
+Sea_surface_dynamics::Sea_surface_dynamics(Wave_spectrum* wave_spectrum):
      field_length {100*Units::meter},
-     wind_speed{wind_speed},
-     wind_direction{wind_direction},
      control_points_count {50}
 {
+  if( !wave_spectrum )
+  {
+    throw Exception::ValueError("Sea_surface_dynamics::Sea_surface_dynamics."
+                              "Parameter wave_spectrum should not be nullptr.");
+  }
+  this->wave_spectrum = wave_spectrum;
   set_control_points();
 }
 
 void Sea_surface_dynamics::set_field_length(
     Quantity<Units::length> field_length)
 {
-  if(field_length > wind_fetch || field_length.value() <= 0.0)
+  if( field_length > wave_spectrum->get_wind_fetch() || 
+      field_length.value() <= 0.0)
   {
     throw Exception::ValueError("Sea_surface_dynamics::set_field_length."
-                          "Field length should be positive and <= fetch.");
+                      "Field length should be non-zero positive and <= fetch.");
   }
   this->field_length = field_length;
   set_control_points();
@@ -69,6 +69,9 @@ void Sea_surface_dynamics::set_sea_surface_elevations(
     for(int j = 0; j<control_points[i].size(); ++j)
     {
       Quantity<Units::length> elevation{0*Units::meter};
+      // Get all the waves in the wave spectrum
+      std::vector<std::vector<Regular_wave>>& spectrum = 
+        wave_spectrum->get_spectrum();
       // For each direction in the wave spectrum
       for(int u = 0; u<spectrum.size(); ++u)
       {

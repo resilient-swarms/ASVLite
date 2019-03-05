@@ -15,27 +15,16 @@ namespace Hydrodynamics
  * array of points, called control points. Each control points move up or down 
  * for each time step emulating waves on sea surface.
  */
-class Sea_surface_dynamics : public Wave_spectrum
+class Sea_surface_dynamics
 {
 public:
   /**
    * Constructor. Default values set by the constructor are:
    * - field length = 100m
    * - number of control points = 50 x 50
-   * The constructor also provides default values for wave spectrum. The default
-   * values used for wave spectrum can be found in in constructor 
-   * Hydrodynamics::Wave_spectrum.
-   * @param wind_speed is the velocity of wind in meter_per_seconds. The value
-   * should be >= 0.
-   * @param wind_fetch is the length over which the wind is blowing. The value 
-   * should be greater than 0.
-   * @param wind_direction is the angle at which the wind is blowing measured in
-   * radians. The value should be between 0 and 2PI and is measured with respect
-   * to north direction. 
+   * @param wave_spectrum pointer to the wave spectrum defining the sea state. 
    */
-  Sea_surface_dynamics(Quantity<Units::velocity> wind_speed,
-                       Quantity<Units::length> wind_fetch,
-                       Quantity<Units::plane_angle> wind_direction);
+  Sea_surface_dynamics(Wave_spectrum* wave_spectrum);
 
   /**
    * Override the default edge length of the square sea surface. Also resets the 
@@ -72,12 +61,10 @@ protected:
   void set_control_points();
 
   /* member variables */
-  std::vector<std::vector<Geometry::Point>> control_points;
-  unsigned int control_points_count;
-  Quantity<Units::velocity> wind_speed;
-  Quantity<Units::plane_angle> wind_direction;
-  Quantity<Units::length> wind_fetch;
+  Wave_spectrum* wave_spectrum; 
   Quantity<Units::length> field_length;
+  unsigned int control_points_count;
+  std::vector<std::vector<Geometry::Point>> control_points;
 }; // class Sea_surface_dynamics
 
 } // namespace Hydrodynamics

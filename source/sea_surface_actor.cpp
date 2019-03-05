@@ -4,11 +4,9 @@ using namespace asv_swarm;
 using namespace Visualisation;
 
 Sea_surface_actor::Sea_surface_actor(
-    Quantity<Units::velocity> wind_speed,
-    Quantity<Units::length> wind_fetch,
-    Quantity<Units::plane_angle> wind_direction) :
+    Hydrodynamics::Wave_spectrum* wave_spectrum):
   vtkPolyDataAlgorithm{},
-  Sea_surface_dynamics{wind_speed, wind_fetch, wind_direction},
+  Sea_surface_dynamics{wave_spectrum},
   timer_count{0u},
   timer_step_size{0u}
 {

@@ -11,8 +11,19 @@ int main()
   Quantity<Units::length> wind_fetch {100*Units::kilo*Units::meter};
   Quantity<Units::velocity> wind_speed {15*Units::meter_per_second};
   Quantity<Units::plane_angle> wind_direction {Constant::PI * Units::radian};
+  Hydrodynamics::Wave_spectrum wave_spectrum( wind_speed, 
+                                              wind_fetch, 
+                                              wind_direction);
 
-  scene.initialise_sea_surface_actor(wind_speed, wind_fetch, wind_direction);
+  /* Create actor for sea surface */
+  Visualisation::Sea_surface_actor sea_surface_actor(&wave_spectrum);
+
+  /* Create actor for ASV */
+  /*Visualisation::ASV_actor asv_actor();*/
+  
+  /* Add all actors to the scene */
+  scene.add_actor(&sea_surface_actor);
+  /*scene.add_actor(&asv_actor);*/
 
   /* Start visualization */
   scene.start();

@@ -54,17 +54,39 @@ public:
    * for a given direction.
    * @return table of waves for all directions.
    */
-  std::vector<std::vector<Regular_wave>>& get_waves();
+  std::vector<std::vector<Regular_wave>>& get_spectrum(){
+    return spectrum;}
 
   /**
    * Returns a list of directions considered in the spectrum.
    */
-  std::vector<Quantity<Units::plane_angle>>& get_directions();
+  std::vector<Quantity<Units::plane_angle>>& get_directions(){
+    return directions_list;}
 
   /**
    * Returns a list of frequencies considered in the spectrum.
    */
-  std::vector<Quantity<Units::frequency>>& get_frequencies();
+  std::vector<Quantity<Units::frequency>>& get_frequencies(){
+    return frequency_list;}
+
+  /**
+   * Return the wind speed in m/s.
+   */
+  Quantity<Units::velocity> get_wind_speed(){
+    return wind_speed;}
+  
+  /**
+   * Returns the wind fetch in m.
+   */
+  Quantity<Units::length> get_wind_fetch(){
+    return wind_fetch;}
+
+  /**
+   * Return the wind direction in radians.
+   */
+  Quantity<Units::plane_angle> get_wind_direction(){
+    return wind_direction;}
+
 
 protected:
   /**

@@ -32,9 +32,7 @@ public:
   /**
    * Constructor.
    */
-  Sea_surface_actor(Quantity<Units::velocity> wind_speed,
-                    Quantity<Units::length> wind_fetch,
-                    Quantity<Units::plane_angle> wind_direction);
+  Sea_surface_actor(Hydrodynamics::Wave_spectrum* wave_spectrum);
 
   /**
    * Increment time count.

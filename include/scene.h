@@ -21,27 +21,14 @@ public:
   Scene();
 
   /**
-   * Set the sea condition and initialise the sea actor. The method also sets
-   * some default values for field size, number of grid points on the field
-   * surface, number of wave frequencies considered in the wave spectrum and the 
-   * number of directions considered in the wave spectrum. The default values
-   * can be found in the constructors 
-   * Hydrodynamics::Sea_surface_dynamics::Sea_surface_dynamics and
-   * Hydrodynamics::Wave_spectrum::Wave_spectrum.
-   * @param wind_speed is the wind speed in m/s.
-   * @param wind_fetch is the length of sea, in m, over which the wind blows.
-   * @param wind_direction is the direction in which the wind blows measured in
-   * radians with respect to North direction and direction of measurement such
-   * that East is at PI/2 with North.
+   * Add a sea surface actor to the scene. 
    */
-  void initialise_sea_surface_actor(Quantity<Units::velocity> wind_speed,
-                            Quantity<Units::length> wind_fetch,
-                            Quantity<Units::plane_angle> wind_direction);
+  void add_actor(Sea_surface_actor* sea_surface_actor);
 
   /**
-   * Returns pointer to actor sea.
+   * Add an ASV actor to the scene.
    */
-  Sea_surface_actor* get_sea_surface_actor(){return sea_surface_actor;}
+  /*void add_actor(ASV_actor* asv_actor);*/
 
   /**
    * Starts the animation. 

@@ -162,17 +162,3 @@ void Wave_spectrum::set_wave_spectrum()
   }
 }
 
-std::vector<std::vector<Regular_wave>>& Wave_spectrum::get_waves()
-{
-  return spectrum;
-}
-
-std::vector<Quantity<Units::plane_angle>>& Wave_spectrum::get_directions()
-{
-  return directions_list; 
-}
-
-std::vector<Quantity<Units::frequency>>& Wave_spectrum::get_frequencies()
-{
-  return frequency_list;
-}
