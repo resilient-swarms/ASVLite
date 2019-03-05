@@ -3,6 +3,8 @@
 
 #include "sea_surface_actor.h"
 #include <vtkCommand.h>
+#include <vtkAxesActor.h>
+#include <vtkOrientationMarkerWidget.h>
 
 namespace asv_swarm
 {
@@ -51,6 +53,8 @@ protected:
 
 private:
   unsigned int timer_step_size;
+  vtkSmartPointer<vtkAxesActor> axes_actor;
+  vtkSmartPointer<vtkOrientationMarkerWidget> axes_widget;
   Sea_surface_actor* sea_surface_actor;
   // Place holder for std::vector<asv_actor*> asv_actors;
   vtkSmartPointer<vtkRenderer> renderer;

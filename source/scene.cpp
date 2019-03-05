@@ -1,5 +1,7 @@
 #include "scene.h"
 #include "exception.h"
+#include <vtkNamedColors.h>
+#include <vtkCamera.h>
 
 using namespace asv_swarm;
 using namespace asv_swarm::Visualisation;
@@ -20,6 +22,20 @@ Scene::Scene(): vtkCommand{}
   window->AddRenderer(renderer);
   interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
   interactor->SetRenderWindow(window);
+
+  /* Create an actor for displaying the coordinate axes */
+  axes_actor = vtkSmartPointer<vtkAxesActor>::New();
+  axes_widget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
+  double rgba[4]{0.0, 0.0, 0.0, 0.0};
+  vtkSmartPointer<vtkNamedColors> colors = 
+    vtkSmartPointer<vtkNamedColors>::New();
+  colors->GetColor("Carrot",rgba);
+  axes_widget->SetOutlineColor(rgba[0], rgba[1], rgba[2]);
+  axes_widget->SetOrientationMarker( axes_actor );
+  axes_widget->SetInteractor( interactor );
+  axes_widget->SetViewport( 0.0, 0.0, 0.3, 0.3 );
+  axes_widget->SetEnabled( 1 );
+  axes_widget->InteractiveOff();
 }
 
 void Scene::add_actor(Sea_surface_actor* sea_surface_actor)
@@ -45,6 +61,7 @@ void Scene::start()
   renderer->AddActor(sea_surface_actor->get_vtk_actor());
   
   /* Render and interact */
+  renderer->ResetCamera();
   window->SetSize(window->GetScreenSize());
   window->Render();
   interactor->Start();

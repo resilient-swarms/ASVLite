@@ -24,14 +24,15 @@ ENDIF()
 # VTK
 FIND_PACKAGE(VTK REQUIRED)
 VTK_MODULE_CONFIG( VTK
+  vtkCommonColor
   vtkCommonCore
   vtkCommonDataModel
-  vtkFiltersGeometry
   vtkInteractionStyle
-  vtkRenderingOpenGL2
-  vtkInteractionStyle
+  vtkInteractionWidgets
+  vtkRenderingAnnotation
   vtkRenderingCore
   vtkRenderingFreeType
+  vtkRenderingOpenGL2
 )
 INCLUDE(${VTK_USE_FILE})
 
