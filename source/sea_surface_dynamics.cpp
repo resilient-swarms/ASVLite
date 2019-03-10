@@ -1,5 +1,6 @@
 #include"sea_surface_dynamics.h"
 #include"exception.h"
+#include <iostream>
 
 using namespace asv_swarm;
 using namespace Hydrodynamics;
@@ -63,6 +64,9 @@ void Sea_surface_dynamics::set_control_points()
 void Sea_surface_dynamics::set_sea_surface_elevations(
     Quantity<Units::time> current_time)
 {
+  double sum = 0.0;
+  int count = 0;
+
   // For each control point
   for(int i = 0; i<control_points.size(); ++i)
   {
@@ -84,7 +88,15 @@ void Sea_surface_dynamics::set_sea_surface_elevations(
         }
       }
       control_points[i][j].z = elevation;
+      //std::cout<<"Elevation = "<<elevation.value()<<std::endl;
+      if(elevation.value() > 0.0)
+      {
+        sum += elevation.value();
+        ++count;
+      }
     }
   }
+
+  std::cout<<"Average wave height = "<<(sum/count)<<std::endl;
 }
 
