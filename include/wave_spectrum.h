@@ -24,7 +24,6 @@ public:
   /**
    * Constructor. Default values set by the constructor: 
    * - number of frequencies in the wave spectrum = 20 
-   * - frequency range = (0.3Hz, 6.0Hz)
    * - number of directions in the wave spectrum = 10 
    * - direction range = (wind direction - PI/2, wind direction + PI/2)  
    * @param wind_fetch length in meter. Should be greater than 0.
