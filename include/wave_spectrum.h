@@ -41,13 +41,13 @@ public:
    * wave spectrum.
    * @param count, the number of frequencies in the spectrum.
    */
-  void set_frequency_cont(unsigned int count);
+  void set_freq_band_count(unsigned int count);
 
   /**
    * Method to override the number of discrete directions in the wave spectrum.
    * @param count, the number of directions in the spectrum.
    */
-  void set_direction_count(unsigned int count);
+  void set_wave_angle_count(unsigned int count);
 
   /**
    * Return a table containing waves. Each row of the table is an array of wave
@@ -61,13 +61,13 @@ public:
    * Returns a list of directions considered in the spectrum.
    */
   std::vector<Quantity<Units::plane_angle>>& get_directions(){
-    return directions_list;}
+    return wave_angle_list;}
 
   /**
    * Returns a list of frequencies considered in the spectrum.
    */
   std::vector<Quantity<Units::frequency>>& get_frequencies(){
-    return frequency_list;}
+    return freq_band_list;}
 
   /**
    * Return the wind speed in m/s.
@@ -101,22 +101,26 @@ protected:
   std::vector<std::vector<Regular_wave>> spectrum; /* Each row represents
                                                      wave spectrum for a single
                                                      direction.*/
-  int f_count; /* Number of discrete frequencies in the spectrum.
-                  Default value is 50. */
-  int d_count; /* Number of discrete directions in the spectrum 
-                  Default value is 180. */ 
-  Quantity<Units::frequency> min_freq; /* Minimum frequency in the spectrum.
-                                          Default value is 0.3 Hz. */
-  Quantity<Units::frequency> max_freq;/* Maximum frequency in the spectrum.
-                                         Default value is 6.0 Hz. */
-  Quantity<Units::plane_angle> min_angle; /* Minimum angle in spectrum. 
-                                             Default value is 
-                                             wind_direction - PI/2. */
-  Quantity<Units::plane_angle> max_angle; /* Maximum angle in spectrum.
-                                             Default value is
-                                             wind_direction + PI/2. */
-  std::vector<Quantity<Units::plane_angle>> directions_list;
-  std::vector<Quantity<Units::frequency>> frequency_list;
+  int freq_band_count; /* Number of frequency bands in the spectrum.*/
+  int wave_angle_count; /* Number of wave direction bands in the spectrum */
+  Quantity<Units::frequency> min_freq; /* Minimum frequency in the spectrum.*/
+  Quantity<Units::frequency> max_freq;/* Maximum frequency in the spectrum.*/
+  Quantity<Units::plane_angle> wave_angle_min; /* Minimum angle in spectrum for 
+                                                wave heading. Default value is 
+                                                wind_direction - PI/2. */
+  Quantity<Units::plane_angle> wave_angle_max; /* Maximum angle in spectrum for
+                                                wave heading. Default value is 
+                                                wind_direction + PI/2. */
+  std::vector<Quantity<Units::plane_angle>> wave_angle_list;
+  std::vector<Quantity<Units::frequency>> freq_band_list;
+  /* Spectral parameters */
+  double A;
+  double B;
+  double f_p; /* spectral peak frequency */
+  double alpha;
+  double beta;
+  double gamma;
+  
 }; // class Wave_spectrum
 
 } // namespace Hydrodynamics
