@@ -128,39 +128,36 @@ void Wave_spectrum::set_wave_spectrum()
   }
   
   // Create the JONSWAP spectrum for each direction and frequency.
-  for(auto angle = wave_angle_list.begin();
-      angle != wave_angle_list.end();
-      ++angle)
+  for(auto angle : wave_angle_list)
   {
     std::vector<Regular_wave> directional_spectrum;
-    for(auto freq = freq_band_list.begin();
-        freq != freq_band_list.end();
-        ++freq)
+    for(auto freq : freq_band_list)
     {
       // JONSWAP SPECTRUM
       // Ref: Proceedings of the 23rd ITTC - Vol II, Table A.4
-      // S(f) = a g^2 (2PI)^-4 f^-5 exp(A) gamma^exp(B)
-      // A = (-5/4)(f/f_p)^-4
-      // B = (-(f - f_p)^2)/(2 tau^2 f_p^2)
-      // a = 0.076 F_hat^-0.22
-      // F_hat = gF/U^2
-      // U = wind speed
-      // g = 9.81
-      // F = fetch
-      // f_p = (g/U)F_hat^(-1/3)
-      // tau = (f <= f_p)? 0.07 : 0.09
+      // S(f) = (A/f^5) exp(-B/f^4) gamma^exp(C)
+      // A = alpha g^2 (2 PI)^-4
+      // B = (5/4) f_p^4
+      // C = (f - f_P)^2 / (2 tau^2 f_p^2)
+      // alpha = 0.0081
       // gamma = 3.3
+      // f_p = (g/U)F_hat^(-1/3)
+      // U = wind speed in m/s
+      // F_hat = gF/U^2
+      // F = wind fetch in m
       double PI = Constant::PI.value();
-      double f = freq->value();
-      double tau = (f <= f_p)? 0.07 : 0.09;
-      double C = -((f - f_p)*(f - f_p))/(2 * tau*tau * f_p*f_p);
-      double S = (A/pow(f,5)) * exp(-B/pow(f,4)) * pow(gamma, exp(C));
-      
-      double mu = wind_direction.value() - angle->value();
-      double G = (2/PI) * pow(mu, 2);
       double delta_f = freq_band_size.value();
-      double delta_angle = wave_angle_band_size.value();
-      double amp = sqrt(2 * S*delta_f * G*delta_angle);
+      double f = freq.value() + delta_f/2;
+      double tau = (f <= f_p)? 0.07 : 0.09;
+      double C = ((f - f_p)*(f - f_p))/(2 * tau*tau * f_p*f_p);
+      double S = (A/pow(f,5)) * exp(-B/pow(f,4)) * pow(gamma, exp(-C));
+      
+      
+      double delta_mu = wave_angle_band_size.value();
+      double mu = wind_direction.value() - angle.value() + delta_mu/2;
+      double G = (2/PI) * pow(mu, 2);
+      
+      double amp = sqrt(2 * S*delta_f * G*delta_mu);
       Quantity<Units::length> amplitude{amp* Units::meter};
       
       // Generate a random value for phase
@@ -171,7 +168,7 @@ void Wave_spectrum::set_wave_spectrum()
       // Generate a regular wave.
       if(amplitude.value() > 0.0)
       {
-        Regular_wave wave{amplitude, *freq, *angle, phase};
+        Regular_wave wave{amplitude, freq, angle, phase};
         directional_spectrum.push_back(wave);
       }
     }
