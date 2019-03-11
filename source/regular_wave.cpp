@@ -8,11 +8,7 @@ using namespace Hydrodynamics;
 Regular_wave::Regular_wave( Quantity<Units::length> amplitude, 
                             Quantity<Units::frequency> frequency, 
                             Quantity<Units::plane_angle> direction,
-                            Quantity<Units::plane_angle> phase) :
-  amplitude {amplitude},
-  frequency {frequency},
-  direction {direction},
-  phase {phase}
+                            Quantity<Units::plane_angle> phase)
 {
   // Check if inputs are valid. If not throw ValueError.
   if( amplitude.value() <= 0.0 ||
@@ -21,9 +17,15 @@ Regular_wave::Regular_wave( Quantity<Units::length> amplitude,
     throw Exception::ValueError("Constructor error. Class: Regular_wave."
                                 "Invalid input.");
   }
-  wave_length = (Constant::G/(2.0 * Constant::PI))*pow<2>(1.0/frequency);
+
+  this->amplitude = amplitude;
+  this->frequency = frequency;
+  this->direction = direction;
+  this->phase = phase;
+  
+  wave_period = 1.0/frequency; // wave period in sec
+  wave_length = Constant::G * pow<2>(wave_period) / (2.0 * Constant::PI);
   wave_number = (2.0 * Constant::PI)/wave_length;
-  wave_period = 1.0/frequency;
 }
 
 Quantity<Units::length> Regular_wave::get_wave_elevation(
@@ -35,7 +37,7 @@ Quantity<Units::length> Regular_wave::get_wave_elevation(
    * elevation = amplitude * cos(A - B + phase)
    * where:
    * A = wave_number * (x * cos(direction) + y * sin(direction))
-   * B = frequency * t
+   * B = 2PI * frequency * t
    */
   
   Quantity<Units::plane_angle> A {(wave_number * (x * cos(direction) +
