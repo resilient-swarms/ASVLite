@@ -57,7 +57,7 @@ int Sea_surface_actor::RequestData(vtkInformation* request,
         double x = control_point.x.value();
         double y = control_point.y.value();
         //TODO: Correct the formula for z by removing the scaling factor.
-        double z = control_point.z.value()*100;
+        double z = control_point.z.value();
         sea_surface_mesh_points->SetPoint(sea_surface_mesh_point_id,x,y,z); 
         ++sea_surface_mesh_point_id;
       }
@@ -89,7 +89,7 @@ int Sea_surface_actor::RequestData(vtkInformation* request,
         double x = control_point.x.value();
         double y = control_point.y.value();
         //TODO: Correct the formula for z by removing the scaling factor.
-        double z = control_point.z.value()*100;
+        double z = control_point.z.value();
         sea_surface_mesh_points->InsertPoint(sea_surface_mesh_point_id,x,y,z); 
         ++sea_surface_mesh_point_id;
       }
