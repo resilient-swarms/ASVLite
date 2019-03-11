@@ -86,6 +86,30 @@ public:
   Quantity<Units::plane_angle> get_wind_direction(){
     return wind_direction;}
 
+  /**
+   * Return the spectral peak frequency.
+   */
+  Quantity<Units::frequency> get_spectral_peak_frequency(){
+    return spectral_peak_freq;}
+
+  /**
+   * Return the minimum lower limit (0.1%) of the spectral energy threshold.
+   */
+  Quantity<Units::frequency> get_min_frequency(){
+    return min_freq;}
+
+  /**
+   * Return the upper limit (99.9%) of the spectral energy threshold.
+   */
+  Quantity<Units::frequency> get_max_frequency(){
+    return max_freq;}
+
+  /**
+   * Return the significant wave height.
+   */
+  Quantity<Units::length> get_significant_wave_height(){
+    return significant_wave_height;}
+
 
 protected:
   /**
