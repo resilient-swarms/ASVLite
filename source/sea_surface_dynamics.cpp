@@ -156,5 +156,82 @@ void Sea_surface_dynamics::set_sea_surface_elevations(
   average_wave_height = sum/(total_num_points * Units::si_dimensionless);
   significant_wave_height = 
                 significant_sum/(significant_count*Units::si_dimensionless);
+
+  /* Print wave stats on std::out */
+  std::cout                     <<
+    "Peak freq(Hz):"            <<
+    std::left                   <<
+    std::setfill(' ')           <<
+    std::setw(7)                <<
+    std::setprecision(2)        <<
+    wave_spectrum->get_spectral_peak_frequency().value();
+   
+  std::cout                     <<
+    "Min freq(Hz):"             <<
+    std::left                   <<
+    std::setfill(' ')           <<
+    std::setw(7)                <<
+    std::setprecision(2)        <<
+    wave_spectrum->get_min_frequency().value();
+    
+  std::cout                     <<
+    "Max freq(Hz):"             <<
+    std::left                   <<
+    std::setfill(' ')           <<
+    std::setw(7)                <<
+    std::setprecision(2)        <<
+    wave_spectrum->get_max_frequency().value();
+     
+  std::cout                     <<
+    "Expected sig wave ht(m):"  <<
+    std::left                   <<
+    std::setfill(' ')           <<
+    std::setw(7)                <<
+    std::setprecision(3)        <<
+    wave_spectrum->get_significant_wave_height().value();
+
+  std::cout <<"  |*|  ";
+  
+  std::cout                     <<
+    "Time(sec):"                <<
+    std::left                   <<
+    std::setfill(' ')           <<
+    std::setw(8)               <<
+    std::setprecision(3)        <<
+    current_time.value();
+ 
+  std::cout                     <<
+    "Min_neg(m):"               <<
+    std::left                   <<
+    std::setfill(' ')           <<
+    std::setw(8)               <<
+    std::setprecision(3)        <<
+    min_neg.value();
+
+  std::cout                     <<
+    "Max_pos(m):"               <<
+    std::left                   <<
+    std::setfill(' ')           <<
+    std::setw(8)               <<
+    std::setprecision(3)        <<
+    max_pos.value();
+
+  std::cout                     <<
+    "Avg_wave_ht(m):"           <<
+    std::left                   <<
+    std::setfill(' ')           <<
+    std::setw(8)               <<
+    std::setprecision(3)        <<
+    average_wave_height.value();
+
+  std::cout                     <<
+    "Sig_wave_ht(m):"           <<
+    std::left                   <<
+    std::setfill(' ')           <<
+    std::setw(8)               <<
+    std::setprecision(3)        <<
+    significant_wave_height.value();
+
+  std::cout<<std::endl;
 }
 
