@@ -20,8 +20,8 @@ public:
   /**
    * Constructor for Regular_wave.
    * @param amplitude of wave in meters. Value should be greater than 0.0.
-   * @param frequency of wave in radian/sec. Value should be greater than 0.0.
-   * @param direction of wave heading in degree with respect to global
+   * @param frequency of wave in Hertz. Value should be greater than 0.0.
+   * @param direction of wave heading in radians with respect to global
    * coordinate system's North direction. The direction of angle measurement
    * should be such that the East is at PI/2 radians to North. 
    * @param phase angle of the wave in radian.
@@ -62,7 +62,7 @@ public:
   Quantity<Units::frequency> get_wave_frequency(){return frequency;}
 
   /**
-   * Method to get wave phase. The angle is measured positive anti-clockwise.
+   * Method to get wave phase. The angle is measured positive clockwise.
    * @return wave phase as object of type boost::units::plane_angle.
    */
   Quantity<Units::plane_angle> get_phase(){return phase;}
@@ -86,10 +86,10 @@ public:
 
 private:
   Quantity<Units::length> amplitude; /* Amplitude of the wave. */
-  Quantity<Units::frequency> frequency; /* Circular frequency of the wave. */
+  Quantity<Units::frequency> frequency; /* Frequency of the wave in Hz. */
   Quantity<Units::plane_angle> phase; /* Phase angle of the wave in radian. */
   Quantity<Units::plane_angle> direction; /* Direction of propagation of the 
-  wave with respect to x-axis. Angle measured positive anti-clockwise. */
+  wave with respect to y-axis. Angle measured positive clockwise. */
   Quantity<Units::length> wave_length; /* Wave length in meter. */
   Quantity<Units::wavenumber> wave_number; /* Wave number */
   Quantity<Units::time> wave_period; /* Wave period in sec. */
