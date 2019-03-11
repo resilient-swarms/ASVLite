@@ -23,7 +23,7 @@ Regular_wave::Regular_wave( Quantity<Units::length> amplitude,
   }
   wave_length = (Constant::G/(2.0 * Constant::PI))*pow<2>(1.0/frequency);
   wave_number = (2.0 * Constant::PI)/wave_length;
-  wave_period = (2.0 * Constant::PI)/frequency;
+  wave_period = 1.0/frequency;
 }
 
 Quantity<Units::length> Regular_wave::get_wave_elevation(
@@ -41,6 +41,6 @@ Quantity<Units::length> Regular_wave::get_wave_elevation(
   Quantity<Units::plane_angle> A {(wave_number * (x * cos(direction) +
                                                   y * sin(direction))) *
                                                   Units::radian};
-  Quantity<Units::plane_angle> B {frequency * t * Units::radian};
+  Quantity<Units::plane_angle> B {2*Constant::PI*frequency * t * Units::radian};
   return amplitude* cos(A - B + phase);
 }
