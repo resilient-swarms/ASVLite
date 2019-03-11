@@ -2,43 +2,61 @@
 #include "exception.h"
 #include <boost/units/systems/si/area.hpp>
 #include <random>
-#include <iostream>
 
 using namespace asv_swarm;
 using namespace asv_swarm::Hydrodynamics;
+using namespace asv_swarm::Constant;
 
 Wave_spectrum::Wave_spectrum( Quantity<Units::velocity> wind_speed,
                               Quantity<Units::length> wind_fetch,
                               Quantity<Units::plane_angle> wind_direction) : 
-  wind_fetch{wind_fetch},
-  wind_speed{wind_speed},
-  wind_direction{wind_direction},
   freq_band_count {20},
-  wave_angle_count {10},
-  wave_angle_min {wind_direction - (Constant::PI/2 * Units::radians)},
-  wave_angle_max {wind_direction + (Constant::PI/2 * Units::radians)}
+  wave_direction_count {10}
 {
   // Check if inputs are correct.
   if( wind_fetch.value() <= 0.0 || 
       wind_speed.value() < 0.0 ||
       wind_direction.value() < 0.0 ||
-      wind_direction.value() > 2*Constant::PI)
+      wind_direction.value() > 2*PI)
   {
     throw Exception::ValueError("Wave_spectrum::Wave_spectrum()."
                      "Invalid input.");
   }
-  /* Set the spectral parameters for JONSWAP spectrum */
+
+  this->wind_fetch = wind_fetch;
+  this->wind_speed = wind_speed;
+  this->wind_direction = wind_direction;
+
   double g = Constant::G.value();
   double PI = Constant::PI.value();
+  wave_direction_min = wind_direction - (PI/2 * Units::radians);
+  wave_direction_min = (wave_direction_min.value() < 0.0) ?
+                        wave_direction_min + 2*Constant::PI*Units::radian : 
+                        wave_direction_min;
+  wave_direction_max = wind_direction + (PI/2 * Units::radians);
+  wave_direction_max = (wave_direction_max.value() > 2*PI) ?
+                        wave_direction_max - 2*Constant::PI*Units::radian : 
+                        wave_direction_max;
+
+  /* Set the spectral parameters for JONSWAP spectrum */
   double U = wind_speed.value();
   double F = wind_fetch.value();
   double F_hat = g*F/(U*U);
-  f_p = (g/U)*pow(F_hat, -1/3);
+  double f_p = (g/U)*pow(F_hat, -1.0/3.0);
+  spectral_peak_freq = f_p * Units::hertz;
+
   alpha = 0.0081;
   beta = 0.0; // not required for JONSWAP
   gamma = 3.3;
-  A = alpha * g*g * pow(2*PI, -4);
-  B = (5/4)*pow(f_p, 4);
+  A = alpha * g*g / pow(2*PI, 4.0);
+  B = (5/4)*pow(f_p, 4.0);
+
+  double H_s = (1.555 + 
+                (0.2596*gamma) - 
+                (0.02231*gamma*gamma) + 
+                (0.001142*gamma*gamma*gamma))*
+                (9.81*sqrt(alpha)/pow(2*PI*f_p,2.0));
+  significant_wave_height = H_s * Units::meter;
 
   /* Energy thresholds */
   min_freq = (0.6477 + 
@@ -49,9 +67,6 @@ Wave_spectrum::Wave_spectrum( Quantity<Units::velocity> wind_speed,
               0.05261*gamma*gamma - 
               0.002839*gamma*gamma*gamma)*f_p * Units::hertz;
 
-  std::cout<<"min freq = "<<min_freq.value()<<std::endl;
-  std::cout<<"max freq = "<<max_freq.value()<<std::endl;
-  
   set_wave_spectrum();
 }
 
@@ -66,14 +81,14 @@ void Wave_spectrum::set_freq_band_count(unsigned int count)
   set_wave_spectrum();
 }
 
-void Wave_spectrum::set_wave_angle_count(unsigned int count)
+void Wave_spectrum::set_wave_direction_count(unsigned int count)
 {
   if(count <= 0)
   {
     throw Exception::ValueError("Wave_spectrum::set_direction_count()."
                      "Count should be > 0.");
   }
-  wave_angle_count = count;
+  wave_direction_count = count;
   set_wave_spectrum();
 }
 
@@ -84,9 +99,10 @@ void Wave_spectrum::set_wave_spectrum()
     spectrum.erase(spectrum.begin(), spectrum.end());
   }
 
-  if(wave_angle_list.size() != 0)
+  if(wave_direction_list.size() != 0)
   {
-    wave_angle_list.erase(wave_angle_list.begin(), wave_angle_list.end());
+    wave_direction_list.erase(wave_direction_list.begin(), 
+                              wave_direction_list.end());
   }
 
   if(freq_band_list.size() !=0)
@@ -96,28 +112,27 @@ void Wave_spectrum::set_wave_spectrum()
 
   // Create point spectrum for each direction
   Quantity<Units::plane_angle> wave_angle_band_size = 
-    (wave_angle_max - wave_angle_min) / 
-    (wave_angle_count * Units::si_dimensionless);
+    (Constant::PI * Units::radian) /
+    (wave_direction_count * Units::si_dimensionless);
   Quantity<Units::frequency> freq_band_size = 
-    (max_freq - min_freq)/
-    (freq_band_count * Units::si_dimensionless);
+    (max_freq - min_freq)/ (freq_band_count * Units::si_dimensionless);
   // Initialise random number generator for creating random phase values for
   // waves.
   std::default_random_engine generator;
   std::uniform_real_distribution<double> rand_num_distribution(0.0, 2*M_PI);
   
   // Create the vectors for direction_list and frequency_list
-  for(Quantity<Units::plane_angle> angle = wave_angle_min; 
-      angle < wave_angle_max;
-      angle += wave_angle_band_size)
+  for(unsigned int i{0u}; i<wave_direction_count; ++i)
   {
-    if(angle.value() <0)
+    Quantity<Units::plane_angle> angle = 
+      wave_direction_min + i*Units::si_dimensionless*wave_angle_band_size;
+    if(angle.value() > 2*Constant::PI.value())
     {
-      wave_angle_list.push_back(angle + (2*Constant::PI*Units::radian));
+      wave_direction_list.push_back(angle - (2*Constant::PI*Units::radian));
     }
     else
     {
-      wave_angle_list.push_back(angle);
+      wave_direction_list.push_back(angle);
     }
   }
   for(Quantity<Units::frequency> freq = min_freq;
@@ -128,14 +143,14 @@ void Wave_spectrum::set_wave_spectrum()
   }
   
   // Create the JONSWAP spectrum for each direction and frequency.
-  for(auto angle : wave_angle_list)
+  for(auto angle : wave_direction_list)
   {
     std::vector<Regular_wave> directional_spectrum;
     for(auto freq : freq_band_list)
     {
       // JONSWAP SPECTRUM
       // Ref: Proceedings of the 23rd ITTC - Vol II, Table A.4
-      // S(f) = (A/f^5) exp(-B/f^4) gamma^exp(C)
+      // S(f) = (A/f^5) exp(-B/f^4) gamma^exp(-C)
       // A = alpha g^2 (2 PI)^-4
       // B = (5/4) f_p^4
       // C = (f - f_P)^2 / (2 tau^2 f_p^2)
@@ -148,14 +163,14 @@ void Wave_spectrum::set_wave_spectrum()
       double PI = Constant::PI.value();
       double delta_f = freq_band_size.value();
       double f = freq.value() + delta_f/2;
+      double f_p = spectral_peak_freq.value();
       double tau = (f <= f_p)? 0.07 : 0.09;
       double C = ((f - f_p)*(f - f_p))/(2 * tau*tau * f_p*f_p);
-      double S = (A/pow(f,5)) * exp(-B/pow(f,4)) * pow(gamma, exp(-C));
-      
+      double S = (A/pow(f,5.0)) * exp(-B/pow(f,4.0)) * pow(gamma, exp(-C));
       
       double delta_mu = wave_angle_band_size.value();
-      double mu = wind_direction.value() - angle.value() + delta_mu/2;
-      double G = (2/PI) * pow(mu, 2);
+      double mu = angle.value() - wind_direction.value() + delta_mu/2;
+      double G = (2/PI) * cos(mu)*cos(mu);
       
       double amp = sqrt(2 * S*delta_f * G*delta_mu);
       Quantity<Units::length> amplitude{amp* Units::meter};

@@ -16,15 +16,15 @@ namespace Hydrodynamics
 /**
  * This class generates a collection of waves such that the resultant irregular 
  * wave formed by linear super-positioning of all the regular waves have the 
- * required statistical property in-line with the sea-state simulated.
+ * required statistical properties of the sea-state simulated.
  */
 class Wave_spectrum
 {
 public:
   /**
    * Constructor. Default values set by the constructor: 
-   * - number of frequencies in the wave spectrum = 20 
-   * - number of directions in the wave spectrum = 10 
+   * - number of frequency bands in the wave spectrum = 20 
+   * - number of directions of wave heading in the wave spectrum = 10 
    * - direction range = (wind direction - PI/2, wind direction + PI/2)  
    * @param wind_fetch length in meter. Should be greater than 0.
    * @param wind_speed in meter/sec. Should be greater than 0.
@@ -46,7 +46,7 @@ public:
    * Method to override the number of discrete directions in the wave spectrum.
    * @param count, the number of directions in the spectrum.
    */
-  void set_wave_angle_count(unsigned int count);
+  void set_wave_direction_count(unsigned int count);
 
   /**
    * Return a table containing waves. Each row of the table is an array of wave
@@ -60,7 +60,7 @@ public:
    * Returns a list of directions considered in the spectrum.
    */
   std::vector<Quantity<Units::plane_angle>>& get_directions(){
-    return wave_angle_list;}
+    return wave_direction_list;}
 
   /**
    * Returns a list of frequencies considered in the spectrum.
@@ -101,21 +101,31 @@ protected:
                                                      wave spectrum for a single
                                                      direction.*/
   int freq_band_count; /* Number of frequency bands in the spectrum.*/
-  int wave_angle_count; /* Number of wave direction bands in the spectrum */
-  Quantity<Units::frequency> min_freq; /* Minimum frequency in the spectrum.*/
-  Quantity<Units::frequency> max_freq;/* Maximum frequency in the spectrum.*/
-  Quantity<Units::plane_angle> wave_angle_min; /* Minimum angle in spectrum for 
-                                                wave heading. Default value is 
-                                                wind_direction - PI/2. */
-  Quantity<Units::plane_angle> wave_angle_max; /* Maximum angle in spectrum for
-                                                wave heading. Default value is 
-                                                wind_direction + PI/2. */
-  std::vector<Quantity<Units::plane_angle>> wave_angle_list;
-  std::vector<Quantity<Units::frequency>> freq_band_list;
+  int wave_direction_count; /* Number of wave direction bands in the spectrum */
+  Quantity<Units::frequency> min_freq; /* Lower limit (0.1%) of spectral energy 
+                                          threshold. */
+  Quantity<Units::frequency> max_freq;/* Upper limit (99.9%) of the spectral
+                                         energy threshold. */
+  Quantity<Units::frequency> spectral_peak_freq; /* Spectral peak frequency. */
+  Quantity<Units::length> significant_wave_height; /*Significant wave height*/
+  Quantity<Units::plane_angle> wave_direction_min; /* Minimum angle in spectrum 
+                                                      for wave heading. Default 
+                                                      value is 
+                                                      wind_direction - PI/2. */
+  Quantity<Units::plane_angle> wave_direction_max; /* Maximum angle in spectrum 
+                                                      for wave heading. Default 
+                                                      value is 
+                                                      wind_direction + PI/2. */
+  std::vector<Quantity<Units::plane_angle>> wave_direction_list; /* A list of 
+                                                      all wave directions 
+                                                      considered in the 
+                                                      spectrum.*/
+  std::vector<Quantity<Units::frequency>> freq_band_list; /* A list of all
+                                                      frequency bands considered
+                                                      in the spectrum. */
   /* Spectral parameters */
   double A;
   double B;
-  double f_p; /* spectral peak frequency */
   double alpha;
   double beta;
   double gamma;
