@@ -12,10 +12,7 @@ Regular_wave::Regular_wave( Quantity<Units::length> amplitude,
   amplitude {amplitude},
   frequency {frequency},
   direction {direction},
-  phase {phase},
-  wave_length {(2 * Constant::PI * Constant::G) / pow<2>(frequency)},
-  wave_number {(2 * Constant::PI)/wave_length},
-  wave_period {(2.0*Constant::PI)/frequency}
+  phase {phase}
 {
   // Check if inputs are valid. If not throw ValueError.
   if( amplitude.value() <= 0.0 ||
@@ -24,6 +21,9 @@ Regular_wave::Regular_wave( Quantity<Units::length> amplitude,
     throw Exception::ValueError("Constructor error. Class: Regular_wave."
                                 "Invalid input.");
   }
+  wave_length = (Constant::G/(2.0 * Constant::PI))*pow<2>(1.0/frequency);
+  wave_number = (2.0 * Constant::PI)/wave_length;
+  wave_period = (2.0 * Constant::PI)/frequency;
 }
 
 Quantity<Units::length> Regular_wave::get_wave_elevation(
