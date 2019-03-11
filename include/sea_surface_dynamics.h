@@ -60,11 +60,48 @@ protected:
    */
   void set_control_points();
 
-  /* member variables */
+protected:
   Wave_spectrum* wave_spectrum; 
   Quantity<Units::length> field_length;
   unsigned int control_points_count;
   std::vector<std::vector<Geometry::Point>> control_points;
+
+  // Variables for recording wave statistics
+  /**
+   * Records the minimum negative for each point in the field over the time of
+   * simulation.
+   */
+  std::vector<std::vector<Quantity<Units::length>>> ctrl_point_min_neg;
+  /**
+   * Records the minimum negative for the entire field over the time of
+   * simulation.
+   */
+  Quantity<Units::length> min_neg;
+  /**
+   * Record the maximum positive for each point in the field over the time of
+   * simulation.
+   */
+  std::vector<std::vector<Quantity<Units::length>>> ctrl_point_max_pos;
+  /**
+   * Records the maximum positive for the entire field over the time of 
+   * simulation.
+   */
+  Quantity<Units::length> max_pos;
+  /**
+   * Record the maximum wave height for each point in the field over the time of
+   * simulation.
+   */
+  std::vector<std::vector<Quantity<Units::length>>> ctrl_point_wave_height;
+  /**
+   * Record the average wave height for the field over the time of simulation.
+   */
+  Quantity<Units::length> average_wave_height;
+
+  /**
+   * Record the significant wave height for the field over the time of
+   * simulation.
+   */
+  Quantity<Units::length> significant_wave_height;
 }; // class Sea_surface_dynamics
 
 } // namespace Hydrodynamics
