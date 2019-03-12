@@ -22,8 +22,9 @@ public:
    * @param amplitude of wave in meters. Value should be greater than 0.0.
    * @param frequency of wave in Hertz. Value should be greater than 0.0.
    * @param direction of wave heading in radians with respect to global
-   * coordinate system's North direction. The direction of angle measurement
-   * should be such that the East is at PI/2 radians to North. 
+   * coordinate system's North direction (ie: positive Y direction). The 
+   * direction of angle measurement should be such that the East is at PI/2 
+   * radians to North (ie: clockwise direction measured positive). 
    * @param phase angle of the wave in radian.
    */
   Regular_wave( Quantity<Units::length> amplitude, 

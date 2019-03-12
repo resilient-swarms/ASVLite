@@ -38,10 +38,16 @@ Quantity<Units::length> Regular_wave::get_wave_elevation(
    * where:
    * A = wave_number * (x * cos(direction) + y * sin(direction))
    * B = 2PI * frequency * t
+   *
+   * NOTE:
+   * In the coordinate system that we use here, angular measurements are made
+   * with respect to Y axis (considering it as the North) and therefore the
+   * above formula for A needs to be correct to:
+   * A = wave_number * (x * sin(direction) + Y * cos(direction))
    */
   
-  Quantity<Units::plane_angle> A {(wave_number * (x * cos(direction) +
-                                                  y * sin(direction))) *
+  Quantity<Units::plane_angle> A {(wave_number * (x * sin(direction) +
+                                                  y * cos(direction))) *
                                                   Units::radian};
   Quantity<Units::plane_angle> B {2*Constant::PI*frequency * t * Units::radian};
   return amplitude* cos(A - B + phase);
