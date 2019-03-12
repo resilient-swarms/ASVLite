@@ -10,6 +10,14 @@ namespace Geometry
 class Point
 {
 public:
+  /**
+   * Default constructor.
+   */
+  Point();
+
+  /**
+   * Construct with coordinates provided.
+   */
   Point(Quantity<Units::length> x,
         Quantity<Units::length> y,
         Quantity<Units::length> z);
