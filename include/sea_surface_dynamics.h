@@ -78,37 +78,33 @@ protected:
   Quantity<Units::time> current_time;
 
   // Variables for recording wave statistics
-  /**
+  /*
+   * For each point record if zero line crossed first time.
+   * Each time the zero line is crossed the second time the value of
+   * ctrl_point_first_zero_cross is reset to false.
+   */
+  std::vector<std::vector<bool>> ctrl_point_first_zero_cross;
+  /*
    * Records the minimum negative for each point in the field over the time of
    * simulation.
    */
-  std::vector<std::vector<Quantity<Units::length>>> ctrl_point_min_neg;
-  /**
-   * Records the minimum negative for the entire field over the time of
-   * simulation.
-   */
-  Quantity<Units::length> min_neg;
-  /**
+  std::vector<std::vector<double>> ctrl_point_min_neg;
+  /*
    * Record the maximum positive for each point in the field over the time of
    * simulation.
    */
-  std::vector<std::vector<Quantity<Units::length>>> ctrl_point_max_pos;
-  /**
-   * Records the maximum positive for the entire field over the time of 
-   * simulation.
-   */
-  Quantity<Units::length> max_pos;
-  /**
+  std::vector<std::vector<double>> ctrl_point_max_pos;
+  /*
    * Record the maximum wave height for each point in the field over the time of
    * simulation.
    */
-  std::vector<std::vector<Quantity<Units::length>>> ctrl_point_wave_height;
-  /**
+  std::vector<std::vector<std::vector<double>>> ctrl_point_wave_height;
+  /*
    * Record the average wave height for the field over the time of simulation.
    */
   Quantity<Units::length> average_wave_height;
 
-  /**
+  /*
    * Record the significant wave height for the field over the time of
    * simulation.
    */

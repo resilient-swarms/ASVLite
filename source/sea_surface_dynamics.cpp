@@ -7,7 +7,7 @@ using namespace asv_swarm;
 using namespace Hydrodynamics;
 
 Sea_surface_dynamics::Sea_surface_dynamics(Wave_spectrum* wave_spectrum):
-     field_length {100*Units::meter},
+     field_length {1000*Units::meter},
      control_points_count {50}
 {
   if( !wave_spectrum )
@@ -24,17 +24,21 @@ Sea_surface_dynamics::Sea_surface_dynamics(Wave_spectrum* wave_spectrum):
   // All values are initialised to 0.
   for(int i = 0; i<control_points_count; ++i)
   {
-    std::vector<Quantity<Units::length>> row; 
+    std::vector<double> row; 
+    std::vector<bool> bool_row;
+    std::vector<std::vector<double>> table;
     for(int j = 0; j<control_points_count; ++j)
     {
-      row.push_back(0.0*Units::meter);
+      bool_row.push_back(false);
+      row.push_back(0.0);
+      std::vector<double> wave_ht;
+      table.push_back(wave_ht);      
     }
+    ctrl_point_first_zero_cross.push_back(bool_row);
     ctrl_point_min_neg.push_back(row);
     ctrl_point_max_pos.push_back(row);
-    ctrl_point_wave_height.push_back(row);
+    ctrl_point_wave_height.push_back(table);
   }
-  min_neg = 0.0*Units::meter;
-  max_pos = 0.0*Units::meter;
   average_wave_height = 0.0*Units::meter;
   significant_wave_height = 0.0*Units::meter;
 
@@ -118,60 +122,81 @@ void Sea_surface_dynamics::set_sea_surface_elevations(
 
 void Sea_surface_dynamics::set_wave_statistics()
 {
+  
+  static std::vector<std::vector<Geometry::Point>> previous_vals;
+  if(previous_vals.empty())
+  {
+    previous_vals = control_points;
+    return;
+  }
+  
   // For each control point
   for(int i = 0; i<control_points.size(); ++i)
   {
     for(int j = 0; j<control_points[i].size(); ++j)
     {
       // Record the wave statistics for each control point
-      if(control_points[i][j].z < ctrl_point_min_neg[i][j])
+      if(control_points[i][j].z.value() < ctrl_point_min_neg[i][j])
       {
-        ctrl_point_min_neg[i][j] = control_points[i][j].z;
+        ctrl_point_min_neg[i][j] = control_points[i][j].z.value();
       }
-      if(control_points[i][j].z > ctrl_point_max_pos[i][j])
+      if(control_points[i][j].z.value() > ctrl_point_max_pos[i][j])
       {
-        ctrl_point_max_pos[i][j] = control_points[i][j].z;
-      } 
-      Quantity<Units::length> wave_ht = ctrl_point_max_pos[i][j] - 
-                                        ctrl_point_min_neg[i][j];
-      if(wave_ht > ctrl_point_wave_height[i][j])
+        ctrl_point_max_pos[i][j] = control_points[i][j].z.value();
+      }
+      
+      // Check if zero line crossed.
+      if(previous_vals[i][j].z.value() * control_points[i][j].z.value() < 0.0)  
       {
-        ctrl_point_wave_height[i][j] = wave_ht;
+        // zero line crossed first time.
+        if(!ctrl_point_first_zero_cross[i][j])
+        {
+          ctrl_point_first_zero_cross[i][j] = true;
+        }
+        else
+        {
+          // zero line crossed second time.
+          ctrl_point_first_zero_cross[i][j] = false;
+          // calculate wave height
+          ctrl_point_wave_height[i][j].push_back( 
+              ctrl_point_max_pos[i][j] - ctrl_point_min_neg[i][j]);
+          // reset ctrl point min max recorders
+          ctrl_point_max_pos[i][j] = 0.0;
+          ctrl_point_min_neg[i][j] = 0.0;
+        }
       }
     }
   }
 
   // Record wave statistics for the entire field.
-  Quantity<Units::length> sum = 0.0 * Units::meter;
-  std::vector<Quantity<Units::length>> sorted_wave_heights; 
+  double sum = 0.0;
+  int sum_count = 0;
+  std::vector<double> sorted_wave_heights; 
   
   for(unsigned int i = 0u; i < control_points_count; ++i)
   {
     for(unsigned int j = 0u; j < control_points_count; ++j)
     {
-      sum += ctrl_point_wave_height[i][j];
-      sorted_wave_heights.push_back(ctrl_point_wave_height[i][j]);
-      
-      max_pos = (ctrl_point_max_pos[i][j] > max_pos)? 
-                 ctrl_point_max_pos[i][j] : max_pos;
-      min_neg = (ctrl_point_min_neg[i][j] < min_neg)?
-                 ctrl_point_min_neg[i][j] : min_neg;
+      for(unsigned int k = 0u; k < ctrl_point_wave_height[i][j].size(); ++k)
+      {
+        sum += ctrl_point_wave_height[i][j][k];
+        ++sum_count;
+        sorted_wave_heights.push_back(ctrl_point_wave_height[i][j][k]);
+      }
     } 
   }
   // sort the wave heights in descending order.
   std::sort(sorted_wave_heights.rbegin(), sorted_wave_heights.rend());
   
   // significant wave height = mean of top 1/3 wave heights.
-  Quantity<Units::length> significant_sum = 0.0*Units::meter;
-  int significant_count = control_points_count*control_points_count/3.0;
+  double significant_sum = 0.0;
+  int significant_count = sorted_wave_heights.size()/3.0;
   for(int i=0; i < significant_count; ++i)
   {
     significant_sum += sorted_wave_heights[i];
   }
-  int total_num_points = control_points_count*control_points_count;
-  average_wave_height = sum/(total_num_points * Units::si_dimensionless);
-  significant_wave_height = 
-                significant_sum/(significant_count*Units::si_dimensionless);
+  average_wave_height = (sum/sum_count) * Units::meter;
+  significant_wave_height = (significant_sum/significant_count)*Units::meter;
 }
 
 void Sea_surface_dynamics::print_wave_statistics()
@@ -219,22 +244,6 @@ void Sea_surface_dynamics::print_wave_statistics()
     std::setw(8)               <<
     std::setprecision(3)        <<
     current_time.value();
- 
-  std::cout                     <<
-    "Min_neg(m):"               <<
-    std::left                   <<
-    std::setfill(' ')           <<
-    std::setw(8)               <<
-    std::setprecision(3)        <<
-    min_neg.value();
-
-  std::cout                     <<
-    "Max_pos(m):"               <<
-    std::left                   <<
-    std::setfill(' ')           <<
-    std::setw(8)               <<
-    std::setprecision(3)        <<
-    max_pos.value();
 
   std::cout                     <<
     "Avg_wave_ht(m):"           <<
