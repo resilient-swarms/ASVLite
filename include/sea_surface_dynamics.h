@@ -60,11 +60,22 @@ protected:
    */
   void set_control_points();
 
+  /**
+   * Method to record the wave statistics during simulation.
+   */
+  void set_wave_statistics();
+
+  /**
+   * Prints wave statics on std::out.
+   */
+  void print_wave_statistics();
+
 protected:
   Wave_spectrum* wave_spectrum; 
   Quantity<Units::length> field_length;
   unsigned int control_points_count;
   std::vector<std::vector<Geometry::Point>> control_points;
+  Quantity<Units::time> current_time;
 
   // Variables for recording wave statistics
   /**

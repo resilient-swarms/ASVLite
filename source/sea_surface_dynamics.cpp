@@ -16,6 +16,9 @@ Sea_surface_dynamics::Sea_surface_dynamics(Wave_spectrum* wave_spectrum):
                               "Parameter wave_spectrum should not be nullptr.");
   }
   this->wave_spectrum = wave_spectrum;
+
+  // current time = 0
+  current_time = 0.0*Units::second;
   
   // Initialise the table for recording the wave statistics.
   // All values are initialised to 0.
@@ -84,6 +87,7 @@ void Sea_surface_dynamics::set_control_points()
 void Sea_surface_dynamics::set_sea_surface_elevations(
     Quantity<Units::time> current_time)
 {
+  this->current_time = current_time;
   // Calculate elevation for each control point
   // For each control point
   for(int i = 0; i<control_points.size(); ++i)
@@ -106,15 +110,27 @@ void Sea_surface_dynamics::set_sea_surface_elevations(
         }
       }
       control_points[i][j].z = elevation;
+    }
+  }
+  set_wave_statistics();
+  print_wave_statistics();
+}
 
+void Sea_surface_dynamics::set_wave_statistics()
+{
+  // For each control point
+  for(int i = 0; i<control_points.size(); ++i)
+  {
+    for(int j = 0; j<control_points[i].size(); ++j)
+    {
       // Record the wave statistics for each control point
-      if(elevation < ctrl_point_min_neg[i][j])
+      if(control_points[i][j].z < ctrl_point_min_neg[i][j])
       {
-        ctrl_point_min_neg[i][j] = elevation;
+        ctrl_point_min_neg[i][j] = control_points[i][j].z;
       }
-      if(elevation > ctrl_point_max_pos[i][j])
+      if(control_points[i][j].z > ctrl_point_max_pos[i][j])
       {
-        ctrl_point_max_pos[i][j] = elevation;
+        ctrl_point_max_pos[i][j] = control_points[i][j].z;
       } 
       Quantity<Units::length> wave_ht = ctrl_point_max_pos[i][j] - 
                                         ctrl_point_min_neg[i][j];
@@ -156,6 +172,10 @@ void Sea_surface_dynamics::set_sea_surface_elevations(
   average_wave_height = sum/(total_num_points * Units::si_dimensionless);
   significant_wave_height = 
                 significant_sum/(significant_count*Units::si_dimensionless);
+}
+
+void Sea_surface_dynamics::print_wave_statistics()
+{
 
   /* Print wave stats on std::out */
   std::cout                     <<
@@ -233,5 +253,5 @@ void Sea_surface_dynamics::set_sea_surface_elevations(
     significant_wave_height.value();
 
   std::cout<<std::endl;
-}
 
+}
