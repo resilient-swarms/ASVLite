@@ -10,7 +10,7 @@ int main()
 
   /* Create variables to define the sea condition. */
   Quantity<Units::length> wind_fetch {100*Units::kilo*Units::meter};
-  Quantity<Units::velocity> wind_speed {15*Units::meter_per_second};
+  Quantity<Units::velocity> wind_speed {7.5*Units::meter_per_second};
   Quantity<Units::plane_angle> wind_direction {Constant::PI * Units::radian};
   
   /* Create the wave spectrum for the sea condition. */
