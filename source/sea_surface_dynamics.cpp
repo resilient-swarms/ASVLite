@@ -19,30 +19,20 @@ Sea_surface_dynamics::Sea_surface_dynamics(Wave_spectrum* wave_spectrum):
 
   // current time = 0
   current_time = 0.0*Units::second;
-  
-  // Initialise the table for recording the wave statistics.
-  // All values are initialised to 0.
-  for(int i = 0; i<control_points_count; ++i)
-  {
-    std::vector<double> row; 
-    std::vector<bool> bool_row;
-    std::vector<std::vector<double>> table;
-    for(int j = 0; j<control_points_count; ++j)
-    {
-      bool_row.push_back(false);
-      row.push_back(0.0);
-      std::vector<double> wave_ht;
-      table.push_back(wave_ht);      
-    }
-    ctrl_point_first_zero_cross.push_back(bool_row);
-    ctrl_point_min_neg.push_back(row);
-    ctrl_point_max_pos.push_back(row);
-    ctrl_point_wave_height.push_back(table);
-  }
-  average_wave_height = 0.0*Units::meter;
-  significant_wave_height = 0.0*Units::meter;
-
+ 
+  // Initialise all control points in the field.
   set_control_points();
+ 
+  // Initialise recording of wave statistics.
+  // Stat point set to the middle of the field.
+  stat_point = control_points[control_points_count/2][control_points_count/2];
+  stat_point_previous_record = stat_point;
+  // All values are initialised to 0.
+  zero_crossed = false;
+  min_neg = 0.0 * Units::meter;
+  max_pos = 0.0 * Units::meter;
+  average_wave_height = 0.0 * Units::meter;
+  significant_wave_height = 0.0 * Units::meter;
 }
 
 void Sea_surface_dynamics::set_field_length(
@@ -82,7 +72,8 @@ void Sea_surface_dynamics::set_control_points()
       Quantity<Units::length> x{patch_length*j*Units::meter};
       Quantity<Units::length> y{patch_length*i*Units::meter};
       Quantity<Units::length> z{0.0*Units::meter};
-      control_points_row.push_back(Geometry::Point(x,y,z));
+      Geometry::Point point{x,y,z};
+      control_points_row.push_back(point);
     }
     control_points.push_back(control_points_row);
   }
@@ -122,87 +113,61 @@ void Sea_surface_dynamics::set_sea_surface_elevations(
 
 void Sea_surface_dynamics::set_wave_statistics()
 {
-  
-  static std::vector<std::vector<Geometry::Point>> previous_vals;
-  if(previous_vals.empty())
-  {
-    previous_vals = control_points;
-    return;
-  }
-  
-  // For each control point
-  for(int i = 0; i<control_points.size(); ++i)
-  {
-    for(int j = 0; j<control_points[i].size(); ++j)
-    {
-      // Record the wave statistics for each control point
-      if(control_points[i][j].z.value() < ctrl_point_min_neg[i][j])
-      {
-        ctrl_point_min_neg[i][j] = control_points[i][j].z.value();
-      }
-      if(control_points[i][j].z.value() > ctrl_point_max_pos[i][j])
-      {
-        ctrl_point_max_pos[i][j] = control_points[i][j].z.value();
-      }
+  // Get current reading of stat point.
+  stat_point = control_points[control_points_count/2][control_points_count/2];
+  // Set min and max 
+  min_neg = (stat_point.z < min_neg)? stat_point.z : min_neg;
+  max_pos = (stat_point.z > max_pos)? stat_point.z : max_pos;
       
-      // Check if zero line crossed.
-      if(previous_vals[i][j].z.value() * control_points[i][j].z.value() < 0.0)  
+  // Check if zero line crossed.
+  if(stat_point_previous_record.z.value() * stat_point.z.value() < 0.0)  
+  {
+    // zero line crossed first time.
+    if(!zero_crossed)
+    {
+      zero_crossed = true;
+    }
+    else
+    {
+      // zero line crossed second time.
+      // calculate wave height
+      wave_height.push_back(max_pos - min_neg);
+      // Sort wave heights in descending order
+      std::sort(wave_height.rbegin(), wave_height.rend());
+      
+      // Calculate average wave height and significant wave height.
+      Quantity<Units::length> sum = 0.0 * Units::meter;
+      for(unsigned int i {0u}; i<wave_height.size(); )
       {
-        // zero line crossed first time.
-        if(!ctrl_point_first_zero_cross[i][j])
+        sum += wave_height[i++];
+        if( i == wave_height.size()/3)
         {
-          ctrl_point_first_zero_cross[i][j] = true;
-        }
-        else
-        {
-          // zero line crossed second time.
-          ctrl_point_first_zero_cross[i][j] = false;
-          // calculate wave height
-          ctrl_point_wave_height[i][j].push_back( 
-              ctrl_point_max_pos[i][j] - ctrl_point_min_neg[i][j]);
-          // reset ctrl point min max recorders
-          ctrl_point_max_pos[i][j] = 0.0;
-          ctrl_point_min_neg[i][j] = 0.0;
+         significant_wave_height = sum/(i*Units::si_dimensionless); 
         }
       }
+      average_wave_height = sum/(wave_height.size() * Units::si_dimensionless);
+      
+      // reset data records for the next wave cycle.
+      max_pos = 0.0 * Units::meter;
+      min_neg = 0.0 * Units::meter;
+      zero_crossed = false;
     }
   }
-
-  // Record wave statistics for the entire field.
-  double sum = 0.0;
-  int sum_count = 0;
-  std::vector<double> sorted_wave_heights; 
-  
-  for(unsigned int i = 0u; i < control_points_count; ++i)
-  {
-    for(unsigned int j = 0u; j < control_points_count; ++j)
-    {
-      for(unsigned int k = 0u; k < ctrl_point_wave_height[i][j].size(); ++k)
-      {
-        sum += ctrl_point_wave_height[i][j][k];
-        ++sum_count;
-        sorted_wave_heights.push_back(ctrl_point_wave_height[i][j][k]);
-      }
-    } 
-  }
-  // sort the wave heights in descending order.
-  std::sort(sorted_wave_heights.rbegin(), sorted_wave_heights.rend());
-  
-  // significant wave height = mean of top 1/3 wave heights.
-  double significant_sum = 0.0;
-  int significant_count = sorted_wave_heights.size()/3.0;
-  for(int i=0; i < significant_count; ++i)
-  {
-    significant_sum += sorted_wave_heights[i];
-  }
-  average_wave_height = (sum/sum_count) * Units::meter;
-  significant_wave_height = (significant_sum/significant_count)*Units::meter;
+  stat_point_previous_record = stat_point;
 }
 
 void Sea_surface_dynamics::print_wave_statistics()
 {
 
   /* Print wave stats on std::out */
+  std::cout                     <<
+    "Min freq(Hz):"             <<
+    std::left                   <<
+    std::setfill(' ')           <<
+    std::setw(7)                <<
+    std::setprecision(2)        <<
+    wave_spectrum->get_min_frequency().value();
+
   std::cout                     <<
     "Peak freq(Hz):"            <<
     std::left                   <<
@@ -211,14 +176,6 @@ void Sea_surface_dynamics::print_wave_statistics()
     std::setprecision(2)        <<
     wave_spectrum->get_spectral_peak_frequency().value();
    
-  std::cout                     <<
-    "Min freq(Hz):"             <<
-    std::left                   <<
-    std::setfill(' ')           <<
-    std::setw(7)                <<
-    std::setprecision(2)        <<
-    wave_spectrum->get_min_frequency().value();
-    
   std::cout                     <<
     "Max freq(Hz):"             <<
     std::left                   <<
@@ -234,22 +191,58 @@ void Sea_surface_dynamics::print_wave_statistics()
     std::setw(7)                <<
     std::setprecision(3)        <<
     wave_spectrum->get_significant_wave_height().value();
-
-  std::cout <<"  |*|  ";
+     
+  std::cout                     <<
+    std::left                   <<
+    std::setfill(' ')           <<
+    std::setw(6)                <<
+    "|*|";
   
   std::cout                     <<
     "Time(sec):"                <<
     std::left                   <<
     std::setfill(' ')           <<
-    std::setw(8)               <<
+    std::setw(8)                <<
     std::setprecision(3)        <<
     current_time.value();
+
+  std::cout                     <<
+    "Elevation(m):"             <<
+    std::left                   <<
+    std::setfill(' ')           <<
+    std::setw(9)                <<
+    std::setprecision(3)        <<
+    stat_point.z.value();
+
+  std::cout                     <<
+    "Wave cycles count:"        <<
+    std::left                   <<
+    std::setfill(' ')           <<
+    std::setw(5)                <<
+    wave_height.size();
+
+
+  std::cout                     <<
+    "Min_wave_ht(m):"           <<
+    std::left                   <<
+    std::setfill(' ')           <<
+    std::setw(8)                <<
+    std::setprecision(3)        <<
+    (wave_height.empty()? 0.0 : wave_height.back().value());
+
+  std::cout                     <<
+    "Max_wave_ht(m):"           <<
+    std::left                   <<
+    std::setfill(' ')           <<
+    std::setw(8)                <<
+    std::setprecision(3)        <<
+    (wave_height.empty()? 0.0 : wave_height.front().value());
 
   std::cout                     <<
     "Avg_wave_ht(m):"           <<
     std::left                   <<
     std::setfill(' ')           <<
-    std::setw(8)               <<
+    std::setw(8)                <<
     std::setprecision(3)        <<
     average_wave_height.value();
 
@@ -257,7 +250,7 @@ void Sea_surface_dynamics::print_wave_statistics()
     "Sig_wave_ht(m):"           <<
     std::left                   <<
     std::setfill(' ')           <<
-    std::setw(8)               <<
+    std::setw(8)                <<
     std::setprecision(3)        <<
     significant_wave_height.value();
 
