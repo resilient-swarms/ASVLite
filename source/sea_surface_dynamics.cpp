@@ -112,8 +112,11 @@ void Sea_surface_dynamics::set_sea_surface_elevations(
       control_points[i][j].z = elevation;
     }
   }
-  set_wave_statistics();
+  
+  // Print the wave statistics if required.
+#ifdef PRINT_WAVE_STATS
   print_wave_statistics();
+#endif
 }
 
 void Sea_surface_dynamics::set_wave_statistics()
@@ -163,6 +166,8 @@ void Sea_surface_dynamics::set_wave_statistics()
 
 void Sea_surface_dynamics::print_wave_statistics()
 {
+  /* Calculate the wave statistics */ 
+  set_wave_statistics();
 
   /* Print wave stats on std::out */
   std::cout                     <<
