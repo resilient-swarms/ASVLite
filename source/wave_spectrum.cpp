@@ -170,9 +170,16 @@ void Wave_spectrum::set_wave_spectrum()
       
       double delta_mu = wave_angle_band_size.value();
       double mu = angle.value() - wind_direction.value() + delta_mu/2;
-      double G = (2/PI) * cos(mu)*cos(mu);
+      // Direction function G = (2/PI) * cos(mu)*cos(mu);
+      // Integrate G over the interval mu_1 to mu_2, where:
+      // mu_1 = angle
+      // mu_2 = angle + delta_mu
+      // integral(G) = (1/PI)(sin(2 mu_2)/2 + mu_2 - sin(2 mu_1)/2 - mu_1)
+      double mu_1 = angle.value();
+      double mu_2 = angle.value() + delta_mu;
+      double G_integral = (1/PI)*(sin(2*mu_2)/2 + mu_2 - sin(2*mu_1)/2 - mu_1);
       
-      double amp = sqrt(2 * S*delta_f * G*delta_mu);
+      double amp = sqrt(2 * S*delta_f * G_integral);
       Quantity<Units::length> amplitude{amp* Units::meter};
       
       // Generate a random value for phase
