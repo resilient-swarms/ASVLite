@@ -50,7 +50,7 @@ INCLUDE_DIRECTORIES(
 # Common source files.
 MESSAGE(STATUS "Add common source files.")
 SET( SOURCE  
-  source/main.cpp
+  source/main_headless.cpp
   source/geometry.cpp 
   source/regular_wave.cpp
   source/wave_spectrum.cpp
@@ -59,8 +59,10 @@ SET( SOURCE
 # Visualisation source files.
 IF(ENABLE_VISUALISATION)
   MESSAGE(STATUS "Add source files required for visualisation.")
+  LIST(REMOVE_ITEM SOURCE source/main_headless.cpp)
   SET(SOURCE 
     ${SOURCE}
+    source/main_visualisation.cpp
     source/sea_surface_actor.cpp
     source/scene.cpp
     )

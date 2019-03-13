@@ -36,6 +36,10 @@ int main()
   /*scene.add_actor(&asv_actor);*/
 
   /* Start visualization */
+  /* Override default frame rate for animation either by overriding frame rate
+   * value or by specifying the timer step size*/
+  //scene.set_frame_rate(20);
+  //scene.set_timer_step_size(100);
   scene.start();
 
   return EXIT_SUCCESS;
