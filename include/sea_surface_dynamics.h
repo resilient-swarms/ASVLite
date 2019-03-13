@@ -47,13 +47,6 @@ public:
    */
   void set_control_points_count(unsigned int count);
 
-  /**
-   * Method to set the sea surface elevations for all control points for the 
-   * current time step.
-   * @param time_step is the simulation time step.
-   */
-  void set_sea_surface_elevations(Quantity<Units::time> current_time);
-
 protected:  
   /**
    * Method to set control points along the surface of the sea.
@@ -69,6 +62,13 @@ protected:
    * Prints wave statics on std::out.
    */
   void print_wave_statistics();
+
+  /**
+   * Method to set the sea surface elevations for all control points for the 
+   * current time step.
+   * @param time_step is the simulation time step.
+   */
+  void set_sea_surface_elevations(Quantity<Units::time> current_time);
 
 protected:
   Wave_spectrum* wave_spectrum; 
