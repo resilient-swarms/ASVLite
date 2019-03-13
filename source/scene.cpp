@@ -8,6 +8,7 @@ using namespace asv_swarm::Visualisation;
 
 Scene::Scene(): vtkCommand{}
 {
+  // Default frame rate = 25 fps
   unsigned int frame_rate = 25; /* Required fps for animation */
   timer_step_size = static_cast<int>(1000/frame_rate); // units in milliseconds. 
 
@@ -38,6 +39,38 @@ Scene::Scene(): vtkCommand{}
   axes_widget->InteractiveOff();
 }
 
+void Scene::set_frame_rate(unsigned int fps)
+{
+  if( !sea_surface_actor )
+  {
+    throw Exception::ValueError("Scene::set_frame_rate. Sea surface actor " 
+                                "should not be nullptr. This method should be "
+                                "called only after initialising all actors.");
+  }
+  //TODO: throw exception for null ASV actors.
+  
+  frame_rate = fps;
+  timer_step_size = static_cast<int>(1000/frame_rate); // units in milliseconds. 
+  sea_surface_actor->set_timer_step_size(timer_step_size);
+  //TODO: set_timer_step_size for asv actor.
+}
+
+void Scene::set_timer_step_size(unsigned int time_step)
+{
+  if( !sea_surface_actor )
+  {
+    throw Exception::ValueError("Scene::set_timer_step_size. Sea surface actor " 
+                                "should not be nullptr. This method should be "
+                                "called only after initialising all actors.");
+  }
+  //TODO: throw exception for null ASV actors.
+  
+  timer_step_size = time_step; 
+  sea_surface_actor->set_timer_step_size(timer_step_size);
+  //TODO: set_timer_step_size for asv actor.
+}
+
+
 void Scene::add_actor(Sea_surface_actor* sea_surface_actor)
 {
   if( !sea_surface_actor )
@@ -45,9 +78,12 @@ void Scene::add_actor(Sea_surface_actor* sea_surface_actor)
     throw Exception::ValueError("Scene::add_actor. Parameter sea_surface_actor" 
                                 "should not be nullptr.");
   }
+  //TODO: throw exception for null ASV actors.
+  
   this->sea_surface_actor = sea_surface_actor;
   /* set timer in sea surface actor*/
   sea_surface_actor->set_timer_step_size(timer_step_size);
+  //TODO: set_timer_step_size for asv actor.
 }
 
 void Scene::start()

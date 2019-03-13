@@ -23,6 +23,18 @@ public:
   Scene();
 
   /**
+   * Override the default frame rate for animation.
+   * @param fps frame rate in frames per seconds.
+   */
+  void set_frame_rate(unsigned int fps);
+
+  /**
+   * Override the default frame rate for animation.
+   * @param time_step_size time step size in milliseconds
+   */
+  void set_timer_step_size(unsigned int time_step);
+
+  /**
    * Add a sea surface actor to the scene. 
    */
   void add_actor(Sea_surface_actor* sea_surface_actor);
@@ -52,6 +64,7 @@ protected:
                void *vtkNotUsed(callData)) override;
 
 private:
+  unsigned int frame_rate;
   unsigned int timer_step_size;
   vtkSmartPointer<vtkAxesActor> axes_actor;
   vtkSmartPointer<vtkOrientationMarkerWidget> axes_widget;
