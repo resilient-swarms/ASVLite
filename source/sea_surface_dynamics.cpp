@@ -7,7 +7,7 @@ using namespace asv_swarm;
 using namespace Hydrodynamics;
 
 Sea_surface_dynamics::Sea_surface_dynamics(Wave_spectrum* wave_spectrum):
-     field_length {1000*Units::meter},
+     field_length {100*Units::meter},
      control_points_count {50}
 {
   if( !wave_spectrum )
@@ -62,6 +62,11 @@ void Sea_surface_dynamics::set_control_points_count(unsigned int count)
 
 void Sea_surface_dynamics::set_control_points()
 {
+  // Clear the control points if not empty
+  if(!control_points.empty())
+  {
+    control_points.erase(control_points.begin(), control_points.end());
+  }
   double patch_length = field_length.value() / control_points_count;
   // Create a 2D array of control points.
   for(unsigned int i=0; i<control_points_count; ++i)

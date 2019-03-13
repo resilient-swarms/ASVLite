@@ -17,9 +17,16 @@ int main()
   Hydrodynamics::Wave_spectrum wave_spectrum( wind_speed, 
                                               wind_fetch, 
                                               wind_direction);
-  
+  /* Override the default number of bands for frequency and directions */
+  //wave_spectrum.set_freq_band_count(100);
+  //wave_spectrum.set_wave_direction_count(10);
+
   /* Create actor for sea surface */
   Visualisation::Sea_surface_actor sea_surface_actor(&wave_spectrum);
+  /* Override the default field dimension */
+  sea_surface_actor.set_field_length(1000 * Units::meter);
+  /* Override the default number of control points on the sea surface. */
+  sea_surface_actor.set_control_points_count(20);
 
   /* Create actor for ASV */
   /*Visualisation::ASV_actor asv_actor();*/
