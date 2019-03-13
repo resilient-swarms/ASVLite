@@ -29,7 +29,7 @@ int main()
   /* Start simulation */
   unsigned int timer_step_size = 40; /* time step size in miiliseconds.
                                         40 millisec = 25fps*/                                    
-  for(int timer_count = 0;;timer_count+=timer_step_size) 
+  for(int timer_count = 0; ; ++timer_count) 
   {
     Quantity<Units::time> time { timer_count * timer_step_size * 
                                  Units::milli *  Units::seconds};

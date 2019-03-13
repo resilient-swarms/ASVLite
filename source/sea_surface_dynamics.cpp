@@ -212,7 +212,7 @@ void Sea_surface_dynamics::print_wave_statistics()
     "Time(sec):"                <<
     std::left                   <<
     std::setfill(' ')           <<
-    std::setw(8)                <<
+    std::setw(12)               <<
     std::setprecision(3)        <<
     current_time.value();
 
