@@ -21,9 +21,11 @@
 #include<boost/units/systems/si/prefixes.hpp>
 #include<boost/units/quantity.hpp>
 #include<boost/units/systems/si/length.hpp>
+#include<boost/units/systems/si/mass.hpp>
 #include<boost/units/systems/si/wavenumber.hpp>
 #include<boost/units/systems/si/acceleration.hpp>
 #include<boost/units/systems/si/velocity.hpp>
+#include<boost/units/systems/si/force.hpp>
 #include<boost/units/systems/si/time.hpp>
 #include<boost/units/systems/si/frequency.hpp>
 #include<boost/units/systems/si/plane_angle.hpp>
@@ -32,6 +34,7 @@
 #include<boost/units/systems/si/prefixes.hpp>
 #include<boost/units/cmath.hpp>
 #include<cmath>
+#include"quantity.h"
 
 namespace asv_swarm
 {
