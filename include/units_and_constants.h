@@ -62,10 +62,14 @@ using SR = boost::units::static_rational<N, D>;
 namespace Constant
 {
 const Quantity<Units::acceleration> G = 
-9.81 * (Units::meter / Units::second/ Units::second); /* Acceleration due to 
-                                                         gravity. */
+  9.81 * (Units::meter / Units::second/ Units::second); /* Acceleration due to 
+                                                           gravity. */
 
 const Quantity<Units::dimensionless> PI = M_PI;  /* Pi */
+
+const Quantity<Units::density> RHO_SEA_WATER = 
+  1025*Units::kilogram_per_meter_cube; /* Density of sea water. */
+
 } // namespace Const
 } // namespace asv_swarm
 
