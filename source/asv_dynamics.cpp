@@ -20,8 +20,8 @@ ASV_dynamics::ASV_dynamics(ASV& asv):
       asv.T.value() <= 0.0                                            ||
       asv.displacement.value() <= 0.0                                 ||
       (asv.displacement/(asv.L* asv.B* asv.T)).value() > 1.0          ||
-      asv.metacentric_height.value() < asv.centre_of_gravity.z.value()||
-      asv.metacentric_height.value() < asv.T.value()
+      asv.metacentric_height.value() <= asv.centre_of_gravity.z.value()||
+      asv.metacentric_height.value() <= asv.T.value()
     )
   {
     throw Exception::ValueError("Constructor error. Class: ASV_dynamics." 
@@ -50,6 +50,7 @@ void ASV_dynamics::set_mass_matrix()
 {
   double PI = Constant::PI.value();
   double rho = Constant::RHO_SEA_WATER.value();
+  double g = Constant::G.value();
   double L = asv.L.value();
   double B = asv.B.value();
   double T = asv.T.value();
@@ -124,3 +125,44 @@ void ASV_dynamics::set_mass_matrix()
 
 }
 
+void ASV_dynamics::set_stiffness_matrix()
+{  
+  double PI = Constant::PI.value();
+  double rho = Constant::RHO_SEA_WATER.value();
+  double g = Constant::G.value();
+  double L = asv.L.value();
+  double B = asv.B.value();
+  double T = asv.T.value();
+  double KM = asv.metacentric_height.value();
+
+
+  // For the purpose of estimating stiffness, we assume the water plane to be of
+  // elliptical shape.
+  
+  // Surge stiffness = 0
+  // Sway stiffness = 0
+  
+  // Heave stiffness 
+  // heave stiffness = water plane area * rho * g
+  // water plane area (considering elliptical shape) = PI/4 * L*B
+  double stiffness_heave = (PI/4.0) * L * B * rho * g;
+  K[DOF::heave][DOF::heave] = stiffness_heave;
+
+  // Roll stiffness
+  // roll stiffness = restoring moment
+  // restoring moment = rho * g * displacement * GM
+  double displacement = asv.displacement.value();
+  double GM = KM - asv.centre_of_gravity.z.value();
+  double stiffness_roll = rho * g * displacement * GM;
+  K[DOF::roll][DOF::roll] = stiffness_roll;
+
+  // Pitch stiffness
+  // pitch stiffness = rho * g * I_y
+  // for ellipse I_y = (PI/4) a^3 b
+  // where a = L/2
+  // and b = B/2
+  double stiffness_pitch = rho * g * (PI/4.0) * L*L*L/8.0 * B/2.0;
+  K[DOF::pitch][DOF::pitch] = stiffness_pitch;
+
+  // Yaw stiffness = 0.0
+}
