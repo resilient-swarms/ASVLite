@@ -55,6 +55,9 @@ void ASV_dynamics::set_mass_matrix()
   double B = asv.B.value();
   double T = asv.T.value();
   double KM = asv.metacentric_height.value();
+  double x_c = asv.centre_of_gravity.x.value();
+  double y_c = asv.centre_of_gravity.y.value();
+  double z_c = asv.centre_of_gravity.z.value();
 
   // Set the mass and inertia of ASV in the matrix
   double mass = asv.displacement.value() * rho;
@@ -111,18 +114,23 @@ void ASV_dynamics::set_mass_matrix()
   // Roll added mass inertia 
   // add mass inertial = rho (PI/24) (KM^2 + T^2) B^2 L
   double added_mass_roll = (rho * PI/ 24.0)* (KM*KM + T*T) * B*B * L;
-  M[DOF::roll][DOF::roll] = added_mass_roll;
+  M[DOF::roll][DOF::roll] += added_mass_roll;
 
   // Pitch added mass inertia  
   // pitch add mass inertia = (1/15) rho PI B^2/4 L^3/4
   double added_mass_pitch = (1.0/15.0)*rho*PI* (B*B/4.0) * (L*L*L/4.0);
-  M[DOF::pitch][DOF::pitch] = added_mass_pitch;
+  M[DOF::pitch][DOF::pitch] += added_mass_pitch;
 
   // Yaw added mass inertia
   // yaw added mass inertia = (1/24) * rho * PI * T^2 * L^3
   double added_mass_yaw = (1.0/24.0) * rho * PI * T*T * L*L*L;
-  M[DOF::yaw][DOF::yaw] = added_mass_yaw;
+  M[DOF::yaw][DOF::yaw] += added_mass_yaw;
 
+  // Motion coupling 
+  M[DOF::surge][DOF::pitch] = M[DOF::pitch][DOF::surge] = mass  * z_c;
+  M[DOF::sway][DOF::roll]   = M[DOF::roll][DOF::sway]   = -mass * z_c;
+  M[DOF::sway][DOF::yaw]    = M[DOF::yaw][DOF::sway]    = mass  * x_c;
+  M[DOF::heave][DOF::pitch] = M[DOF::pitch][DOF::heave] = -mass * x_c;
 }
 
 void ASV_dynamics::set_stiffness_matrix()
@@ -134,7 +142,6 @@ void ASV_dynamics::set_stiffness_matrix()
   double B = asv.B.value();
   double T = asv.T.value();
   double KM = asv.metacentric_height.value();
-
 
   // For the purpose of estimating stiffness, we assume the water plane to be of
   // elliptical shape.
