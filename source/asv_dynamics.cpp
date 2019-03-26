@@ -11,17 +11,20 @@ using namespace asv_swarm::Hydrodynamics;
  */
 enum DOF{surge=0, sway=1, heave=2, roll=3, pitch=4, yaw=5};
 
-ASV_dynamics::ASV_dynamics(ASV& asv):
-  asv{asv}
+ASV_dynamics::ASV_dynamics(ASV& asv, Wave_spectrum* wave_spectrum):
+  asv{asv}, 
+  wave_spectrum{wave_spectrum}
 {
   // Check if the asv inputs are valid
-  if( asv.L.value() <= 0.0                                            ||
-      asv.B.value() <= 0.0                                            ||
-      asv.T.value() <= 0.0                                            ||
-      asv.displacement.value() <= 0.0                                 ||
-      (asv.displacement/(asv.L* asv.B* asv.T)).value() > 1.0          ||
+  if( asv.L.value() <= 0.0                                             ||
+      asv.B.value() <= 0.0                                             ||
+      asv.T.value() <= 0.0                                             ||
+      asv.displacement.value() <= 0.0                                  ||
+      (asv.displacement/(asv.L* asv.B* asv.T)).value() > 1.0           ||
       asv.metacentric_height.value() <= asv.centre_of_gravity.z.value()||
-      asv.metacentric_height.value() <= asv.T.value()
+      asv.metacentric_height.value() <= asv.T.value()                  ||
+      asv.max_speed.value() > 0.0                                      ||
+      wave_spectrum == nullptr
     )
   {
     throw Exception::ValueError("Constructor error. Class: ASV_dynamics." 
@@ -32,18 +35,34 @@ ASV_dynamics::ASV_dynamics(ASV& asv):
 
   // Initialise all matrix to zero.
   for(unsigned int i{0u}; i<6; ++i)
+  {
     for(unsigned int j{0u}; j<6; ++j)
     {
       M[i][j] = 0.0;
       C[i][j] = 0.0;
       K[i][j] = 0.0;
     }
+  }
   // Set mass matrix
   set_mass_matrix();
   // Set damping matrix
   set_damping_matrix();
   // Set stiffness matrix
   set_stiffness_matrix();
+  // Set min and max encounter frequency
+  Quantity<Units::frequency> min_wave_freq = wave_spectrum->get_min_frequency();
+  Quantity<Units::frequency> max_wave_freq = wave_spectrum->get_max_frequency();
+  min_encounter_frequency = min_wave_freq - 
+                            (min_wave_freq*min_wave_freq)/Constant::G *
+                            asv.max_speed;
+  max_encounter_frequency = max_wave_freq +
+                            (max_wave_freq*max_wave_freq)/Constant::G *
+                            asv.max_speed;
+  // Set number of bands in the response spectrum.
+  encounter_freq_band_count = 100;
+  encounter_wave_direction_count = 360;
+  // Set the RAO spectrum
+  set_wave_force_matrix();
 }
 
 void ASV_dynamics::set_mass_matrix()
@@ -172,4 +191,61 @@ void ASV_dynamics::set_stiffness_matrix()
   K[DOF::pitch][DOF::pitch] = stiffness_pitch;
 
   // Yaw stiffness = 0.0
+}
+
+double ASV_dynamics::get_wave_heave_force(Quantity<Units::frequency> frequency, 
+                                          Quantity<Units::plane_angle> angle)
+{
+  double heave_pressure_force = 0.0;
+  double wave_height = 0.01; // wave height = 1 cm.
+  double circular_freq = 2.0 * Constant::PI.value() * frequency.value();
+  double k = circular_freq*circular_freq / Constant::G.value();
+  double z = -asv.T.value();
+  double mu = angle.value();
+  double B = asv.B.value();
+
+  // Divide the length into 100 strips
+  double delta_x = asv.L.value();
+  for(double x = 0.0; x <= asv.L.value(); x += delta_x)
+  {
+    heave_pressure_force += Constant::RHO_SEA_WATER.value() * 
+                            Constant::G.value() * 
+                            wave_height * 
+                            exp(k * z) * 
+                            cos(k * x * cos(mu)) * sin(k * B/2.0 * sin(mu)) /
+                            (k * sin(mu));
+  } 
+  return heave_pressure_force;
+}
+
+
+
+void ASV_dynamics::set_wave_force_matrix()
+{
+  // The response spectrum is to be calculated for heading directions ranging
+  // from 0 deg to 360 deg with 1 deg as the angle step size.
+  for(int i = 0; i < 360; ++i)
+  {
+    // convert the angle to radians
+    Quantity<Units::plane_angle> heading = 
+      (i * Constant::PI)/180 * Units::radian;
+
+    // encounter frequency step size 
+    Quantity<Units::frequency> encounter_freq_step_size =  
+      (max_encounter_frequency - min_encounter_frequency) / 
+      (100.0 * Units::si_dimensionless);
+    for(int j = 0; j < 100; ++j)
+    {
+      Quantity<Units::frequency> frequency = min_encounter_frequency + 
+                                             encounter_freq_step_size * 
+                                             (j * Units::si_dimensionless);
+      // set wave force
+      //F_wave[i][j][DOF::surge] = get_wave_surge_force (frequency, heading);
+      //F_wave[i][j][DOF::sway]  = get_wave_sway_force  (frequency, heading);
+      F_wave[i][j][DOF::heave] = get_wave_heave_force (frequency, heading);
+      //F_wave[i][j][DOF::roll]  = get_wave_roll_moment (frequency, heading);
+      //F_wave[i][j][DOF::pitch] = get_wave_pitch_moment(frequency, heading);
+      //F_wave[i][j][DOF::yaw]   = get_wave_yaw_moment  (frequency, heading);
+    }
+  }
 }

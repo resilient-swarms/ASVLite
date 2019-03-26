@@ -55,6 +55,7 @@ SET( SOURCE
   source/regular_wave.cpp
   source/wave_spectrum.cpp
   source/sea_surface_dynamics.cpp
+  source/asv_dynamics.cpp
   )
 # Visualisation source files.
 IF(ENABLE_VISUALISATION)

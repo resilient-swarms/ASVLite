@@ -23,6 +23,7 @@ public:
   Quantity<Units::length> r_roll; // roll radius of gyration
   Quantity<Units::length> r_pitch; // pitch radius of gyration
   Quantity<Units::length> r_yaw; // yaw radius of gyration
+  Quantity<Units::velocity> max_speed; // maximum operational speed of the ASV.
 };
 
 /**
@@ -34,7 +35,7 @@ public:
   /**
    * Constructor.
    */
-  ASV_dynamics(ASV& asv);
+  ASV_dynamics(ASV& asv, Wave_spectrum* wave_spectrum);
 
 private:
   /**
@@ -59,12 +60,37 @@ private:
    */
   void set_stiffness_matrix();
 
+  /**
+   * Method to calculate the wave forces for all encounter frequencies and all 
+   * heading directions.
+   */
+  void set_wave_force_matrix();
+
+  double get_wave_surge_force  (Quantity<Units::frequency> frequency, 
+                                Quantity<Units::plane_angle> angle);
+  double get_wave_sway_force   (Quantity<Units::frequency> frequency,
+                                Quantity<Units::plane_angle> angle);
+  double get_wave_heave_force  (Quantity<Units::frequency> frequency,
+                                Quantity<Units::plane_angle> angle);
+  double get_wave_roll_moment  (Quantity<Units::frequency> frequency,
+                                Quantity<Units::plane_angle> angle);
+  double get_wave_pitch_moment (Quantity<Units::frequency> frequency,
+                                Quantity<Units::plane_angle> angle);
+  double get_wave_yaw_moment   (Quantity<Units::frequency> frequency,
+                                Quantity<Units::plane_angle> angle);
+
 private:
   Quantity<Units::time> current_time;
   ASV& asv;
   double M[6][6]; // mass matrix
   double C[6][6]; // damping matrix
   double K[6][6]; // stiffness matrix
+  double F_wave[360][100][6];
+  Wave_spectrum* wave_spectrum;
+  Quantity<Units::frequency> min_encounter_frequency; 
+  Quantity<Units::frequency> max_encounter_frequency;
+  int encounter_freq_band_count; // Number of frequency bands in the RAO.
+  int encounter_wave_direction_count; // Number of heading directions
 };
 
 } //namespace Hydrodynamics
