@@ -193,12 +193,13 @@ void ASV_dynamics::set_stiffness_matrix()
   // Yaw stiffness = 0.0
 }
 
-std::array<double, 2> ASV_dynamics::get_wave_heave_force_pitch_moment(
+std::array<double, 3> ASV_dynamics::get_wave_heave_force_pitch_roll_moment(
     Quantity<Units::frequency> frequency, 
     Quantity<Units::plane_angle> angle)
 {
   double heave_pressure_force = 0.0;
   double pitch_moment = 0.0;  
+  double roll_moment = 0.0;
   double wave_height = 0.01; // wave height = 1 cm.
   double circular_freq = 2.0 * Constant::PI.value() * frequency.value();
   double k = circular_freq*circular_freq / Constant::G.value();
@@ -211,41 +212,61 @@ std::array<double, 2> ASV_dynamics::get_wave_heave_force_pitch_moment(
 
   // Divide the length into 100 strips
   double delta_x = asv.L.value()/100.0;
-  for(double x = 0.0; x <= asv.L.value(); x += delta_x)
+  for(double x = 0.0; x < asv.L.value(); x += delta_x)
   {
     double x_mid_strip = x + delta_x/2.0;
     // find the corresponding width of the strip from the equation of ellipse
-    double y = (major_axis / minor_axis) * sqrt(major_axis*major_axis - 
+    double b_x = (major_axis / minor_axis) * sqrt(major_axis*major_axis - 
                                                 x_mid_strip*x_mid_strip);
     double force = Constant::RHO_SEA_WATER.value() * 
                    Constant::G.value() * 
                    wave_height * 
                    exp(k * z) * 
-                   sin(k * y * sin(mu)) /
-                   (k * sin(mu));
+                   sin(k * b_x * sin(mu)) /
+                   (k * sin(mu)) * 
+                   delta_x;
     heave_pressure_force += force;
-    pitch_moment += force * (major_axis - x_mid_strip);  
+    pitch_moment += force * (major_axis - x_mid_strip); 
+    // For calculating roll moment divide the strip in the y direction into 100 
+    // strips
+    double delta_y = asv.B.value()/100.0;
+    for(double y = - minor_axis; y < major_axis; y += delta_y)
+    {
+      double y_mid = y + delta_y/2.0;
+      roll_moment += (2.0/3.0) * 
+                     Constant::RHO_SEA_WATER.value() *
+                     Constant::G.value() * 
+                     k *
+                     wave_height/2.0 *
+                     sin(mu) *
+                     cos(k * (x*cos(mu) + y_mid*sin(mu))) * 
+                     pow(y_mid,3) * 
+                     delta_y *
+                     delta_x;
+    }
   } 
-  std::array<double, 2>return_value = {heave_pressure_force, pitch_moment};
+  std::array<double, 3>return_value = {heave_pressure_force, 
+                                       pitch_moment,
+                                       roll_moment};
   return return_value;
 }
 
-double get_wave_surge_force(Quantity<Units::frequency> frequency,
-                            Quantity<Units::plane_angle> angle)
+double ASV_dynamics::get_wave_surge_force(Quantity<Units::frequency> frequency,
+                                          Quantity<Units::plane_angle> angle)
 {
   // We consider wave surge force as 0.
   return 0.0;
 }
 
-double get_wave_sway_force(Quantity<Units::frequency> frequency,
-                            Quantity<Units::plane_angle> angle)
+double ASV_dynamics::get_wave_sway_force(Quantity<Units::frequency> frequency,
+                                         Quantity<Units::plane_angle> angle)
 {
   // We consider wave sway force as 0.
   return 0.0;
 }
 
-double get_wave_yaw_moment(Quantity<Units::frequency> frequency,
-                            Quantity<Units::plane_angle> angle)
+double ASV_dynamics::get_wave_yaw_moment(Quantity<Units::frequency> frequency,
+                                         Quantity<Units::plane_angle> angle)
 {
   // We consider wave yaw moment as 0.
   return 0.0;
@@ -271,13 +292,13 @@ void ASV_dynamics::set_wave_force_matrix()
                                              encounter_freq_step_size * 
                                              (j * Units::si_dimensionless);
       // set wave force
-      std::array<double, 2> heave_and_pitch = 
-        get_wave_heave_force_pitch_moment(frequency, heading);
-      F_wave[i][j][DOF::heave] = heave_and_pitch[0];
-      F_wave[i][j][DOF::pitch] = heave_and_pitch[1];
+      std::array<double, 3> heave_pitch_roll = 
+        get_wave_heave_force_pitch_roll_moment(frequency, heading);
+      F_wave[i][j][DOF::heave] = heave_pitch_roll[0];
+      F_wave[i][j][DOF::pitch] = heave_pitch_roll[1];
+      F_wave[i][j][DOF::roll]  = heave_pitch_roll[2];
       F_wave[i][j][DOF::surge] = get_wave_surge_force (frequency, heading);
       F_wave[i][j][DOF::sway]  = get_wave_sway_force  (frequency, heading);
-      //F_wave[i][j][DOF::roll]  = get_wave_roll_moment (frequency, heading);
       F_wave[i][j][DOF::yaw]   = get_wave_yaw_moment  (frequency, heading);
     }
   }

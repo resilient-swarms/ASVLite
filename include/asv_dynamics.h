@@ -1,6 +1,7 @@
 #ifndef ASV_DYNAMICS_H
 #define ASV_DYNAMICS_H
 
+#include <array>
 #include "wave_spectrum.h"
 #include "geometry.h"
 
@@ -66,14 +67,12 @@ private:
    */
   void set_wave_force_matrix();
 
+  std::array<double, 3> get_wave_heave_force_pitch_roll_moment(
+                                Quantity<Units::frequency> frequency,
+                                Quantity<Units::plane_angle> angle);
   double get_wave_surge_force  (Quantity<Units::frequency> frequency, 
                                 Quantity<Units::plane_angle> angle);
   double get_wave_sway_force   (Quantity<Units::frequency> frequency,
-                                Quantity<Units::plane_angle> angle);
-  std::array<double, 2> get_wave_heave_force_pitch_moment (
-                                Quantity<Units::frequency> frequency,
-                                Quantity<Units::plane_angle> angle);
-  double get_wave_roll_moment  (Quantity<Units::frequency> frequency,
                                 Quantity<Units::plane_angle> angle);
   double get_wave_yaw_moment   (Quantity<Units::frequency> frequency,
                                 Quantity<Units::plane_angle> angle);
