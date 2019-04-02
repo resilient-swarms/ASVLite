@@ -11,8 +11,11 @@ using namespace asv_swarm::Hydrodynamics;
  */
 enum DOF{surge=0, sway=1, heave=2, roll=3, pitch=4, yaw=5};
 
-ASV_dynamics::ASV_dynamics(ASV& asv, Wave_spectrum* wave_spectrum):
-  asv{asv}, 
+ASV_dynamics::ASV_dynamics(ASV& asv, 
+                           Quantity<Units::plane_angle> orientation,
+                           Wave_spectrum* wave_spectrum):
+  asv{asv},
+  orientation{orientation}, 
   wave_spectrum{wave_spectrum}
 {
   // Check if the asv inputs are valid
@@ -61,8 +64,8 @@ ASV_dynamics::ASV_dynamics(ASV& asv, Wave_spectrum* wave_spectrum):
   // Set number of bands in the response spectrum.
   encounter_freq_band_count = 100;
   encounter_wave_direction_count = 360;
-  // Set the RAO spectrum
-  set_wave_force_matrix();
+  // Set the wave force spectrum
+  set_regular_wave_force_and_moment();
 }
 
 void ASV_dynamics::set_mass_matrix()
@@ -193,7 +196,8 @@ void ASV_dynamics::set_stiffness_matrix()
   // Yaw stiffness = 0.0
 }
 
-std::array<double, 3> ASV_dynamics::get_wave_heave_force_pitch_roll_moment(
+std::array<double, 3> 
+ASV_dynamics::get_regular_wave_heave_force_pitch_roll_moment(
     Quantity<Units::frequency> frequency, 
     Quantity<Units::plane_angle> angle)
 {
@@ -251,28 +255,31 @@ std::array<double, 3> ASV_dynamics::get_wave_heave_force_pitch_roll_moment(
   return return_value;
 }
 
-double ASV_dynamics::get_wave_surge_force(Quantity<Units::frequency> frequency,
-                                          Quantity<Units::plane_angle> angle)
+double ASV_dynamics::get_regular_wave_surge_force(
+    Quantity<Units::frequency> frequency,
+    Quantity<Units::plane_angle> angle)
 {
   // We consider wave surge force as 0.
   return 0.0;
 }
 
-double ASV_dynamics::get_wave_sway_force(Quantity<Units::frequency> frequency,
-                                         Quantity<Units::plane_angle> angle)
+double ASV_dynamics::get_regular_wave_sway_force(
+    Quantity<Units::frequency> frequency,
+    Quantity<Units::plane_angle> angle)
 {
   // We consider wave sway force as 0.
   return 0.0;
 }
 
-double ASV_dynamics::get_wave_yaw_moment(Quantity<Units::frequency> frequency,
-                                         Quantity<Units::plane_angle> angle)
+double ASV_dynamics::get_regular_wave_yaw_moment(
+    Quantity<Units::frequency> frequency,
+    Quantity<Units::plane_angle> angle)
 {
   // We consider wave yaw moment as 0.
   return 0.0;
 }
 
-void ASV_dynamics::set_wave_force_matrix()
+void ASV_dynamics::set_regular_wave_force_and_moment()
 {
   // The response spectrum is to be calculated for heading directions ranging
   // from 0 deg to 360 deg with 1 deg as the angle step size.
@@ -293,13 +300,16 @@ void ASV_dynamics::set_wave_force_matrix()
                                              (j * Units::si_dimensionless);
       // set wave force
       std::array<double, 3> heave_pitch_roll = 
-        get_wave_heave_force_pitch_roll_moment(frequency, heading);
-      F_wave[i][j][DOF::heave] = heave_pitch_roll[0];
-      F_wave[i][j][DOF::pitch] = heave_pitch_roll[1];
-      F_wave[i][j][DOF::roll]  = heave_pitch_roll[2];
-      F_wave[i][j][DOF::surge] = get_wave_surge_force (frequency, heading);
-      F_wave[i][j][DOF::sway]  = get_wave_sway_force  (frequency, heading);
-      F_wave[i][j][DOF::yaw]   = get_wave_yaw_moment  (frequency, heading);
+        get_regular_wave_heave_force_pitch_roll_moment(frequency, heading);
+      F_regular_wave[i][j][DOF::heave] = heave_pitch_roll[0];
+      F_regular_wave[i][j][DOF::pitch] = heave_pitch_roll[1];
+      F_regular_wave[i][j][DOF::roll]  = heave_pitch_roll[2];
+      F_regular_wave[i][j][DOF::surge] = 
+        get_regular_wave_surge_force (frequency, heading);
+      F_regular_wave[i][j][DOF::sway]  = 
+        get_regular_wave_sway_force  (frequency, heading);
+      F_regular_wave[i][j][DOF::yaw]   = 
+        get_regular_wave_yaw_moment  (frequency, heading);
     }
   }
 }
