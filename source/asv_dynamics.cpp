@@ -237,6 +237,20 @@ double get_wave_surge_force(Quantity<Units::frequency> frequency,
   return 0.0;
 }
 
+double get_wave_sway_force(Quantity<Units::frequency> frequency,
+                            Quantity<Units::plane_angle> angle)
+{
+  // We consider wave sway force as 0.
+  return 0.0;
+}
+
+double get_wave_yaw_moment(Quantity<Units::frequency> frequency,
+                            Quantity<Units::plane_angle> angle)
+{
+  // We consider wave yaw moment as 0.
+  return 0.0;
+}
+
 void ASV_dynamics::set_wave_force_matrix()
 {
   // The response spectrum is to be calculated for heading directions ranging
@@ -262,9 +276,9 @@ void ASV_dynamics::set_wave_force_matrix()
       F_wave[i][j][DOF::heave] = heave_and_pitch[0];
       F_wave[i][j][DOF::pitch] = heave_and_pitch[1];
       F_wave[i][j][DOF::surge] = get_wave_surge_force (frequency, heading);
-      //F_wave[i][j][DOF::sway]  = get_wave_sway_force  (frequency, heading);
+      F_wave[i][j][DOF::sway]  = get_wave_sway_force  (frequency, heading);
       //F_wave[i][j][DOF::roll]  = get_wave_roll_moment (frequency, heading);
-      //F_wave[i][j][DOF::yaw]   = get_wave_yaw_moment  (frequency, heading);
+      F_wave[i][j][DOF::yaw]   = get_wave_yaw_moment  (frequency, heading);
     }
   }
 }
