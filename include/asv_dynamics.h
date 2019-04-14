@@ -76,7 +76,7 @@ private:
    * Method to calculate the wave force and moments for a range of frequencies
    * and heading angles. This method populates table F_regular_waves.
    */
-  void set_regular_wave_force_and_moment();
+  void set_unit_wave_force_spectrum();
 
   /**
    * Method to calculate the heave force, pitch moment and roll moment for a
@@ -84,44 +84,44 @@ private:
    * @param frequency of the regular wave
    * @param angle heading of the ASV with respect to the wave.
    */
-  std::array<double, 3> get_regular_wave_heave_force_pitch_roll_moment(
+  std::array<double, 3> get_unit_wave_heave_force_pitch_roll_moment(
                                 Quantity<Units::frequency> frequency,
                                 Quantity<Units::plane_angle> angle);
   /**
    * Method to calculate the surge force on the ASV due to a regular wave of
    * height 1 cm. Currently considered as 0 Newton.
    */
-  double get_regular_wave_surge_force (Quantity<Units::frequency> frequency, 
+  double get_unit_wave_surge_force (Quantity<Units::frequency> frequency, 
                                        Quantity<Units::plane_angle> angle);
   /**
    * Method to calculate the sway force on the ASV due to regular wave of height
    * 1 cm. Currently considered as 0 Newton.
    */
-  double get_regular_wave_sway_force(Quantity<Units::frequency> frequency,
+  double get_unit_wave_sway_force(Quantity<Units::frequency> frequency,
                                      Quantity<Units::plane_angle> angle);
   /**
    * Method to calculate the yaw moment on the ASV due to regular wave of height
    * 1 cm. Currently considered as 0 Newton-meter.
    */
-  double get_regular_wave_yaw_moment(Quantity<Units::frequency> frequency,
+  double get_unit_wave_yaw_moment(Quantity<Units::frequency> frequency,
                                      Quantity<Units::plane_angle> angle);
 
 private:
   Quantity<Units::time> current_time;
   ASV& asv;
   Quantity<Units::plane_angle> orientation;
-  double M[6][6]; // mass matrix
-  double C[6][6]; // damping matrix
-  double K[6][6]; // stiffness matrix
-  double F_regular_wave[360][100][6]; // Force and moment for unit wave height
-                                      // for 100 freq and 360 heading directions 
-  double F_wave[6]; // Force and moment due to waves
-  double F_propulsion[6]; // Propeller thrust force and moment
   Wave_spectrum* wave_spectrum;
   Quantity<Units::frequency> min_encounter_frequency; 
   Quantity<Units::frequency> max_encounter_frequency;
   int encounter_freq_band_count; // Number of frequency bands in the RAO.
   int encounter_wave_direction_count; // Number of heading directions
+  double M[6][6]; // mass matrix
+  double C[6][6]; // damping matrix
+  double K[6][6]; // stiffness matrix
+  double F_unit_wave[360][100][6]; // Force and moment for unit wave height
+                                      // for 100 freq and 360 heading directions 
+  double F_wave[6]; // Force and moment due to waves
+  double F_propulsion[6]; // Propeller thrust force and moment
 };
 
 } //namespace Hydrodynamics

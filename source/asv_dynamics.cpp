@@ -65,7 +65,7 @@ ASV_dynamics::ASV_dynamics(ASV& asv,
   encounter_freq_band_count = 100;
   encounter_wave_direction_count = 360;
   // Set the wave force spectrum
-  set_regular_wave_force_and_moment();
+  set_unit_wave_force_spectrum();
 }
 
 void ASV_dynamics::set_mass_matrix()
@@ -197,7 +197,7 @@ void ASV_dynamics::set_stiffness_matrix()
 }
 
 std::array<double, 3> 
-ASV_dynamics::get_regular_wave_heave_force_pitch_roll_moment(
+ASV_dynamics::get_unit_wave_heave_force_pitch_roll_moment(
     Quantity<Units::frequency> frequency, 
     Quantity<Units::plane_angle> angle)
 {
@@ -255,7 +255,7 @@ ASV_dynamics::get_regular_wave_heave_force_pitch_roll_moment(
   return return_value;
 }
 
-double ASV_dynamics::get_regular_wave_surge_force(
+double ASV_dynamics::get_unit_wave_surge_force(
     Quantity<Units::frequency> frequency,
     Quantity<Units::plane_angle> angle)
 {
@@ -263,7 +263,7 @@ double ASV_dynamics::get_regular_wave_surge_force(
   return 0.0;
 }
 
-double ASV_dynamics::get_regular_wave_sway_force(
+double ASV_dynamics::get_unit_wave_sway_force(
     Quantity<Units::frequency> frequency,
     Quantity<Units::plane_angle> angle)
 {
@@ -271,7 +271,7 @@ double ASV_dynamics::get_regular_wave_sway_force(
   return 0.0;
 }
 
-double ASV_dynamics::get_regular_wave_yaw_moment(
+double ASV_dynamics::get_unit_wave_yaw_moment(
     Quantity<Units::frequency> frequency,
     Quantity<Units::plane_angle> angle)
 {
@@ -279,10 +279,12 @@ double ASV_dynamics::get_regular_wave_yaw_moment(
   return 0.0;
 }
 
-void ASV_dynamics::set_regular_wave_force_and_moment()
+void ASV_dynamics::set_unit_wave_force_spectrum()
 {
   // The response spectrum is to be calculated for heading directions ranging
-  // from 0 deg to 360 deg with 1 deg as the angle step size.
+  // from 0 deg to 360 deg with 1 deg as the angle step size. Here the angle is
+  // calculated with respect to the ASV and not with respect to global
+  // direction.
   for(int i = 0; i < 360; ++i)
   {
     // convert the angle to radians
@@ -300,16 +302,73 @@ void ASV_dynamics::set_regular_wave_force_and_moment()
                                              (j * Units::si_dimensionless);
       // set wave force
       std::array<double, 3> heave_pitch_roll = 
-        get_regular_wave_heave_force_pitch_roll_moment(frequency, heading);
-      F_regular_wave[i][j][DOF::heave] = heave_pitch_roll[0];
-      F_regular_wave[i][j][DOF::pitch] = heave_pitch_roll[1];
-      F_regular_wave[i][j][DOF::roll]  = heave_pitch_roll[2];
-      F_regular_wave[i][j][DOF::surge] = 
-        get_regular_wave_surge_force (frequency, heading);
-      F_regular_wave[i][j][DOF::sway]  = 
-        get_regular_wave_sway_force  (frequency, heading);
-      F_regular_wave[i][j][DOF::yaw]   = 
-        get_regular_wave_yaw_moment  (frequency, heading);
+        get_unit_wave_heave_force_pitch_roll_moment(frequency, heading);
+      F_unit_wave[i][j][DOF::heave] = heave_pitch_roll[0];
+      F_unit_wave[i][j][DOF::pitch] = heave_pitch_roll[1];
+      F_unit_wave[i][j][DOF::roll]  = heave_pitch_roll[2];
+      F_unit_wave[i][j][DOF::surge] = 
+        get_unit_wave_surge_force (frequency, heading);
+      F_unit_wave[i][j][DOF::sway]  = 
+        get_unit_wave_sway_force  (frequency, heading);
+      F_unit_wave[i][j][DOF::yaw]   = 
+        get_unit_wave_yaw_moment  (frequency, heading);
     }
   }
+}
+
+void ASV_dynamics::set_wave_force_matrix()
+{
+  // This method calculates the force on the ASV for each actual regular wave in 
+  // the field for all possible ASV heading with respect to the global
+  // coordinates.
+    
+  // For each wave in the spectrum
+  for(auto direction_spectrum : wave_spectrum->get_spectrum())
+  {
+    for(auto wave : direction_spectrum)
+    {
+      // wave property
+      Quantity<Units::plane_angle> wave_heading = wave.get_direction();
+      // For the current wave, calculate force on ASV for each heading direction
+      // with global coordinate system.
+      for(int i = 0; i < 360; ++i)
+      {
+        Quantity<Units::plane_angle> vessel_heading = i * Units::radians;
+        // Relative angle between wave and vessel 
+        Quantity<Units::plane_angle> relative_angle;
+        if(wave_heading >= vessel_heading)
+        {
+          relative_angle = wave_heading - vessel_heading;
+        }
+        else
+        {
+          relative_angle = (2.0*Constant::PI)*Units::radians - 
+                           (vessel_heading - wave_heading);
+        }
+        // Get unit wave force
+        // Approximate the relative angle to the nearest integer.
+        int angle = std::round(relative_angle.value());
+        
+        // Calculate encounter frequency
+        // Divide the vessel speed into integral steps
+        for(Quantity<Units::velocity> asv_speed = 0; 
+            asv_speed <= asv.max_speed; 
+            asv_speed += asv.max_speed/100.0)
+        { 
+          // Get unit wave force for the given angle and freq
+          
+          // Get the wave amplitude
+          
+          
+          // Scale the force with respect to wave amplitude.
+
+        } 
+      }
+    }
+  }
+
+  
+  
+  // For each heading direction of the ASV with the global coordinate system
+  
 }
