@@ -115,13 +115,18 @@ private:
   Quantity<Units::frequency> max_encounter_frequency;
   int encounter_freq_band_count; // Number of frequency bands in the RAO.
   int encounter_wave_direction_count; // Number of heading directions
-  double M[6][6]; // mass matrix
-  double C[6][6]; // damping matrix
-  double K[6][6]; // stiffness matrix
-  double F_unit_wave[360][100][6]; // Force and moment for unit wave height
-                                      // for 100 freq and 360 heading directions 
-  double F_wave[6]; // Force and moment due to waves
-  double F_propulsion[6]; // Propeller thrust force and moment
+  double M[6][6]{0.0}; // mass matrix
+  double C[6][6]{0.0}; // damping matrix
+  double K[6][6]{0.0}; // stiffness matrix
+  double F_unit_wave[361][101][6]{0.0}; // Wave force and moment for waves of 
+                                      // unit height at 360 different angles 
+                                      // W.R.T the ASV and 100 frequencies 
+                                      // between min and max encounter 
+                                      // frequencies. 
+  double F_wave[361][101][6]{0.0}; // Wave force on ASV for 360 different 
+                                   // heading directions and 100 different 
+                                   // speeds.
+  double F_propulsion[6]{0.0};  // Propeller thrust force and moment
 };
 
 } //namespace Hydrodynamics

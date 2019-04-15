@@ -285,7 +285,7 @@ void ASV_dynamics::set_unit_wave_force_spectrum()
   // from 0 deg to 360 deg with 1 deg as the angle step size. Here the angle is
   // calculated with respect to the ASV and not with respect to global
   // direction.
-  for(int i = 0; i < 360; ++i)
+  for(int i = 0; i <= 360; ++i)
   {
     // convert the angle to radians
     Quantity<Units::plane_angle> heading = 
@@ -295,7 +295,7 @@ void ASV_dynamics::set_unit_wave_force_spectrum()
     Quantity<Units::frequency> encounter_freq_step_size =  
       (max_encounter_frequency - min_encounter_frequency) / 
       (100.0 * Units::si_dimensionless);
-    for(int j = 0; j < 100; ++j)
+    for(int j = 0; j <= 100; ++j)
     {
       Quantity<Units::frequency> frequency = min_encounter_frequency + 
                                              encounter_freq_step_size * 
@@ -318,57 +318,49 @@ void ASV_dynamics::set_unit_wave_force_spectrum()
 
 void ASV_dynamics::set_wave_force_matrix()
 {
-  // This method calculates the force on the ASV for each actual regular wave in 
-  // the field for all possible ASV heading with respect to the global
-  // coordinates.
-    
-  // For each wave in the spectrum
-  for(auto direction_spectrum : wave_spectrum->get_spectrum())
+  // This method calculates the force on the ASV due to all regular wave in 
+  // the field - for each possible ASV heading with respect to the global
+  // coordinates and for each speed.
+  
+  // For each vessel heading direction W.R.T global coordinate:
+  for(int i_asv_heading = 0; i_asv_heading <= 360; ++i_asv_heading)
   {
-    for(auto wave : direction_spectrum)
+    // For each vessel speed in the current direction:
+    for(int i_asv_speed = 0; i_asv_speed <= 100; ++i_asv_speed)
     {
-      // wave property
-      Quantity<Units::plane_angle> wave_heading = wave.get_direction();
-      // For the current wave, calculate force on ASV for each heading direction
-      // with global coordinate system.
-      for(int i = 0; i < 360; ++i)
+      double vessel_speed = (i_asv_speed/100.0) * asv.max_speed.value();
+      
+      // For each wave in the field - calculate net force
+      for(std::vector<Regular_wave> direction_spectrum : 
+          wave_spectrum->get_spectrum())
       {
-        Quantity<Units::plane_angle> vessel_heading = i * Units::radians;
-        // Relative angle between wave and vessel 
-        Quantity<Units::plane_angle> relative_angle;
-        if(wave_heading >= vessel_heading)
+        for(Regular_wave wave : direction_spectrum)
         {
-          relative_angle = wave_heading - vessel_heading;
-        }
-        else
-        {
-          relative_angle = (2.0*Constant::PI)*Units::radians - 
-                           (vessel_heading - wave_heading);
-        }
-        // Get unit wave force
-        // Approximate the relative angle to the nearest integer.
-        int angle = std::round(relative_angle.value());
-        
-        // Calculate encounter frequency
-        // Divide the vessel speed into integral steps
-        for(Quantity<Units::velocity> asv_speed = 0; 
-            asv_speed <= asv.max_speed; 
-            asv_speed += asv.max_speed/100.0)
-        { 
-          // Get unit wave force for the given angle and freq
-          
-          // Get the wave amplitude
-          
-          
-          // Scale the force with respect to wave amplitude.
+          // - Calculate relative angle with wave.
+          double angle = wave.get_direction().value() - i_asv_heading;
+          if(wave.get_direction().value() < i_asv_heading)
+          {
+            angle = 2.0*Constant::PI.value() + angle;
+          }
+          int i_angle = round(angle);
 
-        } 
+          // - Calculate encounter frequency.
+          double wave_freq = wave.get_wave_frequency().value();
+          double encouter_freq = wave_freq - 
+                                 wave_freq*wave_freq/Constant::G.value() *
+                                 vessel_speed * cos(angle); 
+          int i_encounter_freq = round(encouter_freq);
+
+          // - Calculate net wave force due to all waves.
+          double* unit_wave_force = F_unit_wave[i_angle][i_encounter_freq];
+          double force_scale_factor = 2 * wave.get_wave_amplitude().value();
+          for(int dof = 0; dof<6; ++dof)
+          {
+            F_wave[i_asv_heading][i_asv_speed][dof] += 
+              unit_wave_force[dof] * force_scale_factor;
+          }
+        }
       }
     }
-  }
-
-  
-  
-  // For each heading direction of the ASV with the global coordinate system
-  
+  }  
 }
