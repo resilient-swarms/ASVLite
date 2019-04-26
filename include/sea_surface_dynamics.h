@@ -53,6 +53,11 @@ public:
   Wave_spectrum* get_wave_spectrum();
 
   /**
+   * Get the field length of the field.
+   */
+  Quantity<Units::length> get_field_length();
+
+  /**
    * Method to set the sea surface elevations for all control points for the 
    * current time step.
    * @param time_step is the simulation time step.

@@ -89,6 +89,11 @@ Wave_spectrum* Sea_surface_dynamics::get_wave_spectrum()
   return wave_spectrum;
 }
 
+Quantity<Units::length> Sea_surface_dynamics::get_field_length()
+{
+  return field_length;
+}
+
 void Sea_surface_dynamics::set_sea_surface_elevations(
     Quantity<Units::time> current_time)
 {
