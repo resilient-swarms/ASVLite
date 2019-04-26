@@ -48,12 +48,16 @@ public:
   void set_control_points_count(unsigned int count);
 
   /**
+   * Method to get pointer to the wave spectrum used.
+   */
+  Wave_spectrum* get_wave_spectrum();
+
+  /**
    * Method to set the sea surface elevations for all control points for the 
    * current time step.
    * @param time_step is the simulation time step.
    */
   void set_sea_surface_elevations(Quantity<Units::time> current_time);
-
 
 protected:  
   /**
