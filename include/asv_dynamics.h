@@ -43,6 +43,33 @@ public:
                Quantity<Units::plane_angle> orientation,
                Wave_spectrum* wave_spectrum);
 
+
+  /**
+   * Set the position of the ASV in 3D space for the given instant of time.
+   */
+  void set_asv_attitude(Quantity<Units::time> current_time);
+
+protected:
+  /**
+   * Set the wave for matrix for the current time step.
+   */
+  void set_wave_force_matrix();
+
+  /**
+   * Set the propeller force matrix for the current time step.
+   */
+  void set_propeller_force_matrix();
+
+  /**
+   * Set the water current force matrix for the current time step.
+   */
+  void set_current_force_matrix();
+
+  /**
+   * Set the wind force matrix for the current time step.
+   */
+  void set_wind_force_matrix();
+
 private:
   /**
    * Method to calculate added mass and set set mass matrix.
@@ -67,12 +94,6 @@ private:
   void set_stiffness_matrix();
 
   /**
-   * Method to calculate the wave forces for all encounter frequencies and all 
-   * heading directions.
-   */
-  void set_wave_force_matrix();
-
-  /**
    * Method to calculate the wave force and moments for a range of frequencies
    * and heading angles. This method populates table F_regular_waves.
    */
@@ -84,7 +105,7 @@ private:
    * @param frequency of the regular wave
    * @param angle heading of the ASV with respect to the wave.
    */
-  std::array<double, 3> get_unit_wave_heave_force_pitch_roll_moment(
+  std::array<double, 3> get_unit_wave_heave_pitch_roll_force(
                                 Quantity<Units::frequency> frequency,
                                 Quantity<Units::plane_angle> angle);
   /**
@@ -107,26 +128,29 @@ private:
                                      Quantity<Units::plane_angle> angle);
 
 private:
-  Quantity<Units::time> current_time;
-  ASV& asv;
-  Quantity<Units::plane_angle> orientation;
   Wave_spectrum* wave_spectrum;
   Quantity<Units::frequency> min_encounter_frequency; 
   Quantity<Units::frequency> max_encounter_frequency;
   int encounter_freq_band_count; // Number of frequency bands in the RAO.
   int encounter_wave_direction_count; // Number of heading directions
-  double M[6][6]{0.0}; // mass matrix
-  double C[6][6]{0.0}; // damping matrix
-  double K[6][6]{0.0}; // stiffness matrix
+  
+  ASV& asv;
+  
+  Quantity<Units::time> current_time;
+  Quantity<Units::plane_angle> orientation; // orientation of the ASV with
+                                            // global coordinates.
+  double M[6][6]{0.0}; // mass + added mass
+  double C[6][6]{0.0}; // potential damping + viscous damping
+  double K[6][6]{0.0}; // hydrostatic stiffness
   double F_unit_wave[361][101][6]{0.0}; // Wave force and moment for waves of 
                                       // unit height at 360 different angles 
                                       // W.R.T the ASV and 100 frequencies 
                                       // between min and max encounter 
                                       // frequencies. 
-  double F_wave[361][101][6]{0.0}; // Wave force on ASV for 360 different 
-                                   // heading directions and 100 different 
-                                   // speeds.
-  double F_propulsion[6]{0.0};  // Propeller thrust force and moment
+  double F_wave[6]{0.0}; // Wave force matrix
+  double F_propulsion[6]{0.0};  // Propeller thrust force matrix
+  double F_current[6]{0.0}; // Water current force matrix
+  double F_wind[6]{0.0}; // wind force matrix
 };
 
 } //namespace Hydrodynamics

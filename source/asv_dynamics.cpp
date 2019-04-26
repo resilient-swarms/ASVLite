@@ -33,25 +33,10 @@ ASV_dynamics::ASV_dynamics(ASV& asv,
     throw Exception::ValueError("Constructor error. Class: ASV_dynamics." 
                                 "Invalid input.");
   }
+
   // current time = 0
   current_time = 0.0*Units::second;
 
-  // Initialise all matrix to zero.
-  for(unsigned int i{0u}; i<6; ++i)
-  {
-    for(unsigned int j{0u}; j<6; ++j)
-    {
-      M[i][j] = 0.0;
-      C[i][j] = 0.0;
-      K[i][j] = 0.0;
-    }
-  }
-  // Set mass matrix
-  set_mass_matrix();
-  // Set damping matrix
-  set_damping_matrix();
-  // Set stiffness matrix
-  set_stiffness_matrix();
   // Set min and max encounter frequency
   Quantity<Units::frequency> min_wave_freq = wave_spectrum->get_min_frequency();
   Quantity<Units::frequency> max_wave_freq = wave_spectrum->get_max_frequency();
@@ -64,8 +49,23 @@ ASV_dynamics::ASV_dynamics(ASV& asv,
   // Set number of bands in the response spectrum.
   encounter_freq_band_count = 100;
   encounter_wave_direction_count = 360;
+  
+  // Set mass matrix
+  set_mass_matrix();
+  // Set damping matrix
+  set_damping_matrix();
+  // Set stiffness matrix
+  set_stiffness_matrix();
   // Set the wave force spectrum
   set_unit_wave_force_spectrum();
+  // Set the wave force matrix
+  set_wave_force_matrix();
+  // Set the propeller force matrix
+  set_propeller_force_matrix();
+  // Set the current force matrix
+  set_current_force_matrix();
+  // Set the wind force matrix
+  set_wind_force_matrix(); 
 }
 
 void ASV_dynamics::set_mass_matrix()
@@ -92,7 +92,7 @@ void ASV_dynamics::set_mass_matrix()
   // Pitch moment of inertia
   double r_pitch = asv.r_pitch.value();
   M[DOF::pitch][DOF::pitch] = mass * r_pitch * r_pitch;
-  // Yaw moment of intertia
+  // Yaw moment of inertia
   double r_yaw = asv.r_yaw.value();
   M[DOF::yaw][DOF::yaw] = mass * r_yaw * r_yaw;
 
@@ -197,7 +197,7 @@ void ASV_dynamics::set_stiffness_matrix()
 }
 
 std::array<double, 3> 
-ASV_dynamics::get_unit_wave_heave_force_pitch_roll_moment(
+ASV_dynamics::get_unit_wave_heave_pitch_roll_force(
     Quantity<Units::frequency> frequency, 
     Quantity<Units::plane_angle> angle)
 {
@@ -302,7 +302,7 @@ void ASV_dynamics::set_unit_wave_force_spectrum()
                                              (j * Units::si_dimensionless);
       // set wave force
       std::array<double, 3> heave_pitch_roll = 
-        get_unit_wave_heave_force_pitch_roll_moment(frequency, heading);
+        get_unit_wave_heave_pitch_roll_force(frequency, heading);
       F_unit_wave[i][j][DOF::heave] = heave_pitch_roll[0];
       F_unit_wave[i][j][DOF::pitch] = heave_pitch_roll[1];
       F_unit_wave[i][j][DOF::roll]  = heave_pitch_roll[2];
@@ -318,49 +318,25 @@ void ASV_dynamics::set_unit_wave_force_spectrum()
 
 void ASV_dynamics::set_wave_force_matrix()
 {
-  // This method calculates the force on the ASV due to all regular wave in 
-  // the field - for each possible ASV heading with respect to the global
-  // coordinates and for each speed.
-  
-  // For each vessel heading direction W.R.T global coordinate:
-  for(int i_asv_heading = 0; i_asv_heading <= 360; ++i_asv_heading)
-  {
-    // For each vessel speed in the current direction:
-    for(int i_asv_speed = 0; i_asv_speed <= 100; ++i_asv_speed)
-    {
-      double vessel_speed = (i_asv_speed/100.0) * asv.max_speed.value();
-      
-      // For each wave in the field - calculate net force
-      for(std::vector<Regular_wave> direction_spectrum : 
-          wave_spectrum->get_spectrum())
-      {
-        for(Regular_wave wave : direction_spectrum)
-        {
-          // - Calculate relative angle with wave.
-          double angle = wave.get_direction().value() - i_asv_heading;
-          if(wave.get_direction().value() < i_asv_heading)
-          {
-            angle = 2.0*Constant::PI.value() + angle;
-          }
-          int i_angle = round(angle);
+  // TODO: Implement.
+}
 
-          // - Calculate encounter frequency.
-          double wave_freq = wave.get_wave_frequency().value();
-          double encouter_freq = wave_freq - 
-                                 wave_freq*wave_freq/Constant::G.value() *
-                                 vessel_speed * cos(angle); 
-          int i_encounter_freq = round(encouter_freq);
+void ASV_dynamics::set_propeller_force_matrix()
+{
+  // TODO: Implement
+}
 
-          // - Calculate net wave force due to all waves.
-          double* unit_wave_force = F_unit_wave[i_angle][i_encounter_freq];
-          double force_scale_factor = 2 * wave.get_wave_amplitude().value();
-          for(int dof = 0; dof<6; ++dof)
-          {
-            F_wave[i_asv_heading][i_asv_speed][dof] += 
-              unit_wave_force[dof] * force_scale_factor;
-          }
-        }
-      }
-    }
-  }  
+void ASV_dynamics::set_current_force_matrix()
+{
+  // TODO: Implement
+}
+
+void ASV_dynamics::set_wind_force_matrix()
+{
+  // TODO: Implement
+}
+
+void ASV_dynamics::set_asv_attitude(Quantity<Units::time> current_time)
+{
+  // TODO: Implement
 }
