@@ -2,7 +2,7 @@
 #define ASV_DYNAMICS_H
 
 #include <array>
-#include "wave_spectrum.h"
+#include "sea_surface_dynamics.h"
 #include "geometry.h"
 
 namespace asv_swarm
@@ -41,7 +41,7 @@ public:
    */
   ASV_dynamics(ASV& asv, 
                Quantity<Units::plane_angle> orientation,
-               Wave_spectrum* wave_spectrum);
+               Sea_surface_dynamics* sea_surface);
 
 
   /**
@@ -128,7 +128,7 @@ private:
                                      Quantity<Units::plane_angle> angle);
 
 private:
-  Wave_spectrum* wave_spectrum;
+  Sea_surface_dynamics* sea_surface;
   Quantity<Units::frequency> min_encounter_frequency; 
   Quantity<Units::frequency> max_encounter_frequency;
   int encounter_freq_band_count; // Number of frequency bands in the RAO.

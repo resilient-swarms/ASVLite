@@ -13,10 +13,10 @@ enum DOF{surge=0, sway=1, heave=2, roll=3, pitch=4, yaw=5};
 
 ASV_dynamics::ASV_dynamics(ASV& asv, 
                            Quantity<Units::plane_angle> orientation,
-                           Wave_spectrum* wave_spectrum):
+                           Sea_surface_dynamics* sea_surface):
   asv{asv},
   orientation{orientation}, 
-  wave_spectrum{wave_spectrum}
+  sea_surface{sea_surface}
 {
   // Check if the asv inputs are valid
   if( asv.L.value() <= 0.0                                             ||
@@ -27,7 +27,7 @@ ASV_dynamics::ASV_dynamics(ASV& asv,
       asv.metacentric_height.value() <= asv.centre_of_gravity.z.value()||
       asv.metacentric_height.value() <= asv.T.value()                  ||
       asv.max_speed.value() > 0.0                                      ||
-      wave_spectrum == nullptr
+      sea_surface == nullptr
     )
   {
     throw Exception::ValueError("Constructor error. Class: ASV_dynamics." 
@@ -38,6 +38,7 @@ ASV_dynamics::ASV_dynamics(ASV& asv,
   current_time = 0.0*Units::second;
 
   // Set min and max encounter frequency
+  Wave_spectrum* wave_spectrum = sea_surface->get_wave_spectrum();
   Quantity<Units::frequency> min_wave_freq = wave_spectrum->get_min_frequency();
   Quantity<Units::frequency> max_wave_freq = wave_spectrum->get_max_frequency();
   min_encounter_frequency = min_wave_freq - 
