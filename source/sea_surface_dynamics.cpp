@@ -97,6 +97,27 @@ Quantity<Units::length> Sea_surface_dynamics::get_field_length()
   return field_length;
 }
 
+Quantity<Units::length> Sea_surface_dynamics::get_current_elevation_at(
+    Geometry::Point point)
+{
+  Quantity<Units::length> elevation{0*Units::meter};
+  // Get all the waves in the wave spectrum
+  std::vector<std::vector<Regular_wave>>& spectrum = 
+    wave_spectrum->get_spectrum();
+  // For each direction in the wave spectrum
+  for(int u = 0; u<spectrum.size(); ++u)
+  {
+    // For each frequency in the wave spectrum
+    for(int v = 0; v<spectrum[u].size(); ++v)
+    {
+      elevation += spectrum[u][v].get_wave_elevation(point.x,
+                                                     point.y,
+                                                     current_time);
+    }
+  }
+  return elevation;
+}
+
 void Sea_surface_dynamics::set_sea_surface_elevations(
     Quantity<Units::time> current_time)
 {
@@ -107,22 +128,7 @@ void Sea_surface_dynamics::set_sea_surface_elevations(
   {
     for(int j = 0; j<control_points[i].size(); ++j)
     {
-      Quantity<Units::length> elevation{0*Units::meter};
-      // Get all the waves in the wave spectrum
-      std::vector<std::vector<Regular_wave>>& spectrum = 
-        wave_spectrum->get_spectrum();
-      // For each direction in the wave spectrum
-      for(int u = 0; u<spectrum.size(); ++u)
-      {
-        // For each frequency in the wave spectrum
-        for(int v = 0; v<spectrum[u].size(); ++v)
-        {
-          elevation += spectrum[u][v].get_wave_elevation(control_points[i][j].x,
-                                                      control_points[i][j].y,
-                                                      current_time);
-        }
-      }
-      control_points[i][j].z = elevation;
+      control_points[i][j].z = get_current_elevation_at(control_points[i][j]);
     }
   }
   

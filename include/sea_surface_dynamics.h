@@ -64,6 +64,13 @@ public:
    */
   void set_sea_surface_elevations(Quantity<Units::time> current_time);
 
+  /** 
+   * Get the wave elevation at a location for the current time step.
+   * @return wave elevation in meter for the given point for the current time
+   * step.
+   */
+  Quantity<Units::length> get_current_elevation_at(Geometry::Point location);
+
 protected:  
   /**
    * Method to set control points along the surface of the sea.
