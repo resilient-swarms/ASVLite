@@ -137,6 +137,7 @@ private:
   ASV& asv;
   
   Quantity<Units::time> current_time;
+  Geometry::Point position; // Position of the ASV in the global coordiantes.
   Quantity<Units::plane_angle> orientation; // orientation of the ASV with
                                             // global coordinates.
   double M[6][6]{0.0}; // mass + added mass
