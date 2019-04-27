@@ -33,6 +33,9 @@ Sea_surface_dynamics::Sea_surface_dynamics(Wave_spectrum* wave_spectrum):
   max_pos = 0.0 * Units::meter;
   average_wave_height = 0.0 * Units::meter;
   significant_wave_height = 0.0 * Units::meter;
+
+  // Set the initial sea surface profile, ie: at timestep = 0
+  set_sea_surface_elevations(0.0*Units::second);
 }
 
 void Sea_surface_dynamics::set_field_length(
