@@ -36,11 +36,12 @@ public:
   /**
    * Constructor.
    * @param asv input parameters for ASV.
-   * @param orientation of the ASV with respect to North direction. 
+   * @param heading is the direction in which the ASV is heading with respect to 
+   * North direction. 
    * @param wave_spectrum for the sea state.
    */
   ASV_dynamics(ASV& asv, 
-               Quantity<Units::plane_angle> orientation,
+               Quantity<Units::plane_angle> heading,
                Sea_surface_dynamics* sea_surface);
 
 
@@ -137,9 +138,9 @@ private:
   ASV& asv;
   
   Quantity<Units::time> current_time;
+  Quantity<Units::plane_angle> heading; // heading direction of the ASV.
   Geometry::Point position; // Position of the ASV in the global coordiantes.
-  Quantity<Units::plane_angle> orientation; // orientation of the ASV with
-                                            // global coordinates.
+  Geometry::Attitude attitude; // roll, pitch and yaw angle for the current time
   double M[6][6]{0.0}; // mass + added mass
   double C[6][6]{0.0}; // potential damping + viscous damping
   double K[6][6]{0.0}; // hydrostatic stiffness
