@@ -43,13 +43,6 @@ public:
   ASV_dynamics(ASV& asv, 
                Sea_surface_dynamics& sea_surface,
                Quantity<Units::plane_angle> heading);
-
-
-  /**
-   * Set the position of the ASV in 3D space for the given instant of time.
-   */
-  void set_asv_attitude(Quantity<Units::time> current_time);
-
 protected:
   /**
    * Set the wave for matrix for the current time step.
@@ -70,6 +63,16 @@ protected:
    * Set the wind force matrix for the current time step.
    */
   void set_wind_force_matrix();
+
+  /**
+   * Set the position of the ASV in for the current time step.
+   */
+  void set_asv_position();
+
+  /**
+   * Set the attitude of the ASV in for the current time step.
+   */
+  void set_asv_attitude();
 
 private:
   /**
@@ -141,6 +144,7 @@ private:
   Quantity<Units::plane_angle> heading; // heading direction of the ASV.
   Geometry::Point position; // Position of the ASV in the global coordiantes.
   Geometry::Attitude attitude; // roll, pitch and yaw angle for the current time
+
   double M[6][6]{0.0}; // mass + added mass
   double C[6][6]{0.0}; // potential damping + viscous damping
   double K[6][6]{0.0}; // hydrostatic stiffness

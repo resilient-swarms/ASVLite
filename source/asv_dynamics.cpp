@@ -66,20 +66,8 @@ ASV_dynamics::ASV_dynamics(ASV& asv,
   // Set the wind force matrix
   set_wind_force_matrix(); 
 
-  // Set the initial position of the ASV at centre of the field.
-  Quantity<Units::length> field_length = sea_surface.get_field_length();
-  position.x = field_length / 2.0;
-  position.y = position.x;
-  position.z = 0.0*Units::meter;
-  // z should not be 0. It should be equal to: 
-  // the wave elevation at the point + distance of COG to waterline.
-  // Get wave elevation at the point 
-  Quantity<Units::length> elevation = 
-    sea_surface.get_current_elevation_at(position); 
-  // Calculate the distance of COG to WL
-  Quantity<Units::length> dist_cog_wl = asv.centre_of_gravity.z - asv.T;
-  position.z = elevation + dist_cog_wl;  
-  
+  // Set the position of the ASV to the centre of the field.
+  set_asv_position(); 
   // TODO: set attitude.
 
 }
@@ -352,7 +340,31 @@ void ASV_dynamics::set_wind_force_matrix()
   // TODO: Implement
 }
 
-void ASV_dynamics::set_asv_attitude(Quantity<Units::time> current_time)
+void ASV_dynamics::set_asv_position()
+{
+  if(current_time.value() == 0.0)
+  {
+    // Set the initial position of the ASV at centre of the field.
+    Quantity<Units::length> field_length = sea_surface.get_field_length();
+    position.x = field_length / 2.0;
+    position.y = position.x;
+    position.z = 0.0*Units::meter;
+    // z should not be 0. It should be equal to: 
+    // the wave elevation at the point + distance of COG to waterline.
+    // Get wave elevation at the point 
+    Quantity<Units::length> elevation = 
+      sea_surface.get_current_elevation_at(position); 
+    // Calculate the distance of COG to WL
+    Quantity<Units::length> dist_cog_wl = asv.centre_of_gravity.z - asv.T;
+    position.z = elevation + dist_cog_wl;  
+  }
+  else
+  {
+    // TODO: Iterate position value for each time step after start.
+  }
+}
+
+void ASV_dynamics::set_asv_attitude()
 {
   // TODO: Implement
 }
