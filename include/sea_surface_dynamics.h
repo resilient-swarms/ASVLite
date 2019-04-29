@@ -24,7 +24,7 @@ public:
    * - number of control points = 50 x 50
    * @param wave_spectrum pointer to the wave spectrum defining the sea state. 
    */
-  Sea_surface_dynamics(Wave_spectrum* wave_spectrum);
+  Sea_surface_dynamics(Wave_spectrum& wave_spectrum);
 
   /**
    * Override the default edge length of the square sea surface. Also resets the 
@@ -50,7 +50,7 @@ public:
   /**
    * Method to get pointer to the wave spectrum used.
    */
-  Wave_spectrum* get_wave_spectrum();
+  Wave_spectrum& get_wave_spectrum();
 
   /**
    * Get the field length of the field.
@@ -88,7 +88,7 @@ protected:
   void print_wave_statistics();
 
 protected:
-  Wave_spectrum* wave_spectrum; 
+  Wave_spectrum& wave_spectrum; 
   Quantity<Units::length> field_length;
   unsigned int control_points_count;
   std::vector<std::vector<Geometry::Point>> control_points;

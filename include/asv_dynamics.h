@@ -38,11 +38,11 @@ public:
    * @param asv input parameters for ASV.
    * @param heading is the direction in which the ASV is heading with respect to 
    * North direction. 
-   * @param wave_spectrum for the sea state.
+   * @param sea_surface reference to the sea surface simulated.
    */
   ASV_dynamics(ASV& asv, 
-               Quantity<Units::plane_angle> heading,
-               Sea_surface_dynamics* sea_surface);
+               Sea_surface_dynamics& sea_surface,
+               Quantity<Units::plane_angle> heading);
 
 
   /**
@@ -129,7 +129,7 @@ private:
                                      Quantity<Units::plane_angle> angle);
 
 private:
-  Sea_surface_dynamics* sea_surface;
+  Sea_surface_dynamics& sea_surface;
   Quantity<Units::frequency> min_encounter_frequency; 
   Quantity<Units::frequency> max_encounter_frequency;
   int encounter_freq_band_count; // Number of frequency bands in the RAO.

@@ -22,7 +22,7 @@ int main()
   //wave_spectrum.set_wave_direction_count(10);
 
   /* Create actor for sea surface */
-  Visualisation::Sea_surface_actor sea_surface_actor(&wave_spectrum);
+  Visualisation::Sea_surface_actor sea_surface_actor(wave_spectrum);
   /* Override the default field dimension */
   sea_surface_actor.set_field_length(1000 * Units::meter);
   /* Override the default number of control points on the sea surface. */

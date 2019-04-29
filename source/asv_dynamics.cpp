@@ -12,8 +12,8 @@ using namespace asv_swarm::Hydrodynamics;
 enum DOF{surge=0, sway=1, heave=2, roll=3, pitch=4, yaw=5};
 
 ASV_dynamics::ASV_dynamics(ASV& asv, 
-                           Quantity<Units::plane_angle> heading,
-                           Sea_surface_dynamics* sea_surface):
+                           Sea_surface_dynamics& sea_surface,
+                           Quantity<Units::plane_angle> heading):
   asv{asv},
   heading{heading}, 
   sea_surface{sea_surface}
@@ -26,8 +26,7 @@ ASV_dynamics::ASV_dynamics(ASV& asv,
       (asv.displacement/(asv.L* asv.B* asv.T)).value() > 1.0           ||
       asv.metacentric_height.value() <= asv.centre_of_gravity.z.value()||
       asv.metacentric_height.value() <= asv.T.value()                  ||
-      asv.max_speed.value() > 0.0                                      ||
-      sea_surface == nullptr
+      asv.max_speed.value() > 0.0                                      
     )
   {
     throw Exception::ValueError("Constructor error. Class: ASV_dynamics." 
@@ -37,9 +36,9 @@ ASV_dynamics::ASV_dynamics(ASV& asv,
   // current time = 0
   current_time = 0.0*Units::second;
   // Set min and max encounter frequency
-  Wave_spectrum* wave_spectrum = sea_surface->get_wave_spectrum();
-  Quantity<Units::frequency> min_wave_freq = wave_spectrum->get_min_frequency();
-  Quantity<Units::frequency> max_wave_freq = wave_spectrum->get_max_frequency();
+  Wave_spectrum& wave_spectrum = sea_surface.get_wave_spectrum();
+  Quantity<Units::frequency> min_wave_freq = wave_spectrum.get_min_frequency();
+  Quantity<Units::frequency> max_wave_freq = wave_spectrum.get_max_frequency();
   min_encounter_frequency = min_wave_freq - 
                             (min_wave_freq*min_wave_freq)/Constant::G *
                             asv.max_speed;
@@ -68,7 +67,7 @@ ASV_dynamics::ASV_dynamics(ASV& asv,
   set_wind_force_matrix(); 
 
   // Set the initial position of the ASV at centre of the field.
-  Quantity<Units::length> field_length = sea_surface->get_field_length();
+  Quantity<Units::length> field_length = sea_surface.get_field_length();
   position.x = field_length / 2.0;
   position.y = position.x;
   position.z = 0.0*Units::meter;
@@ -76,7 +75,7 @@ ASV_dynamics::ASV_dynamics(ASV& asv,
   // the wave elevation at the point + distance of COG to waterline.
   // Get wave elevation at the point 
   Quantity<Units::length> elevation = 
-    sea_surface->get_current_elevation_at(position); 
+    sea_surface.get_current_elevation_at(position); 
   // Calculate the distance of COG to WL
   Quantity<Units::length> dist_cog_wl = asv.centre_of_gravity.z - asv.T;
   position.z = elevation + dist_cog_wl;  

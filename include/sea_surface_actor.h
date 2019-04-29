@@ -32,7 +32,7 @@ public:
   /**
    * Constructor.
    */
-  Sea_surface_actor(Hydrodynamics::Wave_spectrum* wave_spectrum);
+  Sea_surface_actor(Hydrodynamics::Wave_spectrum& wave_spectrum);
 
   /**
    * Increment time count.

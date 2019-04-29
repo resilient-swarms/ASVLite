@@ -6,7 +6,7 @@ using namespace asv_swarm;
 using namespace Visualisation;
 
 Sea_surface_actor::Sea_surface_actor(
-    Hydrodynamics::Wave_spectrum* wave_spectrum):
+    Hydrodynamics::Wave_spectrum& wave_spectrum):
   vtkPolyDataAlgorithm{},
   Sea_surface_dynamics{wave_spectrum},
   timer_count{0u},

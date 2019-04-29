@@ -6,17 +6,11 @@
 using namespace asv_swarm;
 using namespace Hydrodynamics;
 
-Sea_surface_dynamics::Sea_surface_dynamics(Wave_spectrum* wave_spectrum):
-     field_length {100*Units::meter},
-     control_points_count {50}
+Sea_surface_dynamics::Sea_surface_dynamics(Wave_spectrum& wave_spectrum):
+  wave_spectrum{wave_spectrum},
+  field_length {100*Units::meter},
+  control_points_count {50}
 {
-  if( !wave_spectrum )
-  {
-    throw Exception::ValueError("Sea_surface_dynamics::Sea_surface_dynamics."
-                              "Parameter wave_spectrum should not be nullptr.");
-  }
-  this->wave_spectrum = wave_spectrum;
-
   // current time = 0
   current_time = 0.0*Units::second;
  
@@ -41,7 +35,7 @@ Sea_surface_dynamics::Sea_surface_dynamics(Wave_spectrum* wave_spectrum):
 void Sea_surface_dynamics::set_field_length(
     Quantity<Units::length> field_length)
 {
-  if( field_length > wave_spectrum->get_wind_fetch() || 
+  if( field_length > wave_spectrum.get_wind_fetch() || 
       field_length.value() <= 0.0)
   {
     throw Exception::ValueError("Sea_surface_dynamics::set_field_length."
@@ -87,7 +81,7 @@ void Sea_surface_dynamics::set_control_points()
   }
 }
 
-Wave_spectrum* Sea_surface_dynamics::get_wave_spectrum()
+Wave_spectrum& Sea_surface_dynamics::get_wave_spectrum()
 {
   return wave_spectrum;
 }
@@ -103,7 +97,7 @@ Quantity<Units::length> Sea_surface_dynamics::get_current_elevation_at(
   Quantity<Units::length> elevation{0*Units::meter};
   // Get all the waves in the wave spectrum
   std::vector<std::vector<Regular_wave>>& spectrum = 
-    wave_spectrum->get_spectrum();
+    wave_spectrum.get_spectrum();
   // For each direction in the wave spectrum
   for(int u = 0; u<spectrum.size(); ++u)
   {
@@ -195,7 +189,7 @@ void Sea_surface_dynamics::print_wave_statistics()
     std::setfill(' ')           <<
     std::setw(7)                <<
     std::setprecision(2)        <<
-    wave_spectrum->get_min_frequency().value();
+    wave_spectrum.get_min_frequency().value();
 
   std::cout                     <<
     "Peak freq(Hz):"            <<
@@ -203,7 +197,7 @@ void Sea_surface_dynamics::print_wave_statistics()
     std::setfill(' ')           <<
     std::setw(7)                <<
     std::setprecision(2)        <<
-    wave_spectrum->get_spectral_peak_frequency().value();
+    wave_spectrum.get_spectral_peak_frequency().value();
    
   std::cout                     <<
     "Max freq(Hz):"             <<
@@ -211,7 +205,7 @@ void Sea_surface_dynamics::print_wave_statistics()
     std::setfill(' ')           <<
     std::setw(7)                <<
     std::setprecision(2)        <<
-    wave_spectrum->get_max_frequency().value();
+    wave_spectrum.get_max_frequency().value();
      
   std::cout                     <<
     "Expected sig wave ht(m):"  <<
@@ -219,7 +213,7 @@ void Sea_surface_dynamics::print_wave_statistics()
     std::setfill(' ')           <<
     std::setw(7)                <<
     std::setprecision(3)        <<
-    wave_spectrum->get_significant_wave_height().value();
+    wave_spectrum.get_significant_wave_height().value();
      
   std::cout                     <<
     std::left                   <<
