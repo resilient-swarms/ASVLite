@@ -12,16 +12,12 @@ using namespace asv_swarm::Hydrodynamics;
 enum DOF{surge=0, sway=1, heave=2, roll=3, pitch=4, yaw=5};
 
 ASV_dynamics::ASV_dynamics(
-    ASV& asv, 
     Sea_surface_dynamics& sea_surface,
-    Quantity<Units::plane_angle> heading,
-    Quantity<Units::velocity> speed, 
-    Quantity<Units::acceleration> acceleration):
-  asv{asv},
+    ASV_particulars& asv,
+    ASV_motion_state& initial_state):
   sea_surface{sea_surface},
-  heading{heading}, 
-  speed{speed},
-  acceleration{acceleration}
+  asv{asv},
+  motion_state{initial_state}
 {
   // Check if the asv inputs are valid
   if( asv.L.value() <= 0.0                                             ||
@@ -38,43 +34,39 @@ ASV_dynamics::ASV_dynamics(
                                 "Invalid input.");
   }
 
+  // TODO: Check if the initial position provided for the ASV is valid, ie:
+  // check if the position is out of the field.
+
   // current time = 0
   current_time = 0.0*Units::second;
+
   // Set min and max encounter frequency
   Wave_spectrum& wave_spectrum = sea_surface.get_wave_spectrum();
   Quantity<Units::frequency> min_wave_freq = wave_spectrum.get_min_frequency();
   Quantity<Units::frequency> max_wave_freq = wave_spectrum.get_max_frequency();
-  min_encounter_frequency = min_wave_freq - 
-                            (min_wave_freq*min_wave_freq)/Constant::G *
-                            asv.max_speed;
-  max_encounter_frequency = max_wave_freq +
-                            (max_wave_freq*max_wave_freq)/Constant::G *
-                            asv.max_speed;
-  // Set number of bands in the response spectrum.
-  encounter_freq_band_count = 100;
-  encounter_wave_direction_count = 360;
-  
-  // Set mass matrix
-  set_mass_matrix();
-  // Set damping matrix
-  set_damping_matrix();
-  // Set stiffness matrix
-  set_stiffness_matrix();
-  // Set the wave force spectrum
-  set_unit_wave_force_spectrum();
-  // Set the wave force matrix
-  set_wave_force_matrix();
-  // Set the propeller force matrix
-  set_propeller_force_matrix();
-  // Set the current force matrix
-  set_current_force_matrix();
-  // Set the wind force matrix
-  set_wind_force_matrix(); 
+  min_encounter_frequency = get_encounter_frequency(asv.max_speed, 
+                                                    min_wave_freq,
+                                                    0.0*Units::radian);
+  max_encounter_frequency = get_encounter_frequency(asv.max_speed,
+                                                    max_wave_freq,
+                                                    Constant::PI*Units::radian);
 
-  // Set the position of the ASV to the centre of the field.
-  set_asv_position(); 
-  // Set the initial attitude of the ASV
-  set_asv_attitude();
+  // Initialise mass matrix
+  set_mass_matrix();
+  // Initialise damping matrix
+  set_damping_matrix();
+  // Initialise the restoring force matrix
+  set_restoring_force_matrix();
+  // Initialise the wave force spectrum
+  set_unit_wave_force_spectrum();
+  // Initialise the wave force matrix
+  set_wave_force_matrix();
+  // Initialise the propeller force matrix
+  set_propeller_force_matrix();
+  // Initialise the current force matrix
+  set_current_force_matrix();
+  // Initialise the wind force matrix
+  set_wind_force_matrix(); 
 }
 
 void ASV_dynamics::set_mass_matrix()
@@ -89,18 +81,20 @@ void ASV_dynamics::set_mass_matrix()
   double x_c = asv.centre_of_gravity.x.value();
   double y_c = asv.centre_of_gravity.y.value();
   double z_c = asv.centre_of_gravity.z.value();
-
-  // Set the mass and inertia of ASV in the matrix
   double mass = asv.displacement.value() * rho;
+  
   M[DOF::surge][DOF::surge] = 
-  M[DOF::sway][DOF::sway]   = 
-  M[DOF::heave][DOF::heave] = mass;
+    M[DOF::sway][DOF::sway] = 
+    M[DOF::heave][DOF::heave] = mass;
+  
   // Roll moment of inertia 
   double r_roll = asv.r_roll.value();
   M[DOF::roll][DOF::roll] = mass * r_roll * r_roll;
+  
   // Pitch moment of inertia
   double r_pitch = asv.r_pitch.value();
   M[DOF::pitch][DOF::pitch] = mass * r_pitch * r_pitch;
+  
   // Yaw moment of inertia
   double r_yaw = asv.r_yaw.value();
   M[DOF::yaw][DOF::yaw] = mass * r_yaw * r_yaw;
@@ -158,134 +152,17 @@ void ASV_dynamics::set_mass_matrix()
   M[DOF::yaw][DOF::yaw] += added_mass_yaw;
 
   // Motion coupling 
+  /*
   M[DOF::surge][DOF::pitch] = M[DOF::pitch][DOF::surge] = mass  * z_c;
   M[DOF::sway][DOF::roll]   = M[DOF::roll][DOF::sway]   = -mass * z_c;
   M[DOF::sway][DOF::yaw]    = M[DOF::yaw][DOF::sway]    = mass  * x_c;
   M[DOF::heave][DOF::pitch] = M[DOF::pitch][DOF::heave] = -mass * x_c;
+  */
 }
 
-void ASV_dynamics::set_stiffness_matrix()
-{  
-  double PI = Constant::PI.value();
-  double rho = Constant::RHO_SEA_WATER.value();
-  double g = Constant::G.value();
-  double L = asv.L.value();
-  double B = asv.B.value();
-  double T = asv.T.value();
-  double KM = asv.metacentric_height.value();
-
-  // For the purpose of estimating stiffness, we assume the water plane to be of
-  // elliptical shape.
-  
-  // Surge stiffness = 0
-  // Sway stiffness = 0
-  
-  // Heave stiffness 
-  // heave stiffness = water plane area * rho * g
-  // water plane area (considering elliptical shape) = PI/4 * L*B
-  double stiffness_heave = (PI/4.0) * L * B * rho * g;
-  K[DOF::heave][DOF::heave] = stiffness_heave;
-
-  // Roll stiffness
-  // roll stiffness = restoring moment
-  // restoring moment = rho * g * displacement * GM
-  double displacement = asv.displacement.value();
-  double GM = KM - asv.centre_of_gravity.z.value();
-  double stiffness_roll = rho * g * displacement * GM;
-  K[DOF::roll][DOF::roll] = stiffness_roll;
-
-  // Pitch stiffness
-  // pitch stiffness = rho * g * I_y
-  // for ellipse I_y = (PI/4) a^3 b
-  // where a = L/2
-  // and b = B/2
-  double stiffness_pitch = rho * g * (PI/4.0) * L*L*L/8.0 * B/2.0;
-  K[DOF::pitch][DOF::pitch] = stiffness_pitch;
-
-  // Yaw stiffness = 0.0
-}
-
-std::array<double, 3> 
-ASV_dynamics::get_unit_wave_heave_pitch_roll_force(
-    Quantity<Units::frequency> frequency, 
-    Quantity<Units::plane_angle> angle)
+void ASV_dynamics::set_damping_matrix()
 {
-  double heave_pressure_force = 0.0;
-  double pitch_moment = 0.0;  
-  double roll_moment = 0.0;
-  double wave_height = 0.01; // wave height = 1 cm.
-  double circular_freq = 2.0 * Constant::PI.value() * frequency.value();
-  double k = circular_freq*circular_freq / Constant::G.value();
-  double z = -asv.T.value();
-  double mu = angle.value();
-  //  The waterline view of the asv is like an ellipse.
-  //  find the major and minor axis of the asv
-  double major_axis = asv.L.value()/2.0;
-  double minor_axis = asv.B.value()/2.0;
-
-  // Divide the length into 100 strips
-  double delta_x = asv.L.value()/100.0;
-  for(double x = 0.0; x < asv.L.value(); x += delta_x)
-  {
-    double x_mid_strip = x + delta_x/2.0;
-    // find the corresponding width of the strip from the equation of ellipse
-    double b_x = (major_axis / minor_axis) * sqrt(major_axis*major_axis - 
-                                                x_mid_strip*x_mid_strip);
-    double force = Constant::RHO_SEA_WATER.value() * 
-                   Constant::G.value() * 
-                   wave_height * 
-                   exp(k * z) * 
-                   sin(k * b_x * sin(mu)) /
-                   (k * sin(mu)) * 
-                   delta_x;
-    heave_pressure_force += force;
-    pitch_moment += force * (major_axis - x_mid_strip); 
-    // For calculating roll moment divide the strip in the y direction into 100 
-    // strips
-    double delta_y = asv.B.value()/100.0;
-    for(double y = - minor_axis; y < major_axis; y += delta_y)
-    {
-      double y_mid = y + delta_y/2.0;
-      roll_moment += (2.0/3.0) * 
-                     Constant::RHO_SEA_WATER.value() *
-                     Constant::G.value() * 
-                     k *
-                     wave_height/2.0 *
-                     sin(mu) *
-                     cos(k * (x*cos(mu) + y_mid*sin(mu))) * 
-                     pow(y_mid,3) * 
-                     delta_y *
-                     delta_x;
-    }
-  } 
-  std::array<double, 3>return_value = {heave_pressure_force, 
-                                       pitch_moment,
-                                       roll_moment};
-  return return_value;
-}
-
-double ASV_dynamics::get_unit_wave_surge_force(
-    Quantity<Units::frequency> frequency,
-    Quantity<Units::plane_angle> angle)
-{
-  // We consider wave surge force as 0.
-  return 0.0;
-}
-
-double ASV_dynamics::get_unit_wave_sway_force(
-    Quantity<Units::frequency> frequency,
-    Quantity<Units::plane_angle> angle)
-{
-  // We consider wave sway force as 0.
-  return 0.0;
-}
-
-double ASV_dynamics::get_unit_wave_yaw_moment(
-    Quantity<Units::frequency> frequency,
-    Quantity<Units::plane_angle> angle)
-{
-  // We consider wave yaw moment as 0.
-  return 0.0;
+  // TODO: Implement
 }
 
 void ASV_dynamics::set_unit_wave_force_spectrum()
@@ -294,45 +171,107 @@ void ASV_dynamics::set_unit_wave_force_spectrum()
   // from 0 deg to 360 deg with 1 deg as the angle step size. Here the angle is
   // calculated with respect to the ASV and not with respect to global
   // direction.
-  for(int i = 0; i <= encounter_wave_direction_count; ++i)
+  for(int i = 0; i < direction_count; ++i)
   {
     // convert the angle to radians
     Quantity<Units::plane_angle> heading = 
       (i * Constant::PI)/180 * Units::radian;
 
     // encounter frequency step size 
+    int freq_band_count = freq_count - 1; 
     Quantity<Units::frequency> encounter_freq_step_size =  
       (max_encounter_frequency - min_encounter_frequency) / 
-      (encounter_freq_band_count * Units::si_dimensionless);
-    for(int j = 0; j <= encounter_freq_band_count; ++j)
+      (freq_band_count * Units::si_dimensionless);
+    for(int j = 0; j < freq_count; ++j)
     {
       Quantity<Units::frequency> frequency = min_encounter_frequency + 
                                              encounter_freq_step_size * 
                                              (j * Units::si_dimensionless);
-      // set wave force
-      std::array<double, 3> heave_pitch_roll = 
-        get_unit_wave_heave_pitch_roll_force(frequency, heading);
-      F_unit_wave[i][j][DOF::heave] = heave_pitch_roll[0];
-      F_unit_wave[i][j][DOF::pitch] = heave_pitch_roll[1];
-      F_unit_wave[i][j][DOF::roll]  = heave_pitch_roll[2];
+      // Surge and sway force, and yaw moment due to wave is considered as 0
       F_unit_wave[i][j][DOF::surge] = 
-        get_unit_wave_surge_force (frequency, heading);
-      F_unit_wave[i][j][DOF::sway]  = 
-        get_unit_wave_sway_force  (frequency, heading);
-      F_unit_wave[i][j][DOF::yaw]   = 
-        get_unit_wave_yaw_moment  (frequency, heading);
+        F_unit_wave[i][j][DOF::sway] = 
+        F_unit_wave[i][j][DOF::yaw] = 0.0;
+
+      // Calculate and set heave force and roll and pitch moments.
+      double heave_pressure_force = 0.0;
+      double pitch_moment = 0.0;  
+      double roll_moment = 0.0;
+      double wave_height = 0.01; // wave height = 1 cm.
+      double circular_freq = 2.0 * Constant::PI.value() * frequency.value();
+      double k = circular_freq*circular_freq / Constant::G.value();
+      double z = -asv.T.value();
+      double mu = heading.value();
+      //  The waterline view of the asv is like an ellipse.
+      //  find the major and minor axis of the asv
+      double major_axis = asv.L.value()/2.0;
+      double minor_axis = asv.B.value()/2.0;
+
+      // Divide the length into 100 strips
+      double delta_x = asv.L.value()/100.0;
+      for(double x = 0.0; x < asv.L.value(); x += delta_x)
+      {
+        double x_mid_strip = x + delta_x/2.0;
+        // find the corresponding width of the strip from the equation of 
+        // ellipse
+        double b_x = (major_axis / minor_axis) * sqrt(major_axis*major_axis - 
+                                                x_mid_strip*x_mid_strip);
+        double force = Constant::RHO_SEA_WATER.value() * 
+                       Constant::G.value() * 
+                       wave_height * 
+                       exp(k * z) * 
+                       sin(k * b_x * sin(mu)) /
+                       (k * sin(mu)) * 
+                       delta_x;
+        heave_pressure_force += force;
+        pitch_moment += force * (major_axis - x_mid_strip); 
+        // For calculating roll moment divide the strip in the y direction into 100 
+        // strips
+        double delta_y = asv.B.value()/100.0;
+        for(double y = - minor_axis; y < major_axis; y += delta_y)
+        {
+          double y_mid = y + delta_y/2.0;
+          roll_moment += (2.0/3.0) * 
+                         Constant::RHO_SEA_WATER.value() *
+                         Constant::G.value() * 
+                         k *
+                         wave_height/2.0 *
+                         sin(mu) *
+                         cos(k * (x*cos(mu) + y_mid*sin(mu))) * 
+                         pow(y_mid,3) * 
+                         delta_y *
+                         delta_x;
+        }
+      } 
+      F_unit_wave[i][j][DOF::heave] = heave_pressure_force;
+      F_unit_wave[i][j][DOF::pitch] = pitch_moment;
+      F_unit_wave[i][j][DOF::roll]  = roll_moment;
     }
   }
+}
+
+void ASV_dynamics::set_propeller_force_matrix()
+{
+  // TODO: Implement
+}
+
+void ASV_dynamics::set_current_force_matrix()
+{
+  // TODO: Implement
+}
+
+void ASV_dynamics::set_wind_force_matrix()
+{
+  // TODO: Implement
 }
 
 void ASV_dynamics::set_wave_force_matrix()
 {  
   double pi = Constant::PI.value();
   double g = Constant::G.value();
-  double x = position.x.value();
-  double y = position.y.value();
-  double asv_heading = heading.value();
-  double asv_speed = speed.value();
+  double x = motion_state.position.x.value();
+  double y = motion_state.position.y.value();
+  double asv_heading = motion_state.attitude.z.value();
+  double asv_speed = motion_state.velocity[DOF::surge];
   
   // Reset F_wave to 0.0
   for(int i=0; i<6; ++i)
@@ -357,38 +296,24 @@ void ASV_dynamics::set_wave_force_matrix()
         wave_freq - (wave_freq*wave_freq/g)*asv_speed*cos(wave_direction);
       // Get the wave elevation at the point for the current time step
       double wave_elevation = wave.get_wave_elevation(
-                              position.x, position.y, current_time).value();
+        motion_state.position.x, motion_state.position.y, current_time).value();
       // Get unit wave force
+      double freq_band_count = freq_count - 1.0;
       double frequency_step_size = (max_encounter_frequency.value() - 
                                     min_encounter_frequency.value()) / 
-                                    encounter_freq_band_count;
+                                    freq_band_count;
       int frequency_index = round(encounter_freq/frequency_step_size);
-      double* wave_force_unit_wave = 
+      std::array<double, dof> unit_wave_force = 
         F_unit_wave[std::lround(wave_direction)][frequency_index];
       // Get scaled wave force
-      for(int i = 0; i<6; ++i)
+      for(int i = 0; i<dof; ++i)
       {
-        F_wave[i] += wave_elevation * wave_force_unit_wave[i];
+        F_wave[i] += wave_elevation * unit_wave_force[i];
       }
     }
   }
 }
-
-void ASV_dynamics::set_propeller_force_matrix()
-{
-  // TODO: Implement
-}
-
-void ASV_dynamics::set_current_force_matrix()
-{
-  // TODO: Implement
-}
-
-void ASV_dynamics::set_wind_force_matrix()
-{
-  // TODO: Implement
-}
-
+/*
 void ASV_dynamics::set_asv_position()
 {
   if(current_time.value() == 0.0)
@@ -423,4 +348,15 @@ void ASV_dynamics::set_asv_attitude()
   {
     // TODO: Implement attitude of ASV for all time steps after start.
   }
+}
+*/
+
+Quantity<Units::frequency> ASV_dynamics::get_encounter_frequency(
+    Quantity<Units::velocity> asv_speed,
+    Quantity<Units::frequency> wave_frequency,
+    Quantity<Units::plane_angle> wave_heading)
+{
+  return wave_frequency - 
+         wave_frequency*wave_frequency/Constant::G * 
+         asv_speed * cos(wave_heading);
 }

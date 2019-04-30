@@ -48,7 +48,7 @@ public:
   void set_control_points_count(unsigned int count);
 
   /**
-   * Method to get pointer to the wave spectrum used.
+   * Method to get reference to the wave spectrum used.
    */
   Wave_spectrum& get_wave_spectrum();
 
