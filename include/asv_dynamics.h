@@ -40,9 +40,14 @@ public:
    * North direction. 
    * @param sea_surface reference to the sea surface simulated.
    */
-  ASV_dynamics(ASV& asv, 
-               Sea_surface_dynamics& sea_surface,
-               Quantity<Units::plane_angle> heading);
+  ASV_dynamics(
+    ASV& asv, 
+    Sea_surface_dynamics& sea_surface,
+    Quantity<Units::plane_angle> heading = 0.0*Units::radians, 
+    Quantity<Units::velocity> speed = 0.0*Units::meter_per_second,
+    Quantity<Units::acceleration> acceleration = 
+      0.0*Units::meter_per_second_squared
+    );
 protected:
   /**
    * Set the wave for matrix for the current time step.
@@ -142,8 +147,11 @@ private:
   
   Quantity<Units::time> current_time;
   Quantity<Units::plane_angle> heading; // heading direction of the ASV.
-  Geometry::Point position; // Position of the ASV in the global coordiantes.
+  Geometry::Point position; // Position of the ASV in the global coordinates.
   Geometry::Attitude attitude; // roll, pitch and yaw angle for the current time
+  Quantity<Units::velocity> speed; // forward speed of the ASV for current time
+  Quantity<Units::acceleration> acceleration; // forward acceleration of ASV for
+                                              // current time step.  
 
   double M[6][6]{0.0}; // mass + added mass
   double C[6][6]{0.0}; // potential damping + viscous damping

@@ -11,12 +11,17 @@ using namespace asv_swarm::Hydrodynamics;
  */
 enum DOF{surge=0, sway=1, heave=2, roll=3, pitch=4, yaw=5};
 
-ASV_dynamics::ASV_dynamics(ASV& asv, 
-                           Sea_surface_dynamics& sea_surface,
-                           Quantity<Units::plane_angle> heading):
+ASV_dynamics::ASV_dynamics(
+    ASV& asv, 
+    Sea_surface_dynamics& sea_surface,
+    Quantity<Units::plane_angle> heading,
+    Quantity<Units::velocity> speed, 
+    Quantity<Units::acceleration> acceleration):
   asv{asv},
+  sea_surface{sea_surface},
   heading{heading}, 
-  sea_surface{sea_surface}
+  speed{speed},
+  acceleration{acceleration}
 {
   // Check if the asv inputs are valid
   if( asv.L.value() <= 0.0                                             ||
@@ -68,8 +73,8 @@ ASV_dynamics::ASV_dynamics(ASV& asv,
 
   // Set the position of the ASV to the centre of the field.
   set_asv_position(); 
-  // TODO: set attitude.
-
+  // Set the initial attitude of the ASV
+  set_asv_attitude();
 }
 
 void ASV_dynamics::set_mass_matrix()
@@ -289,7 +294,7 @@ void ASV_dynamics::set_unit_wave_force_spectrum()
   // from 0 deg to 360 deg with 1 deg as the angle step size. Here the angle is
   // calculated with respect to the ASV and not with respect to global
   // direction.
-  for(int i = 0; i <= 360; ++i)
+  for(int i = 0; i <= encounter_wave_direction_count; ++i)
   {
     // convert the angle to radians
     Quantity<Units::plane_angle> heading = 
@@ -298,8 +303,8 @@ void ASV_dynamics::set_unit_wave_force_spectrum()
     // encounter frequency step size 
     Quantity<Units::frequency> encounter_freq_step_size =  
       (max_encounter_frequency - min_encounter_frequency) / 
-      (100.0 * Units::si_dimensionless);
-    for(int j = 0; j <= 100; ++j)
+      (encounter_freq_band_count * Units::si_dimensionless);
+    for(int j = 0; j <= encounter_freq_band_count; ++j)
     {
       Quantity<Units::frequency> frequency = min_encounter_frequency + 
                                              encounter_freq_step_size * 
@@ -321,8 +326,52 @@ void ASV_dynamics::set_unit_wave_force_spectrum()
 }
 
 void ASV_dynamics::set_wave_force_matrix()
-{
-  // TODO: Implement.
+{  
+  double pi = Constant::PI.value();
+  double g = Constant::G.value();
+  double x = position.x.value();
+  double y = position.y.value();
+  double asv_heading = heading.value();
+  double asv_speed = speed.value();
+  
+  // Reset F_wave to 0.0
+  for(int i=0; i<6; ++i)
+  {
+    F_wave[i] = 0.0;
+  }
+
+  // For each wave 
+  Wave_spectrum& wave_spectrum = sea_surface.get_wave_spectrum();
+  std::vector<std::vector<Regular_wave>> waves = wave_spectrum.get_spectrum();
+  for(auto directional_waves : waves)
+  {
+    for(auto wave : directional_waves)
+    {
+      // Get wave direction W.R.T vessel heading
+      double wave_direction = wave.get_direction().value() - asv_heading;
+      wave_direction = (wave_direction < 0.0)? 2.0*pi - wave_direction : 
+                                               wave_direction; 
+      // Get encounter frequency
+      double wave_freq = wave.get_wave_frequency().value();
+      double encounter_freq = 
+        wave_freq - (wave_freq*wave_freq/g)*asv_speed*cos(wave_direction);
+      // Get the wave elevation at the point for the current time step
+      double wave_elevation = wave.get_wave_elevation(
+                              position.x, position.y, current_time).value();
+      // Get unit wave force
+      double frequency_step_size = (max_encounter_frequency.value() - 
+                                    min_encounter_frequency.value()) / 
+                                    encounter_freq_band_count;
+      int frequency_index = round(encounter_freq/frequency_step_size);
+      double* wave_force_unit_wave = 
+        F_unit_wave[std::lround(wave_direction)][frequency_index];
+      // Get scaled wave force
+      for(int i = 0; i<6; ++i)
+      {
+        F_wave[i] += wave_elevation * wave_force_unit_wave[i];
+      }
+    }
+  }
 }
 
 void ASV_dynamics::set_propeller_force_matrix()
@@ -366,5 +415,12 @@ void ASV_dynamics::set_asv_position()
 
 void ASV_dynamics::set_asv_attitude()
 {
-  // TODO: Implement
+  if(current_time.value() == 0.0)
+  {
+    // TODO: Implement the initial attitude of ASV
+  }
+  else
+  {
+    // TODO: Implement attitude of ASV for all time steps after start.
+  }
 }
