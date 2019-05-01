@@ -34,8 +34,9 @@ struct ASV_motion_state
 {
 public:
   Geometry::Point position; // Position of the ASV in the field
-  Geometry::Attitude attitude; // roll, pitch and yaw angles of the ASV
-  std::array<double, 6> velocity; // linear and angular velocities 
+  Geometry::Orientation attitude; // roll, pitch and yaw angles of the ASV
+  std::array<Quantity<Units::velocity>, 3> linear_velocity; // linear velocities 
+
   std::array<double, 6> acceleration; // linear and angular accelerations
 };
 

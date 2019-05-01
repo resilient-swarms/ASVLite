@@ -31,16 +31,16 @@ public:
 }; // class Point
 
 /**
- * Class to represent the orientation of the vessel with respect to x, y, z
- * coordinates.
+ * Class to represent the orientation in three dimensional space with respect to 
+ * x, y, z coordinates.
  */
-class Attitude
+class Orientation
 {
 public:
   /**
-   * Default consturctor.
+   * Default constructor.
    */
-  Attitude();
+  Orientation();
 
   /**
    * Constructor with angles to coordinate axis provided.
@@ -48,7 +48,7 @@ public:
    * @param y is the angle in radians with respect to y axis.
    * @param z is the angle in radians with respect to z axis.
    */
-  Attitude(Quantity<Units::plane_angle> x,
+  Orientation(Quantity<Units::plane_angle> x,
            Quantity<Units::plane_angle> y,
            Quantity<Units::plane_angle> z);
 
