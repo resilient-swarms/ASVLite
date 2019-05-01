@@ -25,7 +25,9 @@
 #include<boost/units/systems/si/mass.hpp>
 #include<boost/units/systems/si/wavenumber.hpp>
 #include<boost/units/systems/si/acceleration.hpp>
+#include<boost/units/systems/si/angular_acceleration.hpp>
 #include<boost/units/systems/si/velocity.hpp>
+#include<boost/units/systems/si/angular_velocity.hpp>
 #include<boost/units/systems/si/force.hpp>
 #include<boost/units/systems/si/time.hpp>
 #include<boost/units/systems/si/frequency.hpp>

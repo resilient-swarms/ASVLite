@@ -35,9 +35,10 @@ struct ASV_motion_state
 public:
   Geometry::Point position; // Position of the ASV in the field
   Geometry::Orientation attitude; // roll, pitch and yaw angles of the ASV
-  std::array<Quantity<Units::velocity>, 3> linear_velocity; // linear velocities 
-
-  std::array<double, 6> acceleration; // linear and angular accelerations
+  std::array<Quantity<Units::velocity>, 3> linear_velocity; 
+  std::array<Quantity<Units::angular_velocity>, 3> angular_velocity;  
+  std::array<Quantity<Units::acceleration>, 3> acceleration; 
+  std::array<Quantity<Units::angular_acceleration>, 3> angular_acceleration;
 };
 
 /**
@@ -47,14 +48,14 @@ class ASV_dynamics
 {
 public:
   /**
-   * Constructor.
+   * Constructor. 
    * @param sea_surface reference to the sea surface simulated.
    * @param asv is the particulars of the ASV.
-   * @param initial_state of the ASV.
+   * @param initial_state is the initial state of the ASV.
    */
   ASV_dynamics(Sea_surface_dynamics& sea_surface, 
-               ASV_particulars& asv, 
-               ASV_motion_state& initial_state);
+               ASV_particulars asv, 
+               ASV_motion_state initial_state);
 
   /**
    * Method to update the position of the ASV in the global coordinates for the
@@ -123,7 +124,7 @@ private:
       Quantity<Units::plane_angle> wave_heading);
 
 private:
-  ASV_particulars& asv; // Reference to the ASV simulated.
+  ASV_particulars asv; // Reference to the ASV simulated.
 
   Sea_surface_dynamics& sea_surface; // Reference to the sea surface simulated.
   Quantity<Units::frequency> min_encounter_frequency;

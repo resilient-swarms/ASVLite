@@ -13,8 +13,8 @@ enum DOF{surge=0, sway=1, heave=2, roll=3, pitch=4, yaw=5};
 
 ASV_dynamics::ASV_dynamics(
     Sea_surface_dynamics& sea_surface,
-    ASV_particulars& asv,
-    ASV_motion_state& initial_state):
+    ASV_particulars asv,
+    ASV_motion_state initial_state):
   sea_surface{sea_surface},
   asv{asv},
   motion_state{initial_state}
@@ -154,8 +154,8 @@ void ASV_dynamics::set_mass_matrix()
   // Motion coupling 
   /*
   M[DOF::surge][DOF::pitch] = M[DOF::pitch][DOF::surge] = mass  * z_c;
-  M[DOF::sway][DOF::roll]   = M[DOF::roll][DOF::sway]   = -mass * z_c;
-  M[DOF::sway][DOF::yaw]    = M[DOF::yaw][DOF::sway]    = mass  * x_c;
+  M[DOF::sway ][DOF::roll ] = M[DOF::roll ][DOF::sway ] = -mass * z_c;
+  M[DOF::sway ][DOF::yaw  ] = M[DOF::yaw  ][DOF::sway ] = mass  * x_c;
   M[DOF::heave][DOF::pitch] = M[DOF::pitch][DOF::heave] = -mass * x_c;
   */
 }
@@ -249,21 +249,6 @@ void ASV_dynamics::set_unit_wave_force_spectrum()
   }
 }
 
-void ASV_dynamics::set_propeller_force_matrix()
-{
-  // TODO: Implement
-}
-
-void ASV_dynamics::set_current_force_matrix()
-{
-  // TODO: Implement
-}
-
-void ASV_dynamics::set_wind_force_matrix()
-{
-  // TODO: Implement
-}
-
 void ASV_dynamics::set_wave_force_matrix()
 {  
   double pi = Constant::PI.value();
@@ -271,7 +256,7 @@ void ASV_dynamics::set_wave_force_matrix()
   double x = motion_state.position.x.value();
   double y = motion_state.position.y.value();
   double asv_heading = motion_state.attitude.z.value();
-  double asv_speed = motion_state.velocity[DOF::surge];
+  double asv_speed = motion_state.linear_velocity[DOF::surge].value();
   
   // Reset F_wave to 0.0
   for(int i=0; i<6; ++i)
@@ -313,6 +298,37 @@ void ASV_dynamics::set_wave_force_matrix()
     }
   }
 }
+
+void ASV_dynamics::set_propeller_force_matrix()
+{
+  // TODO: Implement
+}
+
+void ASV_dynamics::set_current_force_matrix()
+{
+  // TODO: Implement
+}
+
+void ASV_dynamics::set_wind_force_matrix()
+{
+  // TODO: Implement
+}
+
+void ASV_dynamics::set_restoring_force_matrix()
+{
+  // TODO: Implement
+}
+
+void set_position(Quantity<Units::time> current_time)
+{
+  // TODO: Implement
+}
+
+void set_attitude(Quantity<Units::time> current_time)
+{
+  // TODO: Implement
+}
+
 /*
 void ASV_dynamics::set_asv_position()
 {
