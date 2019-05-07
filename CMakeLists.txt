@@ -43,6 +43,7 @@ MESSAGE(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
 # -------------------
 INCLUDE_DIRECTORIES(
   include
+  dependency/eigen-git-mirror
   )
 
 # SOURCE FILES
