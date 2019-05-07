@@ -2,6 +2,7 @@
 #define ASV_DYNAMICS_H
 
 #include <array>
+#include <Eigen/Dense>
 #include "sea_surface_dynamics.h"
 #include "geometry.h"
 
@@ -18,8 +19,13 @@ public:
   Quantity<Units::length> L; // length on load water line
   Quantity<Units::length> B; // beam of ASV at midship
   Quantity<Units::length> T; // draft of ASV at midship
+  Quantity<Units::length> D; // depth of the ASV at midship
   Quantity<Units::volume> displacement; // displacement at load water line
-  Geometry::Point centre_of_gravity; // Also the control point of ASV
+  Geometry::Point centre_of_gravity; // Also the control point of ASV. The COG 
+                                     // is measured with respect to the base of 
+                                     // the ASV, ie the keel of the ASV is 
+                                     // considered as z = 0 with positive z in 
+                                     // the upward direction.
   Quantity<Units::length> metacentric_height; // metacentric height from keel
   Quantity<Units::length> r_roll; // roll radius of gyration
   Quantity<Units::length> r_pitch; // pitch radius of gyration
@@ -143,18 +149,17 @@ private:
   
   Quantity<Units::time> current_time;
   ASV_motion_state motion_state; // The current state of motion of the ASV.
-  std::array<std::array<double, dof>, dof> M; // Mass matrix. mass + added mass
-  std::array<std::array<double, dof>, dof> C; // Damping matrix. Viscous damping 
-                                              // coefficient 
-  std::array<std::array<double, dof>, dof> K; // Stiffness matrix.
+  Eigen::Matrix<double, dof, dof> M; // Mass matrix. mass + added mass
+  Eigen::Matrix<double, dof, dof> C; // Damping matrix. Viscous damping coefficient 
+  Eigen::Matrix<double, dof, dof> K; // Stiffness matrix.
   std::array<std::array<std::array<double, dof>, freq_count>, direction_count> 
     F_unit_wave;                         // Unit wave force spectrum.
-  std::array<double, dof> F_wave;        // Wave force matrix 
-  std::array<double, dof> F_damping;     // Damping force matrix
-  std::array<double, dof> F_restoring;   // Restoring force matrix  
-  std::array<double, dof> F_propulsion;  // Propeller thrust force matrix
-  std::array<double, dof> F_current;     // Water current force matrix
-  std::array<double, dof> F_wind;        // wind force matrix
+  Eigen::Matrix<double, dof, 1> F_wave{}; // Wave force matrix 
+  Eigen::Matrix<double, dof, 1> F_damping{};     // Damping force matrix
+  Eigen::Matrix<double, dof, 1> F_restoring{};   // Restoring force matrix  
+  Eigen::Matrix<double, dof, 1> F_propulsion{};  // Propeller thrust force matrix
+  Eigen::Matrix<double, dof, 1> F_current{};     // Water current force matrix
+  Eigen::Matrix<double, dof, 1> F_wind{};        // wind force matrix
 };
 
 } //namespace Hydrodynamics

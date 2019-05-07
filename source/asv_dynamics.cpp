@@ -23,6 +23,7 @@ ASV_dynamics::ASV_dynamics(
   if( asv.L.value() <= 0.0                                             ||
       asv.B.value() <= 0.0                                             ||
       asv.T.value() <= 0.0                                             ||
+      asv.D.value() <= 0.0                                             ||
       asv.displacement.value() <= 0.0                                  ||
       (asv.displacement/(asv.L* asv.B* asv.T)).value() > 1.0           ||
       asv.metacentric_height.value() <= asv.centre_of_gravity.z.value()||
@@ -85,21 +86,21 @@ void ASV_dynamics::set_mass_matrix()
   double z_c = asv.centre_of_gravity.z.value();
   double mass = asv.displacement.value() * rho;
   
-  M[DOF::surge][DOF::surge] = 
-    M[DOF::sway][DOF::sway] = 
-    M[DOF::heave][DOF::heave] = mass;
+  M(DOF::surge, DOF::surge) = 
+    M(DOF::sway, DOF::sway) = 
+    M(DOF::heave, DOF::heave) = mass;
   
   // Roll moment of inertia 
   double r_roll = asv.r_roll.value();
-  M[DOF::roll][DOF::roll] = mass * r_roll * r_roll;
+  M(DOF::roll, DOF::roll) = mass * r_roll * r_roll;
   
   // Pitch moment of inertia
   double r_pitch = asv.r_pitch.value();
-  M[DOF::pitch][DOF::pitch] = mass * r_pitch * r_pitch;
+  M(DOF::pitch, DOF::pitch) = mass * r_pitch * r_pitch;
   
   // Yaw moment of inertia
   double r_yaw = asv.r_yaw.value();
-  M[DOF::yaw][DOF::yaw] = mass * r_yaw * r_yaw;
+  M(DOF::yaw, DOF::yaw) = mass * r_yaw * r_yaw;
 
   // Set added mass and inertia in the matrix
   //
@@ -121,12 +122,12 @@ void ASV_dynamics::set_mass_matrix()
   // applying the above equation of y in [equ:1]
   // ie: heave added mass = (PI/12) rho B^2 L
   double added_mass_heave = (PI/12.0) * rho * B*B * L;
-  M[DOF::heave][DOF::heave] += added_mass_heave;
+  M(DOF::heave, DOF::heave) += added_mass_heave;
 
   // Sway added mass 
   // Sway added mass = 0.5 rho PI T^2 L
   double added_mass_sway = 0.5 * rho * PI * T*T * L;
-  M[DOF::sway][DOF::sway] += added_mass_sway;
+  M(DOF::sway, DOF::sway) += added_mass_sway;
 
   // Surge added mass
   // Generally surge added mass is assumed as zero. But for a cylindrical ASV, 
@@ -135,23 +136,23 @@ void ASV_dynamics::set_mass_matrix()
   // So, for ASV with L=B, surge added mass = sway added mass
   if(L == B)
   {
-    M[DOF::surge][DOF::surge] += added_mass_sway;
+    M(DOF::surge, DOF::surge) += added_mass_sway;
   }
 
   // Roll added mass inertia 
   // add mass inertial = rho (PI/24) (KM^2 + T^2) B^2 L
   double added_mass_roll = (rho * PI/ 24.0)* (KM*KM + T*T) * B*B * L;
-  M[DOF::roll][DOF::roll] += added_mass_roll;
+  M(DOF::roll, DOF::roll) += added_mass_roll;
 
   // Pitch added mass inertia  
   // pitch add mass inertia = (1/15) rho PI B^2/4 L^3/4
   double added_mass_pitch = (1.0/15.0)*rho*PI* (B*B/4.0) * (L*L*L/4.0);
-  M[DOF::pitch][DOF::pitch] += added_mass_pitch;
+  M(DOF::pitch, DOF::pitch) += added_mass_pitch;
 
   // Yaw added mass inertia
   // yaw added mass inertia = (1/24) * rho * PI * T^2 * L^3
   double added_mass_yaw = (1.0/24.0) * rho * PI * T*T * L*L*L;
-  M[DOF::yaw][DOF::yaw] += added_mass_yaw;
+  M(DOF::yaw, DOF::yaw) += added_mass_yaw;
 
   // Motion coupling 
   /*
@@ -187,7 +188,7 @@ void ASV_dynamics::set_stiffness_matrix()
   // heave stiffness = water plane area * rho * g
   // water plane area (considering elliptical shape) = PI/4 * L*B
   double stiffness_heave = (PI/4.0) * L * B * rho * g;
-  K[DOF::heave][DOF::heave] = stiffness_heave;
+  K(DOF::heave, DOF::heave) = stiffness_heave;
 
   // Roll stiffness
   // roll stiffness = restoring moment
@@ -195,7 +196,7 @@ void ASV_dynamics::set_stiffness_matrix()
   double displacement = asv.displacement.value();
   double GM = KM - asv.centre_of_gravity.z.value();
   double stiffness_roll = rho * g * displacement * GM;
-  K[DOF::roll][DOF::roll] = stiffness_roll;
+  K(DOF::roll, DOF::roll) = stiffness_roll;
 
   // Pitch stiffness
   // pitch stiffness = rho * g * I_y
@@ -203,7 +204,7 @@ void ASV_dynamics::set_stiffness_matrix()
   // where a = L/2
   // and b = B/2
   double stiffness_pitch = rho * g * (PI/4.0) * L*L*L/8.0 * B/2.0;
-  K[DOF::pitch][DOF::pitch] = stiffness_pitch;
+  K(DOF::pitch, DOF::pitch) = stiffness_pitch;
 
   // Yaw stiffness = 0.0
 }
@@ -344,7 +345,62 @@ void ASV_dynamics::set_wave_force_matrix()
 
 void ASV_dynamics::set_restoring_force_matrix()
 {
-  // TODO: Implement
+  // Restoring force for heave, pitch and roll:
+  //
+  // Check the vertical position of the vessel. If the vessel is completely out
+  // of water then there is no buoyancy force and the restoring force is equal
+  // to the weight. Similarly if the vessel is fully submerged then the
+  // restoring force is equal to the difference of buoyancy of fully submerged
+  // body and weight of the vessel.
+  
+  // The current position is based on the COG of the vessel. 
+  // From the z value of the current position, find the current draught level.
+  double z_position = motion_state.position.z.value();
+  double z_TG = asv.centre_of_gravity.z.value() - asv.T.value(); // Distance of 
+                                              // COG from the still water line. 
+  double KG = asv.centre_of_gravity.z.value(); // Distance of COG from the keel.
+  double z_DG = asv.centre_of_gravity.z.value() - asv.D.value(); // Distance of 
+                                              // COG from the main deck level
+                                              // or the top of the ASV.
+  
+  if(z_position >= KG)
+  {
+    // Vessel completely out of water. 
+    // Restoring heave force = weight
+    // Restoring roll and pitch moments = 0.0
+    F_restoring(DOF::heave) = - asv.displacement.value() * 
+                              Constant::RHO_SEA_WATER.value() *
+                              Constant::G.value();
+    F_restoring(DOF::pitch) = 0.0;
+    F_restoring(DOF::roll) = 0.0;
+  }
+  else if(z_position <= z_DG)
+  {
+    // Vessel fully submerged
+    // Restoring heave force = reserve buoyancy. 
+    F_restoring(DOF::heave) = Constant::PI.value() * 
+                              asv.L.value()/2.0 * 
+                              asv.B.value()/2.0 *
+                              (asv.D.value() - asv.T.value()) *
+                              Constant::RHO_SEA_WATER.value() *
+                              Constant::G.value();
+    F_restoring(DOF::pitch) = K(DOF::pitch, DOF::pitch) * 
+                              motion_state.attitude.y.value();
+    F_restoring(DOF::roll) = K(DOF::roll, DOF::roll) * 
+                             motion_state.attitude.x.value();
+  }
+  else
+  {
+    // Displacements
+    Eigen::Matrix<double, 6, 1> displacement;
+    displacement << 0.0,
+                    0.0,
+                    z_position - z_TG,
+                    motion_state.attitude.x.value(),
+                    motion_state.attitude.y.value(),
+                    0.0;
+    F_restoring = K * displacement;
+  }
 }
 
 void ASV_dynamics::set_propeller_force_matrix()
