@@ -12,17 +12,14 @@ A simulator for swarm of marine robots.
 ## Prerequisites for compiling asv-swarm
 - *CMake* for managing build process.  
 ``` sudo apt install cmake-qt-gui ```
-- *CGAL 4.13* for computational geometry.  
-``` sudo apt install libcgal-dev ```
-- *Boost.Units 1.68.0* for units and dimensions.  
-``` sudo apt install libboost-dev ```   
+- Eigen 3.3.7 for linear algebra (*Included with the source.*)
 - *VTK 7.1* for visualisation.   
 ``` sudo apt install libvtk7-dev libvtk-qt-dev ```
 
 ## Build instruction
 ``` 
 cd ~
-git clone https://github.com/resilient-swarms/asv-swarm.git
+git clone --recurse-submodules https://github.com/resilient-swarms/asv-swarm.git
 cd asv-swarm
 mkdir build
 cd build
@@ -32,4 +29,4 @@ make
 # If build successfully then run application:
 ./asv_swarm
 ```
- 
+
