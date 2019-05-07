@@ -81,6 +81,11 @@ private:
   void set_damping_matrix();
 
   /**
+   * Method to calculate the hydrostatic stiffness matrix.
+   */
+  void set_stiffness_matrix();
+
+  /**
    * Method to calculate the wave force and moments due to wave of unit height 
    * for a range of frequencies and heading angles.
    */
@@ -141,6 +146,7 @@ private:
   std::array<std::array<double, dof>, dof> M; // Mass matrix. mass + added mass
   std::array<std::array<double, dof>, dof> C; // Damping matrix. Viscous damping 
                                               // coefficient 
+  std::array<std::array<double, dof>, dof> K; // Stiffness matrix.
   std::array<std::array<std::array<double, dof>, freq_count>, direction_count> 
     F_unit_wave;                         // Unit wave force spectrum.
   std::array<double, dof> F_wave;        // Wave force matrix 
