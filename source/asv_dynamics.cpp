@@ -11,6 +11,16 @@ using namespace asv_swarm::Hydrodynamics;
  */
 enum DOF{surge=0, sway=1, heave=2, roll=3, pitch=4, yaw=5};
 
+Quantity<Units::frequency> ASV_dynamics::get_encounter_frequency(
+    Quantity<Units::velocity> asv_speed,
+    Quantity<Units::frequency> wave_frequency,
+    Quantity<Units::plane_angle> wave_heading)
+{
+  return wave_frequency - 
+         wave_frequency*wave_frequency/Constant::G * 
+         asv_speed * cos(wave_heading);
+}
+
 ASV_dynamics::ASV_dynamics(
     Sea_surface_dynamics& sea_surface,
     ASV_particulars asv,
@@ -52,25 +62,38 @@ ASV_dynamics::ASV_dynamics(
                                                     max_wave_freq,
                                                     Constant::PI*Units::radian);
 
-  // Initialise mass matrix
+  // Initialise all matrix to zero
+  M.setZero();
+  C.setZero();
+  K.setZero();
+  F_damping.setZero();
+  F_restoring.setZero();
+  F_wave.setZero();
+  F_wind.setZero();
+  F_current.setZero();
+  F_propulsion.setZero();
+
+  // Set mass matrix
   set_mass_matrix();
-  // Initialise damping matrix
+  // Set damping matrix
   set_damping_matrix();
-  // Initialise stiffness matrix
+  // Set stiffness matrix
   set_stiffness_matrix();
-  // Initialise the restoring force matrix
+  // Set restoring force matrix
   set_restoring_force_matrix();
-  // Initialise the wave force spectrum
+  // Set damping force matrix
+  set_damping_force_matrix();
+  // Initialise the wave force spectrum 
   set_unit_wave_force_spectrum();
-  // Initialise the wave force matrix
+  // Set wave force matrix
   set_wave_force_matrix();
-  // Initialise the propeller force matrix
-  set_propeller_force_matrix();
-  // Initialise the current force matrix
-  set_current_force_matrix();
-  // Initialise the wind force matrix
+  // Set wind force matrix
   set_wind_force_matrix(); 
-}
+  // Set current force matrix
+  set_current_force_matrix();
+  // Set propeller force matrix
+  set_propeller_force_matrix();
+  }
 
 void ASV_dynamics::set_mass_matrix()
 {
@@ -81,9 +104,6 @@ void ASV_dynamics::set_mass_matrix()
   double B = asv.B.value();
   double T = asv.T.value();
   double KM = asv.metacentric_height.value();
-  double x_c = asv.centre_of_gravity.x.value();
-  double y_c = asv.centre_of_gravity.y.value();
-  double z_c = asv.centre_of_gravity.z.value();
   double mass = asv.displacement.value() * rho;
   
   M(DOF::surge, DOF::surge) = 
@@ -153,19 +173,11 @@ void ASV_dynamics::set_mass_matrix()
   // yaw added mass inertia = (1/24) * rho * PI * T^2 * L^3
   double added_mass_yaw = (1.0/24.0) * rho * PI * T*T * L*L*L;
   M(DOF::yaw, DOF::yaw) += added_mass_yaw;
-
-  // Motion coupling 
-  /*
-  M[DOF::surge][DOF::pitch] = M[DOF::pitch][DOF::surge] = mass  * z_c;
-  M[DOF::sway ][DOF::roll ] = M[DOF::roll ][DOF::sway ] = -mass * z_c;
-  M[DOF::sway ][DOF::yaw  ] = M[DOF::yaw  ][DOF::sway ] = mass  * x_c;
-  M[DOF::heave][DOF::pitch] = M[DOF::pitch][DOF::heave] = -mass * x_c;
-  */
 }
 
 void ASV_dynamics::set_damping_matrix()
 {
-  // TODO: Implement
+  // TODO: Implement damping matrix based on Thor 6.4
 }
 
 void ASV_dynamics::set_stiffness_matrix()
@@ -183,30 +195,26 @@ void ASV_dynamics::set_stiffness_matrix()
   
   // Surge stiffness = 0
   // Sway stiffness = 0
+  // Yaw stiffness = 0
   
   // Heave stiffness 
   // heave stiffness = water plane area * rho * g
   // water plane area (considering elliptical shape) = PI/4 * L*B
-  double stiffness_heave = (PI/4.0) * L * B * rho * g;
-  K(DOF::heave, DOF::heave) = stiffness_heave;
+  K(DOF::heave, DOF::heave) = (PI/4.0) * L * B * rho * g;
 
   // Roll stiffness
   // roll stiffness = restoring moment
   // restoring moment = rho * g * displacement * GM
   double displacement = asv.displacement.value();
   double GM = KM - asv.centre_of_gravity.z.value();
-  double stiffness_roll = rho * g * displacement * GM;
-  K(DOF::roll, DOF::roll) = stiffness_roll;
+  K(DOF::roll, DOF::roll) = rho * g * displacement * GM;
 
   // Pitch stiffness
   // pitch stiffness = rho * g * I_y
   // for ellipse I_y = (PI/4) a^3 b
   // where a = L/2
   // and b = B/2
-  double stiffness_pitch = rho * g * (PI/4.0) * L*L*L/8.0 * B/2.0;
-  K(DOF::pitch, DOF::pitch) = stiffness_pitch;
-
-  // Yaw stiffness = 0.0
+  K(DOF::pitch, DOF::pitch) = rho * g * (PI/4.0) * L*L*L/8.0 * B/2.0;
 }
 
 void ASV_dynamics::set_unit_wave_force_spectrum()
@@ -297,16 +305,13 @@ void ASV_dynamics::set_wave_force_matrix()
 {  
   double pi = Constant::PI.value();
   double g = Constant::G.value();
-  double x = motion_state.position.x.value();
-  double y = motion_state.position.y.value();
-  double asv_heading = motion_state.attitude.z.value();
-  double asv_speed = motion_state.linear_velocity[DOF::surge].value();
+  double x = motion_state.position(DOF::surge);
+  double y = motion_state.position(DOF::sway);
+  double asv_heading = motion_state.position(DOF::yaw);
+  double asv_speed = motion_state.velocity(DOF::surge);
   
   // Reset F_wave to 0.0
-  for(int i=0; i<6; ++i)
-  {
-    F_wave[i] = 0.0;
-  }
+  F_wave.setZero();
 
   // For each wave 
   Wave_spectrum& wave_spectrum = sea_surface.get_wave_spectrum();
@@ -325,7 +330,7 @@ void ASV_dynamics::set_wave_force_matrix()
         wave_freq - (wave_freq*wave_freq/g)*asv_speed*cos(wave_direction);
       // Get the wave elevation at the point for the current time step
       double wave_elevation = wave.get_wave_elevation(
-        motion_state.position.x, motion_state.position.y, current_time).value();
+        x*Units::meter, y*Units::meter, current_time).value();
       // Get unit wave force
       double freq_band_count = freq_count - 1.0;
       double frequency_step_size = (max_encounter_frequency.value() - 
@@ -355,15 +360,19 @@ void ASV_dynamics::set_restoring_force_matrix()
   
   // The current position is based on the COG of the vessel. 
   // From the z value of the current position, find the current draught level.
-  double z_position = motion_state.position.z.value();
-  double z_TG = asv.centre_of_gravity.z.value() - asv.T.value(); // Distance of 
+  double z = motion_state.position(DOF::heave);
+  double TG = asv.centre_of_gravity.z.value() - asv.T.value(); // Distance of 
                                               // COG from the still water line. 
   double KG = asv.centre_of_gravity.z.value(); // Distance of COG from the keel.
-  double z_DG = asv.centre_of_gravity.z.value() - asv.D.value(); // Distance of 
+  double DG = asv.centre_of_gravity.z.value() - asv.D.value(); // Distance of 
                                               // COG from the main deck level
                                               // or the top of the ASV.
-  
-  if(z_position >= KG)
+  // Displacements
+  Eigen::Matrix<double, 6, 1> displacement = motion_state.position;
+  displacement(DOF::heave) = z - TG;
+  F_restoring = K*displacement;
+ 
+  if(z >= KG)
   {
     // Vessel completely out of water. 
     // Restoring heave force = weight
@@ -371,10 +380,8 @@ void ASV_dynamics::set_restoring_force_matrix()
     F_restoring(DOF::heave) = - asv.displacement.value() * 
                               Constant::RHO_SEA_WATER.value() *
                               Constant::G.value();
-    F_restoring(DOF::pitch) = 0.0;
-    F_restoring(DOF::roll) = 0.0;
   }
-  else if(z_position <= z_DG)
+  else if(z <= DG)
   {
     // Vessel fully submerged
     // Restoring heave force = reserve buoyancy. 
@@ -384,23 +391,12 @@ void ASV_dynamics::set_restoring_force_matrix()
                               (asv.D.value() - asv.T.value()) *
                               Constant::RHO_SEA_WATER.value() *
                               Constant::G.value();
-    F_restoring(DOF::pitch) = K(DOF::pitch, DOF::pitch) * 
-                              motion_state.attitude.y.value();
-    F_restoring(DOF::roll) = K(DOF::roll, DOF::roll) * 
-                             motion_state.attitude.x.value();
   }
-  else
-  {
-    // Displacements
-    Eigen::Matrix<double, 6, 1> displacement;
-    displacement << 0.0,
-                    0.0,
-                    z_position - z_TG,
-                    motion_state.attitude.x.value(),
-                    motion_state.attitude.y.value(),
-                    0.0;
-    F_restoring = K * displacement;
-  }
+}
+
+void ASV_dynamics::set_damping_force_matrix()
+{
+  F_damping = C * motion_state.velocity;
 }
 
 void ASV_dynamics::set_propeller_force_matrix()
@@ -418,60 +414,40 @@ void ASV_dynamics::set_wind_force_matrix()
   // TODO: Implement
 }
 
-void set_position(Quantity<Units::time> current_time)
+void ASV_dynamics::set_position(Quantity<Units::time> current_time)
 {
-  // TODO: Implement
+   // Get the time step size
+   double time_step_size = (current_time - this->current_time).value();
+   // Now update the time
+   this->current_time = current_time;
+    
+   // Mass matrix is not changing with time so does not need to be updated.
+   // TODO: set_damping_matrix() if damping is time dependent.
+   // Stiffness matrix is a constant and does not not need to be updated.
+   
+   // Update the forces on the ASV
+   set_damping_force_matrix();
+   set_restoring_force_matrix();
+   set_wave_force_matrix();
+   set_wind_force_matrix();
+   set_current_force_matrix();
+   set_propeller_force_matrix();
+
+   // Calculate the net force 
+   Eigen::Matrix<double, dof, 1> F_net;
+   F_net = F_wave + F_wind + F_current + F_propulsion - F_damping - F_restoring;
+
+   // Calculate acceleration for current time step
+   motion_state.acceleration = M.ldlt().solve(F_net);
+
+   // Calculate velocity for the current time step
+   // v = u + a.t
+   motion_state.velocity = motion_state.velocity + 
+                           motion_state.acceleration * time_step_size;
+
+   // Calculate the new position.
+   // x_new = x + v.t
+   motion_state.position = motion_state.position + 
+                           motion_state.velocity * time_step_size;
 }
 
-void set_attitude(Quantity<Units::time> current_time)
-{
-  // TODO: Implement
-}
-
-/*
-void ASV_dynamics::set_asv_position()
-{
-  if(current_time.value() == 0.0)
-  {
-    // Set the initial position of the ASV at centre of the field.
-    Quantity<Units::length> field_length = sea_surface.get_field_length();
-    position.x = field_length / 2.0;
-    position.y = position.x;
-    position.z = 0.0*Units::meter;
-    // z should not be 0. It should be equal to: 
-    // the wave elevation at the point + distance of COG to waterline.
-    // Get wave elevation at the point 
-    Quantity<Units::length> elevation = 
-      sea_surface.get_current_elevation_at(position); 
-    // Calculate the distance of COG to WL
-    Quantity<Units::length> dist_cog_wl = asv.centre_of_gravity.z - asv.T;
-    position.z = elevation + dist_cog_wl;  
-  }
-  else
-  {
-    // TODO: Iterate position value for each time step after start.
-  }
-}
-
-void ASV_dynamics::set_asv_attitude()
-{
-  if(current_time.value() == 0.0)
-  {
-    // TODO: Implement the initial attitude of ASV
-  }
-  else
-  {
-    // TODO: Implement attitude of ASV for all time steps after start.
-  }
-}
-*/
-
-Quantity<Units::frequency> ASV_dynamics::get_encounter_frequency(
-    Quantity<Units::velocity> asv_speed,
-    Quantity<Units::frequency> wave_frequency,
-    Quantity<Units::plane_angle> wave_heading)
-{
-  return wave_frequency - 
-         wave_frequency*wave_frequency/Constant::G * 
-         asv_speed * cos(wave_heading);
-}

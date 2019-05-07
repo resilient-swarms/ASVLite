@@ -12,6 +12,8 @@ namespace Hydrodynamics
 {
 /**
  * A simple structure to contain all input data about ASV.
+ * **Note:** All dimensions are with body-fixed frame of reference (and not 
+ * global frame of reference).
  */
 struct ASV_particulars
 {
@@ -22,10 +24,8 @@ public:
   Quantity<Units::length> D; // depth of the ASV at midship
   Quantity<Units::volume> displacement; // displacement at load water line
   Geometry::Point centre_of_gravity; // Also the control point of ASV. The COG 
-                                     // is measured with respect to the base of 
-                                     // the ASV, ie the keel of the ASV is 
-                                     // considered as z = 0 with positive z in 
-                                     // the upward direction.
+                                     // is measured with respect to body-fixed 
+                                     // reference frame.
   Quantity<Units::length> metacentric_height; // metacentric height from keel
   Quantity<Units::length> r_roll; // roll radius of gyration
   Quantity<Units::length> r_pitch; // pitch radius of gyration
@@ -33,18 +33,12 @@ public:
   Quantity<Units::velocity> max_speed; // maximum operational speed of the ASV.
 };
 
-/**
- * A simple structure to contain the state of motion of the ASV.
- */
 struct ASV_motion_state
 {
 public:
-  Geometry::Point position; // Position of the ASV in the field
-  Geometry::Orientation attitude; // roll, pitch and yaw angles of the ASV
-  std::array<Quantity<Units::velocity>, 3> linear_velocity; 
-  std::array<Quantity<Units::angular_velocity>, 3> angular_velocity;  
-  std::array<Quantity<Units::acceleration>, 3> acceleration; 
-  std::array<Quantity<Units::angular_acceleration>, 3> angular_acceleration;
+  Eigen::Matrix<double, 6, 1 > position; // linear and angular displacements
+  Eigen::Matrix<double, 6, 1> velocity; // linear and angular velocities
+  Eigen::Matrix<double, 6, 1> acceleration; // linear and angular accelerations
 };
 
 /**
@@ -64,16 +58,10 @@ public:
                ASV_motion_state initial_state);
 
   /**
-   * Method to update the position of the ASV in the global coordinates for the
-   * current time step.
+   * Method to update the position and attitude of the ASV in the global 
+   * coordinates for the current time step.
    */
   void set_position(Quantity<Units::time> current_time);
-
-  /**
-   * Method to update the roll, pitch and yaw angles of the ASV for the current
-   * time step.
-   */
-  void set_attitude(Quantity<Units::time> current_time);
 
 private:
   /**
@@ -82,7 +70,7 @@ private:
   void set_mass_matrix();
 
   /**
-   * Method to calculate the viscous damping. 
+   * Method to calculate the damping coefficient. 
    */
   void set_damping_matrix();
 
@@ -123,6 +111,11 @@ private:
   void set_restoring_force_matrix();
 
   /**
+   * Method to set the damping force matrix for the current time step.
+   */
+  void set_damping_force_matrix();
+
+  /**
    * Method to get the encounter frequency for a given regular wave.
    * @param asv_speed is he speed of the ASV.
    * @param wave_frequency is the frequency of the regular wave.
@@ -148,18 +141,19 @@ private:
   static const int dof {6}; // degrees of freedom
   
   Quantity<Units::time> current_time;
-  ASV_motion_state motion_state; // The current state of motion of the ASV.
+  ASV_motion_state motion_state; // State of motion of the ASV for the current 
+                                 // time step.
   Eigen::Matrix<double, dof, dof> M; // Mass matrix. mass + added mass
   Eigen::Matrix<double, dof, dof> C; // Damping matrix. Viscous damping coefficient 
   Eigen::Matrix<double, dof, dof> K; // Stiffness matrix.
   std::array<std::array<std::array<double, dof>, freq_count>, direction_count> 
     F_unit_wave;                         // Unit wave force spectrum.
-  Eigen::Matrix<double, dof, 1> F_wave{}; // Wave force matrix 
   Eigen::Matrix<double, dof, 1> F_damping{};     // Damping force matrix
   Eigen::Matrix<double, dof, 1> F_restoring{};   // Restoring force matrix  
-  Eigen::Matrix<double, dof, 1> F_propulsion{};  // Propeller thrust force matrix
-  Eigen::Matrix<double, dof, 1> F_current{};     // Water current force matrix
+  Eigen::Matrix<double, dof, 1> F_wave{}; // Wave force matrix 
   Eigen::Matrix<double, dof, 1> F_wind{};        // wind force matrix
+  Eigen::Matrix<double, dof, 1> F_current{};     // Water current force matrix
+  Eigen::Matrix<double, dof, 1> F_propulsion{};  // Propeller thrust force matrix
 };
 
 } //namespace Hydrodynamics
