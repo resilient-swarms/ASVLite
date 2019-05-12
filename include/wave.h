@@ -7,11 +7,12 @@
 #define COUNT_SPECTRAL_DIRECTIONS  10
 
 /**
- * Structure to define the irregular wave on the sea surface. The irregular sea 
- * wave is considered as resultant of super-positioning  of a collection of many
- * regular waves. Wave spectrum helps to create this collection of regular waves 
- * such that the irregular wave formed by the super-positioning of the regular 
- * waves have the required statistical properties of an irregular sea simulated.
+ * Structure to define the model of irregular wave on the sea surface. The 
+ * irregular sea wave is considered as resultant of super-positioning  of a 
+ * collection of many regular waves. Wave spectrum helps to create this 
+ * collection of regular waves such that the irregular wave formed by the 
+ * super-positioning of the regular waves have the required statistical 
+ * properties of an irregular sea simulated.
  *
  * The wave spectrum is considered as consisting of discrete number of wave
  * frequencies and wave headings which are set by the constant variables
