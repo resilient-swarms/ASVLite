@@ -1,3 +1,4 @@
+#include <math.h>
 #include "regular_wave.h"
 #include "constants.h"
 
@@ -16,7 +17,7 @@ void regular_wave_init(struct Regular_wave* wave,
   wave->wave_number = (2.0 * PI)/wave->wave_length;
 }
 
-double Regular_wave_get_elevation(struct Regular_wave* wave,
+double regular_wave_get_elevation(struct Regular_wave* wave,
                                   struct Point* location,
                                   double time)
 {

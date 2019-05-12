@@ -12,6 +12,7 @@ INCLUDE_DIRECTORIES(
 # ------------
 SET( SOURCE
   source/regular_wave.c
+  source/wave.c
   )
 
 # CREATE BINARIES
@@ -20,4 +21,4 @@ ADD_EXECUTABLE(asv_simulator ${SOURCE})
 
 # LINK LIBRARIES
 # --------------
-
+TARGET_LINK_LIBRARIES(asv_simulator m)
