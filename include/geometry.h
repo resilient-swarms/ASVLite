@@ -6,20 +6,20 @@
  */
 struct Point
 {
-  double x;
-  double y;
-  double z;
+  double x; // x coordinate in meter.
+  double y; // y coordinate in meter.
+  double z; // z coordinate in meter.
 };
 
 /**
- * Class to represent the orientation in 3D space with respect to x, y, z 
- * coordinates.
+ * Structure to represent the orientation in 3D space with respect to x, y, z 
+ * axis.
  */
 struct Orientation
 {
-  double x;
-  double y;
-  double z;
+  double x; // Angle with x-axis in radian.
+  double y; // Angle with y-axis in radian.
+  double z; // Angle with z-axis in radian.
 }; 
 
-#endif
+#endif // GEOMETRY_H
