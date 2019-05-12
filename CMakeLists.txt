@@ -13,6 +13,7 @@ INCLUDE_DIRECTORIES(
 SET( SOURCE
   source/regular_wave.c
   source/wave.c
+  source/main.c
   )
 
 # CREATE BINARIES
