@@ -15,18 +15,14 @@
 struct Asv_specification
 {
   double L; // Length of the ASV in m.
+  double L_wl; // Length waterline in m.
   double B; // Breadth of the ASV in m.
+  double B_wl; // Breadth waterline in m.
   double D; // Depth of the ASV in m.
   double T; // Draught of the ASV in m.
   double max_speed; // Maximum operational speed of the ASV in m/s.
-
   double disp; // Displacement of the ASV in m3.
   struct Point cog; // Centre of gravity of the ASV.
-  double KMT; // Transverse metacentre height in m.
-  double KML; // Longitudinal metacentre height in m.
-  double r_roll; // Roll radius of gyration in m.
-  double r_pitch; // Pitch radius of gyration in m.
-  double r_yaw; // Yaw radius of gyration in m.
 
   // TODO: struct Propeller[?] propeller;
 };

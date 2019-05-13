@@ -22,7 +22,9 @@ int main()
   // file.
   struct Asv_specification spec;
   spec.L = 5.5;  // m
+  spec.L_wl = 5.2; // m
   spec.B = 1.7;  // m
+  spec.B_wl = 1.4; // m
   spec.D = 1.8;  // m
   spec.T = 0.85; // m
   spec.max_speed = 5.14; // m/s
@@ -31,11 +33,6 @@ int main()
   spec.cog.x = spec.L/2.0; // Distance of COG from aft end.
   spec.cog.y = 0.0; // COG is assumed to be on the transverse centre.
   spec.cog.z = spec.D/2.0 - spec.T; // Distance of COG from the waterline.
-  // Considering the KMT and KML to be at the top of the vessel.
-  // Roll radius of gyration 
-  spec.r_roll =sqrt(9.0 * pow(spec.B/2.0, 2.0) + 12.0*pow(spec.D, 2.0))/6.0;
-  spec.r_pitch=sqrt(9.0 * pow(spec.L/2.0, 2.0) + 12.0*pow(spec.D, 2.0))/6.0; 
-  spec.r_yaw = sqrt(pow(spec.L/2.0, 2.0) + pow(spec.B/2.0, 2.0)) / 2.0; 
 
   // Initialise the ASV model.
   struct Asv asv;

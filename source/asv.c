@@ -16,6 +16,17 @@ static void set_mass_matrix(struct Asv* asv)
   // Mass of the ASV
   double mass = asv->spec.disp * SEA_WATER_DENSITY;
 
+  // Radius of gyration
+  // Assuming the ASV to homogeneous elliptical cylinder for the purpose of
+  // calculating the radius of gyrations.
+  double a = asv->spec.L/2.0;
+  double b = asv->spec.B/2.0;
+  double d = asv->spec.D;
+  double r_roll =sqrt(9.0 * b*b + 12.0*d*d)/6.0;
+  double r_pitch=sqrt(9.0 * a*a + 12.0*d*d)/6.0; 
+  double r_yaw = sqrt(a*a + b*b) / 2.0; 
+  
+
   // Added mass of the ASV
   // ASV shape idealisation
   // For the purpose of calculating the added mass the shape of the ASV is
@@ -30,8 +41,8 @@ static void set_mass_matrix(struct Asv* asv)
   double alpha_0 = 1.0;
   double beta_0 = 1.0;
   double gamma_0 = 1.0;
-  double a = asv->spec.L/2.0;
-  double b = asv->spec.B/2.0;
+  a = asv->spec.L_wl/2.0;
+  b = asv->spec.B_wl/2.0;
   double c = asv->spec.T;
   double added_mass_surge = 0.5 * (alpha_0/(2.0 - alpha_0)) *
                             (4.0/3.0) * PI * 
@@ -52,15 +63,12 @@ static void set_mass_matrix(struct Asv* asv)
   asv->dynamics.M[yaw][yaw]     = mass + added_mass_heave;
 
   // Roll moment of inertia
-  double r_roll = asv->spec.r_roll;
   asv->dynamics.M[roll][roll] = mass * r_roll*r_roll;
   
   // Pitch moment of inertia
-  double r_pitch = asv->spec.r_pitch;
   asv->dynamics.M[pitch][pitch] = mass * r_pitch*r_pitch;
 
   // Yaw moment of inertia
-  double r_yaw = asv->spec.r_yaw;
   asv->dynamics.M[yaw][yaw] = mass * r_yaw*r_yaw;
   asv->dynamics.M[surge][surge] += added_mass_surge;
   asv->dynamics.M[sway][sway] += added_mass_sway;
@@ -121,9 +129,6 @@ void asv_init(struct Asv* asv, struct Asv_specification* spec)
   asv->spec.max_speed = spec->max_speed;
   asv->spec.disp = spec->disp;
   asv->spec.cog = spec->cog;
-  asv->spec.r_roll = spec->r_roll;
-  asv->spec.r_pitch = spec->r_pitch;
-  asv->spec.r_yaw = spec->r_yaw;
   // TODO: Copy structure for propeller.
   
   // Set the mass matrix
