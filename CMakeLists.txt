@@ -15,6 +15,7 @@ SET( SOURCE
   source/wave.c
   source/wind.c
   source/current.c
+  source/environment.c
   source/main.c
   )
 
