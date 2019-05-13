@@ -5,11 +5,9 @@
 
 void wave_init(struct Wave* wave, 
                double wind_speed, 
-               double wind_fetch,
                double wind_direction)
 {
   wave->wind_speed = wind_speed;
-  wave->wind_fetch = wind_fetch;
   wave->wind_direction = wind_direction;
   wave->min_spectral_wave_heading = wind_direction - PI/2.0;
   wave->max_spectral_wave_heading = wind_direction + PI/2.0;
@@ -22,41 +20,30 @@ void wave_init(struct Wave* wave,
   {
     wave->max_spectral_frequency -= 2.0*PI;
   }
-
-  // JONSWAP spectrum
-  // Ref: Proceedings of the 23rd ITTC - Vol II, Table A.4
-  // S(f) = (A/f^5) exp(-B/f^4) gamma^exp(-C)
+  
+  
+  // Bretschneider spectrum
+  // Ref: Proceedings of the 23rd ITTC - Vol II, Table A.2, A.3.
+  // S(f) = (A/f^5) exp(-B/f^4)
   // A = alpha g^2 (2 PI)^-4
-  // B = (5/4) f_p^4
-  // C = (f - f_P)^2 / (2 tau^2 f_p^2)
+  // B = beta (2PI U/g)^-4
   // alpha = 0.0081
-  // gamma = 3.3
-  // f_p = (g/U)F_hat^(-1/3)
+  // beta = 0.74
+  // f_p = 0.946 B^(1/4)
   // U = wind speed in m/s
-  // F_hat = gF/U^2
-  // F = wind fetch in m
-  double F_hat = (G * wind_fetch)/(wind_speed * wind_speed);
-  double f_p = (G/wind_speed) * pow(F_hat, -1.0/3.0);
-  wave->peak_spectral_frequency = f_p;
+  double U = wind_speed; 
   double alpha = 0.0081;
-  double gamma = 3.3;
-  double A = alpha * G*G / pow(2.0*PI, 4.0);
-  double B = (5.0/4.0) * pow(f_p, 4.0);
-  wave->significant_wave_height =(1.555 + 
-                                  0.2596*gamma - 
-                                  0.02231*gamma*gamma + 
-                                  0.001142*gamma*gamma*gamma) *
-                                  G * sqrt(alpha) / 
-                                  (2.0*PI*f_p * 2.0*PI*f_p);
-  wave->min_spectral_frequency = (0.6477 + 
-                                  0.005357 * gamma - 
-                                  0.0002625 * gamma * gamma) * f_p;
-  wave->max_spectral_frequency = (6.3204 - 
-                                  0.4377 * gamma + 
-                                  0.05261 * gamma * gamma - 
-                                  0.002839 * gamma * gamma * gamma) * f_p;
+  double beta = 0.74;
+  double A = alpha * G*G * pow(2.0*PI, -4.0);
+  double B = beta * pow(2.0*PI*U/G, -4.0);
+  double f_p = 0.946 * pow(B, 0.25);
+  wave->peak_spectral_frequency = f_p;
+  wave->significant_wave_height = 2.0* sqrt(A/B);
+  wave->min_spectral_frequency = 0.652 * f_p;
+  wave->max_spectral_frequency = 5.946 * f_p;
 
   // Create regular waves
+  // For each heading angle
   double wave_heading_step_size = PI / (COUNT_SPECTRAL_DIRECTIONS - 1);
   for(int i = 0; i < COUNT_SPECTRAL_DIRECTIONS; ++i)
   {
@@ -74,12 +61,7 @@ void wave_init(struct Wave* wave,
     for(int j = 0; j < COUNT_SPECTRAL_FREQUENCIES; ++j)
     {
       double f = wave->min_spectral_frequency + j * frequency_step_size;
-      double tau = (f <= f_p)? 0.07 : 0.09;
-      double C = ((f - f_p)*(f - f_p)) / (2.0 * tau*tau * f_p*f_p);
-      double S = (A/pow(f,5.0)) * 
-                 exp(-B/pow(f,4.0)) * 
-                 pow(gamma, exp(-C)) * 
-                 frequency_step_size;
+      double S = (A/pow(f,5.0)) * exp(-B/pow(f,4.0)) * frequency_step_size;
       
       // Direction function G = (2/PI) * cos(mu)*cos(mu) * delta_mu
       // delta_mu = wave_heading_step_size

@@ -22,7 +22,6 @@ struct Wave
 {
   // Input variables
   // ---------------
-  double wind_fetch;// The length, in meter, of sea over which the wind blows.
   double wind_speed;// Wind speed in m/s.
   double wind_direction; // Direction of wind measured with respect to 
                          // geographic north. Angle measure +ve clockwise such 
@@ -61,7 +60,6 @@ struct Wave
  */
 void wave_init(struct Wave* wave, 
                double wind_speed, 
-               double wind_fetch, 
                double wind_direction);
 
 /**
