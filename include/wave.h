@@ -7,16 +7,20 @@
 #define COUNT_SPECTRAL_DIRECTIONS  10
 
 /**
- * Structure to define the model of irregular wave on the sea surface. The 
- * irregular sea wave is considered as resultant of super-positioning  of a 
- * collection of many regular waves. Wave spectrum helps to create this 
- * collection of regular waves such that the irregular wave formed by the 
- * super-positioning of the regular waves have the required statistical 
- * properties of an irregular sea simulated.
+ * Structure to define the model of irregular wave on the sea surface. The wave 
+ * model can provide the wave elevation at any location at any instance of time.
  *
- * The wave spectrum is considered as consisting of discrete number of wave
- * frequencies and wave headings which are set by the constant variables
- * COUNT_SPECTRAL_FREQUENCIES and COUNT_SPECTRAL_DIRECTIONS.
+ * The irregular sea wave is considered as resultant of super-positioning of a 
+ * collection of many regular waves. Wave spectrum helps to make the collection 
+ * of regular waves such that the irregular wave formed by the super-positioning 
+ * has the required statistical properties of the irregular sea simulated.
+ *
+ * Bretschneider spectrum is used for creating the collection of regular wave.
+ * Bretschneider spectrum is a continues spectrum but for the implementation it 
+ * has be converted to a discrete spectrum. COUNT_SPECTRAL_FREQUENCIES specifies 
+ * the number of discrete frequencies in the spectrum and 
+ * COUNT_SPECTRAL_DIRECTIONS specifies the number of discrete number of
+ * directions in the spectrum.
  */
 struct Wave
 {

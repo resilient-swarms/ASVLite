@@ -4,9 +4,11 @@
 #include "geometry.h"
 
 /**
- * Structure to define the model of wind in the sea. Assume constant wind speed 
- * throughout the field and also assumes the wind is constant for the time of
- * simulation.
+ * Structure to define the model of wind in the sea. The wind model can provide
+ * the wind speed at any location at any instance of time. 
+ *
+ * Current implementation assumes wind speed to be constant throughout the field 
+ * for the entire duration of the simulation.
  */
 struct Wind
 {

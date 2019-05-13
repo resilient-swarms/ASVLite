@@ -4,9 +4,11 @@
 #include "geometry.h"
 
 /**
- * Structure to define the model of current in the sea. Assume constant current
- * velocity throughout the field and also assumes the current is constant for 
- * the time of simulation.
+ * Structure to define the model of current in the sea. The current model can 
+ * provide current speed at any location at any instance of time.
+ *
+ * Current implementation assumes current speed to be constant throughout the
+ * field for the entire duration of the simulation.
  */
 struct Current
 {
