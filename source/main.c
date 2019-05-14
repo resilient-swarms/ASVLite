@@ -32,16 +32,14 @@ int main()
   spec.cog.y = 0.0; // COG is assumed to be on the transverse centre.
   spec.cog.z = spec.D/2.0 - spec.T; // Distance of COG from the waterline.
   // Radius of gyration
-  // Assuming the ASV to be homogeneous elliptical cylinder for the purpose of
-  // calculating the radius of gyrations.
+  // Ref: Specialist Committee of 24th ITTC: Stability in waves
+  // Recommends a value of 0.25L for pitch and yaw radius of gyration and 0.4B
+  // for roll radius of gyration.
   double L = 5.5;  // length overall of the ASV in m
   double B = 1.7;  // moulded beam of the ASV in m
-  double a = L/2.0;
-  double b = B/2.0;
-  double d = spec.D;
-  spec.r_roll =sqrt(9.0 * b*b + 12.0*d*d)/6.0;
-  spec.r_pitch=sqrt(9.0 * a*a + 12.0*d*d)/6.0; 
-  spec.r_yaw = sqrt(a*a + b*b) / 2.0; 
+  spec.r_roll = 0.4 * B;
+  spec.r_pitch= 0.25 * L; 
+  spec.r_yaw = 0.25 * L; 
 
   // Initialise the ASV model.
   struct Asv asv;

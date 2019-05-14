@@ -25,7 +25,6 @@ struct Asv_specification
   double r_pitch; // pitch radius of gyration
   double r_yaw; // yaw radius of gyration
 
-
   // TODO: struct Propeller[?] propeller;
 };
 
