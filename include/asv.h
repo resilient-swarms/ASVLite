@@ -14,9 +14,7 @@
  */
 struct Asv_specification
 {
-  double L; // Length of the ASV in m.
   double L_wl; // Length waterline in m.
-  double B; // Breadth of the ASV in m.
   double B_wl; // Breadth waterline in m.
   double D; // Depth of the ASV in m.
   double T; // Draught of the ASV in m.

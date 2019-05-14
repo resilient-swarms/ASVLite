@@ -105,8 +105,8 @@ static void set_stiffness_matrix(struct Asv* asv)
   // Yaw stiffness = 0
  
   // Assuming elliptical shape for the water plane area.
-  double a = asv->spec.L/2.0;
-  double b = asv->spec.B/2.0;
+  double a = asv->spec.L_wl/2.0;
+  double b = asv->spec.B_wl/2.0;
   double A = PI * a * b;
   double I_xx = (PI/4.0) * a * b*b*b;
   double I_yy = (PI/4.0) * a*a*a * b;
@@ -127,9 +127,7 @@ static void set_stiffness_matrix(struct Asv* asv)
 void asv_init(struct Asv* asv, struct Asv_specification* spec)
 {
   // Copy the specification
-  asv->spec.L = spec->L;
   asv->spec.L_wl = spec->L_wl;
-  asv->spec.B = spec->B;
   asv->spec.B_wl = spec->B_wl;
   asv->spec.D = spec->D;
   asv->spec.T = spec->T;
