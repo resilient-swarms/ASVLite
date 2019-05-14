@@ -33,6 +33,15 @@ int main()
   spec.cog.x = spec.L/2.0; // Distance of COG from aft end.
   spec.cog.y = 0.0; // COG is assumed to be on the transverse centre.
   spec.cog.z = spec.D/2.0 - spec.T; // Distance of COG from the waterline.
+  // Radius of gyration
+  // Assuming the ASV to be homogeneous elliptical cylinder for the purpose of
+  // calculating the radius of gyrations.
+  double a = spec.L/2.0;
+  double b = spec.B/2.0;
+  double d = spec.D;
+  spec.r_roll =sqrt(9.0 * b*b + 12.0*d*d)/6.0;
+  spec.r_pitch=sqrt(9.0 * a*a + 12.0*d*d)/6.0; 
+  spec.r_yaw = sqrt(a*a + b*b) / 2.0; 
 
   // Initialise the ASV model.
   struct Asv asv;

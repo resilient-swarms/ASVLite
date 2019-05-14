@@ -16,17 +16,6 @@ static void set_mass_matrix(struct Asv* asv)
   // Mass of the ASV
   double mass = asv->spec.disp * SEA_WATER_DENSITY;
 
-  // Radius of gyration
-  // Assuming the ASV to be homogeneous elliptical cylinder for the purpose of
-  // calculating the radius of gyrations.
-  double a = asv->spec.L/2.0;
-  double b = asv->spec.B/2.0;
-  double d = asv->spec.D;
-  double r_roll =sqrt(9.0 * b*b + 12.0*d*d)/6.0;
-  double r_pitch=sqrt(9.0 * a*a + 12.0*d*d)/6.0; 
-  double r_yaw = sqrt(a*a + b*b) / 2.0; 
-  
-
   // Added mass of the ASV
   // ASV shape idealisation:
   // For the purpose of calculating the added mass the shape of the ASV is
@@ -39,10 +28,10 @@ static void set_mass_matrix(struct Asv* asv)
   // Note: the formula given in the above reference is for a full spheroid but
   // the shape that is assumed in this implementation is for a semi-spheroid.
   // Therefore multiply added mass by 0.5.
-  a = asv->spec.L_wl/2.0;
+  double a = asv->spec.L_wl/2.0;
   // Find b such the volume of the semi-spheroid is equal to the displacement of
   // the vessel.
-  b = sqrt((3.0/4.0) * (asv->spec.disp/(PI * a))); 
+  double b = sqrt((3.0/4.0) * (asv->spec.disp/(PI * a))); 
 
   double e = sqrt(1.0 - pow(b/a, 2.0));
   double alpha_0 = (2.0*(1 - e*e)/(e*e*e)) * (0.5*log10((1+e)/(1-e)) - e);
@@ -80,12 +69,15 @@ static void set_mass_matrix(struct Asv* asv)
   asv->dynamics.M[yaw][yaw]     = mass + added_mass_heave;
 
   // Roll moment of inertia
+  double r_roll = asv->spec.r_roll;
   asv->dynamics.M[roll][roll] = mass * r_roll*r_roll + added_mass_roll;
   
   // Pitch moment of inertia
+  double r_pitch = asv->spec.r_pitch;
   asv->dynamics.M[pitch][pitch] = mass * r_pitch*r_pitch + added_mass_pitch;
 
   // Yaw moment of inertia
+  double r_yaw = asv->spec.r_yaw;
   asv->dynamics.M[yaw][yaw] = mass * r_yaw*r_yaw + added_mass_yaw;
 }
 
@@ -144,6 +136,9 @@ void asv_init(struct Asv* asv, struct Asv_specification* spec)
   asv->spec.max_speed = spec->max_speed;
   asv->spec.disp = spec->disp;
   asv->spec.cog = spec->cog;
+  asv->spec.r_roll = spec->r_roll;
+  asv->spec.r_pitch = spec->r_pitch;
+  asv->spec.r_yaw = spec->r_yaw;
   // TODO: Copy structure for propeller.
   
   // Set the mass matrix
