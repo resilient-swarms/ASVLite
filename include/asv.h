@@ -30,16 +30,18 @@ struct Asv_specification
 
 struct Asv_dynamics
 {
-  double M[COUNT_DOF][COUNT_DOF]; // Mass (+ added mass) matrix.
-  double C[COUNT_DOF][COUNT_DOF]; // Damping matrix.
-  double K[COUNT_DOF][COUNT_DOF]; // Stiffness matrix.
+  double M[COUNT_DOF]; // Mass (+ added mass) matrix.
+  double C[COUNT_DOF]; // Drag force coefficients.
+  double K[COUNT_DOF]; // Stiffness .
   double X[COUNT_DOF]; // Deflection
-  double F[COUNT_DOF]; // Net force
   
+  double F[COUNT_DOF]; // Net force
   double F_wave[COUNT_DOF];
   double F_wind[COUNT_DOF];
   double F_current[COUNT_DOF];
   double F_propeller[COUNT_DOF];
+  double F_drag[COUNT_DOF];
+  double F_restoring[COUNT_DOF];
 
   double F_unit_wave[COUNT_ASV_SPECTRAL_DIRECTIONS]
                     [COUNT_ASV_SPECTRAL_FREQUENCIES]

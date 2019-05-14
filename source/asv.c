@@ -10,8 +10,7 @@ static void set_mass_matrix(struct Asv* asv)
 {
   // Initialise all values of mass matrix to zero
   for(int i = 0; i<COUNT_DOF; ++i)
-    for(int j = 0; j<COUNT_DOF; ++j)
-      asv->dynamics.M[i][j] = 0.0;
+    asv->dynamics.M[i] = 0.0;
 
   // Mass of the ASV
   double mass = asv->spec.disp * SEA_WATER_DENSITY;
@@ -64,21 +63,21 @@ static void set_mass_matrix(struct Asv* asv)
                             );
   double added_mass_yaw = added_mass_pitch;
 
-  asv->dynamics.M[surge][surge] = mass + added_mass_surge;
-  asv->dynamics.M[sway][sway]   = mass + added_mass_sway;
-  asv->dynamics.M[yaw][yaw]     = mass + added_mass_heave;
+  asv->dynamics.M[surge] = mass + added_mass_surge;
+  asv->dynamics.M[sway]  = mass + added_mass_sway;
+  asv->dynamics.M[yaw]   = mass + added_mass_heave;
 
   // Roll moment of inertia
   double r_roll = asv->spec.r_roll;
-  asv->dynamics.M[roll][roll] = mass * r_roll*r_roll + added_mass_roll;
+  asv->dynamics.M[roll] = mass * r_roll*r_roll + added_mass_roll;
   
   // Pitch moment of inertia
   double r_pitch = asv->spec.r_pitch;
-  asv->dynamics.M[pitch][pitch] = mass * r_pitch*r_pitch + added_mass_pitch;
+  asv->dynamics.M[pitch] = mass * r_pitch*r_pitch + added_mass_pitch;
 
   // Yaw moment of inertia
   double r_yaw = asv->spec.r_yaw;
-  asv->dynamics.M[yaw][yaw] = mass * r_yaw*r_yaw + added_mass_yaw;
+  asv->dynamics.M[yaw] = mass * r_yaw*r_yaw + added_mass_yaw;
 }
 
 // Method to set the damping matrix for the given asv object.
@@ -86,8 +85,7 @@ static void set_damping_matrix(struct Asv* asv)
 {
   // Initialise all values of damping matrix to zero.
   for(int i = 0; i < COUNT_DOF; ++i)
-    for(int j = 0; j < COUNT_DOF; ++j)
-      asv->dynamics.C[i][j] = 0.0;
+    asv->dynamics.C[i] = 0.0;
 
   // TODO: Set damping coefficients.
 }
@@ -97,8 +95,7 @@ static void set_stiffness_matrix(struct Asv* asv)
 {
   // Initialise all values of stiffness matrix to zero.
   for(int i = 0; i < COUNT_DOF; ++i)
-    for(int j = 0; j < COUNT_DOF; ++j)
-      asv->dynamics.K[i][j] = 0.0;
+    asv->dynamics.K[i] = 0.0;
 
   // Surge stiffness = 0
   // Sway stiffness = 0
@@ -112,16 +109,16 @@ static void set_stiffness_matrix(struct Asv* asv)
   double I_yy = (PI/4.0) * a*a*a * b;
   
   // Heave stiffness
-  asv->dynamics.K[heave][heave] = A * SEA_WATER_DENSITY * G;
+  asv->dynamics.K[heave] = A * SEA_WATER_DENSITY * G;
 
   // Roll stiffness
   // Using the same formula as mentioned for pitch in below ref.
   // Ref: Dynamics of Marine Vehicles, R. Bhattacharyya, page 66
-  asv->dynamics.K[roll][roll] = I_xx * SEA_WATER_DENSITY * G;
+  asv->dynamics.K[roll] = I_xx * SEA_WATER_DENSITY * G;
 
   // Pitch stiffness
   // Ref: Dynamics of Marine Vehicles, R. Bhattacharyya, page 66
-  asv->dynamics.K[pitch][pitch] = I_yy * SEA_WATER_DENSITY * G;
+  asv->dynamics.K[pitch] = I_yy * SEA_WATER_DENSITY * G;
 }
 
 void asv_init(struct Asv* asv, struct Asv_specification* spec)
