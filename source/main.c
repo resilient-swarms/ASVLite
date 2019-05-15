@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include "constants.h"
-#include "environment.h"
 #include "asv.h"
+#include "wave.h"
+#include "wind.h"
+#include "current.h"
 
 int main()
 {
@@ -10,13 +12,15 @@ int main()
   double wind_direction = PI/6.0; // radians
   double current_speed = 0.4; // m/s
   double current_direction = 11.0*PI/6.0; //radians
-  
-  // Initialise the environment model.
-  struct Environment environment;
-  environment_init(&environment, 
-                   wind_speed, wind_direction,
-                   current_speed, current_direction);
 
+  // Initialise the environment models
+  struct Wave wave;
+  wave_init(&wave, wind_speed, wind_direction);
+  struct Wind wind;
+  wind_init(&wind, wind_speed, wind_direction);
+  struct Current current;
+  current_init(&current, current_speed, current_direction);
+  
   // ASV specifications
   // TODO: Read all specification and optional specifications from a config
   // file.
@@ -43,7 +47,7 @@ int main()
 
   // Initialise the ASV model.
   struct Asv asv;
-  asv_init(&asv, &spec);
+  asv_init(&asv, &spec, &wave, &wind, &current);
   
   // Print the wave stats
   return 0;

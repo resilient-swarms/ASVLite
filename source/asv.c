@@ -1,6 +1,10 @@
 #include <math.h>
 #include "asv.h"
 #include "constants.h"
+#include "wave.h"
+#include "wind.h"
+#include "current.h"
+
 
 // Enum to correctly index the motions in the matrices for asv dynamics.
 enum i_DOF{surge, sway, heave, roll, pitch, yaw};
@@ -220,11 +224,15 @@ static void set_current_force_all_directions(struct Asv* asv)
 
 void asv_init(struct Asv* asv, 
               struct Asv_specification* spec, 
-              struct Environment* environment)
+              struct Wave* wave,
+              struct Wind* wind,
+              struct Current* current)
 {
   // Copy pointers.
   asv->spec = spec;
-  asv->environment = environment;
+  asv->wave = wave;
+  asv->wind = wind;
+  asv->current = current;
   
   // Set the mass matrix
   set_mass(asv);
