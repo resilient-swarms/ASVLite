@@ -33,9 +33,7 @@ int main()
   spec.max_speed = 5.14; // m/s
   spec.disp = PI * (spec.L_wl/2.0) * (spec.B_wl/2.0) * spec.T; // m3
   // COG assumed to be at the volumetric centre of the vessel.
-  spec.cog.x = spec.L_wl/2.0; // Distance of COG from aft end.
-  spec.cog.y = 0.0; // COG is assumed to be on the transverse centre.
-  spec.cog.z = spec.D/2.0 - spec.T; // Distance of COG from the waterline.
+  spec.KG = spec.D/2.0;
   // Radius of gyration
   // Ref: Specialist Committee of 24th ITTC: Stability in waves
   // Recommends a value of 0.25L for pitch and yaw radius of gyration and 0.4B

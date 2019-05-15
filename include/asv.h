@@ -23,7 +23,7 @@ struct Asv_specification
   double D; // Depth of the ASV in m.
   double T; // Draught of the ASV in m.
   double max_speed; // Maximum operational speed of the ASV in m/s.
-  struct Point cog; // Centre of gravity of the ASV.
+  double KG; // Distance of centre of gravity from keel in m.
   double disp; // Displacement of the ASV in m3.
   double r_roll; // roll radius of gyration.
   double r_pitch; // pitch radius of gyration.
