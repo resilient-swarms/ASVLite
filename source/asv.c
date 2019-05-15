@@ -200,6 +200,55 @@ static void set_stiffness(struct Asv* asv)
 
 static void set_unit_wave_force(struct Asv* asv)
 {
+  // Assumptions:
+  // 1. Assume the underwater volume to be a semi-ellipsoid with centre of
+  // buoyancy at the centroid of the volume.
+  // 2. Assume the wave pressure as constant along he projected surface of the 
+  // hull.
+  // 3. All measurements are with respect to body-frame - origin on waterline at 
+  // aft end centreline. Positive measurements towards fore, port side and up.
+  // 4. Unit wave height = 1 cm = 0.01 m.
+  
+  // Dimensions of ellipsoid
+  double a = asv->spec->L_wl/ 2.0;
+  double b = asv->spec->B_wl/ 2.0;
+  double c = asv->spec->T;
+  // Distance of centroid of ellipsoid from waterline.
+  double z = - 4.0*c/(3.0*PI);
+  
+  double H_w = 0.01; // wave height in m.
+
+  // Calculate the forces for each encounter wave freq
+  double freq_step_size = (asv->dynamics.F_unit_wave_freq_max - 
+                           asv->dynamics.F_unit_wave_freq_min)/
+                          (COUNT_ASV_SPECTRAL_FREQUENCIES - 1); 
+  for(int i = 0; i < COUNT_ASV_SPECTRAL_FREQUENCIES; ++i)
+  {
+    double freq = asv->dynamics.F_unit_wave_freq_min + i * freq_step_size;
+    // Create a regular wave for the freq with wave height = 0.01, 
+    // direction = 0.0 and phase = 0.0.
+    struct Regular_wave wave;
+    regular_wave_init(&wave, H_w/2.0, freq, 0.0, 0.0);
+    
+    // Calculate wave pressure at centre of buoyancy
+    double P = SEA_WATER_DENSITY* G* wave.amplitude* exp(wave.wave_number* z);
+
+    // Project water plane area
+    double A_heave = 0.5*PI*a*b;
+    // Project trans section area at midship
+    double A_surge = 0.5*PI*b*c;
+    // Projected buttockline area at CL
+    double A_sway = 0.5*PI*a*c;
+
+    // Surge force 
+    asv->dynamics.F_unit_wave[i][surge] = A_surge * P;
+    // Sway force
+    asv->dynamics.F_unit_wave[i][sway] = A_sway * P;
+    // Heave force
+    asv->dynamics.F_unit_wave[i][heave] = A_heave * P;
+    
+    // Roll moment = pitch moment = yaw moment = 0.0
+  }
 }
 
 static void set_wind_force_all_directions(struct Asv* asv)
@@ -208,6 +257,11 @@ static void set_wind_force_all_directions(struct Asv* asv)
 
 static void set_current_force_all_directions(struct Asv* asv)
 {
+}
+
+static double get_encounter_frequency(double wave_freq, double asv_speed)
+{
+  return wave_freq - (pow(wave_freq, 2.0)/G) * asv_speed;
 }
 
 void asv_init(struct Asv* asv, 
@@ -243,7 +297,7 @@ void asv_init(struct Asv* asv,
   		  asv->dynamics.F_restoring                   [k] = 0.0;
         asv->dynamics.F_wind_all_directions   [i]   [k] = 0.0;
         asv->dynamics.F_current_all_directions[i]   [k] = 0.0;
-        asv->dynamics.F_unit_wave             [i][j][k] = 0.0;
+        asv->dynamics.F_unit_wave                [j][k] = 0.0;
   		}
     }
   }
@@ -254,6 +308,14 @@ void asv_init(struct Asv* asv,
   set_drag_coefficient(asv);
   // Set the stiffness matrix
   set_stiffness(asv);
+
+  // Set minimum encounter frequency
+  asv->dynamics.F_unit_wave_freq_min = get_encounter_frequency(
+                                        asv->wave->min_spectral_frequency,
+                                        asv->spec->max_speed);
+  asv->dynamics.F_unit_wave_freq_max = get_encounter_frequency(
+                                        asv->wave->max_spectral_frequency,
+                                        -asv->spec->max_speed);
 
   // Set the wave force for unit waves
   set_unit_wave_force(asv);
