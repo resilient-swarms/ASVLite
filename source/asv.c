@@ -12,10 +12,6 @@ enum i_DOF{surge, sway, heave, roll, pitch, yaw};
 // Method to set the mass and added mass for the given asv object.
 static void set_mass(struct Asv* asv)
 {
-  // Initialise all values of mass matrix to zero
-  for(int i = 0; i<COUNT_DOF; ++i)
-    asv->dynamics.M[i] = 0.0;
-
   // Mass of the ASV
   double mass = asv->spec->disp * SEA_WATER_DENSITY;
 
@@ -87,10 +83,6 @@ static void set_mass(struct Asv* asv)
 // Method to set the drag coefficient for the given asv object.
 static void set_drag_coefficient(struct Asv* asv)
 {
-  // Initialise all values of damping matrix to zero.
-  for(int i = 0; i < COUNT_DOF; ++i)
-    asv->dynamics.C[i] = 0.0;
-
   // Ref: Recommended practices DNVGL-RP-N103 Modelling and analysis of marine
   // operations. Edition July 2017. Appendix B Table B-1, B-2.
   // Surge drag coefficient - assuming elliptical waterplane area
@@ -182,10 +174,6 @@ static void set_drag_coefficient(struct Asv* asv)
 // Method to set the stiffness for the given asv object.
 static void set_stiffness(struct Asv* asv)
 {
-  // Initialise all values of stiffness matrix to zero.
-  for(int i = 0; i < COUNT_DOF; ++i)
-    asv->dynamics.K[i] = 0.0;
-
   // Surge stiffness = 0
   // Sway stiffness = 0
   // Yaw stiffness = 0
@@ -228,12 +216,38 @@ void asv_init(struct Asv* asv,
               struct Wind* wind,
               struct Current* current)
 {
-  // Copy pointers.
-  asv->spec = spec;
-  asv->wave = wave;
-  asv->wind = wind;
-  asv->current = current;
-  
+  // Copy pointers. 
+  asv->spec = spec; // Should NOT be NULL and should be valid al long as asv is 
+                    // valid.
+  asv->wave = wave; // Could be NULL.
+  asv->wind = wind; // Could be NULL.
+  asv->current = current; // Could be NULL.
+
+  // Initialise all the vectors matrices to zero.
+  for(int i = 0; i < COUNT_ASV_SPECTRAL_DIRECTIONS; ++i)
+  {
+    for(int j = 0; j < COUNT_ASV_SPECTRAL_FREQUENCIES; ++j)
+    {
+  		for(int k = 0; k < COUNT_DOF; ++k)
+  		{
+  		  asv->dynamics.M                             [k] = 0.0;
+  		  asv->dynamics.C                             [k] = 0.0;
+  		  asv->dynamics.K                             [k] = 0.0;
+  		  asv->dynamics.X                             [k] = 0.0;
+  		  asv->dynamics.F                             [k] = 0.0;
+  		  asv->dynamics.F_wave                        [k] = 0.0;
+  		  asv->dynamics.F_wind                        [k] = 0.0;
+  		  asv->dynamics.F_current                     [k] = 0.0;
+  		  asv->dynamics.F_propeller                   [k] = 0.0;
+  		  asv->dynamics.F_drag                        [k] = 0.0;
+  		  asv->dynamics.F_restoring                   [k] = 0.0;
+        asv->dynamics.F_wind_all_directions   [i]   [k] = 0.0;
+        asv->dynamics.F_current_all_directions[i]   [k] = 0.0;
+        asv->dynamics.F_unit_wave             [i][j][k] = 0.0;
+  		}
+    }
+  }
+
   // Set the mass matrix
   set_mass(asv);
   // Set the drag coefficient matrix
