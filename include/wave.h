@@ -3,6 +3,9 @@
 
 #include "regular_wave.h"
 
+// Forward declaration of wind model.
+struct Wind;
+
 #define COUNT_SPECTRAL_FREQUENCIES 20
 #define COUNT_SPECTRAL_DIRECTIONS  10
 
@@ -24,15 +27,6 @@
  */
 struct Wave
 {
-  // Input variables
-  // ---------------
-  double wind_speed;// Wind speed in m/s.
-  double wind_direction; // Direction of wind measured with respect to 
-                         // geographic north. Angle measure +ve clockwise such 
-                         // that the east is at PI/2 radians to the north.
-  
-  // Wave spectrum variables
-  // -----------------------
   struct Regular_wave spectrum[COUNT_SPECTRAL_DIRECTIONS]
                               [COUNT_SPECTRAL_FREQUENCIES]; // List of regular
                                                             // waves in the 
@@ -50,21 +44,35 @@ struct Wave
 };
 
 /**
- * Initialise the irregular wave on the sea surface. 
- * @param wave pointer to the wave to be initialised. Assume wave is not a null
- * pointer and that all values in the structure are to be overwritten.
- * @param wind_speed in m/s. Assumes the wind speed to be a non-zero positive
- * value.
- * @param wind_fetch in m. Assumes the wind_fetch to be a non-zero positive
- * value.
- * @param wind_direction in radians measured with respect to geographic north.
- * Angle measured positive in clockwise direction such that the east is at PI/2
- * radians to the north. Assumes wind_direction to have a value within the range 
- * (0, 2PI).
+ * Initialise the irregular wave on the sea surface using the wind data. 
+ * @param wave is the pointer to the wave object to be initialised. Assumes wave 
+ * is not a null pointer and that all values in the structure are to be 
+ * overwritten.
+ * @param wind is the pointer to the wind model. 
  */
-void wave_init(struct Wave* wave, 
-               double wind_speed, 
-               double wind_direction);
+void wave_init_with_wind(struct Wave* wave, struct Wind* wind);
+
+/**
+ * Initialise the irregular wave on the sea using significant wave height as
+ * input.
+ * @param wave is the pointer to the wave object to be initialised. Assumes wave 
+ * is not a null pointer and that all values in the structure are to be
+ * overwritten.
+ * @param sig_wave_height is the significant wave height to achieve for the
+ * irregular sea being initialised. Value should be non-zero positive.
+ */
+void wave_init_with_sig_wave_ht(struct Wave* wave, double sig_wave_height);
+
+/**
+ * Initialise the irregular wave on the sea using the peak spectral frequency to
+ * as input. 
+ * @param wave is the pointer to the wave object to be initialised. Assumes wave
+ * is not a null pointer and that all values in the structure are to be 
+ * overwritten.
+ * @param peak_spectral_freq is the peak spectral frequency to achieve for the 
+ * irregular sea being initialised. Value should be non-zero positive.
+ */
+void wave_init_with_peak_freq(struct Wave* wave, double peak_spectral_freq);
 
 /**
  * Get sea surface elevation at the given location for the given time. 

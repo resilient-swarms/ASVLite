@@ -14,12 +14,13 @@ int main()
   double current_direction = 11.0*PI/6.0; //radians
 
   // Initialise the environment models
-  struct Wave wave;
-  wave_init(&wave, wind_speed, wind_direction);
-  struct Wind wind;
-  wind_init(&wind, wind_speed, wind_direction);
-  struct Current current;
-  current_init(&current, current_speed, current_direction);
+  struct Wind wind; // The wind model.
+  wind_init(&wind, wind_speed, wind_direction); // Initialise the wind model.
+  struct Wave wave; // Wave model.
+  wave_init_with_wind(&wave, &wind); // Initialise the wave model with wind data
+  struct Current current; // Current model.
+  current_init(&current, current_speed, current_direction); // Initialise the 
+                                                            // current model.
   
   // ASV specifications
   // TODO: Read all specification and optional specifications from a config
