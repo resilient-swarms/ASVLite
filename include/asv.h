@@ -51,7 +51,6 @@ struct Asv_dynamics
   double F_unit_wave_freq_min;
   double F_unit_wave_freq_max;
   double F_wind_all_directions[COUNT_ASV_SPECTRAL_DIRECTIONS][COUNT_DOF];
-  double F_current_all_directions[COUNT_ASV_SPECTRAL_DIRECTIONS][COUNT_DOF];
 };
 
 struct Asv

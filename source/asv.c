@@ -215,6 +215,9 @@ static void set_unit_wave_force(struct Asv* asv)
   double c = asv->spec->T;
   // Distance of centroid of ellipsoid from waterline.
   double z = - 4.0*c/(3.0*PI);
+
+  // Distance of COG from COB
+  double BG = fabs((asv->spec->KG - asv->spec->T) - z);
   
   double H_w = 0.01; // wave height in m.
 
@@ -246,13 +249,43 @@ static void set_unit_wave_force(struct Asv* asv)
     asv->dynamics.F_unit_wave[i][sway] = A_sway * P;
     // Heave force
     asv->dynamics.F_unit_wave[i][heave] = A_heave * P;
-    
-    // Roll moment = pitch moment = yaw moment = 0.0
+    // roll, pitch and yaw moments assumed as zero
   }
 }
 
 static void set_wind_force_all_directions(struct Asv* asv)
 {
+  // Assumptions:
+  // Longitudinal project area assumed as a triangle.
+  // Transverse project area assumed as a rectangle.
+  // Wind assumed as blowing at steady speed.
+  
+  double A_sway = 0.5 * asv->spec->L_wl * (asv->spec->D - asv->spec->T);
+  double A_surge = asv->spec->B_wl * (asv->spec->D - asv->spec->T);
+  double h_roll = ((1.0/3.0)*(asv->spec->D - asv->spec->T) + asv->spec->T) - 
+                  asv->spec->KG;
+  double h_pitch = (0.5*(asv->spec->D - asv->spec->T) + asv->spec->T) - 
+                  asv->spec->KG;
+
+  for(int i = 0; i < 360; ++i)
+  {
+    double angle = (PI/180.0) * i; // radians 
+    // Resolve the wind velocity along the x and y direction (body-frame used)
+    double v_x = asv->wind->speed * cos(angle);
+    double v_y = asv->wind->speed * sin(angle);
+
+    // Calculate forces
+    double C = 1.16; // Drag coefficient
+    double f_surge = 0.5 * AIR_DENSITY * C * A_surge * v_x * v_x;
+    double f_sway  = 0.5 * AIR_DENSITY * C * A_sway * v_y * v_y;
+    double f_roll  = f_sway * h_roll;
+    double f_pitch = f_surge * h_pitch;  
+    asv->dynamics.F_wind_all_directions[i][surge] = f_surge;
+    asv->dynamics.F_wind_all_directions[i][sway]  = f_sway;
+    asv->dynamics.F_wind_all_directions[i][roll]  = f_roll;
+    asv->dynamics.F_wind_all_directions[i][pitch] = f_pitch;
+    // heave and yaw assumed as zero.
+  }
 }
 
 static void set_current_force_all_directions(struct Asv* asv)
@@ -296,7 +329,6 @@ void asv_init(struct Asv* asv,
   		  asv->dynamics.F_drag                        [k] = 0.0;
   		  asv->dynamics.F_restoring                   [k] = 0.0;
         asv->dynamics.F_wind_all_directions   [i]   [k] = 0.0;
-        asv->dynamics.F_current_all_directions[i]   [k] = 0.0;
         asv->dynamics.F_unit_wave                [j][k] = 0.0;
   		}
     }
@@ -309,18 +341,21 @@ void asv_init(struct Asv* asv,
   // Set the stiffness matrix
   set_stiffness(asv);
 
-  // Set minimum encounter frequency
-  asv->dynamics.F_unit_wave_freq_min = get_encounter_frequency(
-                                        asv->wave->min_spectral_frequency,
-                                        asv->spec->max_speed);
-  asv->dynamics.F_unit_wave_freq_max = get_encounter_frequency(
-                                        asv->wave->max_spectral_frequency,
-                                        -asv->spec->max_speed);
-
-  // Set the wave force for unit waves
-  set_unit_wave_force(asv);
-  // Set the wind force for all directions
-  set_wind_force_all_directions(asv);
-  // Set the current force for all directions
-  set_current_force_all_directions(asv);
+  if(asv->wave)
+  {
+    // Set minimum encounter frequency
+    asv->dynamics.F_unit_wave_freq_min = get_encounter_frequency(
+                                          asv->wave->min_spectral_frequency,
+                                          asv->spec->max_speed);
+    asv->dynamics.F_unit_wave_freq_max = get_encounter_frequency(
+                                          asv->wave->max_spectral_frequency,
+                                          -asv->spec->max_speed);
+    // Set the wave force for unit waves
+    set_unit_wave_force(asv);
+  }
+  if(asv->wind)
+  {
+    // Set the wind force for all directions
+    set_wind_force_all_directions(asv);
+  }
 }
