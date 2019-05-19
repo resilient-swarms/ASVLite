@@ -42,7 +42,6 @@ struct Asv_dynamics
   double F[COUNT_DOF]; // Net force.
   double F_wave[COUNT_DOF];
   double F_wind[COUNT_DOF];
-  double F_current[COUNT_DOF];
   double F_propeller[COUNT_DOF];
   double F_drag[COUNT_DOF];
   double F_restoring[COUNT_DOF];

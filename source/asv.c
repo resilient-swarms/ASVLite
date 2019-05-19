@@ -7,7 +7,9 @@
 
 
 // Enum to correctly index the motions in the matrices for asv dynamics.
-enum i_DOF{surge, sway, heave, roll, pitch, yaw};
+enum i_dof{surge, sway, heave, roll, pitch, yaw}; // to index the DOF
+enum i_axis{x, y, z}; // to index the axis for linear motion
+enum i_attitude{heel, trim, heading}; // to index the floating attitude of ASV
 
 // Method to set the mass and added mass for the given asv object.
 static void set_mass(struct Asv* asv)
@@ -219,7 +221,7 @@ static void set_unit_wave_force(struct Asv* asv)
   // Distance of COG from COB
   double BG = fabs((asv->spec->KG - asv->spec->T) - z);
   
-  double H_w = 0.01; // wave height in m.
+  double H_w = 1.0; // unit wave height in m.
 
   // Calculate the forces for each encounter wave freq
   double freq_step_size = (asv->dynamics.F_unit_wave_freq_max - 
@@ -288,10 +290,6 @@ static void set_wind_force_all_directions(struct Asv* asv)
   }
 }
 
-static void set_current_force_all_directions(struct Asv* asv)
-{
-}
-
 static double get_encounter_frequency(double wave_freq, double asv_speed)
 {
   return wave_freq - (pow(wave_freq, 2.0)/G) * asv_speed;
@@ -324,7 +322,6 @@ void asv_init(struct Asv* asv,
   		  asv->dynamics.F                             [k] = 0.0;
   		  asv->dynamics.F_wave                        [k] = 0.0;
   		  asv->dynamics.F_wind                        [k] = 0.0;
-  		  asv->dynamics.F_current                     [k] = 0.0;
   		  asv->dynamics.F_propeller                   [k] = 0.0;
   		  asv->dynamics.F_drag                        [k] = 0.0;
   		  asv->dynamics.F_restoring                   [k] = 0.0;
