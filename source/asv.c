@@ -274,7 +274,7 @@ static void set_unit_wave_force(struct Asv* asv)
 }
 
 // Function to compute the wave force for the current time step.
-static void set_wave_force(struct Asv* asv)
+static void set_wave_force(struct Asv* asv, double time)
 {
   // Reset the wave force to all zeros
   for(int k = 0; k < COUNT_DOF; ++k)
@@ -307,8 +307,7 @@ static void set_wave_force(struct Asv* asv)
 
       // Assume the wave force to be have zero phase lag with the wave
       double phase = regular_wave_get_phase(&asv->wave->spectrum[i][j], 
-                                            &asv->cog_position, 
-                                            asv->dynamics.time);
+                                            &asv->cog_position, time);
       
       // Compute wave force
       for(int k = 0; k < COUNT_DOF; ++k)
@@ -423,6 +422,15 @@ static void set_acceleration(struct Asv* asv)
   }
 }
 
+static void set_velocity(struct Asv* asv, double time)
+{
+  double delta_t = time - asv->dynamics.time;
+  for(int i = 0; i < COUNT_DOF; ++i)
+  {
+    asv->dynamics.V[i] = asv->dynamics.V[i] + asv->dynamics.A[i] * delta_t; 
+  }
+}
+
 void asv_init(struct Asv* asv, 
               struct Asv_specification* spec, 
               struct Wave* wave,
@@ -517,11 +525,8 @@ void asv_set_attitude(struct Asv* asv, struct Asv_attitude attitude)
 
 void asv_set_dynamics(struct Asv* asv, double time)
 {
-  // Update the time
-  asv->dynamics.time = time;
-
   // Get the wave force for the current time step
-  set_wave_force(asv);
+  set_wave_force(asv, time);
   
   // Get the wind force for the current time step
   set_wind_force(asv);
@@ -543,6 +548,7 @@ void asv_set_dynamics(struct Asv* asv, double time)
   set_acceleration(asv);
   
   // Compute the velocity for the current time step
+  set_velocity(asv, time);
   
   // Compute the deflection for the current time step in body-fixed frame
   
@@ -553,5 +559,8 @@ void asv_set_dynamics(struct Asv* asv, double time)
   // Update the COG position 
   
   // Compute the new attitude
+  
+  // Update the time
+  asv->dynamics.time = time;
 }
 
