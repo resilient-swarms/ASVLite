@@ -308,6 +308,19 @@ void asv_init(struct Asv* asv,
   asv->wind = wind; // Could be NULL.
   asv->current = current; // Could be NULL.
 
+  // Initialise the position of the ASV
+  asv->position.x = 0.0;
+  asv->position.y = 0.0j;
+  asv->position.z = -asv->spec->T;
+
+  // Initialise the floating attitude of the ASV
+  asv->attitude.heel = 0.0;
+  asv->attitude.trim = 0.0;
+  asv->attitude.heading = 0.0;
+
+  // Initialise time record 
+  asv->time = 0.0;
+
   // Initialise all the vectors matrices to zero.
   for(int i = 0; i < COUNT_ASV_SPECTRAL_DIRECTIONS; ++i)
   {
@@ -355,4 +368,18 @@ void asv_init(struct Asv* asv,
     // Set the wind force for all directions
     set_wind_force_all_directions(asv);
   }
+}
+
+void asv_set_position(struct Asv* asv, struct Point position)
+{
+  asv->position.x = position.x;
+  asv->position.y = position.y;
+  asv->position.z = position.z;
+}
+
+void asv_set_attitude(struct Asv* asv, struct Asv_attitude attitude)
+{
+  asv->attitude.heel = attitude.heel;
+  asv->attitude.trim = attitude.trim;
+  asv->attitude.heading = attitude.heading;
 }

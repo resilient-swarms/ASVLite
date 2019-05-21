@@ -13,6 +13,16 @@ struct Current;
 #define COUNT_ASV_SPECTRAL_FREQUENCIES 100
 
 /**
+ * Structure to represent the floating angles of the ASV.
+ */
+struct Asv_attitude
+{
+  double heel;    // Angle with x-axis in radian.
+  double trim;    // Angle with y-axis in radian.
+  double heading; // Angle with z-axis in radian.
+}; 
+
+/**
  * Coordinate system: Body-centric frame. The origin of the frame is on the
  * waterline at the aft end centre line.
  */
@@ -59,6 +69,9 @@ struct Asv
   struct Current* current;
   struct Asv_specification* spec;
   struct Asv_dynamics dynamics;
+  double time;
+  struct Point position;
+  struct Asv_attitude attitude;
 };
 
 /**
@@ -85,15 +98,24 @@ void asv_init(struct Asv* asv,
               struct Current* current);
 
 /**
- * Function to get the position of the ASV in the global frame for the given
- * time.
- * @param position is the buffer to contain the return value. The returned value
- * is an array of length 3. The values contained are the x, y and z coordinate
- * values.
+ * Function to set the initial position of the ASV in the global frame. The 
+ * position of the ASV is set by setting the position of the origin of the 
+ * body-fixed frame in the global frame. 
+ */
+void asv_set_position(struct Asv* asv, struct Point position);
+
+/**
+ * Function to set the initial floating attitude of the ASV.
+ */
+void asv_set_attitude(struct Asv* asv, struct Asv_attitude attitude);
+
+/**
+ * Function to set the position and attitude of the ASV in the global frame for 
+ * the given time step.
  * @param asv is the pointer to the asv object for which the position is to be
  * computed.
  * @param time is the time for which the position is to be computed.
  */
-void asv_get_position(double position[3], struct Asv* asv, double time);
+void asv_set_dynamics(struct Asv* asv, double time);
 
 #endif // ASV_H
