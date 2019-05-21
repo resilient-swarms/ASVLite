@@ -73,7 +73,7 @@ static void set_mass(struct Asv* asv)
   double added_mass_roll = 0.0;
   double added_mass_pitch = fabs(
                             0.5 *
-                            (1.0/5.0) * 
+                            (1.0/5.0) *
                             pow(b*b - a*a, 2.0)*(alpha_0 - beta_0) / 
                             (2.0*(b*b - a*a) + (b*b + a*a)*(beta_0 - alpha_0)) *
                             (4.0/3.0) * PI *
@@ -84,7 +84,7 @@ static void set_mass(struct Asv* asv)
 
   asv->dynamics.M[surge] = mass + added_mass_surge;
   asv->dynamics.M[sway]  = mass + added_mass_sway;
-  asv->dynamics.M[yaw]   = mass + added_mass_heave;
+  asv->dynamics.M[heave] = mass + added_mass_heave;
 
   // Roll moment of inertia
   double r_roll = asv->spec->r_roll;
@@ -379,9 +379,9 @@ static void set_drag_force(struct Asv* asv)
 {
   for(int i = 0; i < COUNT_DOF; ++i)
   {
-    asv->dynamics.F_drag[i] = asv->dynamics.C[i] * 
-                              asv->dynamics.V[i]*
-                              asv->dynamics.V[i];
+    asv->dynamics.F_drag[i] = -asv->dynamics.C[i] * 
+                               asv->dynamics.V[i]*
+                               fabs(asv->dynamics.V[i]);
   }
 }
 
@@ -389,15 +389,14 @@ static void set_restoring_force(struct Asv* asv)
 {
   // Heave restoring force
   // Distance of current COG position from still water floating position.
-  double cog_still_water = asv->spec->KG - asv->spec->T;
-  double dist = fabs(cog_still_water - asv->cog_position.z);
+  double dist = (asv->spec->KG -asv->spec->T) - asv->cog_position.z;
   asv->dynamics.F_restoring[heave] = asv->dynamics.K[heave] * dist;
   
   // Roll restoring force 
-  asv->dynamics.F_restoring[roll] = asv->dynamics.K[roll] * asv->attitude.heel;
+  asv->dynamics.F_restoring[roll] = -asv->dynamics.K[roll] * asv->attitude.heel;
 
   // Pitch restoring force
-  asv->dynamics.F_restoring[pitch] = asv->dynamics.K[pitch]* asv->attitude.trim;
+  asv->dynamics.F_restoring[pitch]= -asv->dynamics.K[pitch]* asv->attitude.trim;
   
   // No restoring force for sway, yaw and surge. 
 }
@@ -409,8 +408,8 @@ static void set_net_force(struct Asv* asv)
     asv->dynamics.F[i] = asv->dynamics.F_wave[i]       
                          + asv->dynamics.F_wind[i]       
                          + asv->dynamics.F_propeller[i]  
-                         - asv->dynamics.F_drag[i]       
-                         - asv->dynamics.F_restoring[i];
+                         + asv->dynamics.F_drag[i]       
+                         + asv->dynamics.F_restoring[i];
   }
 }
 
@@ -436,7 +435,7 @@ static void set_deflection(struct Asv* asv, double time)
   double delta_t = time - asv->dynamics.time;
   for(int i = 0; i < COUNT_DOF; ++i)
   {
-    asv->dynamics.X[i] += asv->dynamics.V[i] * delta_t; 
+    asv->dynamics.X[i] = asv->dynamics.V[i] * delta_t; 
   }
 }
 
@@ -455,9 +454,7 @@ static void set_position(struct Asv* asv)
   asv->origin_position.z += deflection_z;
 
   // Update cog position
-  asv->cog_position.x += deflection_x;
-  asv->cog_position.y += deflection_y;
-  asv->cog_position.z += deflection_z;
+  set_cog(asv); // Match the position of the cog with that of origin
 }
 
 // Compute the attitude for the current time step
@@ -509,12 +506,12 @@ void asv_init(struct Asv* asv,
   		  asv->dynamics.X                             [k] = 0.0;
   		  asv->dynamics.F                             [k] = 0.0;
   		  asv->dynamics.F_wave                        [k] = 0.0;
-  		  asv->dynamics.F_wind                        [k] = 0.0;
   		  asv->dynamics.F_propeller                   [k] = 0.0;
   		  asv->dynamics.F_drag                        [k] = 0.0;
   		  asv->dynamics.F_restoring                   [k] = 0.0;
         asv->dynamics.F_wind_all_directions   [i]   [k] = 0.0;
         asv->dynamics.F_unit_wave                [j][k] = 0.0;
+        asv->dynamics.F_wind = asv->dynamics.F_wind_all_directions[0];
   		}
     }
   }
@@ -562,11 +559,17 @@ void asv_set_attitude(struct Asv* asv, struct Asv_attitude attitude)
 
 void asv_set_dynamics(struct Asv* asv, double time)
 {
-  // Get the wave force for the current time step
-  set_wave_force(asv, time);
+  if(asv->wave)
+  {
+    // Get the wave force for the current time step
+    set_wave_force(asv, time);
+  }
   
-  // Get the wind force for the current time step
-  set_wind_force(asv);
+  if(asv->wind)
+  {
+    // Get the wind force for the current time step
+    set_wind_force(asv);
+  }
   
   // Get the propeller force for the current time step
   set_propeller_force(asv);

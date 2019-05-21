@@ -46,8 +46,22 @@ int main()
 
   // Initialise the ASV model.
   struct Asv asv;
-  asv_init(&asv, &spec, &wave, &wind, &current);
+  //asv_init(&asv, &spec, &wave, &wind, &current);
+  asv_init(&asv, &spec, NULL, NULL, NULL);
+  struct Point init_position = (struct Point){0.0, 0.0, -(spec.T + 0.5)};
+  asv_set_position(&asv, init_position); 
   
-  // Print the wave stats
+  // Start simulation
+  double delta_t = 20.0/1000.0; // 20 milli-seconds
+  for(double t = 0.0; t < 10.0; t += delta_t)
+  {
+    asv_set_dynamics(&asv, t);
+    printf("\n %f , %f, %f, %f", 
+        t, 
+        asv.cog_position.z - (asv.spec->KG -asv.spec->T), 
+        asv.dynamics.F_restoring[2],
+        asv.dynamics.V[2]); 
+  }
+  
   return 0;
 }
