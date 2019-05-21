@@ -427,7 +427,16 @@ static void set_velocity(struct Asv* asv, double time)
   double delta_t = time - asv->dynamics.time;
   for(int i = 0; i < COUNT_DOF; ++i)
   {
-    asv->dynamics.V[i] = asv->dynamics.V[i] + asv->dynamics.A[i] * delta_t; 
+    asv->dynamics.V[i] += asv->dynamics.A[i] * delta_t; 
+  }
+}
+
+static void set_deflection(struct Asv* asv, double time)
+{
+  double delta_t = time - asv->dynamics.time;
+  for(int i = 0; i < COUNT_DOF; ++i)
+  {
+    asv->dynamics.X[i] += asv->dynamics.V[i] * delta_t; 
   }
 }
 
@@ -551,6 +560,7 @@ void asv_set_dynamics(struct Asv* asv, double time)
   set_velocity(asv, time);
   
   // Compute the deflection for the current time step in body-fixed frame
+  set_deflection(asv, time);
   
   // Translate the deflection to global frame
   
