@@ -9,6 +9,25 @@ enum i_dof{surge, sway, heave, roll, pitch, yaw}; // to index the DOF
 enum i_axis{x, y, z}; // to index the axis for linear motion
 enum i_attitude{heel, trim, heading}; // to index the floating attitude of ASV
 
+// Method to compute the encounter frequency. 
+// heading_angle is the heading angle of the wave with respect to positive x
+// axis of ASV.
+static double get_encounter_frequency(double wave_freq, 
+                                      double asv_speed, 
+                                      double heading_angle)
+{
+  return wave_freq - (pow(wave_freq, 2.0)/G) * asv_speed * cos(heading_angle);
+}
+
+// Function to set the COG of the ASV in the global frame. 
+static void set_cog(struct Asv* asv)
+{
+  // Match the position of the COG with that of the position of the origin.
+  asv->cog_position.x = asv->origin_position.x + asv->spec->L_wl/2.0;
+  asv->cog_position.y = 0.0;
+  asv->cog_position.z = asv->origin_position.z + asv->spec->KG;
+}
+
 // Method to set the mass and added mass for the given asv object.
 static void set_mass(struct Asv* asv)
 {
@@ -85,6 +104,7 @@ static void set_drag_coefficient(struct Asv* asv)
 {
   // Ref: Recommended practices DNVGL-RP-N103 Modelling and analysis of marine
   // operations. Edition July 2017. Appendix B Table B-1, B-2.
+  
   // Surge drag coefficient - assuming elliptical waterplane area
   double B_L_ratio = asv->spec->B_wl/ asv->spec->L_wl;
   if(B_L_ratio <= 0.125)
@@ -196,16 +216,6 @@ static void set_stiffness(struct Asv* asv)
   // Pitch stiffness
   // Ref: Dynamics of Marine Vehicles, R. Bhattacharyya, page 66
   asv->dynamics.K[pitch] = I_yy * SEA_WATER_DENSITY * G;
-}
-
-// Method to compute the encounter frequency. 
-// heading_angle is the heading angle of the wave with respect to positive x
-// axis of ASV.
-static double get_encounter_frequency(double wave_freq, 
-                                      double asv_speed, 
-                                      double heading_angle)
-{
-  return wave_freq - (pow(wave_freq, 2.0)/G) * asv_speed * cos(heading_angle);
 }
 
 static void set_unit_wave_force(struct Asv* asv)
@@ -345,6 +355,7 @@ static void set_wind_force_all_directions(struct Asv* asv)
   }
 }
 
+// Function to calculate the wind force for the current time step.
 static void set_wind_force(struct Asv* asv)
 {
   // Compute the wind angle with respect to ASV
@@ -358,13 +369,21 @@ static void set_wind_force(struct Asv* asv)
   asv->dynamics.F_wind = asv->dynamics.F_wind_all_directions[index];
 }
 
-// Method to set the COG of the ASV in the global frame. 
-static void set_cog(struct Asv* asv)
+// Function to calculate the propeller force for the current time step.
+static void set_propeller_force(struct Asv* asv)
 {
-  // Match the position of the COG with that of the position of the origin.
-  asv->cog_position.x = asv->origin_position.x + asv->spec->L_wl/2.0;
-  asv->cog_position.y = 0.0;
-  asv->cog_position.z = asv->origin_position.z + asv->spec->KG;
+  // TODO: Implement this.
+}
+
+// Function to compute the drag force for the current time step.
+static void set_drag_force(struct Asv* asv)
+{
+  for(int i = 0; i < COUNT_DOF; ++i)
+  {
+    asv->dynamics.F_drag[i] = asv->dynamics.C[i] * 
+                              asv->dynamics.V[i]*
+                              asv->dynamics.V[i];
+  }
 }
 
 void asv_init(struct Asv* asv, 
@@ -471,8 +490,10 @@ void asv_set_dynamics(struct Asv* asv, double time)
   set_wind_force(asv);
   
   // Get the propeller force for the current time step
+  set_propeller_force(asv);
   
   // Compute the drag force for the current time step based on velocity reading
+  set_drag_force(asv);
   
   // Compute the restoring force for the current time step based on the position
   // reading
