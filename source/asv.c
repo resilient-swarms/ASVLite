@@ -227,7 +227,7 @@ static void set_unit_wave_force(struct Asv* asv)
   // hull.
   // 3. All measurements are with respect to body-frame - origin on waterline at 
   // aft end centreline. Positive measurements towards fore, port side and up.
-  // 4. Unit wave height = 1 cm = 0.01 m.
+  // 4. Unit wave height = 1 m.
   
   // Dimensions of ellipsoid
   double a = asv->spec->L_wl/ 2.0;
@@ -386,6 +386,23 @@ static void set_drag_force(struct Asv* asv)
   }
 }
 
+static void set_restoring_force(struct Asv* asv)
+{
+  // Heave restoring force
+  // Distance of current COG position from still water floating position.
+  double cog_still_water = asv->spec->KG - asv->spec->T;
+  double dist = fabs(cog_still_water - asv->cog_position.z);
+  asv->dynamics.F_restoring[heave] = asv->dynamics.K[heave] * dist;
+  
+  // Roll restoring force 
+  asv->dynamics.F_restoring[roll] = asv->dynamics.K[roll] * asv->attitude.heel;
+
+  // Pitch restoring force
+  asv->dynamics.F_restoring[pitch] = asv->dynamics.K[pitch]* asv->attitude.trim;
+  
+  // No restoring force for sway, yaw and surge. 
+}
+
 void asv_init(struct Asv* asv, 
               struct Asv_specification* spec, 
               struct Wave* wave,
@@ -497,6 +514,7 @@ void asv_set_dynamics(struct Asv* asv, double time)
   
   // Compute the restoring force for the current time step based on the position
   // reading
+  set_restoring_force(asv);
   
   // Compute the net force for the current time step
   
