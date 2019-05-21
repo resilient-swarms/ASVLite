@@ -5,21 +5,21 @@
 void regular_wave_init(struct Regular_wave* wave,
                          double amplitude,
                          double frequency,
-                         double phase,
+                         double phase_lag,
                          double direction)
 {
   wave->amplitude = amplitude; 
   wave->frequency = frequency;
-  wave->phase = phase;
+  wave->phase_lag = phase_lag;
   wave->direction = direction;
   wave->time_period = (1.0/frequency);
   wave->wave_length = (G * wave->time_period * wave->time_period)/(2.0 * PI);
   wave->wave_number = (2.0 * PI)/wave->wave_length;
 }
 
-double regular_wave_get_elevation(struct Regular_wave* wave,
-                                  struct Point* location,
-                                  double time)
+double regular_wave_get_phase(struct Regular_wave* wave, 
+                              struct Point* location, 
+                              double time)
 {
   // elevation = amplitude * cos(A - B + phase)
   // where:
@@ -35,5 +35,14 @@ double regular_wave_get_elevation(struct Regular_wave* wave,
   double A = wave->wave_number * (location->x * sin(wave->direction) + 
                                   location->y * cos(wave->direction));
   double B = 2.0 * PI * wave->frequency * time;
-  return wave->amplitude * cos(A - B + wave->phase);
+  return (A - B + wave->phase_lag);
+
+}
+
+double regular_wave_get_elevation(struct Regular_wave* wave,
+                                  struct Point* location,
+                                  double time)
+{
+  double wave_phase = regular_wave_get_phase(wave, location, time); 
+  return wave->amplitude * cos(wave_phase);
 } 

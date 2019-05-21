@@ -10,7 +10,7 @@ struct Regular_wave
 {
   double amplitude; // Amplitude of the wave in meter.
   double frequency; // Frequency of the wave in Hz.
-  double phase;     // Phase angle of the wave in radian.
+  double phase_lag; // Phase lag of the wave in radian.
   double direction; // Direction of propagation of the wave with respect to 
                     // geographic north. Angle are measured positive in 
                     // clockwise direction such that east is at PI/2 radians to
@@ -37,8 +37,19 @@ struct Regular_wave
 void regular_wave_init(struct Regular_wave* wave, 
                          double amplitude, 
                          double frequency, 
-                         double phase, 
+                         double phase_lag, 
                          double direction);
+
+/**
+ * Get the wave phase for the given point for the given time.
+ * @param wave for which the phase is to be calculated.
+ * @param location at which the phase is to be calculated.
+ * @param time for which the phase is to be calculated.
+ * @return wave phase in radian.
+ */
+double regular_wave_get_phase(struct Regular_wave* wave, 
+                              struct Point* location, 
+                              double time);
 /**
  * Get wave elevation a given point for a given time.
  * @param wave for which the elevation is to be calculated.
