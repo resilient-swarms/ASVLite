@@ -415,6 +415,14 @@ static void set_net_force(struct Asv* asv)
   }
 }
 
+static void set_acceleration(struct Asv* asv)
+{
+  for(int i = 0; i < COUNT_DOF; ++i)
+  {
+    asv->dynamics.A[i] = asv->dynamics.F[i] / asv->dynamics.M[i];
+  }
+}
+
 void asv_init(struct Asv* asv, 
               struct Asv_specification* spec, 
               struct Wave* wave,
@@ -532,6 +540,7 @@ void asv_set_dynamics(struct Asv* asv, double time)
   set_net_force(asv);
   
   // Compute the acceleration for the current time step
+  set_acceleration(asv);
   
   // Compute the velocity for the current time step
   
