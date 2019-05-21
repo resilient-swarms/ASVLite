@@ -288,8 +288,8 @@ static void set_wave_force(struct Asv* asv)
 
       // Get the index for unit wave force for the encounter frequency
       double freq_step_size = (asv->dynamics.F_unit_wave_freq_max - 
-                                    asv->dynamics.F_unit_wave_freq_min) /
-                                    COUNT_ASV_SPECTRAL_FREQUENCIES;
+                               asv->dynamics.F_unit_wave_freq_min) /
+                              (COUNT_ASV_SPECTRAL_FREQUENCIES - 1.0);
       int index = round(freq/freq_step_size);
 
       // Compute the scaling factor to compute the wave force from unit wave
@@ -343,6 +343,19 @@ static void set_wind_force_all_directions(struct Asv* asv)
     asv->dynamics.F_wind_all_directions[i][pitch] = f_pitch;
     // heave and yaw assumed as zero.
   }
+}
+
+static void set_wind_force(struct Asv* asv)
+{
+  // Compute the wind angle with respect to ASV
+  double angle = asv->wind->direction - asv->attitude.heading;
+  // Better to keep angle +ve
+  angle = (angle < 0.0)? 2*PI + angle : angle;
+
+  // Compute the index to get the wind force 
+  int index = round(angle);
+
+  asv->dynamics.F_wind = asv->dynamics.F_wind_all_directions[index];
 }
 
 // Method to set the COG of the ASV in the global frame. 
