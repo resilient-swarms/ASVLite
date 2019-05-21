@@ -440,6 +440,34 @@ static void set_deflection(struct Asv* asv, double time)
   }
 }
 
+// Compute deflection in global frame and set position of origin and cog.
+static void set_position(struct Asv* asv)
+{
+  double deflection_x = asv->dynamics.X[surge]*cos(asv->attitude.heading) - 
+                        asv->dynamics.X[sway]*sin(asv->attitude.heading);
+  double deflection_y = asv->dynamics.X[surge]*sin(asv->attitude.heading) + 
+                        asv->dynamics.X[sway]*cos(asv->attitude.heading);
+  double deflection_z = asv->dynamics.X[heave];
+  
+  // Update origin position 
+  asv->origin_position.x += deflection_x;
+  asv->origin_position.y += deflection_y;
+  asv->origin_position.z += deflection_z;
+
+  // Update cog position
+  asv->cog_position.x += deflection_x;
+  asv->cog_position.y += deflection_y;
+  asv->cog_position.z += deflection_z;
+}
+
+// Compute the attitude for the current time step
+static void set_attitude(struct Asv* asv)
+{
+  asv->attitude.heading += asv->dynamics.X[yaw];
+  asv->attitude.heel    += asv->dynamics.X[roll];
+  asv->attitude.trim    += asv->dynamics.X[pitch];
+}
+
 void asv_init(struct Asv* asv, 
               struct Asv_specification* spec, 
               struct Wave* wave,
@@ -562,13 +590,11 @@ void asv_set_dynamics(struct Asv* asv, double time)
   // Compute the deflection for the current time step in body-fixed frame
   set_deflection(asv, time);
   
-  // Translate the deflection to global frame
-  
-  // Compute the new origin position for the current time step
-  
-  // Update the COG position 
+  // Translate the deflection to global frame and compute the new position.
+  set_position(asv);
   
   // Compute the new attitude
+  set_attitude(asv);
   
   // Update the time
   asv->dynamics.time = time;
