@@ -64,21 +64,18 @@ static void wave_init(struct Wave* wave,
 
   // Create regular waves
   // For each heading angle
-  double wave_heading_step_size = PI / (COUNT_SPECTRAL_DIRECTIONS - 1);
-  for(int i = 0; i < COUNT_SPECTRAL_DIRECTIONS; ++i)
+  double wave_heading_step_size = PI / (COUNT_WAVE_SPECTRAL_DIRECTIONS - 1);
+  for(int i = 0; i < COUNT_WAVE_SPECTRAL_DIRECTIONS; ++i)
   {
     double mu = wave->min_spectral_wave_heading + i * wave_heading_step_size;
     // wave heading is expected to be in the range (0, 2PI). Correct the wave
     // heading if value our of the range.
-    if(mu > 2.0*PI)
-    {
-      mu -= 2.0*PI;
-    }
+    mu = (mu > 2.0*PI)? mu - 2.0*PI: mu;
 
     double frequency_step_size = (wave->max_spectral_frequency - 
                                   wave->min_spectral_frequency) /
-                                  (COUNT_SPECTRAL_FREQUENCIES - 1);
-    for(int j = 0; j < COUNT_SPECTRAL_FREQUENCIES; ++j)
+                                  (COUNT_WAVE_SPECTRAL_FREQUENCIES - 1);
+    for(int j = 0; j < COUNT_WAVE_SPECTRAL_FREQUENCIES; ++j)
     {
       double f = wave->min_spectral_frequency + j * frequency_step_size;
       double S = (A/pow(f,5.0)) * exp(-B/pow(f,4.0)) * frequency_step_size;
@@ -115,9 +112,9 @@ double wave_get_elevation(struct Wave* wave,
                           double time)
 {
   double elevation = 0.0;
-  for(int i = 0; i < COUNT_SPECTRAL_DIRECTIONS; ++i)
+  for(int i = 0; i < COUNT_WAVE_SPECTRAL_DIRECTIONS; ++i)
   {
-    for(int j = 0; j < COUNT_SPECTRAL_FREQUENCIES; ++j)
+    for(int j = 0; j < COUNT_WAVE_SPECTRAL_FREQUENCIES; ++j)
     {
       elevation += regular_wave_get_elevation(wave->spectrum[i]+j, 
                                               location, 

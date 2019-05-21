@@ -6,8 +6,8 @@
 // Forward declaration of wind model.
 struct Wind;
 
-#define COUNT_SPECTRAL_FREQUENCIES 20
-#define COUNT_SPECTRAL_DIRECTIONS  10
+#define COUNT_WAVE_SPECTRAL_FREQUENCIES 20
+#define COUNT_WAVE_SPECTRAL_DIRECTIONS  10
 
 /**
  * Structure to define the model of irregular wave on the sea surface. The wave 
@@ -27,10 +27,9 @@ struct Wind;
  */
 struct Wave
 {
-  struct Regular_wave spectrum[COUNT_SPECTRAL_DIRECTIONS]
-                              [COUNT_SPECTRAL_FREQUENCIES]; // List of regular
-                                                            // waves in the 
-                                                            // irregular sea.
+  struct Regular_wave spectrum[COUNT_WAVE_SPECTRAL_DIRECTIONS]
+                              [COUNT_WAVE_SPECTRAL_FREQUENCIES]; // List of 
+                                          // regular waves in the irregular sea.
   double min_spectral_frequency;  // Lower limit (0.1%) of spectral energy 
                                   // threshold.
   double max_spectral_frequency;  // Upper limit (99.9%) of spectral energy 
