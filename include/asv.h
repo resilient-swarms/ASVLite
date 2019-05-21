@@ -6,20 +6,21 @@
 // Forward declarations of wind, wave and current.
 struct Wave;
 struct Wind;
-struct Current;
 
 #define COUNT_DOF 6 /* Number of degrees of freedom for the motion of ASV. */
 #define COUNT_ASV_SPECTRAL_DIRECTIONS 360
 #define COUNT_ASV_SPECTRAL_FREQUENCIES 100
 
 /**
- * Structure to represent the floating angles of the ASV.
+ * Structure to represent the floating angles of the ASV. The floating attitude
+ * used body-fixed frame for heel and trim angle and used global frame for
+ * heading angle.
  */
 struct Asv_attitude
 {
-  double heel;    // Angle with x-axis in radian.
-  double trim;    // Angle with y-axis in radian.
-  double heading; // Angle with z-axis in radian.
+  double heel;    // Angle in radian with x-axis of body-fixed frame.
+  double trim;    // Angle in radian with y-axis of body-fixed frame.
+  double heading; // Angle in radian with z-axis of global frame.
 }; 
 
 /**
@@ -44,10 +45,13 @@ struct Asv_specification
 
 struct Asv_dynamics
 {
+  double time;
   double M[COUNT_DOF]; // Mass (+ added mass).
   double C[COUNT_DOF]; // Drag force coefficients.
   double K[COUNT_DOF]; // Stiffness.
-  double X[COUNT_DOF]; // Deflection.
+  double X[COUNT_DOF]; // Deflection in body-fixed frame.
+  double V[COUNT_DOF]; // Velocity of ASV in body-fixed frame.
+  double A[COUNT_DOF]; // Acceleration of ASV in body-fixed frame.
   
   double F[COUNT_DOF]; // Net force.
   double F_wave[COUNT_DOF];
@@ -69,8 +73,10 @@ struct Asv
   struct Current* current;
   struct Asv_specification* spec;
   struct Asv_dynamics dynamics;
-  double time;
-  struct Point position;
+  struct Point origin_position; // Position of the body-fixed frame in the 
+                                // global frame for the current time step.
+  struct Point cog_position; // Position of the centre of gravity of the ASV 
+                             // in the global frame for the current time step.
   struct Asv_attitude attitude;
 };
 
@@ -110,8 +116,7 @@ void asv_set_position(struct Asv* asv, struct Point position);
 void asv_set_attitude(struct Asv* asv, struct Asv_attitude attitude);
 
 /**
- * Function to set the position and attitude of the ASV in the global frame for 
- * the given time step.
+ * Function to set the position and attitude of the ASV for the given time step.
  * @param asv is the pointer to the asv object for which the position is to be
  * computed.
  * @param time is the time for which the position is to be computed.

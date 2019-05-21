@@ -3,8 +3,6 @@
 #include "constants.h"
 #include "wave.h"
 #include "wind.h"
-#include "current.h"
-
 
 // Enum to correctly index the motions in the matrices for asv dynamics.
 enum i_dof{surge, sway, heave, roll, pitch, yaw}; // to index the DOF
@@ -200,6 +198,16 @@ static void set_stiffness(struct Asv* asv)
   asv->dynamics.K[pitch] = I_yy * SEA_WATER_DENSITY * G;
 }
 
+// Method to compute the encounter frequency. 
+// heading_angle is the heading angle of the wave with respect to positive x
+// axis of ASV.
+static double get_encounter_frequency(double wave_freq, 
+                                      double asv_speed, 
+                                      double heading_angle)
+{
+  return wave_freq - (pow(wave_freq, 2.0)/G) * asv_speed * cos(heading_angle);
+}
+
 static void set_unit_wave_force(struct Asv* asv)
 {
   // Assumptions:
@@ -255,6 +263,53 @@ static void set_unit_wave_force(struct Asv* asv)
   }
 }
 
+// Function to compute the wave force for the current time step.
+static void set_wave_force(struct Asv* asv)
+{
+  // Reset the wave force to all zeros
+  for(int k = 0; k < COUNT_DOF; ++k)
+  {
+    asv->dynamics.F_wave[k] = 0.0;
+  }
+
+  // For each wave in the wave spectrum
+  for(int i = 0; i < COUNT_WAVE_SPECTRAL_DIRECTIONS; ++i)
+  {
+    for(int j = 0; j < COUNT_WAVE_SPECTRAL_FREQUENCIES; ++j)
+    {
+      // Compute the encounter frequency
+      double angle = asv->wave->spectrum[i][j].direction - 
+                     asv->attitude.heading;
+      // Better to keep angle +ve
+      angle = (angle < 0.0)? 2*PI + angle : angle;
+      // Get encounter frequency
+      double freq = get_encounter_frequency(asv->wave->spectrum[i][j].frequency,
+                                            asv->dynamics.V[surge], angle);
+
+      // Get the index for unit wave force for the encounter frequency
+      double freq_step_size = (asv->dynamics.F_unit_wave_freq_max - 
+                                    asv->dynamics.F_unit_wave_freq_min) /
+                                    COUNT_ASV_SPECTRAL_FREQUENCIES;
+      int index = round(freq/freq_step_size);
+
+      // Compute the scaling factor to compute the wave force from unit wave
+      double scale = asv->wave->spectrum[i][j].amplitude * 2.0;
+
+      // Assume the wave force to be have zero phase lag with the wave
+      double phase = regular_wave_get_phase(&asv->wave->spectrum[i][j], 
+                                            &asv->cog_position, 
+                                            asv->dynamics.time);
+      
+      // Compute wave force
+      for(int k = 0; k < COUNT_DOF; ++k)
+      {
+        asv->dynamics.F_wave[k] += (asv->dynamics.F_unit_wave[index][k] * 
+                                    scale * cos(phase));
+      }
+    }
+  } 
+}
+
 static void set_wind_force_all_directions(struct Asv* asv)
 {
   // Assumptions:
@@ -290,9 +345,13 @@ static void set_wind_force_all_directions(struct Asv* asv)
   }
 }
 
-static double get_encounter_frequency(double wave_freq, double asv_speed)
+// Method to set the COG of the ASV in the global frame. 
+static void set_cog(struct Asv* asv)
 {
-  return wave_freq - (pow(wave_freq, 2.0)/G) * asv_speed;
+  // Match the position of the COG with that of the position of the origin.
+  asv->cog_position.x = asv->origin_position.x + asv->spec->L_wl/2.0;
+  asv->cog_position.y = 0.0;
+  asv->cog_position.z = asv->origin_position.z + asv->spec->KG;
 }
 
 void asv_init(struct Asv* asv, 
@@ -309,9 +368,11 @@ void asv_init(struct Asv* asv,
   asv->current = current; // Could be NULL.
 
   // Initialise the position of the ASV
-  asv->position.x = 0.0;
-  asv->position.y = 0.0j;
-  asv->position.z = -asv->spec->T;
+  asv->origin_position.x = 0.0;
+  asv->origin_position.y = 0.0j;
+  asv->origin_position.z = -asv->spec->T;
+  set_cog(asv); // Match the position of the cog with that of origin
+
 
   // Initialise the floating attitude of the ASV
   asv->attitude.heel = 0.0;
@@ -319,7 +380,7 @@ void asv_init(struct Asv* asv,
   asv->attitude.heading = 0.0;
 
   // Initialise time record 
-  asv->time = 0.0;
+  asv->dynamics.time = 0.0;
 
   // Initialise all the vectors matrices to zero.
   for(int i = 0; i < COUNT_ASV_SPECTRAL_DIRECTIONS; ++i)
@@ -356,10 +417,10 @@ void asv_init(struct Asv* asv,
     // Set minimum encounter frequency
     asv->dynamics.F_unit_wave_freq_min = get_encounter_frequency(
                                           asv->wave->min_spectral_frequency,
-                                          asv->spec->max_speed);
+                                          asv->spec->max_speed, 0.0);
     asv->dynamics.F_unit_wave_freq_max = get_encounter_frequency(
                                           asv->wave->max_spectral_frequency,
-                                          -asv->spec->max_speed);
+                                          asv->spec->max_speed, 2.0*PI);
     // Set the wave force for unit waves
     set_unit_wave_force(asv);
   }
@@ -372,9 +433,10 @@ void asv_init(struct Asv* asv,
 
 void asv_set_position(struct Asv* asv, struct Point position)
 {
-  asv->position.x = position.x;
-  asv->position.y = position.y;
-  asv->position.z = position.z;
+  asv->origin_position.x = position.x;
+  asv->origin_position.y = position.y;
+  asv->origin_position.z = position.z;
+  set_cog(asv);
 }
 
 void asv_set_attitude(struct Asv* asv, struct Asv_attitude attitude)
@@ -383,3 +445,39 @@ void asv_set_attitude(struct Asv* asv, struct Asv_attitude attitude)
   asv->attitude.trim = attitude.trim;
   asv->attitude.heading = attitude.heading;
 }
+
+void asv_set_dynamics(struct Asv* asv, double time)
+{
+  // Update the time
+  asv->dynamics.time = time;
+
+  // Get the wave force for the current time step
+  set_wave_force(asv);
+  
+  // Get the wind force for the current time step
+  set_wind_force(asv);
+  
+  // Get the propeller force for the current time step
+  
+  // Compute the drag force for the current time step based on velocity reading
+  
+  // Compute the restoring force for the current time step based on the position
+  // reading
+  
+  // Compute the net force for the current time step
+  
+  // Compute the acceleration for the current time step
+  
+  // Compute the velocity for the current time step
+  
+  // Compute the deflection for the current time step in body-fixed frame
+  
+  // Translate the deflection to global frame
+  
+  // Compute the new origin position for the current time step
+  
+  // Update the COG position 
+  
+  // Compute the new attitude
+}
+
