@@ -403,6 +403,18 @@ static void set_restoring_force(struct Asv* asv)
   // No restoring force for sway, yaw and surge. 
 }
 
+static void set_net_force(struct Asv* asv)
+{
+  for(int i = 0; i < COUNT_DOF; ++i)
+  {
+    asv->dynamics.F[i] = asv->dynamics.F_wave[i]       
+                         + asv->dynamics.F_wind[i]       
+                         + asv->dynamics.F_propeller[i]  
+                         - asv->dynamics.F_drag[i]       
+                         - asv->dynamics.F_restoring[i];
+  }
+}
+
 void asv_init(struct Asv* asv, 
               struct Asv_specification* spec, 
               struct Wave* wave,
@@ -517,6 +529,7 @@ void asv_set_dynamics(struct Asv* asv, double time)
   set_restoring_force(asv);
   
   // Compute the net force for the current time step
+  set_net_force(asv);
   
   // Compute the acceleration for the current time step
   
