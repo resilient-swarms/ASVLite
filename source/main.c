@@ -31,9 +31,8 @@ int main(int argc, char** argv)
   xmlNode* node = root->children; // This should be wind
   if(strcmp(node->name, "wind"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \ 
-                     Expected node wind but found %s. \n", 
-            node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. " 
+                    "Expected node wind but found %s. \n", node->name);
     return 1;
   }
   fprintf(stdout, "WIND: \n");
@@ -43,9 +42,8 @@ int main(int argc, char** argv)
   xmlNode* sub_node = node->children; // This should be speed
   if(strcmp(sub_node->name, "speed"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \ 
-                    Expected node speed but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. " 
+                    "Expected node speed but found %s. \n", sub_node->name);
     return 1;
   }
   xmlNode* val_node = sub_node->children;
@@ -66,9 +64,8 @@ int main(int argc, char** argv)
   if(strcmp(sub_node->name, "direction"))
   {
     fprintf(stderr,
-            "Error. Incorrect xml schema. \
-            Expected node direction but found %s. \n",
-            sub_node->name);
+            "Error. Incorrect xml schema. "
+            "Expected node direction but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -88,9 +85,8 @@ int main(int argc, char** argv)
   if(strcmp(node->name, "current"))
   {
     fprintf(stderr, 
-            "Error. Incorrect xml schema. \
-            Expected node current but found %s. \n", 
-            node->name);
+            "Error. Incorrect xml schema. "
+            "Expected node current but found %s. \n", node->name);
     return 1;
   }
   fprintf(stdout, "CURRENT: \n");
@@ -100,9 +96,8 @@ int main(int argc, char** argv)
   sub_node = node->children; // This should be speed
   if(strcmp(sub_node->name, "speed"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \
-                     Expected node speed but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node speed but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -123,9 +118,8 @@ int main(int argc, char** argv)
   if(strcmp(sub_node->name, "direction"))
   {
     fprintf(stderr,
-            "Error. Incorrect xml schema. \ 
-            Expected node direction but found %s. \n",
-            sub_node->name);
+            "Error. Incorrect xml schema. "
+            "Expected node direction but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -144,9 +138,8 @@ int main(int argc, char** argv)
   node = node->next; // This should be wave
   if(strcmp(node->name, "wave"))
   {
-    fprintf(stderr, 
-            "Incorrect xml schema. Expected node wave but found %s. \n", 
-            node->name);
+    fprintf(stderr, "Incorrect xml schema. "
+                    "Expected node wave but found %s. \n", node->name);
     return 1;
   }
   fprintf(stdout, "WAVE: \n");
@@ -155,9 +148,8 @@ int main(int argc, char** argv)
   sub_node = node->children; // This should be wind
   if(strcmp(sub_node->name, "wind"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \ 
-                    Expected node wind but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. " 
+                    "Expected node wind but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -174,8 +166,8 @@ int main(int argc, char** argv)
     else
     {
       fprintf(stderr,
-          "Error. Incorrect xml schema. \
-           Expected value of node - true or false, but found %s. \n", 
+          "Error. Incorrect xml schema. "
+          "Expected value of node - true or false, but found %s. \n", 
            val_node->content);
     }
     fprintf(stdout, "--> is wave data based on wind = %i.\n", 
@@ -193,9 +185,8 @@ int main(int argc, char** argv)
   if(strcmp(sub_node->name, "sig_wave_ht"))
   {
     fprintf(stderr,
-            "Error. Incorrect xml schema. \ 
-            Expected node sig_wave_ht but found %s. \n",
-            sub_node->name);
+            "Error. Incorrect xml schema. "
+            "Expected node sig_wave_ht but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -216,9 +207,8 @@ int main(int argc, char** argv)
   if(strcmp(sub_node->name, "peak_spectral_freq"))
   {
     fprintf(stderr,
-            "Error. Incorrect xml schema. \
-            Expected node peak_spectral_freq but found %s. \n",
-            sub_node->name);
+            "Error. Incorrect xml schema. "
+            "Expected node peak_spectral_freq but found %s. \n",sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -226,7 +216,8 @@ int main(int argc, char** argv)
   {
     peak_spectral_freq = atof(val_node->content);
     is_peak_spectral_freq_available = true;
-    fprintf(stdout, "--> peak spectral frequency = %f Hz.\n", peak_spectral_freq);
+    fprintf(stdout, "--> peak spectral frequency = %f Hz.\n", 
+            peak_spectral_freq);
   }
   else
   {
@@ -267,8 +258,8 @@ int main(int argc, char** argv)
   {
     if(!p_wind)
     {
-      fprintf(stderr, "Error. Missing data. \ 
-                       Wave model is based on wind but found no wind data. \n");
+      fprintf(stderr, "Error. Missing data. " 
+                      "Wave model is based on wind but found no wind data. \n");
       return 1;
     }
     wave_init_with_wind(&wave, p_wind);
@@ -279,15 +270,15 @@ int main(int argc, char** argv)
   {
     wave_init_with_sig_wave_ht(&wave, sig_wave_height);
     p_wave = &wave;
-    fprintf(stdout, "--> wave model created based on \
-                    significant wave height.\n");
+    fprintf(stdout, "--> wave model created based on "
+                    "significant wave height.\n");
   }
   else if(is_peak_spectral_freq_available)
   {
     wave_init_with_peak_freq(&wave, peak_spectral_freq);
     p_wave = &wave;
-    fprintf(stdout, "--> wave model created based on \
-                    peak spectral frequency.\n");
+    fprintf(stdout, "--> wave model created based on "
+                    "peak spectral frequency.\n");
   }
   else
   {
@@ -300,9 +291,8 @@ int main(int argc, char** argv)
   if(strcmp(node->name, "asv_spec"))
   {
     fprintf(stderr, 
-            "Error. Incorrect xml schema. \
-            Expected node asv_spec but found %s. \n", 
-            node->name);
+            "Error. Incorrect xml schema. "
+            "Expected node asv_spec but found %s. \n", node->name);
     return 1;
   }
   fprintf(stdout, "ASV SPECIFICATION: \n");
@@ -311,9 +301,8 @@ int main(int argc, char** argv)
   sub_node = node->children; // This should be L_wl
   if(strcmp(sub_node->name, "L_wl"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \
-                     Expected node L_wl but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node L_wl but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -332,9 +321,8 @@ int main(int argc, char** argv)
   sub_node = sub_node->next; // This should be B_wl
   if(strcmp(sub_node->name, "B_wl"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \
-                     Expected node B_wl but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node B_wl but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -353,9 +341,8 @@ int main(int argc, char** argv)
   sub_node = sub_node->next; // This should be D
   if(strcmp(sub_node->name, "D"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \
-                     Expected node D but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node D but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -374,9 +361,8 @@ int main(int argc, char** argv)
   sub_node = sub_node->next; // This should be T
   if(strcmp(sub_node->name, "T"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \
-                     Expected node T but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node T but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -395,9 +381,8 @@ int main(int argc, char** argv)
   sub_node = sub_node->next; // This should be max_speed
   if(strcmp(sub_node->name, "max_speed"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \
-                     Expected node max_speed but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node max_speed but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -416,9 +401,8 @@ int main(int argc, char** argv)
   sub_node = sub_node->next; // This should be KG
   if(strcmp(sub_node->name, "KG"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \
-                     Expected node KG but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node KG but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -437,9 +421,8 @@ int main(int argc, char** argv)
   sub_node = sub_node->next; // This should be disp
   if(strcmp(sub_node->name, "disp"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \
-                     Expected node disp but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node disp but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -458,9 +441,8 @@ int main(int argc, char** argv)
   sub_node = sub_node->next; // This should be r_roll
   if(strcmp(sub_node->name, "r_roll"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \
-                     Expected node r_roll but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node r_roll but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -479,9 +461,8 @@ int main(int argc, char** argv)
   sub_node = sub_node->next; // This should be r_pitch
   if(strcmp(sub_node->name, "r_pitch"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \
-                     Expected node r_pitch but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node r_pitch but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -500,9 +481,8 @@ int main(int argc, char** argv)
   sub_node = sub_node->next; // This should be r_yaw
   if(strcmp(sub_node->name, "r_yaw"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \
-                     Expected node r_yaw but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node r_yaw but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -533,17 +513,16 @@ int main(int argc, char** argv)
   fprintf(stdout, "ASV MODEL:\n");
   struct Asv asv;
   asv_init(&asv, &asv_spec, p_wave, p_wind, p_current);
-  fprintf(stdout, "--> asv model created with asv specification and \
-environment model.\n");
+  fprintf(stdout, "--> asv model created with asv specification and "
+                  "environment model.\n");
 
   // ASV position
   node = node->next; // This should be asv_position
   if(strcmp(node->name, "asv_position"))
   {
     fprintf(stderr, 
-            "Error. Incorrect xml schema. \
-            Expected node asv_position but found %s. \n", 
-            node->name);
+            "Error. Incorrect xml schema. "
+            "Expected node asv_position but found %s. \n", node->name);
     return 1;
   }
   fprintf(stdout, "ASV POSITION: \n");
@@ -553,9 +532,8 @@ environment model.\n");
   sub_node = node->children; // This should be x
   if(strcmp(sub_node->name, "x"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \
-                     Expected node x but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node x but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -575,9 +553,8 @@ environment model.\n");
   sub_node = sub_node->next; // This should be y
   if(strcmp(sub_node->name, "y"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \
-                     Expected node y but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node y but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -597,9 +574,8 @@ environment model.\n");
   sub_node = sub_node->next; // This should be z
   if(strcmp(sub_node->name, "z"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \
-                     Expected node z but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node z but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -629,9 +605,8 @@ environment model.\n");
   if(strcmp(node->name, "asv_attitude"))
   {
     fprintf(stderr, 
-            "Error. Incorrect xml schema. \
-            Expected node asv_attitude but found %s. \n", 
-            node->name);
+            "Error. Incorrect xml schema. "
+            "Expected node asv_attitude but found %s. \n", node->name);
     return 1;
   }
   fprintf(stdout, "ASV ATTITUDE: \n");
@@ -641,9 +616,8 @@ environment model.\n");
   sub_node = node->children; // This should be heel
   if(strcmp(sub_node->name, "heel"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \
-                     Expected node heel but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node heel but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -663,9 +637,8 @@ environment model.\n");
   sub_node = sub_node->next; // This should be trim
   if(strcmp(sub_node->name, "trim"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \
-                     Expected node trim but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node trim but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -685,9 +658,8 @@ environment model.\n");
   sub_node = sub_node->next; // This should be heading
   if(strcmp(sub_node->name, "heading"))
   {
-    fprintf(stderr, "Error. Incorrect xml schema. \
-                     Expected node heading but found %s. \n", 
-            sub_node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node heading but found %s. \n", sub_node->name);
     return 1;
   }
   val_node = sub_node->children;
@@ -720,7 +692,7 @@ environment model.\n");
     asv_set_dynamics(&asv, t);
     printf("\n %f , %f", 
         t, 
-        asv.attitude.trim); 
+        asv.cog_position.z); 
   }
   return 0;
 }
