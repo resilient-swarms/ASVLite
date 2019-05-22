@@ -2,8 +2,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0)
 
 PROJECT(asv_simulator C)
 
-# INCLUDE DIRECTORIES
-# -------------------
+# INCLUDE HEADER FILES DIRECTORIES
+# --------------------------------
 INCLUDE_DIRECTORIES(
   include
   )
@@ -19,10 +19,14 @@ SET( SOURCE
   source/main.c
   )
 
+# LibXml2
+FIND_PACKAGE(LibXml2 REQUIRED)
+INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR})
+
 # CREATE BINARIES
 # ---------------
 ADD_EXECUTABLE(asv_simulator ${SOURCE})
 
 # LINK LIBRARIES
 # --------------
-TARGET_LINK_LIBRARIES(asv_simulator m)
+TARGET_LINK_LIBRARIES(asv_simulator m xml2)

@@ -12,7 +12,8 @@ A simulator for swarm of marine robots.
 ## Prerequisites for compiling asv-swarm
 - *CMake* for managing build process.  
 ``` sudo apt install cmake-qt-gui ```
-- Eigen 3.3.7 for linear algebra (*Included with the source.*)
+- libxml2
+```sudo apt install libxml2-dev```
 - *VTK 7.1* for visualisation.   
 ``` sudo apt install libvtk7-dev libvtk-qt-dev ```
 
