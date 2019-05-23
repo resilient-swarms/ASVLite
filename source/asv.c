@@ -519,8 +519,20 @@ void asv_init(struct Asv* asv,
 
   // Initialise the position of the ASV
   asv->origin_position.x = 0.0;
-  asv->origin_position.y = 0.0j;
-  asv->origin_position.z = -asv->spec->T;
+  asv->origin_position.y = 0.0;
+  asv->origin_position.z = 0.0;
+  set_cog(asv); // Match the position of the cog with that of origin
+  // Place the asv vertically in the correct position.
+  if(wave == NULL)
+  {
+    asv->origin_position.z = -asv->spec->T;
+  }
+  else
+  {
+    asv->origin_position.z = wave_get_elevation(wave, &asv->cog_position, 0.0)
+                             -asv->spec->T; 
+  }
+  // Reset the cog position.
   set_cog(asv); // Match the position of the cog with that of origin
 
   // Initialise the floating attitude of the ASV
