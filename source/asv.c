@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdlib.h>
 #include "asv.h"
 #include "constants.h"
 #include "wave.h"
@@ -25,7 +26,7 @@ static void set_cog(struct Asv* asv)
   // Match the position of the COG with that of the position of the origin.
   asv->cog_position.x = asv->origin_position.x + asv->spec->L_wl/2.0;
   asv->cog_position.y = 0.0;
-  asv->cog_position.z = asv->origin_position.z + asv->spec->KG;
+  asv->cog_position.z = asv->origin_position.z + asv->spec->cog.z;
 }
 
 // Method to set the mass and added mass for the given asv object.
@@ -237,7 +238,7 @@ static void set_unit_wave_force(struct Asv* asv)
   double z = - 4.0*c/(3.0*PI);
 
   // Distance of COG from COB
-  double BG = fabs((asv->spec->KG - asv->spec->T) - z);
+  double BG = fabs((asv->spec->cog.z - asv->spec->T) - z);
   
   double H_w = 1.0; // unit wave height in m.
 
@@ -329,9 +330,9 @@ static void set_wind_force_all_directions(struct Asv* asv)
   double A_sway = 0.5 * asv->spec->L_wl * (asv->spec->D - asv->spec->T);
   double A_surge = asv->spec->B_wl * (asv->spec->D - asv->spec->T);
   double h_roll = ((1.0/3.0)*(asv->spec->D - asv->spec->T) + asv->spec->T) - 
-                  asv->spec->KG;
+                  asv->spec->cog.z;
   double h_pitch = (0.5*(asv->spec->D - asv->spec->T) + asv->spec->T) - 
-                  asv->spec->KG;
+                  asv->spec->cog.z;
 
   for(int i = 0; i < 360; ++i)
   {
@@ -371,7 +372,38 @@ static void set_wind_force(struct Asv* asv)
 // Function to calculate the propeller force for the current time step.
 static void set_propeller_force(struct Asv* asv)
 {
-  // TODO: Implement this.
+  // Reset the propeller force to 0.
+  for(int i = 0; i < COUNT_DOF; ++i)
+  {
+    asv->dynamics.F_propeller[i] = 0.0;
+  }
+
+  // Calculate force from each propeller.
+  for(int i = 0; i < asv->count_propellers; ++i)
+  {
+    double thrust = asv->propeller[i]->thrust;
+    double trim = asv->propeller[i]->orientation.trim;
+    double heading   = asv->propeller[i]->orientation.heading;
+    
+    double F_x = thrust*cos(trim)*cos(heading);
+    double F_y = thrust*cos(trim)*sin(heading) ;
+    double F_z = thrust*cos(heading)*sin(trim);
+    
+    double x = asv->cog_position.x - asv->propeller[i]->position.x;
+    double y = asv->propeller[i]->position.y - asv->cog_position.y;
+    double z = asv->propeller[i]->position.z - asv->cog_position.z;
+
+    double M_x = F_y*z + F_z*y;
+    double M_y = F_x*z + F_z*x;
+    double M_z = F_y*x + F_x*y;
+
+    asv->dynamics.F_propeller[surge]  += F_x;
+    asv->dynamics.F_propeller[sway]   += F_y;
+    asv->dynamics.F_propeller[heave]  += F_z;
+    asv->dynamics.F_propeller[roll]   += M_x;
+    asv->dynamics.F_propeller[pitch]  += M_y;
+    asv->dynamics.F_propeller[yaw]    += M_z;
+  }
 }
 
 // Function to compute the drag force for the current time step.
@@ -389,7 +421,7 @@ static void set_restoring_force(struct Asv* asv)
 {
   // Heave restoring force
   // Distance of current COG position from still water floating position.
-  double dist = (asv->spec->KG -asv->spec->T) - asv->cog_position.z;
+  double dist = (asv->spec->cog.z -asv->spec->T) - asv->cog_position.z;
   asv->dynamics.F_restoring[heave] = asv->dynamics.K[heave] * dist;
   
   // Roll restoring force 
@@ -477,13 +509,19 @@ void asv_init(struct Asv* asv,
   asv->wave = wave; // Could be NULL.
   asv->wind = wind; // Could be NULL.
   asv->current = current; // Could be NULL.
+  
+  // Initialise the propellers
+  asv->count_propellers = 0;
+  for(int i = 0; i < COUNT_PROPELLERS_MAX; ++i)
+  {
+    asv->propeller[i] = NULL;
+  }
 
   // Initialise the position of the ASV
   asv->origin_position.x = 0.0;
   asv->origin_position.y = 0.0j;
   asv->origin_position.z = -asv->spec->T;
   set_cog(asv); // Match the position of the cog with that of origin
-
 
   // Initialise the floating attitude of the ASV
   asv->attitude.heel = 0.0;
@@ -550,7 +588,7 @@ void asv_set_position(struct Asv* asv, struct Point position)
   set_cog(asv);
 }
 
-void asv_set_attitude(struct Asv* asv, struct Asv_attitude attitude)
+void asv_set_attitude(struct Asv* asv, struct Attitude attitude)
 {
   asv->attitude.heel = attitude.heel;
   asv->attitude.trim = attitude.trim;
@@ -603,3 +641,37 @@ void asv_set_dynamics(struct Asv* asv, double time)
   asv->dynamics.time = time;
 }
 
+void asv_propeller_init(struct Asv_propeller* propeller,
+                        struct Point position)
+{
+  propeller->position.x = position.x;
+  propeller->position.y = position.y;
+  propeller->position.z = position.z;
+  
+  propeller->thrust = 0.0;
+}
+
+void asv_propeller_set_thrust(struct Asv_propeller* propeller,
+                              double thrust,
+                              struct Attitude orientation)
+{
+  propeller->orientation.heel = orientation.heel;
+  propeller->orientation.trim = orientation.trim;
+  propeller->orientation.heading = orientation.heading;
+
+  propeller->thrust = thrust;
+}
+
+int asv_set_propeller(struct Asv* asv, struct Asv_propeller* propeller)
+{
+  if(asv->count_propellers == COUNT_PROPELLERS_MAX)
+  {
+    // Limit reached.
+    return 0;
+  }
+  
+  asv->propeller[asv->count_propellers] = propeller;
+  ++asv->count_propellers;
+  
+  return 1;
+}
