@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simulator>
+  <wind>
+    <speed></speed>
+    <direction></direction> 
+  </wind>
+  <current>
+    <speed></speed>
+    <direction></direction>
+  </current>
+  <wave>
+    <wind></wind>
+    <sig_wave_ht></sig_wave_ht>
+    <peak_spectral_freq></peak_spectral_freq>
+  </wave>
+  <asv_spec>
+    <L_wl></L_wl>
+    <B_wl></B_wl>
+    <D></D>
+    <T></T>
+    <max_speed></max_speed>
+    <KG></KG>
+    <disp></disp>
+    <r_roll></r_roll>
+    <r_pitch></r_pitch>
+    <r_yaw></r_yaw>
+  </asv_spec>
+  <asv_position>
+    <x></x>
+    <y></y>
+    <z></z>
+  </asv_position>
+  <asv_attitude>
+    <heel></heel>
+    <trim></trim>
+    <heading></heading>
+  </asv_attitude>
+  <chronograph>
+    <delta_t></delta_t>
+    <duration></duration>
+  </chronograph>
+</simulator>
