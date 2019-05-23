@@ -285,9 +285,11 @@ int main(int argc, char** argv)
   {
     fprintf(stdout, "--> wave model = NULL.\n");
   }
-
  
-  // ASV data
+  // ASV data  
+  // Create object for ASV specification
+  struct Asv_specification asv_spec;
+
   node = node->next; // This should be asv_spec
   if(strcmp(node->name, "asv_spec"))
   {
@@ -298,7 +300,6 @@ int main(int argc, char** argv)
   }
   fprintf(stdout, "ASV SPECIFICATION: \n");
   // L_wl
-  double L_wl = 0.0;
   sub_node = node->children; // This should be L_wl
   if(strcmp(sub_node->name, "L_wl"))
   {
@@ -309,8 +310,8 @@ int main(int argc, char** argv)
   val_node = sub_node->children;
   if(val_node != NULL)
   {
-    L_wl = atof(xmlNodeGetContent(val_node));
-    fprintf(stdout, "--> L_wl = %f m.\n", L_wl);
+    asv_spec.L_wl = atof(xmlNodeGetContent(val_node));
+    fprintf(stdout, "--> L_wl = %f m.\n", asv_spec.L_wl);
   }
   else
   {
@@ -318,7 +319,6 @@ int main(int argc, char** argv)
     return 1;
   }
   // B_wl
-  double B_wl = 0.0;
   sub_node = sub_node->next; // This should be B_wl
   if(strcmp(sub_node->name, "B_wl"))
   {
@@ -329,8 +329,8 @@ int main(int argc, char** argv)
   val_node = sub_node->children;
   if(val_node != NULL)
   {
-    B_wl = atof(val_node->content);
-    fprintf(stdout, "--> B_wl = %f m.\n", B_wl);
+    asv_spec.B_wl = atof(val_node->content);
+    fprintf(stdout, "--> B_wl = %f m.\n", asv_spec.B_wl);
   }
   else
   {
@@ -338,7 +338,6 @@ int main(int argc, char** argv)
     return 1;
   }
   // D
-  double D = 0.0;
   sub_node = sub_node->next; // This should be D
   if(strcmp(sub_node->name, "D"))
   {
@@ -349,8 +348,8 @@ int main(int argc, char** argv)
   val_node = sub_node->children;
   if(val_node != NULL)
   {
-    D = atof(val_node->content);
-    fprintf(stdout, "--> D = %f m.\n", D);
+    asv_spec.D = atof(val_node->content);
+    fprintf(stdout, "--> D = %f m.\n", asv_spec.D);
   } 
   else
   {
@@ -358,7 +357,6 @@ int main(int argc, char** argv)
     return 1;
   }
   // T
-  double T = 0.0;
   sub_node = sub_node->next; // This should be T
   if(strcmp(sub_node->name, "T"))
   {
@@ -369,8 +367,8 @@ int main(int argc, char** argv)
   val_node = sub_node->children;
   if(val_node != NULL)
   {
-    T = atof(val_node->content);
-    fprintf(stdout, "--> T = %f m.\n", T);
+    asv_spec.T = atof(val_node->content);
+    fprintf(stdout, "--> T = %f m.\n", asv_spec.T);
   }
   else
   {
@@ -378,7 +376,6 @@ int main(int argc, char** argv)
     return 1;
   }
   // max_speed 
-  double max_speed = 0.0;
   sub_node = sub_node->next; // This should be max_speed
   if(strcmp(sub_node->name, "max_speed"))
   {
@@ -389,8 +386,8 @@ int main(int argc, char** argv)
   val_node = sub_node->children;
   if(val_node != NULL)
   {
-    max_speed = atof(val_node->content);
-    fprintf(stdout, "--> max_speed = %f m/s.\n", max_speed);
+    asv_spec.max_speed = atof(val_node->content);
+    fprintf(stdout, "--> max_speed = %f m/s.\n", asv_spec.max_speed);
   }
   else
   {
@@ -398,7 +395,6 @@ int main(int argc, char** argv)
     return 1;
   }
   // disp 
-  double disp = 0.0;
   sub_node = sub_node->next; // This should be disp
   if(strcmp(sub_node->name, "disp"))
   {
@@ -409,8 +405,8 @@ int main(int argc, char** argv)
   val_node = sub_node->children;
   if(val_node != NULL)
   {
-    disp = atof(val_node->content);
-    fprintf(stdout, "--> disp = %f m3.\n", disp);
+    asv_spec.disp = atof(val_node->content);
+    fprintf(stdout, "--> disp = %f m3.\n", asv_spec.disp);
   }
   else
   {
@@ -418,7 +414,6 @@ int main(int argc, char** argv)
     return 1;
   }
   // r_roll 
-  double r_roll = 0.0;
   sub_node = sub_node->next; // This should be r_roll
   if(strcmp(sub_node->name, "r_roll"))
   {
@@ -429,8 +424,8 @@ int main(int argc, char** argv)
   val_node = sub_node->children;
   if(val_node != NULL)
   {
-    r_roll = atof(val_node->content);
-    fprintf(stdout, "--> r_roll = %f m.\n", r_roll);
+    asv_spec.r_roll = atof(val_node->content);
+    fprintf(stdout, "--> r_roll = %f m.\n", asv_spec.r_roll);
   }
   else
   {
@@ -438,7 +433,6 @@ int main(int argc, char** argv)
     return 1;
   }
   // r_pitch
-  double r_pitch = 0.0;
   sub_node = sub_node->next; // This should be r_pitch
   if(strcmp(sub_node->name, "r_pitch"))
   {
@@ -449,8 +443,8 @@ int main(int argc, char** argv)
   val_node = sub_node->children;
   if(val_node != NULL)
   {
-    r_pitch = atof(val_node->content);
-    fprintf(stdout, "--> r_pitch = %f m.\n", r_pitch);
+    asv_spec.r_pitch = atof(val_node->content);
+    fprintf(stdout, "--> r_pitch = %f m.\n", asv_spec.r_pitch);
   }
   else
   {
@@ -458,7 +452,6 @@ int main(int argc, char** argv)
     return 1;
   }
   // r_yaw
-  double r_yaw = 0.0;
   sub_node = sub_node->next; // This should be r_yaw
   if(strcmp(sub_node->name, "r_yaw"))
   {
@@ -469,8 +462,8 @@ int main(int argc, char** argv)
   val_node = sub_node->children;
   if(val_node != NULL)
   {
-    r_yaw = atof(val_node->content);
-    fprintf(stdout, "--> r_yaw = %f m.\n", r_yaw);
+    asv_spec.r_yaw = atof(val_node->content);
+    fprintf(stdout, "--> r_yaw = %f m.\n", asv_spec.r_yaw);
   }
   else
   {
@@ -486,7 +479,6 @@ int main(int argc, char** argv)
     return 1;
   }
   sub_node = sub_node->children; // This should be x
-  double cog_x = 0.0;
   if(strcmp(sub_node->name, "x"))
   {
     fprintf(stderr, "Error. Incorrect xml schema. "
@@ -496,8 +488,8 @@ int main(int argc, char** argv)
   val_node = sub_node->children;
   if(val_node != NULL)
   {
-    cog_x = atof(val_node->content);
-    fprintf(stdout, "--> COG_x = %f m.\n", cog_x);
+    asv_spec.cog.x = atof(val_node->content);
+    fprintf(stdout, "--> COG_x = %f m.\n", asv_spec.cog.x);
   }
   else
   {
@@ -505,7 +497,6 @@ int main(int argc, char** argv)
     return 1;
   }
   sub_node = sub_node->next; // This should be y
-  double cog_y = 0.0;
   if(strcmp(sub_node->name, "y"))
   {
     fprintf(stderr, "Error. Incorrect xml schema. "
@@ -515,8 +506,8 @@ int main(int argc, char** argv)
   val_node = sub_node->children;
   if(val_node != NULL)
   {
-    cog_y = atof(val_node->content);
-    fprintf(stdout, "--> COG_y = %f m.\n", cog_y);
+    asv_spec.cog.y = atof(val_node->content);
+    fprintf(stdout, "--> COG_y = %f m.\n", asv_spec.cog.y);
   }
   else
   {
@@ -524,7 +515,6 @@ int main(int argc, char** argv)
     return 1;
   }
   sub_node = sub_node->next; // This should be z
-  double cog_z = 0.0;
   if(strcmp(sub_node->name, "z"))
   {
     fprintf(stderr, "Error. Incorrect xml schema. "
@@ -534,8 +524,8 @@ int main(int argc, char** argv)
   val_node = sub_node->children;
   if(val_node != NULL)
   {
-    cog_z = atof(val_node->content);
-    fprintf(stdout, "--> COG_z = %f m.\n", cog_z);
+    asv_spec.cog.z = atof(val_node->content);
+    fprintf(stdout, "--> COG_z = %f m.\n", asv_spec.cog.z);
   }
   else
   {
@@ -543,20 +533,6 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  // Create object for ASV specification
-  struct Asv_specification asv_spec;
-  asv_spec.L_wl = L_wl;
-  asv_spec.B_wl = B_wl; 
-  asv_spec.D = D;
-  asv_spec.T = T;
-  asv_spec.max_speed = max_speed;
-  asv_spec.cog.x = cog_x;
-  asv_spec.cog.y = cog_y;
-  asv_spec.cog.z = cog_z;
-  asv_spec.disp = disp;
-  asv_spec.r_roll = r_roll;
-  asv_spec.r_pitch = r_pitch;
-  asv_spec.r_yaw = r_yaw;
   // Create ASV model
   fprintf(stdout, "ASV MODEL:\n");
   struct Asv asv;
@@ -641,12 +617,11 @@ int main(int argc, char** argv)
   {
     struct Point position = (struct Point){x,y,z};
     asv_set_position(&asv,position);
-    fprintf(stdout, "--> position set to (%f, %f, %f).\n", x,y,z);
   }
-  else
-  {
-    fprintf(stdout, "--> position set to (0.0, 0.0, %f).\n", -T);
-  }
+  fprintf(stdout, "--> position set to (%f, %f, %f).\n", 
+          asv.origin_position.x,
+          asv.origin_position.y,
+          asv.origin_position.z);
   
   // ASV attitude
   node = node->next; // This should be asv_attitude
