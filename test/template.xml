@@ -19,11 +19,15 @@
     <D></D>
     <T></T>
     <max_speed></max_speed>
-    <KG></KG>
     <disp></disp>
     <r_roll></r_roll>
     <r_pitch></r_pitch>
     <r_yaw></r_yaw>
+    <cog>
+      <x></x>
+      <y></y>
+      <z></z>
+    </cog>>
   </asv_spec>
   <asv_position>
     <x></x>

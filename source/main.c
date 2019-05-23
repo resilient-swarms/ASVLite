@@ -397,26 +397,6 @@ int main(int argc, char** argv)
     fprintf(stderr, "Error. Missing data max_speed. \n");
     return 1;
   }
-  // KG 
-  double KG = 0.0;
-  sub_node = sub_node->next; // This should be KG
-  if(strcmp(sub_node->name, "KG"))
-  {
-    fprintf(stderr, "Error. Incorrect xml schema. "
-                    "Expected node KG but found %s. \n", sub_node->name);
-    return 1;
-  }
-  val_node = sub_node->children;
-  if(val_node != NULL)
-  {
-    KG = atof(val_node->content);
-    fprintf(stdout, "--> KG = %f m.\n", KG);
-  }
-  else
-  {
-    fprintf(stderr, "Error. Missing data KG. \n");
-    return 1;
-  }
   // disp 
   double disp = 0.0;
   sub_node = sub_node->next; // This should be disp
@@ -497,6 +477,71 @@ int main(int argc, char** argv)
     fprintf(stderr, "Error. Missing data r_yaw. \n");
     return 1;
   }
+  // cog 
+  sub_node = sub_node->next; // This should be cog
+  if(strcmp(sub_node->name, "cog"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node cog but found %s. \n", sub_node->name);
+    return 1;
+  }
+  sub_node = sub_node->children; // This should be x
+  double cog_x = 0.0;
+  if(strcmp(sub_node->name, "x"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node x but found %s. \n", sub_node->name);
+    return 1;
+  }
+  val_node = sub_node->children;
+  if(val_node != NULL)
+  {
+    cog_x = atof(val_node->content);
+    fprintf(stdout, "--> COG_x = %f m.\n", cog_x);
+  }
+  else
+  {
+    fprintf(stderr, "Error. Missing data COG_x. \n");
+    return 1;
+  }
+  sub_node = sub_node->next; // This should be y
+  double cog_y = 0.0;
+  if(strcmp(sub_node->name, "y"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node y but found %s. \n", sub_node->name);
+    return 1;
+  }
+  val_node = sub_node->children;
+  if(val_node != NULL)
+  {
+    cog_y = atof(val_node->content);
+    fprintf(stdout, "--> COG_y = %f m.\n", cog_y);
+  }
+  else
+  {
+    fprintf(stderr, "Error. Missing data COG_y. \n");
+    return 1;
+  }
+  sub_node = sub_node->next; // This should be z
+  double cog_z = 0.0;
+  if(strcmp(sub_node->name, "z"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node z but found %s. \n", sub_node->name);
+    return 1;
+  }
+  val_node = sub_node->children;
+  if(val_node != NULL)
+  {
+    cog_z = atof(val_node->content);
+    fprintf(stdout, "--> COG_z = %f m.\n", cog_z);
+  }
+  else
+  {
+    fprintf(stderr, "Error. Missing data COG_z. \n");
+    return 1;
+  }
 
   // Create object for ASV specification
   struct Asv_specification asv_spec;
@@ -505,7 +550,9 @@ int main(int argc, char** argv)
   asv_spec.D = D;
   asv_spec.T = T;
   asv_spec.max_speed = max_speed;
-  asv_spec.KG = KG;
+  asv_spec.cog.x = cog_x;
+  asv_spec.cog.y = cog_y;
+  asv_spec.cog.z = cog_z;
   asv_spec.disp = disp;
   asv_spec.r_roll = r_roll;
   asv_spec.r_pitch = r_pitch;
@@ -676,7 +723,7 @@ int main(int argc, char** argv)
   }
   if(is_heel_available && is_trim_available && is_heading_available)
   {
-    struct Asv_attitude attitude = (struct Asv_attitude){heel, trim, heading};
+    struct Attitude attitude = (struct Attitude){heel, trim, heading};
     asv_set_attitude(&asv, attitude);
     fprintf(stdout, "--> attitude set to (%f, %f, %f).\n", heel,trim,heading);
   }
