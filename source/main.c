@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
 #include <libxml/parser.h>
 #include "constants.h"
 #include "asv.h"
@@ -683,16 +684,110 @@ int main(int argc, char** argv)
   {
     fprintf(stdout, "--> attitude set to (0.0, 0.0, 0.0).\n");
   }
- 
-  // Start simulation
-  fprintf(stdout, "START SIMULATION: \n");
-  double delta_t = 20.0/1000.0; // 20 milli-seconds
-  for(double t = 0.0; t < 10.0; t += delta_t)
+  
+  // Chronograph
+  node = node->next; // This should be chronograph
+  if(strcmp(node->name, "chronograph"))
   {
-    asv_set_dynamics(&asv, t);
-    printf("\n %f , %f", 
-        t, 
-        asv.cog_position.z); 
+    fprintf(stderr, 
+            "Error. Incorrect xml schema. "
+            "Expected node chronograph but found %s. \n", node->name);
+    return 1;
   }
+  fprintf(stdout, "CHRONOGRAPH: \n");
+  // delta_t
+  double delta_t = 20.0;
+  bool is_delta_t_available = false;
+  sub_node = node->children; // This should be delta_t
+  if(strcmp(sub_node->name, "delta_t"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node delta_t but found %s. \n", sub_node->name);
+    return 1;
+  }
+  val_node = sub_node->children;
+  if(val_node != NULL)
+  {
+    delta_t = atof(xmlNodeGetContent(val_node));
+    is_delta_t_available = true;
+    fprintf(stdout, "--> delta_t = %f milli-sec.\n", delta_t);
+  }
+  else
+  {
+    fprintf(stdout, "--> delta_t = n/a.\n");
+  }
+  // duration
+  double duration = 10.0;
+  bool is_duration_available = false;
+  sub_node = sub_node->next; // This should be duration
+  if(strcmp(sub_node->name, "duration"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node duration but found %s. \n", sub_node->name);
+    return 1;
+  }
+  val_node = sub_node->children;
+  if(val_node != NULL)
+  {
+    duration = atof(xmlNodeGetContent(val_node));
+    is_duration_available = true;
+    fprintf(stdout, "--> duration = %f sec.\n", duration);
+  }
+  else
+  {
+    fprintf(stdout, "--> duration = n/a.\n");
+  }
+  if(!(is_delta_t_available && is_duration_available))
+  {
+    fprintf(stdout, "--> default values used of timer. "
+                    "delta_t = %f milli-sec. duration = %f sec.\n", 
+                    delta_t, duration);
+  }
+
+  // Open output file to print results
+  fprintf(stdout, "START SIMULATION: \n");
+  char out_file_name[120];
+  if(strlen(filename) > 114)
+  {
+    fprintf(stderr, "Error. Filename too long. Cannot create output file.\n");
+    return 1;
+  }
+  for(int i = 0; i<strlen(filename)-4; ++i)
+  {
+    out_file_name[i] = filename[i];
+  }
+  strcpy(out_file_name+strlen(filename)-4, "_out.txt");
+  FILE* fp;
+  if(!(fp = fopen(out_file_name, "w")))
+  {
+    fprintf(stderr, "Error. Cannot open output file %s.\n", out_file_name);
+    return 1;
+  }
+  if(fp == NULL)
+  {
+    fprintf(stdout, "fail");
+  }
+
+  // Start simulation
+  delta_t = delta_t/1000.0; // milli-seconds to seconds
+  fprintf(fp, "time cog_x cog_y cog_z heel trim heading \n");
+  clock_t start, end;
+  for(double t = 0.0; t < duration; t += delta_t)
+  {
+    start = clock();
+    asv_set_dynamics(&asv, t);
+    fprintf(fp, "%f %f %f %f %f %f %f \n", 
+            t, 
+            asv.cog_position.x, asv.cog_position.y, asv.cog_position.z, 
+            asv.attitude.heel, asv.attitude.trim, asv.attitude.heading); 
+    end = clock();
+  }
+  fprintf(stdout, "--> time taken per simulation cycle = %f milli-sec. \n", 
+          ((double)(end - start)) / CLOCKS_PER_SEC * 1000);
+  fprintf(stdout, "--> simulation data written to file %s. \n", 
+          out_file_name);
+  fclose(fp);
+  
+  fprintf(stdout, "END. \n");
   return 0;
 }
