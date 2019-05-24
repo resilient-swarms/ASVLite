@@ -13,9 +13,9 @@ int main(int argc, char** argv)
 {
   // Parse the input file.
   char* filename = argv[1];
-  if(argc < 2)
+  if(argc != 2)
   {
-    fprintf(stderr, "Error. Usage: %s config_file.xml.\n", argv[0]);
+    fprintf(stderr, "Error. Usage: %s input_file.xml.\n", argv[0]);
     return 1;
   }
   xmlDoc* document = xmlReadFile(filename, NULL, 256); // 256:remove blank nodes
@@ -227,18 +227,14 @@ int main(int argc, char** argv)
 
   // Create objects for environment model
   fprintf(stdout, "ENVIRONMENT MODEL:\n");
-  struct Wind wind;
-  struct Current current;
-  struct Wave wave;
-  // Also create pointers to these models
-  struct Wind* p_wind = NULL;
-  struct Current* p_current = NULL;
-  struct Wave* p_wave = NULL;
+  struct Wind* wind = NULL;
+  struct Current* current = NULL;
+  struct Wave* wave = NULL;
   // Initialise the models based on input data
   if(is_wind_speed_available && is_wind_direction_available)
   {
-    wind_init(&wind, wind_speed, wind_direction);
-    p_wind = &wind;
+    wind = (struct Wind*)malloc(sizeof(struct Wind));
+    wind_init(wind, wind_speed, wind_direction);
     fprintf(stdout, "--> wind model created.\n");
   }
   else
@@ -247,8 +243,8 @@ int main(int argc, char** argv)
   }
   if(is_current_speed_available && is_current_direction_available)
   {
-    current_init(&current, current_speed, current_direction);
-    p_current = &current;
+    current = (struct Current*)malloc(sizeof(struct Current));
+    current_init(current, current_speed, current_direction);
     fprintf(stdout, "--> current model created.\n");
   }
   else
@@ -257,27 +253,27 @@ int main(int argc, char** argv)
   }
   if(is_wave_spectrum_based_on_wind)
   {
-    if(!p_wind)
+    if(!wind)
     {
       fprintf(stderr, "Error. Missing data. " 
                       "Wave model is based on wind but found no wind data. \n");
       return 1;
     }
-    wave_init_with_wind(&wave, p_wind);
-    p_wave = &wave;
+    wave = (struct Wave*)malloc(sizeof(struct Wave));
+    wave_init_with_wind(wave, wind);
     fprintf(stdout, "--> wave model created based on wind model.\n");
   }
   else if(is_sig_wave_ht_available)
   {
-    wave_init_with_sig_wave_ht(&wave, sig_wave_height);
-    p_wave = &wave;
+    wave = (struct Wave*)malloc(sizeof(struct Wave));
+    wave_init_with_sig_wave_ht(wave, sig_wave_height);
     fprintf(stdout, "--> wave model created based on "
                     "significant wave height.\n");
   }
   else if(is_peak_spectral_freq_available)
   {
-    wave_init_with_peak_freq(&wave, peak_spectral_freq);
-    p_wave = &wave;
+    wave = (struct Wave*)malloc(sizeof(struct Wave));
+    wave_init_with_peak_freq(wave, peak_spectral_freq);
     fprintf(stdout, "--> wave model created based on "
                     "peak spectral frequency.\n");
   }
@@ -536,7 +532,7 @@ int main(int argc, char** argv)
   // Create ASV model
   fprintf(stdout, "ASV MODEL:\n");
   struct Asv asv;
-  asv_init(&asv, &asv_spec, p_wave, p_wind, p_current);
+  asv_init(&asv, &asv_spec, wave, wind, current);
   fprintf(stdout, "--> asv model created with asv specification and "
                   "environment model.\n");
 
@@ -785,10 +781,6 @@ int main(int argc, char** argv)
     fprintf(stderr, "Error. Cannot open output file %s.\n", out_file_name);
     return 1;
   }
-  if(fp == NULL)
-  {
-    fprintf(stdout, "fail");
-  }
 
   // Start simulation
   delta_t = delta_t/1000.0; // milli-seconds to seconds
@@ -811,5 +803,11 @@ int main(int argc, char** argv)
   fclose(fp);
   
   fprintf(stdout, "END. \n");
+
+  // Clean memory before exit.
+  free(wind);
+  free(current);
+  free(wave);
+
   return 0;
 }
