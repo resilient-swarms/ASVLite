@@ -36,7 +36,7 @@ int main(int argc, char** argv)
   }
 
   // Start simulation
-  fprintf(stdout, "START SIMULATION: \n");
+  fprintf(stdout, "Star simulation: \n");
   
   double frame_length = 10.0; // time duration of each frame in milli-seconds 
   double duration = 120.0; // time duration of animation.
@@ -62,7 +62,7 @@ int main(int argc, char** argv)
           out_file);
   fclose(fp);
   
-  fprintf(stdout, "END. \n");
+  fprintf(stdout, "End simulation. \n");
 
   world_clean(&world);
 

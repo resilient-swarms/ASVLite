@@ -12,6 +12,7 @@
 void world_init(struct World* world, char* filename)
 {
   // Parse the input file.
+  fprintf(stdout, "Reading input file: \n");
   xmlDoc* document = xmlReadFile(filename, NULL, 256); // 256:remove blank nodes
   if(!document)
   {
@@ -30,7 +31,6 @@ void world_init(struct World* world, char* filename)
                     "Expected node wind but found %s. \n", node->name);
     exit(1);
   }
-  fprintf(stdout, "WIND: \n");
   // Wind speed
   double wind_speed = 0.0;
   bool is_wind_speed_available = false;
@@ -46,11 +46,11 @@ void world_init(struct World* world, char* filename)
   {
     wind_speed = atof(val_node->content);
     is_wind_speed_available = true;
-    fprintf(stdout, "--> speed = %f m/s.\n", wind_speed);
+    fprintf(stdout, "--> wind speed = %f m/s.\n", wind_speed);
   }
   else
   {
-    fprintf(stdout, "--> speed = n/a.\n");
+    fprintf(stdout, "--> wind speed = n/a.\n");
   }
   // Wind direction
   double wind_direction = 0.0;
@@ -68,11 +68,11 @@ void world_init(struct World* world, char* filename)
   {
     wind_direction = atof(val_node->content);
     is_wind_direction_available = true;
-    fprintf(stdout, "--> direction = %f radians.\n", wind_direction);
+    fprintf(stdout, "--> wind direction = %f radians.\n", wind_direction);
   }
   else
   {
-    fprintf(stdout, "--> direction = n/a.\n");
+    fprintf(stdout, "--> wind direction = n/a.\n");
   }
  
   // Current data
@@ -84,7 +84,6 @@ void world_init(struct World* world, char* filename)
             "Expected node current but found %s. \n", node->name);
     exit(1);
   }
-  fprintf(stdout, "CURRENT: \n");
   // Current speed
   double current_speed = 0.0;
   bool is_current_speed_available = false;
@@ -100,11 +99,11 @@ void world_init(struct World* world, char* filename)
   {
     current_speed = atof(val_node->content);
     is_current_speed_available = true;
-    fprintf(stdout, "--> speed = %f m/s.\n", current_speed);
+    fprintf(stdout, "--> current speed = %f m/s.\n", current_speed);
   }
   else
   {
-    fprintf(stdout, "--> speed = n/a.\n");
+    fprintf(stdout, "--> current speed = n/a.\n");
   }
   // Current direction
   double current_direction = 0.0;
@@ -122,11 +121,11 @@ void world_init(struct World* world, char* filename)
   {
     current_direction = atof(val_node->content);
     is_current_direction_available = true;
-    fprintf(stdout, "--> direction = %f radians.\n", current_direction);
+    fprintf(stdout, "--> current direction = %f radians.\n", current_direction);
   }
   else
   {
-    fprintf(stdout, "--> direction = n/a.\n");
+    fprintf(stdout, "--> current direction = n/a.\n");
   }
   
   // Wave data
@@ -137,7 +136,6 @@ void world_init(struct World* world, char* filename)
                     "Expected node wave but found %s. \n", node->name);
     exit(1);
   }
-  fprintf(stdout, "WAVE: \n");
   // Wave spectrum based on wind
   bool is_wave_spectrum_based_on_wind = false;
   sub_node = node->children; // This should be wind
@@ -171,7 +169,7 @@ void world_init(struct World* world, char* filename)
   }
   else
   {
-    fprintf(stdout, "--> wind data = n/a.\n");
+    fprintf(stdout, "--> wind data for waves = n/a.\n");
   }
   // Wave spectrum based on significant wave height.
   double sig_wave_height = 0.0;
@@ -211,69 +209,12 @@ void world_init(struct World* world, char* filename)
   {
     peak_spectral_freq = atof(val_node->content);
     is_peak_spectral_freq_available = true;
-    fprintf(stdout, "--> peak spectral frequency = %f Hz.\n", 
+    fprintf(stdout, "--> peak wave spectral frequency = %f Hz.\n", 
             peak_spectral_freq);
   }
   else
   {
-    fprintf(stdout, "--> peak spectral frequency = n/a.\n");
-  }
-
-  // Create objects for environment model
-  fprintf(stdout, "ENVIRONMENT MODEL:\n");
-  world->wind = NULL;
-  world->current = NULL;
-  world->wave = NULL;
-  // Initialise the models based on input data
-  if(is_wind_speed_available && is_wind_direction_available)
-  {
-    world->wind = (struct Wind*)malloc(sizeof(struct Wind));
-    wind_init(world->wind, wind_speed, wind_direction);
-    fprintf(stdout, "--> wind model created.\n");
-  }
-  else
-  {
-    fprintf(stdout, "--> wind model = NULL.\n");
-  }
-  if(is_current_speed_available && is_current_direction_available)
-  {
-    world->current = (struct Current*)malloc(sizeof(struct Current));
-    current_init(world->current, current_speed, current_direction);
-    fprintf(stdout, "--> current model created.\n");
-  }
-  else
-  {
-    fprintf(stdout, "--> current model = NULL.\n");
-  }
-  if(is_wave_spectrum_based_on_wind)
-  {
-    if(world->wind)
-    {
-      fprintf(stderr, "Error. Missing data. " 
-                      "Wave model is based on wind but found no wind data. \n");
-      exit(1);
-    }
-    world->wave = (struct Wave*)malloc(sizeof(struct Wave));
-    wave_init_with_wind(world->wave, world->wind);
-    fprintf(stdout, "--> wave model created based on wind model.\n");
-  }
-  else if(is_sig_wave_ht_available)
-  {
-    world->wave = (struct Wave*)malloc(sizeof(struct Wave));
-    wave_init_with_sig_wave_ht(world->wave, sig_wave_height);
-    fprintf(stdout, "--> wave model created based on "
-                    "significant wave height.\n");
-  }
-  else if(is_peak_spectral_freq_available)
-  {
-    world->wave = (struct Wave*)malloc(sizeof(struct Wave));
-    wave_init_with_peak_freq(world->wave, peak_spectral_freq);
-    fprintf(stdout, "--> wave model created based on "
-                    "peak spectral frequency.\n");
-  }
-  else
-  {
-    fprintf(stdout, "--> wave model = NULL.\n");
+    fprintf(stdout, "--> peak wave spectral frequency = n/a.\n");
   }
  
   // ASV data  
@@ -288,7 +229,6 @@ void world_init(struct World* world, char* filename)
             "Expected node asv_spec but found %s. \n", node->name);
     exit(1);
   }
-  fprintf(stdout, "ASV SPECIFICATION: \n");
   // L_wl
   sub_node = node->children; // This should be L_wl
   if(strcmp(sub_node->name, "L_wl"))
@@ -521,14 +461,8 @@ void world_init(struct World* world, char* filename)
   {
     fprintf(stderr, "Error. Missing data COG_z. \n");
     exit(1);
-  }
-
-  // Create ASV model
-  fprintf(stdout, "ASV MODEL:\n");
-  asv_init(&world->asv, asv_spec, world->wave, world->wind, world->current);
-  fprintf(stdout, "--> asv model created with asv specification and "
-                  "environment model.\n");
-
+  }  
+  
   // ASV position
   node = node->next; // This should be asv_position
   if(strcmp(node->name, "asv_position"))
@@ -538,7 +472,6 @@ void world_init(struct World* world, char* filename)
             "Expected node asv_position but found %s. \n", node->name);
     exit(1);
   }
-  fprintf(stdout, "ASV POSITION: \n");
   // x
   double x = 0.0;
   bool is_x_available = false;
@@ -554,11 +487,11 @@ void world_init(struct World* world, char* filename)
   {
     x = atof(xmlNodeGetContent(val_node));
     is_x_available = true;
-    fprintf(stdout, "--> x = %f m.\n", x);
+    fprintf(stdout, "--> asv origin.x = %f m.\n", x);
   }
   else
   {
-    fprintf(stdout, "--> x = n/a.\n");
+    fprintf(stdout, "--> asv origin.x = n/a.\n");
   }
   // y
   double y = 0.0;
@@ -575,11 +508,11 @@ void world_init(struct World* world, char* filename)
   {
     y = atof(xmlNodeGetContent(val_node));
     is_y_available = true;
-    fprintf(stdout, "--> y = %f m.\n", y);
+    fprintf(stdout, "--> asv origin.y = %f m.\n", y);
   }
   else
   {
-    fprintf(stdout, "--> y = n/a.\n");
+    fprintf(stdout, "--> asv origin.y = n/a.\n");
   }
   // z
   double z = 0.0;
@@ -596,21 +529,12 @@ void world_init(struct World* world, char* filename)
   {
     z = atof(xmlNodeGetContent(val_node));
     is_z_available = true;
-    fprintf(stdout, "--> z = %f m.\n", z);
+    fprintf(stdout, "--> asv origin.z = %f m.\n", z);
   }
   else
   {
-    fprintf(stdout, "--> z = n/a.\n");
-  }
-  if(is_x_available && is_y_available && is_z_available)
-  {
-    struct Point position = (struct Point){x,y,z};
-    asv_set_position(&world->asv,position);
-  }
-  fprintf(stdout, "--> position set to (%f, %f, %f).\n", 
-          world->asv.origin_position.x,
-          world->asv.origin_position.y,
-          world->asv.origin_position.z);
+    fprintf(stdout, "--> asv origin.z = n/a.\n");
+  }  
   
   // ASV attitude
   node = node->next; // This should be asv_attitude
@@ -621,7 +545,6 @@ void world_init(struct World* world, char* filename)
             "Expected node asv_attitude but found %s. \n", node->name);
     exit(1);
   }
-  fprintf(stdout, "ASV ATTITUDE: \n");
   // heel
   double heel = 0.0;
   bool is_heel_available = false;
@@ -637,11 +560,11 @@ void world_init(struct World* world, char* filename)
   {
     heel = atof(xmlNodeGetContent(val_node));
     is_heel_available = true;
-    fprintf(stdout, "--> heel = %f radians.\n", heel);
+    fprintf(stdout, "--> asv heel = %f radians.\n", heel);
   }
   else
   {
-    fprintf(stdout, "--> heel = n/a.\n");
+    fprintf(stdout, "--> asv heel = n/a.\n");
   }
   // trim
   double trim = 0.0;
@@ -658,11 +581,11 @@ void world_init(struct World* world, char* filename)
   {
     trim = atof(xmlNodeGetContent(val_node));
     is_trim_available = true;
-    fprintf(stdout, "--> trim = %f radians.\n", trim);
+    fprintf(stdout, "--> asv trim = %f radians.\n", trim);
   }
   else
   {
-    fprintf(stdout, "--> trim = n/a.\n");
+    fprintf(stdout, "--> asv trim = n/a.\n");
   }
   // heading
   double heading = 0.0;
@@ -679,12 +602,86 @@ void world_init(struct World* world, char* filename)
   {
     heading = atof(xmlNodeGetContent(val_node));
     is_heading_available = true;
-    fprintf(stdout, "--> heading = %f radians.\n", heading);
+    fprintf(stdout, "--> asv heading = %f radians.\n", heading);
   }
   else
   {
-    fprintf(stdout, "--> heading = n/a.\n");
+    fprintf(stdout, "--> asv heading = n/a.\n");
   }
+
+  // Create objects for environment model
+  fprintf(stdout, "Creating environment model:\n");
+  world->wind = NULL;
+  world->current = NULL;
+  world->wave = NULL;
+  // Initialise the models based on input data
+  if(is_wind_speed_available && is_wind_direction_available)
+  {
+    world->wind = (struct Wind*)malloc(sizeof(struct Wind));
+    wind_init(world->wind, wind_speed, wind_direction);
+    fprintf(stdout, "--> wind model created.\n");
+  }
+  else
+  {
+    fprintf(stdout, "--> wind model = NULL.\n");
+  }
+  if(is_current_speed_available && is_current_direction_available)
+  {
+    world->current = (struct Current*)malloc(sizeof(struct Current));
+    current_init(world->current, current_speed, current_direction);
+    fprintf(stdout, "--> current model created.\n");
+  }
+  else
+  {
+    fprintf(stdout, "--> current model = NULL.\n");
+  }
+  if(is_wave_spectrum_based_on_wind)
+  {
+    if(world->wind)
+    {
+      fprintf(stderr, "Error. Missing data. " 
+                      "Wave model is based on wind but found no wind data. \n");
+      exit(1);
+    }
+    world->wave = (struct Wave*)malloc(sizeof(struct Wave));
+    wave_init_with_wind(world->wave, world->wind);
+    fprintf(stdout, "--> wave model created based on wind model.\n");
+  }
+  else if(is_sig_wave_ht_available)
+  {
+    world->wave = (struct Wave*)malloc(sizeof(struct Wave));
+    wave_init_with_sig_wave_ht(world->wave, sig_wave_height);
+    fprintf(stdout, "--> wave model created based on "
+                    "significant wave height.\n");
+  }
+  else if(is_peak_spectral_freq_available)
+  {
+    world->wave = (struct Wave*)malloc(sizeof(struct Wave));
+    wave_init_with_peak_freq(world->wave, peak_spectral_freq);
+    fprintf(stdout, "--> wave model created based on "
+                    "peak spectral frequency.\n");
+  }
+  else
+  {
+    fprintf(stdout, "--> wave model = NULL.\n");
+  }
+
+  // Create ASV model
+  fprintf(stdout, "Creating ASV model:\n");
+  asv_init(&world->asv, asv_spec, world->wave, world->wind, world->current);
+  fprintf(stdout, "--> asv model created with asv specification and "
+                  "environment model.\n");
+  // Set position
+  if(is_x_available && is_y_available && is_z_available)
+  {
+    struct Point position = (struct Point){x,y,z};
+    asv_set_position(&world->asv,position);
+  }
+  fprintf(stdout, "--> position set to (%f, %f, %f).\n", 
+          world->asv.origin_position.x,
+          world->asv.origin_position.y,
+          world->asv.origin_position.z);
+  // Set attitude
   if(is_heel_available && is_trim_available && is_heading_available)
   {
     struct Attitude attitude = (struct Attitude){heel, trim, heading};
