@@ -16,6 +16,7 @@ SET( SOURCE
   source/wind.c
   source/current.c
   source/asv.c
+  source/world.c
   source/main.c
   )
 

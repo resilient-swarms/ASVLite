@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<simulator>
+<world>
   <wind>
     <speed></speed>
     <direction></direction> 
@@ -38,9 +38,5 @@
     <heel></heel>
     <trim></trim>
     <heading></heading>
-  </asv_attitude>
-  <chronograph>
-    <delta_t></delta_t>
-    <duration></duration>
-  </chronograph>
-</simulator>
+  </asv_attitude>:w
+</world>

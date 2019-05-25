@@ -80,8 +80,8 @@ struct Asv
   struct Wave* wave;
   struct Wind* wind;
   struct Current* current;
-  struct Asv_specification* spec;
-  struct Asv_propeller* propeller[COUNT_PROPELLERS_MAX];
+  struct Asv_specification spec;
+  struct Asv_propeller propeller[COUNT_PROPELLERS_MAX];
   int count_propellers; // Number of propellers attached to ASV.
   struct Asv_dynamics dynamics;
   struct Point origin_position; // Position of the body-fixed frame in the 
@@ -130,7 +130,7 @@ void asv_propeller_set_thrust(struct Asv_propeller* propeller,
  * have at least the same life time as pointer asv.
  */
 void asv_init(struct Asv* asv, 
-              struct Asv_specification* spec, 
+              struct Asv_specification spec, 
               struct Wave* wave, 
               struct Wind* wind, 
               struct Current* current);
@@ -154,7 +154,7 @@ void asv_set_attitude(struct Asv* asv, struct Attitude attitude);
  * life time as pointer asv.
  * @param return 1 if successful else 0.
  */
-int asv_set_propeller(struct Asv* asv, struct Asv_propeller* propeller);
+int asv_set_propeller(struct Asv* asv, struct Asv_propeller propeller);
 
 /**
  * Function to set the position and attitude of the ASV for the given time step.

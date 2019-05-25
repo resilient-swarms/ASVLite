@@ -24,16 +24,16 @@ static double get_encounter_frequency(double wave_freq,
 static void set_cog(struct Asv* asv)
 {
   // Match the position of the COG with that of the position of the origin.
-  asv->cog_position.x = asv->origin_position.x + asv->spec->L_wl/2.0;
+  asv->cog_position.x = asv->origin_position.x + asv->spec.L_wl/2.0;
   asv->cog_position.y = 0.0;
-  asv->cog_position.z = asv->origin_position.z + asv->spec->cog.z;
+  asv->cog_position.z = asv->origin_position.z + asv->spec.cog.z;
 }
 
 // Method to set the mass and added mass for the given asv object.
 static void set_mass(struct Asv* asv)
 {
   // Mass of the ASV
-  double mass = asv->spec->disp * SEA_WATER_DENSITY;
+  double mass = asv->spec.disp * SEA_WATER_DENSITY;
 
   // Added mass of the ASV
   // ASV shape idealisation:
@@ -47,10 +47,10 @@ static void set_mass(struct Asv* asv)
   // Note: the formula given in the above reference is for a full spheroid but
   // the shape that is assumed in this implementation is for a semi-spheroid.
   // Therefore multiply added mass by 0.5.
-  double a = asv->spec->L_wl/2.0;
+  double a = asv->spec.L_wl/2.0;
   // Find b such the volume of the semi-spheroid is equal to the displacement of
   // the vessel.
-  double b = sqrt((3.0/4.0) * (asv->spec->disp/(PI * a))); 
+  double b = sqrt((3.0/4.0) * (asv->spec.disp/(PI * a))); 
 
   double e = sqrt(1.0 - pow(b/a, 2.0));
   double alpha_0 = (2.0*(1 - e*e)/(e*e*e)) * (0.5*log10((1+e)/(1-e)) - e);
@@ -88,15 +88,15 @@ static void set_mass(struct Asv* asv)
   asv->dynamics.M[heave] = mass + added_mass_heave;
 
   // Roll moment of inertia
-  double r_roll = asv->spec->r_roll;
+  double r_roll = asv->spec.r_roll;
   asv->dynamics.M[roll] = mass * r_roll*r_roll + added_mass_roll;
   
   // Pitch moment of inertia
-  double r_pitch = asv->spec->r_pitch;
+  double r_pitch = asv->spec.r_pitch;
   asv->dynamics.M[pitch] = mass * r_pitch*r_pitch + added_mass_pitch;
 
   // Yaw moment of inertia
-  double r_yaw = asv->spec->r_yaw;
+  double r_yaw = asv->spec.r_yaw;
   asv->dynamics.M[yaw] = mass * r_yaw*r_yaw + added_mass_yaw;
 }
 
@@ -107,7 +107,7 @@ static void set_drag_coefficient(struct Asv* asv)
   // operations. Edition July 2017. Appendix B Table B-1, B-2.
   
   // Surge drag coefficient - assuming elliptical waterplane area
-  double B_L_ratio = asv->spec->B_wl/ asv->spec->L_wl;
+  double B_L_ratio = asv->spec.B_wl/ asv->spec.L_wl;
   if(B_L_ratio <= 0.125)
   {
     asv->dynamics.C[surge] = 0.22;
@@ -131,17 +131,17 @@ static void set_drag_coefficient(struct Asv* asv)
   asv->dynamics.C[surge] = 0.5 * 
                            SEA_WATER_DENSITY * 
                            asv->dynamics.C[surge] * 
-                           asv->spec->B_wl * asv->spec->T;
+                           asv->spec.B_wl * asv->spec.T;
   
   // Sway drag coefficient - if the vessel is cylindrical in shape then use the
   // same value as for surge else consider it as a flat plat.
-  if(asv->spec->L_wl == asv->spec->B_wl)
+  if(asv->spec.L_wl == asv->spec.B_wl)
   {
     asv->dynamics.C[sway] = asv->dynamics.C[surge];
   }
   else
   {
-    double L_T_ratio = asv->spec->L_wl / asv->spec->T;
+    double L_T_ratio = asv->spec.L_wl / asv->spec.T;
     if(L_T_ratio <= 1.0)
     {
       asv->dynamics.C[sway] = 1.16;
@@ -161,11 +161,11 @@ static void set_drag_coefficient(struct Asv* asv)
     asv->dynamics.C[sway] = 0.5 * 
                             SEA_WATER_DENSITY * 
                             asv->dynamics.C[sway] * 
-                            asv->spec->L_wl * asv->spec->T;
+                            asv->spec.L_wl * asv->spec.T;
   }
   
   // Heave drag coefficient - consider it as flat plat perpendicular to flow.
-  double L_B_ratio = asv->spec->L_wl / asv->spec->B_wl;
+  double L_B_ratio = asv->spec.L_wl / asv->spec.B_wl;
   if(L_B_ratio <= 1.0)
   {
     asv->dynamics.C[heave] = 1.16;
@@ -185,7 +185,7 @@ static void set_drag_coefficient(struct Asv* asv)
   asv->dynamics.C[heave] = 0.5 * 
                            SEA_WATER_DENSITY * 
                            asv->dynamics.C[heave] *
-                           asv->spec->L_wl * asv->spec->B_wl;
+                           asv->spec.L_wl * asv->spec.B_wl;
 
   // roll, pitch and yaw drag coefficient set equal to roll damping coefficient 
   // given in Handbook of Marin Craft Hydrodynamics and motion control, page 125
@@ -200,8 +200,8 @@ static void set_stiffness(struct Asv* asv)
   // Yaw stiffness = 0
  
   // Assuming elliptical shape for the water plane area.
-  double a = asv->spec->L_wl/2.0;
-  double b = asv->spec->B_wl/2.0;
+  double a = asv->spec.L_wl/2.0;
+  double b = asv->spec.B_wl/2.0;
   double A = PI * a * b;
   double I_xx = (PI/4.0) * a * b*b*b;
   double I_yy = (PI/4.0) * a*a*a * b;
@@ -231,14 +231,14 @@ static void set_unit_wave_force(struct Asv* asv)
   // 4. Unit wave height = 1 m.
   
   // Dimensions of ellipsoid
-  double a = asv->spec->L_wl/ 2.0;
-  double b = asv->spec->B_wl/ 2.0;
-  double c = asv->spec->T;
+  double a = asv->spec.L_wl/ 2.0;
+  double b = asv->spec.B_wl/ 2.0;
+  double c = asv->spec.T;
   // Distance of centroid of ellipsoid from waterline.
   double z = - 4.0*c/(3.0*PI);
 
   // Distance of COG from COB
-  double BG = fabs((asv->spec->cog.z - asv->spec->T) - z);
+  double BG = fabs((asv->spec.cog.z - asv->spec.T) - z);
   
   double H_w = 1.0; // unit wave height in m.
 
@@ -327,12 +327,12 @@ static void set_wind_force_all_directions(struct Asv* asv)
   // Transverse project area assumed as a rectangle.
   // Wind assumed as blowing at steady speed.
   
-  double A_sway = 0.5 * asv->spec->L_wl * (asv->spec->D - asv->spec->T);
-  double A_surge = asv->spec->B_wl * (asv->spec->D - asv->spec->T);
-  double h_roll = ((1.0/3.0)*(asv->spec->D - asv->spec->T) + asv->spec->T) - 
-                  asv->spec->cog.z;
-  double h_pitch = (0.5*(asv->spec->D - asv->spec->T) + asv->spec->T) - 
-                  asv->spec->cog.z;
+  double A_sway = 0.5 * asv->spec.L_wl * (asv->spec.D - asv->spec.T);
+  double A_surge = asv->spec.B_wl * (asv->spec.D - asv->spec.T);
+  double h_roll = ((1.0/3.0)*(asv->spec.D - asv->spec.T) + asv->spec.T) - 
+                  asv->spec.cog.z;
+  double h_pitch = (0.5*(asv->spec.D - asv->spec.T) + asv->spec.T) - 
+                  asv->spec.cog.z;
 
   for(int i = 0; i < 360; ++i)
   {
@@ -381,17 +381,17 @@ static void set_propeller_force(struct Asv* asv)
   // Calculate force from each propeller.
   for(int i = 0; i < asv->count_propellers; ++i)
   {
-    double thrust = asv->propeller[i]->thrust;
-    double trim = asv->propeller[i]->orientation.trim;
-    double heading   = asv->propeller[i]->orientation.heading;
+    double thrust = asv->propeller[i].thrust;
+    double trim = asv->propeller[i].orientation.trim;
+    double heading   = asv->propeller[i].orientation.heading;
     
     double F_x = thrust*cos(trim)*cos(heading);
     double F_y = thrust*cos(trim)*sin(heading) ;
     double F_z = thrust*cos(heading)*sin(trim);
     
-    double x = asv->cog_position.x - asv->propeller[i]->position.x;
-    double y = asv->propeller[i]->position.y - asv->cog_position.y;
-    double z = asv->propeller[i]->position.z - asv->cog_position.z;
+    double x = asv->cog_position.x - asv->propeller[i].position.x;
+    double y = asv->propeller[i].position.y - asv->cog_position.y;
+    double z = asv->propeller[i].position.z - asv->cog_position.z;
 
     double M_x = F_y*z + F_z*y;
     double M_y = F_x*z + F_z*x;
@@ -421,7 +421,7 @@ static void set_restoring_force(struct Asv* asv)
 {
   // Heave restoring force
   // Distance of current COG position from still water floating position.
-  double dist = (asv->spec->cog.z -asv->spec->T) - asv->cog_position.z;
+  double dist = (asv->spec.cog.z -asv->spec.T) - asv->cog_position.z;
   asv->dynamics.F_restoring[heave] = asv->dynamics.K[heave] * dist;
   
   // Roll restoring force 
@@ -498,24 +498,19 @@ static void set_attitude(struct Asv* asv)
 }
 
 void asv_init(struct Asv* asv, 
-              struct Asv_specification* spec, 
+              struct Asv_specification spec, 
               struct Wave* wave,
               struct Wind* wind,
               struct Current* current)
 {
   // Copy pointers. 
-  asv->spec = spec; // Should NOT be NULL and should be valid al long as asv is 
-                    // valid.
+  asv->spec = spec; 
   asv->wave = wave; // Could be NULL.
   asv->wind = wind; // Could be NULL.
   asv->current = current; // Could be NULL.
   
   // Initialise the propellers
   asv->count_propellers = 0;
-  for(int i = 0; i < COUNT_PROPELLERS_MAX; ++i)
-  {
-    asv->propeller[i] = NULL;
-  }
 
   // Initialise the position of the ASV
   asv->origin_position.x = 0.0;
@@ -525,12 +520,12 @@ void asv_init(struct Asv* asv,
   // Place the asv vertically in the correct position.
   if(wave == NULL)
   {
-    asv->origin_position.z = -asv->spec->T;
+    asv->origin_position.z = -asv->spec.T;
   }
   else
   {
     asv->origin_position.z = wave_get_elevation(wave, &asv->cog_position, 0.0)
-                             -asv->spec->T; 
+                             -asv->spec.T; 
   }
   // Reset the cog position.
   set_cog(asv); // Match the position of the cog with that of origin
@@ -578,10 +573,10 @@ void asv_init(struct Asv* asv,
     // Set minimum encounter frequency
     asv->dynamics.F_unit_wave_freq_min = get_encounter_frequency(
                                           asv->wave->min_spectral_frequency,
-                                          asv->spec->max_speed, 0.0);
+                                          asv->spec.max_speed, 0.0);
     asv->dynamics.F_unit_wave_freq_max = get_encounter_frequency(
                                           asv->wave->max_spectral_frequency,
-                                          asv->spec->max_speed, 2.0*PI);
+                                          asv->spec.max_speed, 2.0*PI);
     // Set the wave force for unit waves
     set_unit_wave_force(asv);
   }
@@ -609,6 +604,7 @@ void asv_set_attitude(struct Asv* asv, struct Attitude attitude)
 
 void asv_set_dynamics(struct Asv* asv, double time)
 {
+  /*
   if(asv->wave)
   {
     // Get the wave force for the current time step
@@ -620,6 +616,7 @@ void asv_set_dynamics(struct Asv* asv, double time)
     // Get the wind force for the current time step
     set_wind_force(asv);
   }
+  */
   
   // Get the propeller force for the current time step
   set_propeller_force(asv);
@@ -674,7 +671,7 @@ void asv_propeller_set_thrust(struct Asv_propeller* propeller,
   propeller->thrust = thrust;
 }
 
-int asv_set_propeller(struct Asv* asv, struct Asv_propeller* propeller)
+int asv_set_propeller(struct Asv* asv, struct Asv_propeller propeller)
 {
   if(asv->count_propellers == COUNT_PROPELLERS_MAX)
   {
