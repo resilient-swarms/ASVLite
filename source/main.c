@@ -805,9 +805,18 @@ int main(int argc, char** argv)
   fprintf(stdout, "END. \n");
 
   // Clean memory before exit.
-  free(wind);
-  free(current);
-  free(wave);
+  if(wind)
+  {
+    free(wind);
+  }
+  if(current)
+  {
+    free(current);
+  }
+  if(wave)
+  {
+    free(wave);
+  }
 
   return 0;
 }
