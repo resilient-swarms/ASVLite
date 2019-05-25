@@ -40,6 +40,9 @@ int main(int argc, char** argv)
   
   double frame_length = 10.0; // time duration of each frame in milli-seconds 
   double duration = 120.0; // time duration of animation.
+  fprintf(stdout, "--> frame duration = %f milli_seconds. \n", frame_length);
+  fprintf(stdout, "--> simulation duration = %f seconds. \n", duration);
+  
   fprintf(fp, "time cog_x cog_y cog_z heel trim heading \n");
   clock_t start, end;
   for(double t = 0.0; t < duration; t += (frame_length/1000.0))
