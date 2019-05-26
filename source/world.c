@@ -727,7 +727,7 @@ void world_init(struct World* world, char* filename)
                     "= %f Hz. \n", world->wave->min_spectral_frequency);
     fprintf(stdout, "--> upper limit (99.9%%) of spectral energy threshold "
                     "= %f Hz. \n", world->wave->max_spectral_frequency);
-    fprintf(stdout, "--> wave spread (%f degree, %f degree). \n",
+    fprintf(stdout, "--> wave spread(degree) (%f , %f). \n",
                     world->wave->min_spectral_wave_heading * 180.0/PI,
                     world->wave->max_spectral_wave_heading * 180.0/PI);
   }
@@ -737,6 +737,28 @@ void world_init(struct World* world, char* filename)
   asv_init(&world->asv, asv_spec, world->wave, world->wind, world->current);
   fprintf(stdout, "--> asv model created with asv specification and "
                   "environment model.\n");
+  fprintf(stdout, "--> M(kg) [%f, %f, %f, %f, %f, %f].\n", 
+          world->asv.dynamics.M[0], 
+          world->asv.dynamics.M[1], 
+          world->asv.dynamics.M[2], 
+          world->asv.dynamics.M[3], 
+          world->asv.dynamics.M[4], 
+          world->asv.dynamics.M[5]); 
+  fprintf(stdout, "--> C(kg/m) [%f, %f, %f, %f, %f, %f].\n", 
+          world->asv.dynamics.C[0], 
+          world->asv.dynamics.C[1], 
+          world->asv.dynamics.C[2], 
+          world->asv.dynamics.C[3], 
+          world->asv.dynamics.C[4], 
+          world->asv.dynamics.C[5]); 
+  fprintf(stdout, "--> K(N/m) [%f, %f, %f, %f, %f, %f].\n", 
+          world->asv.dynamics.K[0], 
+          world->asv.dynamics.K[1], 
+          world->asv.dynamics.K[2], 
+          world->asv.dynamics.K[3], 
+          world->asv.dynamics.K[4], 
+          world->asv.dynamics.K[5]); 
+
   // Set position
   if(is_x_available && is_y_available && is_z_available)
   {
