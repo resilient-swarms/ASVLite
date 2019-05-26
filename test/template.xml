@@ -30,6 +30,36 @@
       <z type="xs:decimal"></z>
     </cog>
   </asv_spec>
+    <propellers>
+    <propeller_1>
+      <position>
+        <x type="xs:decimal"></x>
+        <y type="xs:decimal"></y>
+        <z type="xs:decimal"></z>
+      </position>
+    </propeller_1>
+    <propeller_2>
+      <position>
+        <x type="xs:decimal"></x>
+        <y type="xs:decimal"></y>
+        <z type="xs:decimal"></z>
+      </position>
+    </propeller_2>
+    <propeller_3>
+      <position>
+        <x type="xs:decimal"></x>
+        <y type="xs:decimal"></y>
+        <z type="xs:decimal"></z>
+      </position>
+    </propeller_3>
+    <propeller_4>
+      <position>
+        <x type="xs:decimal"></x>
+        <y type="xs:decimal"></y>
+        <z type="xs:decimal"></z>
+      </position>
+    </propeller_4>
+  </propellers>
   <asv_position>
     <x type="xs:decimal"></x>
     <y type="xs:decimal"></y>
