@@ -60,7 +60,9 @@ void wave_init_with_wind(struct Wave* wave, struct Wind* wind);
  * @param sig_wave_height is the significant wave height to achieve for the
  * irregular sea being initialised. Value should be non-zero positive.
  */
-void wave_init_with_sig_wave_ht(struct Wave* wave, double sig_wave_height);
+void wave_init_with_sig_wave_ht(struct Wave* wave, 
+                                double sig_wave_height, 
+                                double wave_heading);
 
 /**
  * Initialise the irregular wave on the sea using the peak spectral frequency to
@@ -71,7 +73,9 @@ void wave_init_with_sig_wave_ht(struct Wave* wave, double sig_wave_height);
  * @param peak_spectral_freq is the peak spectral frequency to achieve for the 
  * irregular sea being initialised. Value should be non-zero positive.
  */
-void wave_init_with_peak_freq(struct Wave* wave, double peak_spectral_freq);
+void wave_init_with_peak_freq(struct Wave* wave, 
+                              double peak_spectral_freq, 
+                              double wave_heading);
 
 /**
  * Get sea surface elevation at the given location for the given time. 

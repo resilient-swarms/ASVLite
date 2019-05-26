@@ -7,9 +7,10 @@
 static void wave_init(struct Wave* wave, 
                       struct Wind* wind, 
                       double significant_wave_height, 
-                      double peak_spectral_frequency)
+                      double peak_spectral_frequency,
+                      double wave_heading)
 {
-  double major_wave_direction = (wind == NULL)? 0.0 : wind->direction;
+  double major_wave_direction = (wind == NULL)? wave_heading : wind->direction;
   wave->min_spectral_wave_heading = major_wave_direction - PI/2.0;
   wave->max_spectral_wave_heading = major_wave_direction + PI/2.0;
   // wave directions should be in the range (0, 2PI)
@@ -94,17 +95,21 @@ static void wave_init(struct Wave* wave,
 
 void wave_init_with_wind(struct Wave* wave, struct Wind* wind)
 {
-  wave_init(wave, wind, 0.0, 0.0);
+  wave_init(wave, wind, 0.0, 0.0, 0.0);
 }
 
-void wave_init_with_sig_wave_ht(struct Wave* wave, double sig_wave_ht)
+void wave_init_with_sig_wave_ht(struct Wave* wave, 
+                                double sig_wave_ht,
+                                double wave_heading)
 {
-  wave_init(wave, NULL, sig_wave_ht, 0.0);
+  wave_init(wave, NULL, sig_wave_ht, 0.0, wave_heading);
 }
 
-void wave_init_with_peak_freq(struct Wave* wave, double peak_spectral_freq)
+void wave_init_with_peak_freq(struct Wave* wave, 
+                              double peak_spectral_freq, 
+                              double wave_heading)
 {
-  wave_init(wave, NULL, 0.0, peak_spectral_freq);
+  wave_init(wave, NULL, 0.0, peak_spectral_freq, wave_heading);
 }
 
 double wave_get_elevation(struct Wave* wave, 
