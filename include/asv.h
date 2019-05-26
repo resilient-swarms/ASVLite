@@ -10,7 +10,7 @@ struct Wind;
 #define COUNT_DOF 6 /* Number of degrees of freedom for the motion of ASV. */
 #define COUNT_ASV_SPECTRAL_DIRECTIONS 360
 #define COUNT_ASV_SPECTRAL_FREQUENCIES 100
-#define COUNT_PROPELLERS_MAX 8 /* Maximum number of propellers an ASV can have*/
+#define COUNT_PROPELLERS_MAX 4 /* Maximum number of propellers an ASV can have*/
 
 /**
  * Structure to represent the angles.

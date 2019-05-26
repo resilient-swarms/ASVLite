@@ -486,14 +486,337 @@ void world_init(struct World* world, char* filename)
     fprintf(stderr, "Error. Missing data COG_z. \n");
     exit(1);
   }  
+
+  // Propellers
+  node = node->next; // This should be propellers
+  if(strcmp(node->name, "propellers"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node propellers but found %s. \n", node->name);
+    exit(1);
+  }
+  // Propeller_1
+  sub_node = node->children; // This should be propeller_1
+  if(strcmp(sub_node->name, "propeller_1"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node propeller_1 but found %s. \n", 
+                    sub_node->name);
+    exit(1);
+  }
+  // Position
+  xmlNode* position_node = sub_node->children; // This should be position
+  if(strcmp(position_node->name, "position"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node position but found %s. \n", 
+                    position_node->name);
+    exit(1);
+  }
+  position_node = position_node->children; // This should be x
+  double propeller_1_x = 0.0;
+  bool is_propeller_1_x_available = false;
+  if(strcmp(position_node->name, "x"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node x but found %s. \n", position_node->name);
+    exit(1);
+  }
+  val_node = position_node->children;
+  if(val_node != NULL)
+  {
+    propeller_1_x = atof(xmlNodeGetContent(val_node));
+    is_propeller_1_x_available = true;
+    fprintf(stdout, "--> propeller 1 position.x = %f m.\n", propeller_1_x);
+  }
+  else
+  {
+    fprintf(stdout, "--> propeller 1 position.x = n/a.\n");
+  }
+  position_node = position_node->next; // This should be y
+  double propeller_1_y = 0.0;
+  bool is_propeller_1_y_available = false;
+  if(strcmp(position_node->name, "y"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node y but found %s. \n", position_node->name);
+    exit(1);
+  }
+  val_node = position_node->children;
+  if(val_node != NULL)
+  {
+    propeller_1_y = atof(xmlNodeGetContent(val_node));
+    is_propeller_1_y_available = true;
+    fprintf(stdout, "--> propeller 1 position.y = %f m.\n", propeller_1_y);
+  }
+  else
+  {
+    fprintf(stdout, "--> propeller 1 position.y = n/a.\n");
+  }
+  position_node = position_node->next; // This should be z
+  double propeller_1_z = 0.0;
+  bool is_propeller_1_z_available = false;
+  if(strcmp(position_node->name, "z"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node z but found %s. \n", position_node->name);
+    exit(1);
+  }
+  val_node = position_node->children;
+  if(val_node != NULL)
+  {
+    propeller_1_z = atof(xmlNodeGetContent(val_node));
+    is_propeller_1_z_available = true;
+    fprintf(stdout, "--> propeller 1 position.z = %f m.\n", propeller_1_z);
+  }
+  else
+  {
+    fprintf(stdout, "--> propeller 1 position.z = n/a.\n");
+  }
+
+  // Propeller_2
+  sub_node = sub_node->next; // This should be propeller_2
+  if(strcmp(sub_node->name, "propeller_2"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node propeller_2 but found %s. \n", 
+                    sub_node->name);
+    exit(1);
+  }
+  // Position
+  position_node = sub_node->children; // This should be position
+  if(strcmp(position_node->name, "position"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node position but found %s. \n", 
+                    position_node->name);
+    exit(1);
+  }
+  position_node = position_node->children; // This should be x
+  double propeller_2_x = 0.0;
+  bool is_propeller_2_x_available = false;
+  if(strcmp(position_node->name, "x"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node x but found %s. \n", position_node->name);
+    exit(1);
+  }
+  val_node = position_node->children;
+  if(val_node != NULL)
+  {
+    propeller_2_x = atof(xmlNodeGetContent(val_node));
+    is_propeller_2_x_available = true;
+    fprintf(stdout, "--> propeller 2 position.x = %f m.\n", propeller_2_x);
+  }
+  else
+  {
+    fprintf(stdout, "--> propeller 2 position.x = n/a.\n");
+  }
+  position_node = position_node->next; // This should be y
+  double propeller_2_y = 0.0;
+  bool is_propeller_2_y_available = false;
+  if(strcmp(position_node->name, "y"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node y but found %s. \n", position_node->name);
+    exit(1);
+  }
+  val_node = position_node->children;
+  if(val_node != NULL)
+  {
+    propeller_2_y = atof(xmlNodeGetContent(val_node));
+    is_propeller_2_y_available = true;
+    fprintf(stdout, "--> propeller 2 position.y = %f m.\n", propeller_2_y);
+  }
+  else
+  {
+    fprintf(stdout, "--> propeller 2 position.y = n/a.\n");
+  }
+  position_node = position_node->next; // This should be z
+  double propeller_2_z = 0.0;
+  bool is_propeller_2_z_available = false;
+  if(strcmp(position_node->name, "z"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node z but found %s. \n", position_node->name);
+    exit(1);
+  }
+  val_node = position_node->children;
+  if(val_node != NULL)
+  {
+    propeller_2_z = atof(xmlNodeGetContent(val_node));
+    is_propeller_2_z_available = true;
+    fprintf(stdout, "--> propeller 2 position.z = %f m.\n", propeller_2_z);
+  }
+  else
+  {
+    fprintf(stdout, "--> propeller 2 position.z = n/a.\n");
+  }
+
+  // Propeller_3
+  sub_node = sub_node->next; // This should be propeller_3
+  if(strcmp(sub_node->name, "propeller_3"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node propeller_3 but found %s. \n", 
+                    sub_node->name);
+    exit(1);
+  }
+  // Position
+  position_node = sub_node->children; // This should be position
+  if(strcmp(position_node->name, "position"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node position but found %s. \n", 
+                    position_node->name);
+    exit(1);
+  }
+  position_node = position_node->children; // This should be x
+  double propeller_3_x = 0.0;
+  bool is_propeller_3_x_available = false;
+  if(strcmp(position_node->name, "x"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node x but found %s. \n", position_node->name);
+    exit(1);
+  }
+  val_node = position_node->children;
+  if(val_node != NULL)
+  {
+    propeller_3_x = atof(xmlNodeGetContent(val_node));
+    is_propeller_3_x_available = true;
+    fprintf(stdout, "--> propeller 3 position.x = %f m.\n", propeller_3_x);
+  }
+  else
+  {
+    fprintf(stdout, "--> propeller 3 position.x = n/a.\n");
+  }
+  position_node = position_node->next; // This should be y
+  double propeller_3_y = 0.0;
+  bool is_propeller_3_y_available = false;
+  if(strcmp(position_node->name, "y"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node y but found %s. \n", position_node->name);
+    exit(1);
+  }
+  val_node = position_node->children;
+  if(val_node != NULL)
+  {
+    propeller_3_y = atof(xmlNodeGetContent(val_node));
+    is_propeller_3_y_available = true;
+    fprintf(stdout, "--> propeller 3 position.y = %f m.\n", propeller_3_y);
+  }
+  else
+  {
+    fprintf(stdout, "--> propeller 3 position.y = n/a.\n");
+  }
+  position_node = position_node->next; // This should be z
+  double propeller_3_z = 0.0;
+  bool is_propeller_3_z_available = false;
+  if(strcmp(position_node->name, "z"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node z but found %s. \n", position_node->name);
+    exit(1);
+  }
+  val_node = position_node->children;
+  if(val_node != NULL)
+  {
+    propeller_3_z = atof(xmlNodeGetContent(val_node));
+    is_propeller_3_z_available = true;
+    fprintf(stdout, "--> propeller 3 position.z = %f m.\n", propeller_3_z);
+  }
+  else
+  {
+    fprintf(stdout, "--> propeller 3 position.z = n/a.\n");
+  }
+
+  // Propeller_4
+  sub_node = sub_node->next; // This should be propeller_4
+  if(strcmp(sub_node->name, "propeller_4"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node propeller_4 but found %s. \n", 
+                    sub_node->name);
+    exit(1);
+  }
+  // Position
+  position_node = sub_node->children; // This should be position
+  if(strcmp(position_node->name, "position"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node position but found %s. \n", 
+                    position_node->name);
+    exit(1);
+  }
+  position_node = position_node->children; // This should be x
+  double propeller_4_x = 0.0;
+  bool is_propeller_4_x_available = false;
+  if(strcmp(position_node->name, "x"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node x but found %s. \n", position_node->name);
+    exit(1);
+  }
+  val_node = position_node->children;
+  if(val_node != NULL)
+  {
+    propeller_4_x = atof(xmlNodeGetContent(val_node));
+    is_propeller_4_x_available = true;
+    fprintf(stdout, "--> propeller 4 position.x = %f m.\n", propeller_4_x);
+  }
+  else
+  {
+    fprintf(stdout, "--> propeller 4 position.x = n/a.\n");
+  }
+  position_node = position_node->next; // This should be y
+  double propeller_4_y = 0.0;
+  bool is_propeller_4_y_available = false;
+  if(strcmp(position_node->name, "y"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node y but found %s. \n", position_node->name);
+    exit(1);
+  }
+  val_node = position_node->children;
+  if(val_node != NULL)
+  {
+    propeller_4_y = atof(xmlNodeGetContent(val_node));
+    is_propeller_4_y_available = true;
+    fprintf(stdout, "--> propeller 4 position.y = %f m.\n", propeller_4_y);
+  }
+  else
+  {
+    fprintf(stdout, "--> propeller 4 position.y = n/a.\n");
+  }
+  position_node = position_node->next; // This should be z
+  double propeller_4_z = 0.0;
+  bool is_propeller_4_z_available = false;
+  if(strcmp(position_node->name, "z"))
+  {
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node z but found %s. \n", position_node->name);
+    exit(1);
+  }
+  val_node = position_node->children;
+  if(val_node != NULL)
+  {
+    propeller_4_z = atof(xmlNodeGetContent(val_node));
+    is_propeller_4_z_available = true;
+    fprintf(stdout, "--> propeller 4 position.z = %f m.\n", propeller_4_z);
+  }
+  else
+  {
+    fprintf(stdout, "--> propeller 4 position.z = n/a.\n");
+  }
   
   // ASV position
   node = node->next; // This should be asv_position
   if(strcmp(node->name, "asv_position"))
   {
-    fprintf(stderr, 
-            "Error. Incorrect xml schema. "
-            "Expected node asv_position but found %s. \n", node->name);
+    fprintf(stderr, "Error. Incorrect xml schema. "
+                    "Expected node asv_position but found %s. \n", node->name);
     exit(1);
   }
   // x
@@ -737,6 +1060,88 @@ void world_init(struct World* world, char* filename)
   asv_init(&world->asv, asv_spec, world->wave, world->wind, world->current);
   fprintf(stdout, "--> asv model created with asv specification and "
                   "environment model.\n");
+  if(is_propeller_1_x_available && 
+     is_propeller_1_y_available && 
+     is_propeller_1_z_available)
+  {
+    struct Point propeller_position = (struct Point){propeller_1_x, 
+                                                     propeller_1_y, 
+                                                     propeller_1_z}; 
+    asv_propeller_init(&world->asv.propeller[0], propeller_position); 
+    asv_set_propeller(&world->asv, world->asv.propeller[0]);
+    fprintf(stdout, "--> propeller 1 created and fixed "
+                    "to asv at position (%f, %f, %f). \n", 
+                    world->asv.propeller[0].position.x, 
+                    world->asv.propeller[0].position.y, 
+                    world->asv.propeller[0].position.y); 
+  }
+  else 
+  {
+    fprintf(stdout, "--> propeller 1 = NULL.\n");
+  }
+  if(is_propeller_2_x_available && 
+     is_propeller_2_y_available && 
+     is_propeller_2_z_available)
+  {
+    struct Point propeller_position = (struct Point){propeller_2_x, 
+                                               propeller_2_y, 
+                                               propeller_2_z}; 
+    asv_propeller_init(&world->asv.propeller[1], propeller_position); 
+    asv_set_propeller(&world->asv, world->asv.propeller[1]);
+    fprintf(stdout, "--> propeller 2 created and fixed "
+                    "to asv at position (%f, %f, %f). \n", 
+                    world->asv.propeller[1].position.x, 
+                    world->asv.propeller[1].position.y, 
+                    world->asv.propeller[1].position.y); 
+  }  
+  else 
+  {
+    fprintf(stdout, "--> propeller 2 = NULL.\n");
+  }
+
+  if(is_propeller_3_x_available && 
+      is_propeller_3_y_available && 
+      is_propeller_3_z_available)
+  {
+    struct Point propeller_position = (struct Point){propeller_3_x, 
+                                               propeller_3_y, 
+                                               propeller_3_z}; 
+    asv_propeller_init(&world->asv.propeller[2], propeller_position); 
+    asv_set_propeller(&world->asv, world->asv.propeller[2]);
+    fprintf(stdout, "--> propeller 3 created and fixed "
+                    "to asv at position (%f, %f, %f). \n", 
+                    world->asv.propeller[2].position.x, 
+                    world->asv.propeller[2].position.y, 
+                    world->asv.propeller[2].position.y); 
+  }  
+  else 
+  {
+    fprintf(stdout, "--> propeller 3 = NULL.\n");
+  }
+
+  if(is_propeller_4_x_available && 
+      is_propeller_4_y_available && 
+      is_propeller_4_z_available)
+  {
+    struct Point propeller_position = (struct Point){propeller_4_x, 
+                                               propeller_4_y, 
+                                               propeller_4_z}; 
+    asv_propeller_init(&world->asv.propeller[3], propeller_position); 
+    asv_set_propeller(&world->asv, world->asv.propeller[3]);
+    fprintf(stdout, "--> propeller 4 created and fixed "
+                    "to asv at position (%f, %f, %f). \n", 
+                    world->asv.propeller[3].position.x, 
+                    world->asv.propeller[3].position.y, 
+                    world->asv.propeller[3].position.y); 
+  }  
+  else 
+  {
+    fprintf(stdout, "--> propeller 4 = NULL.\n");
+  }
+
+  fprintf(stdout, "--> total number of propellers = %i. \n", 
+          world->asv.count_propellers);
+  
   fprintf(stdout, "--> M(kg) [%f, %f, %f, %f, %f, %f].\n", 
           world->asv.dynamics.M[0], 
           world->asv.dynamics.M[1], 
