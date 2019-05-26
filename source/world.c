@@ -150,11 +150,11 @@ void world_init(struct World* world, char* filename)
   val_node = sub_node->children;
   if(val_node != NULL)
   {
-    if(strcmp(val_node->content, "true"))
+    if(atoi(val_node->content))
     {
       is_wave_spectrum_based_on_wind = true;
     }
-    else if(strcmp(val_node->content, "false"))
+    else if(atoi(val_node->content))
     {
       is_wave_spectrum_based_on_wind = false;
     } 
@@ -217,6 +217,28 @@ void world_init(struct World* world, char* filename)
   else
   {
     fprintf(stdout, "--> peak wave spectral frequency = n/a.\n");
+  }
+  // Wave heading.
+  double wave_heading = 0.0;
+  bool is_wave_heading_available = false;
+  sub_node = sub_node->next; // This should be heading
+  if(strcmp(sub_node->name, "heading"))
+  {
+    fprintf(stderr,
+            "Error. Incorrect xml schema. "
+            "Expected node heading but found %s. \n",sub_node->name);
+    exit(1);
+  }
+  val_node = sub_node->children;
+  if(val_node != NULL)
+  {
+    wave_heading = atof(val_node->content);
+    is_wave_heading_available = true;
+    fprintf(stdout, "--> wave heading = %f degree.\n", wave_heading);
+  }
+  else
+  {
+    fprintf(stdout, "--> wave heading = n/a.\n");
   }
  
   // ASV data  
@@ -647,7 +669,7 @@ void world_init(struct World* world, char* filename)
   }
   if(is_wave_spectrum_based_on_wind)
   {
-    if(world->wind)
+    if(!world->wind)
     {
       fprintf(stderr, "Error. Missing data. " 
                       "Wave model is based on wind but found no wind data. \n");
@@ -660,20 +682,54 @@ void world_init(struct World* world, char* filename)
   else if(is_sig_wave_ht_available)
   {
     world->wave = (struct Wave*)malloc(sizeof(struct Wave));
-    wave_init_with_sig_wave_ht(world->wave, sig_wave_height);
+    if(is_wave_heading_available)
+    {
+      wave_init_with_sig_wave_ht(world->wave, 
+                                 sig_wave_height, 
+                                 wave_heading * PI/180.0);
+    }
+    else
+    {
+      wave_init_with_sig_wave_ht(world->wave, sig_wave_height, 0.0);
+    }
+
     fprintf(stdout, "--> wave model created based on "
                     "significant wave height.\n");
   }
   else if(is_peak_spectral_freq_available)
   {
     world->wave = (struct Wave*)malloc(sizeof(struct Wave));
-    wave_init_with_peak_freq(world->wave, peak_spectral_freq);
+    if(is_wave_heading_available)
+    {
+      wave_init_with_peak_freq(world->wave, 
+                               peak_spectral_freq, 
+                               wave_heading * PI/180.0);
+    }
+    else
+    {
+      wave_init_with_peak_freq(world->wave, peak_spectral_freq, 0.0);
+    }
+
     fprintf(stdout, "--> wave model created based on "
                     "peak spectral frequency.\n");
   }
   else
   {
     fprintf(stdout, "--> wave model = NULL.\n");
+  }
+  if(world->wave)
+  {
+    fprintf(stdout, "--> significant wave height = %f m. \n", 
+            world->wave->significant_wave_height);
+    fprintf(stdout, "--> peak spectral frequency = %f Hz. \n",
+            world->wave->peak_spectral_frequency);
+    fprintf(stdout, "--> lower limit (0.1%%) of spectral energy threshold "
+                    "= %f Hz. \n", world->wave->min_spectral_frequency);
+    fprintf(stdout, "--> upper limit (99.9%%) of spectral energy threshold "
+                    "= %f Hz. \n", world->wave->max_spectral_frequency);
+    fprintf(stdout, "--> wave spread (%f degree, %f degree). \n",
+                    world->wave->min_spectral_wave_heading * 180.0/PI,
+                    world->wave->max_spectral_wave_heading * 180.0/PI);
   }
 
   // Create ASV model

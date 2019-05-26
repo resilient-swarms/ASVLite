@@ -12,6 +12,7 @@
     <wind type="xs:boolean"></wind>
     <sig_wave_ht type="xs:decimal"></sig_wave_ht>
     <peak_spectral_freq type="xs:decimal"></peak_spectral_freq>
+    <heading type="xs:decimal"></heading>
   </wave>
   <asv_spec>
     <L_wl type="xs:decimal"></L_wl>
