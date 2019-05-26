@@ -68,7 +68,7 @@ void world_init(struct World* world, char* filename)
   {
     wind_direction = atof(val_node->content);
     is_wind_direction_available = true;
-    fprintf(stdout, "--> wind direction = %f radians.\n", wind_direction);
+    fprintf(stdout, "--> wind direction = %f degree.\n", wind_direction);
   }
   else
   {
@@ -121,7 +121,7 @@ void world_init(struct World* world, char* filename)
   {
     current_direction = atof(val_node->content);
     is_current_direction_available = true;
-    fprintf(stdout, "--> current direction = %f radians.\n", current_direction);
+    fprintf(stdout, "--> current direction = %f degree.\n", current_direction);
   }
   else
   {
@@ -618,8 +618,12 @@ void world_init(struct World* world, char* filename)
   if(is_wind_speed_available && is_wind_direction_available)
   {
     world->wind = (struct Wind*)malloc(sizeof(struct Wind));
-    wind_init(world->wind, wind_speed, wind_direction);
-    fprintf(stdout, "--> wind model created.\n");
+    wind_init(world->wind, wind_speed, wind_direction * PI/180.0);
+    fprintf(stdout, "--> wind model created with wind speed of %f m/s and "
+                    "direction of %f radians (%f degree).\n", 
+                    world->wind->speed, 
+                    world->wind->direction, 
+                    world->wind->direction * 180.0 / PI);
   }
   else
   {
@@ -628,8 +632,12 @@ void world_init(struct World* world, char* filename)
   if(is_current_speed_available && is_current_direction_available)
   {
     world->current = (struct Current*)malloc(sizeof(struct Current));
-    current_init(world->current, current_speed, current_direction);
-    fprintf(stdout, "--> current model created.\n");
+    current_init(world->current, current_speed, current_direction * PI/180.0);
+    fprintf(stdout, "--> current model created with current speed of %f m/s "
+                    "and direction of %f radians (%f degree).\n",
+                    world->current->speed,
+                    world->current->direction,
+                    world->current->direction * 180.0 / PI);
   }
   else
   {
