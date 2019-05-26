@@ -1,42 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <world>
   <wind>
-    <speed></speed>
-    <direction></direction> 
+    <speed type="xs:decimal"></speed>
+    <direction type="xs:decimal"></direction> 
   </wind>
   <current>
-    <speed></speed>
-    <direction></direction>
+    <speed type="xs:decimal"></speed>
+    <direction type="xs:decimal"></direction>
   </current>
   <wave>
-    <wind></wind>
-    <sig_wave_ht></sig_wave_ht>
-    <peak_spectral_freq></peak_spectral_freq>
+    <wind type="xs:boolean"></wind>
+    <sig_wave_ht type="xs:decimal"></sig_wave_ht>
+    <peak_spectral_freq type="xs:decimal"></peak_spectral_freq>
   </wave>
   <asv_spec>
-    <L_wl></L_wl>
-    <B_wl></B_wl>
-    <D></D>
-    <T></T>
-    <max_speed></max_speed>
-    <disp></disp>
-    <r_roll></r_roll>
-    <r_pitch></r_pitch>
-    <r_yaw></r_yaw>
+    <L_wl type="xs:decimal"></L_wl>
+    <B_wl type="xs:decimal"></B_wl>
+    <D type="xs:decimal"></D>
+    <T type="xs:decimal"></T>
+    <max_speed type="xs:decimal"></max_speed>
+    <disp type="xs:decimal"></disp>
+    <r_roll type="xs:decimal"></r_roll>
+    <r_pitch type="xs:decimal"></r_pitch>
+    <r_yaw type="xs:decimal"></r_yaw>
     <cog>
-      <x></x>
-      <y></y>
-      <z></z>
+      <x type="xs:decimal"></x>
+      <y type="xs:decimal"></y>
+      <z type="xs:decimal"></z>
     </cog>
   </asv_spec>
   <asv_position>
-    <x></x>
-    <y></y>
-    <z></z>
+    <x type="xs:decimal"></x>
+    <y type="xs:decimal"></y>
+    <z type="xs:decimal"></z>
   </asv_position>
   <asv_attitude>
-    <heel></heel>
-    <trim></trim>
-    <heading></heading>
-  </asv_attitude>:w
+    <heel type="xs:decimal"></heel>
+    <trim type="xs:decimal"></trim>
+    <heading type="xs:decimal"></heading>
+  </asv_attitude>
 </world>
