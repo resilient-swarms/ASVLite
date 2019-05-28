@@ -604,7 +604,6 @@ void asv_set_attitude(struct Asv* asv, struct Attitude attitude)
 
 void asv_set_dynamics(struct Asv* asv, double time)
 {
-  /*
   if(asv->wave)
   {
     // Get the wave force for the current time step
@@ -616,7 +615,6 @@ void asv_set_dynamics(struct Asv* asv, double time)
     // Get the wind force for the current time step
     set_wind_force(asv);
   }
-  */
   
   // Get the propeller force for the current time step
   set_propeller_force(asv);
@@ -627,7 +625,7 @@ void asv_set_dynamics(struct Asv* asv, double time)
   // Compute the restoring force for the current time step based on the position
   // reading
   set_restoring_force(asv);
-  
+
   // Compute the net force for the current time step
   set_net_force(asv);
   
