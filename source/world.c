@@ -1204,6 +1204,7 @@ void world_clean(struct World* world)
   }
   if(world->wave)
   {
+    wave_clean(world->wave);
     free(world->wave);
   }
 }

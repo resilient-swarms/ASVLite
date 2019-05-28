@@ -76,6 +76,11 @@ void wave_init_with_peak_freq(struct Wave* wave,
                               double wave_heading);
 
 /**
+ * Free memory allocated.
+ */
+void wave_clean(struct Wave* wave);
+
+/**
  * Get sea surface elevation at the given location for the given time. 
  * @param wave is the pointer to the irregular sea surface wave. Assumes wave to
  * be not a null pointer.

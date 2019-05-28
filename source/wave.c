@@ -133,3 +133,8 @@ double wave_get_elevation(struct Wave* wave,
   return elevation;
 }
 
+void wave_clean(struct Wave* wave)
+{
+  free(wave->spectrum);
+}
+
