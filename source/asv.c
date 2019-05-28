@@ -288,13 +288,14 @@ static void set_wave_force(struct Asv* asv, double time)
   {
     for(int j = 0; j < COUNT_WAVE_SPECTRAL_FREQUENCIES; ++j)
     {
+      struct Regular_wave* reg_wave = asv->wave->spectrum + 
+                                      (i * COUNT_WAVE_SPECTRAL_DIRECTIONS + j);
       // Compute the encounter frequency
-      double angle = asv->wave->spectrum[i][j].direction - 
-                     asv->attitude.heading;
+      double angle = reg_wave->direction - asv->attitude.heading;
       // Better to keep angle +ve
       angle = (angle < 0.0)? 2*PI + angle : angle;
       // Get encounter frequency
-      double freq = get_encounter_frequency(asv->wave->spectrum[i][j].frequency,
+      double freq = get_encounter_frequency(reg_wave->frequency,
                                             asv->dynamics.V[surge], angle);
 
       // Get the index for unit wave force for the encounter frequency
@@ -304,11 +305,10 @@ static void set_wave_force(struct Asv* asv, double time)
       int index = round(freq/freq_step_size);
 
       // Compute the scaling factor to compute the wave force from unit wave
-      double scale = asv->wave->spectrum[i][j].amplitude * 2.0;
+      double scale = reg_wave->amplitude * 2.0;
 
       // Assume the wave force to be have zero phase lag with the wave
-      double phase = regular_wave_get_phase(&asv->wave->spectrum[i][j], 
-                                            &asv->cog_position, time);
+      double phase = regular_wave_get_phase(reg_wave, &asv->cog_position, time);
       
       // Compute wave force
       for(int k = 0; k < COUNT_DOF; ++k)

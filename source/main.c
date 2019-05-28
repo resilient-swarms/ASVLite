@@ -39,18 +39,19 @@ int main(int argc, char** argv)
   fprintf(stdout, "Star simulation: \n");
   
   double frame_length = 10.0; // time duration of each frame in milli-seconds 
-  double duration = 120.0; // time duration of animation.
+  double duration = 600.0; // time duration of animation.
   fprintf(stdout, "--> frame duration = %f milli_seconds. \n", frame_length);
   fprintf(stdout, "--> simulation duration = %f seconds. \n", duration);
   
-  fprintf(fp, "time cog_x cog_y cog_z heel trim heading \n");
+  fprintf(fp, "time wave_elevation cog_x cog_y cog_z heel trim heading \n");
   clock_t start, end;
   for(double t = 0.0; t < duration; t += (frame_length/1000.0))
   {
     start = clock();
     world_set_frame(&world, t);
-    fprintf(fp, "%f %f %f %f %f %f %f \n", 
+    fprintf(fp, "%f %f %f %f %f %f %f %f \n", 
             t, 
+            wave_get_elevation(world.wave, &world.asv.cog_position, t),
             world.asv.cog_position.x, 
             world.asv.cog_position.y, 
             world.asv.cog_position.z, 

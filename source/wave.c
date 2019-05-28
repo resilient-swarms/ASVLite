@@ -10,6 +10,10 @@ static void wave_init(struct Wave* wave,
                       double peak_spectral_frequency,
                       double wave_heading)
 {
+  // Allocate space for spectrum
+  wave->spectrum = (struct Regular_wave*)malloc(COUNT_WAVE_SPECTRAL_DIRECTIONS * 
+                                                COUNT_WAVE_SPECTRAL_FREQUENCIES*
+                                                sizeof(struct Regular_wave));
   double major_wave_direction = (wind == NULL)? wave_heading : wind->direction;
   wave->min_spectral_wave_heading = major_wave_direction - PI/2.0;
   wave->max_spectral_wave_heading = major_wave_direction + PI/2.0;
@@ -88,7 +92,8 @@ static void wave_init(struct Wave* wave,
       // Create a wave
       double amplitude = sqrt(2.0 * S * G_spectrum); 
       double phase = rand(); 
-      regular_wave_init(wave->spectrum[i]+j, amplitude, f, phase, mu);
+      regular_wave_init(wave->spectrum+(i * COUNT_WAVE_SPECTRAL_DIRECTIONS + j), 
+                        amplitude, f, phase, mu);
     }
   }
 }
@@ -121,9 +126,8 @@ double wave_get_elevation(struct Wave* wave,
   {
     for(int j = 0; j < COUNT_WAVE_SPECTRAL_FREQUENCIES; ++j)
     {
-      elevation += regular_wave_get_elevation(wave->spectrum[i]+j, 
-                                              location, 
-                                              time);
+      elevation += regular_wave_get_elevation(
+          wave->spectrum+(i*COUNT_WAVE_SPECTRAL_DIRECTIONS+j), location, time);
     }
   }
   return elevation;
