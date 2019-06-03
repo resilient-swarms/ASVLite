@@ -91,7 +91,8 @@ static void wave_init(struct Wave* wave,
       
       // Create a wave
       double amplitude = sqrt(2.0 * S * G_spectrum); 
-      double phase = rand(); 
+      double phase = rand()%(COUNT_WAVE_SPECTRAL_DIRECTIONS * 
+                             COUNT_WAVE_SPECTRAL_FREQUENCIES); 
       regular_wave_init(wave->spectrum+(i * COUNT_WAVE_SPECTRAL_DIRECTIONS + j), 
                         amplitude, f, phase, mu);
     }
