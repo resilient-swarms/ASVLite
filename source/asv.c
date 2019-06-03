@@ -70,7 +70,7 @@ static void set_mass(struct Asv* asv)
                            SEA_WATER_DENSITY * 
                            a * b * b
                            );
-  double added_mass_heave = added_mass_sway;
+  double added_mass_heave = added_mass_sway*2.0;
   double added_mass_roll = 0.0;
   double added_mass_pitch = fabs(
                             0.5 *
