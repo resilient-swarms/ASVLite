@@ -50,7 +50,7 @@ static void set_mass(struct Asv* asv)
   double a = asv->spec.L_wl/2.0;
   // Find b such the volume of the semi-spheroid is equal to the displacement of
   // the vessel.
-  double b = sqrt((3.0/4.0) * (asv->spec.disp/(PI * a))); 
+  double b = sqrt(((3.0/4.0) * (2.0*asv->spec.disp/(PI * a)))); 
 
   double e = sqrt(1.0 - pow(b/a, 2.0));
   double alpha_0 = (2.0*(1 - e*e)/(e*e*e)) * (0.5*log10((1+e)/(1-e)) - e);
