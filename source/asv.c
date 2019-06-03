@@ -258,7 +258,7 @@ static void set_unit_wave_force(struct Asv* asv)
     double P = SEA_WATER_DENSITY* G* wave.amplitude* exp(wave.wave_number* z);
 
     // Project water plane area
-    double A_heave = 0.5*PI*a*b;
+    double A_heave = PI*a*b;
     // Project trans section area at midship
     double A_surge = 0.5*PI*b*c;
     // Projected buttockline area at CL
