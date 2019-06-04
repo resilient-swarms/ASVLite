@@ -39,7 +39,7 @@ int main(int argc, char** argv)
   fprintf(stdout, "Star simulation: \n");
   
   double frame_length = 10.0; // time duration of each frame in milli-seconds 
-  double duration = 300.0; // time duration of animation.
+  double duration = 1200.0; // time duration of animation.
   fprintf(stdout, "--> frame duration = %f milli_seconds. \n", frame_length);
   fprintf(stdout, "--> simulation duration = %f seconds. \n", duration);
   
