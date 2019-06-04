@@ -51,11 +51,12 @@ static void set_mass(struct Asv* asv)
   // Find b such the volume of the semi-spheroid is equal to the displacement of
   // the vessel.
   double b = sqrt(((3.0/4.0) * (2.0*asv->spec.disp/(PI * a)))); 
-
+  
   double e = sqrt(1.0 - pow(b/a, 2.0));
   double alpha_0 = (2.0*(1 - e*e)/(e*e*e)) * (0.5*log10((1+e)/(1-e)) - e);
   double beta_0 = (1.0/(e*e)) - ((1-e*e)/(2*e*e*e)) * log10((1+e)/(1-e));
   
+  /*
   double added_mass_surge = fabs(
                             0.5 * 
                             (alpha_0/(2.0 - alpha_0)) * 
@@ -70,7 +71,64 @@ static void set_mass(struct Asv* asv)
                            SEA_WATER_DENSITY * 
                            a * b * b
                            );
-  double added_mass_heave = added_mass_sway*2.0;
+  double added_mass_heave = added_mass_sway;
+  */
+  // Using the above reference gave incorrect results. The added mass were
+  // greater than the total mass. So use this as ref:
+  // DNVGL-RP-N103 Table A-2 (page 210)
+  // Surge added mass = rho * Ca_axial * disp
+  double C_a_axial = 0.0;
+  double C_a_lateral = 0.0;
+  if(a/b <= 1.0)
+  {
+    C_a_axial = 0.5;
+    C_a_lateral = 0.5;
+  }
+  else if(a/b > 1.0 && a/b <= 1.5)
+  {
+    C_a_axial = 0.5 - (0.5 - 0.304)/(0.5)*(a/b - 1.0);
+    C_a_lateral = 0.5 + (0.622 - 0.5)/(0.5)*(a/b - 1.0);
+  }
+  else if(a/b > 1.5 && a/b <= 2.0)
+  {
+    C_a_axial = 0.304 - (0.304 - 0.210)/(0.5)*(a/b - 1.5);
+    C_a_lateral = 0.622 + (0.704 - 0.622)/(0.5)*(a/b - 1.5);
+  }
+  else if(a/b > 2.0 && a/b <= 2.5)
+  {
+    C_a_axial = 0.210 - (0.210 - 0.156)/(0.5)*(a/b - 2.0);
+    C_a_lateral = 0.704 + (0.762- 0.704)/(0.5)*(a/b - 2.0);
+  }
+  else if(a/b > 2.5 && a/b <= 4.0)
+  {
+    C_a_axial = 0.156 - (0.156 - 0.082)/(1.5)*(a/b - 2.5);
+    C_a_lateral = 0.762 + (0.86 - 0.762)/(1.5)*(a/b - 2.5);
+  }
+  else if(a/b > 4.0 && a/b <= 5.0)
+  {
+    C_a_axial = 0.082 - (0.082 - 0.059)/(1.0)*(a/b - 4.0);
+    C_a_lateral = 0.86 + (0.894 - 0.86)/(1.0)*(a/b - 4.0);
+  }
+  else if(a/b > 5.0 && a/b <= 6.0)
+  {
+    C_a_axial = 0.059 - (0.059 - 0.045)/(1.0)*(a/b - 5.0);
+    C_a_lateral = 0.894 + (0.917 - 0.894)/(1.0)*(a/b - 5.0);
+  }
+  else if(a/b > 6.0 && a/b <= 7.0)
+  {
+    C_a_axial = 0.045 - (0.045 - 0.036)/(1.0)*(a/b - 6.0);
+    C_a_lateral = 0.917 + (0.933 - 0.917)/(1.0)*(a/b - 6.0);
+  }
+  else
+  {
+    C_a_axial = 0.036 - (0.036 - 0.029)/(1.0)*(a/b - 7.0);
+    C_a_lateral = 0.933 + (0.945 - 0.933)/(1.0)*(a/b - 7.0);
+  }
+
+  double added_mass_surge= 0.5 * SEA_WATER_DENSITY * C_a_axial * asv->spec.disp;
+  double added_mass_sway = 0.5 *SEA_WATER_DENSITY * C_a_lateral * asv->spec.disp;
+  double added_mass_heave= SEA_WATER_DENSITY * C_a_lateral * asv->spec.disp;
+
   double added_mass_roll = 0.0;
   double added_mass_pitch = fabs(
                             0.5 *
@@ -265,9 +323,9 @@ static void set_unit_wave_force(struct Asv* asv)
     double A_sway = 0.5*PI*a*c;
 
     // Surge force 
-    asv->dynamics.F_unit_wave[i][surge] = A_surge * P;
+    asv->dynamics.F_unit_wave[i][surge] = A_surge * P * 0.0;
     // Sway force
-    asv->dynamics.F_unit_wave[i][sway] = A_sway * P;
+    asv->dynamics.F_unit_wave[i][sway] = A_sway * P * 0.0;
     // Heave force
     asv->dynamics.F_unit_wave[i][heave] = A_heave * P;
     // roll, pitch and yaw moments assumed as zero
