@@ -323,9 +323,9 @@ static void set_unit_wave_force(struct Asv* asv)
     double A_sway = 0.5*PI*a*c;
 
     // Surge force 
-    asv->dynamics.F_unit_wave[i][surge] = A_surge * P * 0.0;
+    asv->dynamics.F_unit_wave[i][surge] = A_surge * P;
     // Sway force
-    asv->dynamics.F_unit_wave[i][sway] = A_sway * P * 0.0;
+    asv->dynamics.F_unit_wave[i][sway] = A_sway * P;
     // Heave force
     asv->dynamics.F_unit_wave[i][heave] = A_heave * P;
     // roll, pitch and yaw moments assumed as zero
