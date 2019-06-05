@@ -318,9 +318,9 @@ static void set_unit_wave_force(struct Asv* asv)
     // Project water plane area
     double A_heave = PI*a*b;
     // Project trans section area at midship
-    double A_surge = 0.5 * 0.5*PI*b*c;
+    double A_surge = 0.5*PI*b*c;
     // Projected buttockline area at CL
-    double A_sway = 0.5 * 0.5*PI*a*c;
+    double A_sway = 0.5*PI*a*c;
 
     // Surge force 
     asv->dynamics.F_unit_wave[i][surge] = A_surge * P;
@@ -371,26 +371,26 @@ static void set_wave_force(struct Asv* asv, double time)
                                                 time); // wave phase at the cog
                                                        // position.
       struct Point point_aft = asv->cog_position;
-      point_aft.x -= (asv->spec.L_wl/4.0)*cos(asv->attitude.heading);
-      point_aft.y -= (asv->spec.L_wl/4.0)*sin(asv->attitude.heading);
+      point_aft.x -= (asv->spec.L_wl*0.15)*cos(asv->attitude.heading);
+      point_aft.y -= (asv->spec.L_wl*0.15)*sin(asv->attitude.heading);
       double phase_aft = regular_wave_get_phase(reg_wave, 
                                                 &point_aft, 
                                                 time);
       struct Point point_fore = asv->cog_position;
-      point_fore.x += (asv->spec.L_wl/4.0)*cos(asv->attitude.heading);
-      point_fore.y += (asv->spec.L_wl/4.0)*sin(asv->attitude.heading);
+      point_fore.x += (asv->spec.L_wl*0.15)*cos(asv->attitude.heading);
+      point_fore.y += (asv->spec.L_wl*0.15)*sin(asv->attitude.heading);
       double phase_fore = regular_wave_get_phase(reg_wave, 
                                                  &point_fore, 
                                                  time);
       struct Point point_ps = asv->cog_position;
-      point_ps.x -= (asv->spec.B_wl/4.0)*sin(asv->attitude.heading);
-      point_ps.y += (asv->spec.B_wl/4.0)*cos(asv->attitude.heading);
+      point_ps.x -= (asv->spec.B_wl*0.15)*sin(asv->attitude.heading);
+      point_ps.y += (asv->spec.B_wl*0.15)*cos(asv->attitude.heading);
       double phase_ps = regular_wave_get_phase(reg_wave, 
                                                &point_ps, 
                                                time);
       struct Point point_sb = asv->cog_position;
-      point_sb.x += (asv->spec.B_wl/4.0)*sin(asv->attitude.heading);
-      point_sb.y -= (asv->spec.B_wl/4.0)*cos(asv->attitude.heading);
+      point_sb.x += (asv->spec.B_wl*0.15)*sin(asv->attitude.heading);
+      point_sb.y -= (asv->spec.B_wl*0.15)*cos(asv->attitude.heading);
       double phase_sb = regular_wave_get_phase(reg_wave, 
                                                &point_sb, 
                                                time);
