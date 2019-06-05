@@ -68,7 +68,7 @@ void world_init(struct World* world, char* filename)
   {
     wind_direction = atof(val_node->content);
     is_wind_direction_available = true;
-    fprintf(stdout, "--> wind direction = %f degree from North.\n", 
+    fprintf(stdout, "--> wind direction = %f deg from North.\n", 
             wind_direction);
   }
   else
@@ -122,7 +122,7 @@ void world_init(struct World* world, char* filename)
   {
     current_direction = atof(val_node->content);
     is_current_direction_available = true;
-    fprintf(stdout, "--> current direction = %f degree from North.\n", 
+    fprintf(stdout, "--> current direction = %f deg from North.\n", 
             current_direction);
   }
   else
@@ -234,7 +234,7 @@ void world_init(struct World* world, char* filename)
   {
     wave_heading = atof(val_node->content);
     is_wave_heading_available = true;
-    fprintf(stdout, "--> wave heading = %f degree.\n", wave_heading);
+    fprintf(stdout, "--> wave heading = %f deg.\n", wave_heading);
   }
   else
   {
@@ -907,7 +907,7 @@ void world_init(struct World* world, char* filename)
   {
     heel = atof(xmlNodeGetContent(val_node));
     is_heel_available = true;
-    fprintf(stdout, "--> asv heel = %f radians.\n", heel);
+    fprintf(stdout, "--> asv heel = %f deg.\n", heel);
   }
   else
   {
@@ -928,7 +928,7 @@ void world_init(struct World* world, char* filename)
   {
     trim = atof(xmlNodeGetContent(val_node));
     is_trim_available = true;
-    fprintf(stdout, "--> asv trim = %f radians.\n", trim);
+    fprintf(stdout, "--> asv trim = %f deg.\n", trim);
   }
   else
   {
@@ -949,7 +949,7 @@ void world_init(struct World* world, char* filename)
   {
     heading = atof(xmlNodeGetContent(val_node));
     is_heading_available = true;
-    fprintf(stdout, "--> asv heading = %f radians.\n", heading);
+    fprintf(stdout, "--> asv heading = %f deg.\n", heading);
   }
   else
   {
@@ -967,13 +967,13 @@ void world_init(struct World* world, char* filename)
     world->wind = (struct Wind*)malloc(sizeof(struct Wind));
     wind_init(world->wind, wind_speed, wind_direction * PI/180.0);
     fprintf(stdout, "--> wind model created with wind speed of %f m/s and "
-                    "direction of %f radians (%f degree) from North.\n", 
+                    "direction of %f rad (%f deg) from North.\n", 
                     world->wind->speed, 
                     world->wind->direction, 
                     world->wind->direction * 180.0 / PI);
   }
   else
-  {
+  { 
     fprintf(stdout, "--> wind model = NULL.\n");
   }
   if(is_current_speed_available && is_current_direction_available)
@@ -981,7 +981,7 @@ void world_init(struct World* world, char* filename)
     world->current = (struct Current*)malloc(sizeof(struct Current));
     current_init(world->current, current_speed, current_direction * PI/180.0);
     fprintf(stdout, "--> current model created with current speed of %f m/s "
-                    "and direction of %f radians (%f degree) from North.\n",
+                    "and direction of %f rad (%f deg) from North.\n",
                     world->current->speed,
                     world->current->direction,
                     world->current->direction * 180.0 / PI);
@@ -1070,7 +1070,8 @@ void world_init(struct World* world, char* filename)
     asv_propeller_init(&world->asv.propeller[0], propeller_position); 
     asv_set_propeller(&world->asv, world->asv.propeller[0]);
     fprintf(stdout, "--> propeller 1 created and fixed "
-                    "to asv at position (%f, %f, %f). \n", 
+                    "to asv at position (%f m, %f m, %f m) "
+                    "with respect to body-fixed frame. \n", 
                     world->asv.propeller[0].position.x, 
                     world->asv.propeller[0].position.y, 
                     world->asv.propeller[0].position.y); 
@@ -1089,7 +1090,8 @@ void world_init(struct World* world, char* filename)
     asv_propeller_init(&world->asv.propeller[1], propeller_position); 
     asv_set_propeller(&world->asv, world->asv.propeller[1]);
     fprintf(stdout, "--> propeller 2 created and fixed "
-                    "to asv at position (%f, %f, %f). \n", 
+                    "to asv at position (%f m, %f m, %f m) "
+                    "with reference to body-fixed frame. \n", 
                     world->asv.propeller[1].position.x, 
                     world->asv.propeller[1].position.y, 
                     world->asv.propeller[1].position.y); 
@@ -1109,7 +1111,8 @@ void world_init(struct World* world, char* filename)
     asv_propeller_init(&world->asv.propeller[2], propeller_position); 
     asv_set_propeller(&world->asv, world->asv.propeller[2]);
     fprintf(stdout, "--> propeller 3 created and fixed "
-                    "to asv at position (%f, %f, %f). \n", 
+                    "to asv at position (%f m, %f m, %f m) "
+                    "with reference to body-fixed frame. \n", 
                     world->asv.propeller[2].position.x, 
                     world->asv.propeller[2].position.y, 
                     world->asv.propeller[2].position.y); 
@@ -1129,7 +1132,8 @@ void world_init(struct World* world, char* filename)
     asv_propeller_init(&world->asv.propeller[3], propeller_position); 
     asv_set_propeller(&world->asv, world->asv.propeller[3]);
     fprintf(stdout, "--> propeller 4 created and fixed "
-                    "to asv at position (%f, %f, %f). \n", 
+                    "to asv at position (%f, %f, %f) "
+                    "with reference to body-fixed frame. \n", 
                     world->asv.propeller[3].position.x, 
                     world->asv.propeller[3].position.y, 
                     world->asv.propeller[3].position.y); 
@@ -1142,21 +1146,22 @@ void world_init(struct World* world, char* filename)
   fprintf(stdout, "--> total number of propellers = %i. \n", 
           world->asv.count_propellers);
   
-  fprintf(stdout, "--> M(kg) [%f, %f, %f, %f, %f, %f].\n", 
+  fprintf(stdout, "--> M [%f Kg, %f Kg, %f Kg, %f Kg.m2, %f Kg.m2, %f Kg.m2].\n", 
           world->asv.dynamics.M[0], 
           world->asv.dynamics.M[1], 
           world->asv.dynamics.M[2], 
           world->asv.dynamics.M[3], 
           world->asv.dynamics.M[4], 
           world->asv.dynamics.M[5]); 
-  fprintf(stdout, "--> C(kg/m) [%f, %f, %f, %f, %f, %f].\n", 
+  fprintf(stdout, "--> C [%f Kg/m, %f Kg/m, %f Kg/m, %f, %f, %f].\n", 
           world->asv.dynamics.C[0], 
           world->asv.dynamics.C[1], 
           world->asv.dynamics.C[2], 
           world->asv.dynamics.C[3], 
           world->asv.dynamics.C[4], 
           world->asv.dynamics.C[5]); 
-  fprintf(stdout, "--> K(N/m) [%f, %f, %f, %f, %f, %f].\n", 
+  fprintf(stdout, "--> K [%f N/m, %f N/m, %f N/m, "
+                  "%f N.m/rad, %f N.m/rad, %f N.m/rad].\n", 
           world->asv.dynamics.K[0], 
           world->asv.dynamics.K[1], 
           world->asv.dynamics.K[2], 
@@ -1170,21 +1175,22 @@ void world_init(struct World* world, char* filename)
     struct Point position = (struct Point){x,y,z};
     asv_set_position(&world->asv,position);
   }
-  fprintf(stdout, "--> position set to (%f, %f, %f).\n", 
+  fprintf(stdout, "--> position set to (%f m, %f m, %f m).\n", 
           world->asv.origin_position.x,
           world->asv.origin_position.y,
           world->asv.origin_position.z);
   // Set attitude
   if(is_heel_available && is_trim_available && is_heading_available)
   {
-    struct Attitude attitude = (struct Attitude){heel, trim, heading};
+    struct Attitude attitude = (struct Attitude){heel * PI/180.0, 
+                                                 trim * PI/180.0, 
+                                                 heading * PI/180.0};
     asv_set_attitude(&world->asv, attitude);
-    fprintf(stdout, "--> attitude set to (%f, %f, %f).\n", heel,trim,heading);
   }
-  else
-  {
-    fprintf(stdout, "--> attitude set to (0.0, 0.0, 0.0).\n");
-  }
+  fprintf(stdout, "--> attitude set to (%f rad, %f rad, %f rad).\n", 
+          world->asv.attitude.heel, 
+          world->asv.attitude.trim,
+          world->asv.attitude.heading);
 }
 
 void world_set_frame(struct World* world, double time)
