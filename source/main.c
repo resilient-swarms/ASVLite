@@ -3,6 +3,7 @@
 #include <time.h>
 #include "world.h"
 #include "asv.h"
+#include "constants.h"
 
 int main(int argc, char** argv)
 {
@@ -43,14 +44,14 @@ int main(int argc, char** argv)
   fprintf(stdout, "--> frame duration = %f milli_seconds. \n", frame_length);
   fprintf(stdout, "--> simulation duration = %f seconds. \n", duration);
   
-  fprintf(fp, "#[1]time  "
-               "[2]wave_elevation  " 
-               "[3]cog_x  "
-               "[4]cog_y  "
-               "[5]cog_z  "
-               "[6]heel  "
-               "[7]trim  "
-               "[8]heading \n");
+  fprintf(fp, "#[1]time(sec)  "
+               "[2]wave_elevation(m)  " 
+               "[3]cog_x(m)  "
+               "[4]cog_y(m)  "
+               "[5]cog_z(m)  "
+               "[6]heel(deg)  "
+               "[7]trim(deg)  "
+               "[8]heading(deg) \n");
   clock_t start, end;
   for(double t = 0.0; t < duration; t += (frame_length/1000.0))
   {
@@ -69,9 +70,9 @@ int main(int argc, char** argv)
             world.asv.cog_position.x, 
             world.asv.cog_position.y, 
             world.asv.cog_position.z, 
-            world.asv.attitude.heel, 
-            world.asv.attitude.trim, 
-            world.asv.attitude.heading); 
+            world.asv.attitude.heel * 180.0/PI, 
+            world.asv.attitude.trim * 180.0/PI, 
+            world.asv.attitude.heading * 180.0/PI); 
     end = clock();
   }
   fprintf(stdout, "--> time taken per simulation cycle = %f milli-sec. \n", 
