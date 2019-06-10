@@ -431,15 +431,16 @@ static void set_wind_force_all_directions(struct Asv* asv)
 
   for(int i = 0; i < 360; ++i)
   {
-    double angle = (PI/180.0) * i; // radians 
+    double angle = (PI/180.0) * i; // direction at which the wind is blowing to 
+                                   // in radians.
     // Resolve the wind velocity along the x and y direction (body-frame used)
     double v_x = asv->wind->speed * cos(angle);
     double v_y = asv->wind->speed * sin(angle);
 
     // Calculate forces
     double C = 1.16; // Drag coefficient
-    double f_surge = 0.5 * AIR_DENSITY * C * A_surge * v_x * v_x;
-    double f_sway  = 0.5 * AIR_DENSITY * C * A_sway * v_y * v_y;
+    double f_surge = 0.5 * AIR_DENSITY * C * A_surge * v_x * fabs(v_x);
+    double f_sway  = 0.5 * AIR_DENSITY * C * A_sway * v_y * fabs(v_y);
     double f_roll  = f_sway * h_roll;
     double f_pitch = f_surge * h_pitch;  
     asv->dynamics.F_wind_all_directions[i][surge] = f_surge;
@@ -454,12 +455,20 @@ static void set_wind_force_all_directions(struct Asv* asv)
 static void set_wind_force(struct Asv* asv)
 {
   // Compute the wind angle with respect to ASV
-  double angle = asv->wind->direction - asv->attitude.heading;
+  double wind_direction_from = asv->wind->direction;
+  double wind_direction_to = (asv->wind->direction < PI) ? 
+                              PI + asv->wind->direction :
+                              asv->wind->direction - PI;
+  double wind_direction_wrt_asv = wind_direction_to - asv->attitude.heading ;// 
+                                  // wind direction the wind is blowing to with 
+                                  // respect to the asv.
   // Better to keep angle +ve
-  angle = (angle < 0.0)? 2*PI + angle : angle;
+  wind_direction_wrt_asv = (wind_direction_wrt_asv < 0.0)? 
+                            2*PI + wind_direction_wrt_asv : 
+                            wind_direction_wrt_asv;
 
   // Compute the index to get the wind force 
-  int index = round(angle);
+  int index = round(wind_direction_wrt_asv * 180.0/PI);
 
   asv->dynamics.F_wind = asv->dynamics.F_wind_all_directions[index];
 }
@@ -569,10 +578,11 @@ static void set_deflection(struct Asv* asv, double time)
 // Compute deflection in global frame and set position of origin and cog.
 static void set_position(struct Asv* asv)
 {
-  double deflection_x = asv->dynamics.X[surge]*sin(asv->attitude.heading) - 
+  double deflection_x = asv->dynamics.X[surge]*sin(asv->attitude.heading) +
                         asv->dynamics.X[sway]*cos(asv->attitude.heading);
-  double deflection_y = asv->dynamics.X[surge]*cos(asv->attitude.heading) + 
+  double deflection_y = asv->dynamics.X[surge]*cos(asv->attitude.heading) - 
                         asv->dynamics.X[sway]*sin(asv->attitude.heading);
+                        
   double deflection_z = asv->dynamics.X[heave];
   
   // Update origin position 
