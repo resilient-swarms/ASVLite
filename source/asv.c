@@ -319,8 +319,13 @@ static void set_unit_wave_force(struct Asv* asv)
     double A_heave = PI*a*b;
     // Project trans section area at midship
     double A_surge = 0.5*PI*b*c;
+    // Wave drift with the full projected area is too strong. Reduce the 
+    // projected area to reduce the surge drift force.
+    A_surge = A_surge / 4.0;
     // Projected buttockline area at CL
     double A_sway = 0.5*PI*a*c;
+    // Reduce the projected area to reduce wave drift.
+    A_sway = A_sway / 4.0;
 
     // Surge force 
     asv->dynamics.F_unit_wave[i][surge] = A_surge * P;
