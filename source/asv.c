@@ -404,9 +404,9 @@ static void set_wave_force(struct Asv* asv, double time)
       }
       */
       asv->dynamics.F_wave[surge] += asv->dynamics.F_unit_wave[index][surge] * 
-                                     scale *(cos(phase_fore) - cos(phase_aft));
+                                     scale *(cos(phase_aft) - cos(phase_fore));
       asv->dynamics.F_wave[sway] += asv->dynamics.F_unit_wave[index][sway] * 
-                                     scale *(cos(phase_ps) - cos(phase_sb));
+                                      scale *(cos(phase_ps) - cos(phase_sb));
       asv->dynamics.F_wave[heave] += asv->dynamics.F_unit_wave[index][heave] * 
                                      scale * cos(phase_cog);
 
