@@ -569,10 +569,10 @@ static void set_deflection(struct Asv* asv, double time)
 // Compute deflection in global frame and set position of origin and cog.
 static void set_position(struct Asv* asv)
 {
-  double deflection_x = asv->dynamics.X[surge]*cos(asv->attitude.heading) - 
-                        asv->dynamics.X[sway]*sin(asv->attitude.heading);
-  double deflection_y = asv->dynamics.X[surge]*sin(asv->attitude.heading) + 
+  double deflection_x = asv->dynamics.X[surge]*sin(asv->attitude.heading) - 
                         asv->dynamics.X[sway]*cos(asv->attitude.heading);
+  double deflection_y = asv->dynamics.X[surge]*cos(asv->attitude.heading) + 
+                        asv->dynamics.X[sway]*sin(asv->attitude.heading);
   double deflection_z = asv->dynamics.X[heave];
   
   // Update origin position 
