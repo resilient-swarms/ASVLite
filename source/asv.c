@@ -509,6 +509,8 @@ static void set_propeller_force(struct Asv* asv)
     double M_y = F_x*z + F_z*x;
     double M_z = F_y*x + F_x*y;
 
+    F_y = 0.0;
+    F_z = 0.0;
     asv->dynamics.F_propeller[surge]  += F_x;
     asv->dynamics.F_propeller[sway]   += F_y;
     asv->dynamics.F_propeller[heave]  += F_z;
@@ -594,12 +596,16 @@ static void set_position(struct Asv* asv)
   double deflection_z = asv->dynamics.X[heave];
   
   // Update origin position 
-  asv->origin_position.x += deflection_x;
-  asv->origin_position.y += deflection_y;
-  asv->origin_position.z += deflection_z;
+  asv->cog_position.x += deflection_x;
+  asv->cog_position.y += deflection_y;
+  asv->cog_position.z += deflection_z;
 
-  // Update cog position
-  set_cog(asv); // Match the position of the cog with that of origin
+  // Update origin position
+  double l = sqrt(pow(asv->spec.cog.x, 2.0) + pow(asv->spec.cog.y, 2.0));
+  asv->origin_position.x = asv->cog_position.x - l * sin(asv->attitude.heading);
+  asv->origin_position.y = asv->cog_position.y - l * cos(asv->attitude.heading);
+  asv->origin_position.z = asv->cog_position.z - asv->spec.cog.z;
+  
 }
 
 // Compute the attitude for the current time step
@@ -750,13 +756,13 @@ void asv_set_dynamics(struct Asv* asv, double time)
   
   // Compute the deflection for the current time step in body-fixed frame
   set_deflection(asv, time);
-  
-  // Translate the deflection to global frame and compute the new position.
-  set_position(asv);
-  
+   
   // Compute the new attitude
   set_attitude(asv);
   
+  // Translate the deflection to global frame and compute the new position.
+  set_position(asv);
+ 
   // Update the time
   asv->dynamics.time = time;
 }
