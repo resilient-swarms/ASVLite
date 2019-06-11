@@ -1168,17 +1168,7 @@ void world_init(struct World* world, char* filename)
           world->asv.dynamics.K[3], 
           world->asv.dynamics.K[4], 
           world->asv.dynamics.K[5]); 
-
-  // Set position
-  if(is_x_available && is_y_available && is_z_available)
-  {
-    struct Point position = (struct Point){x,y,z};
-    asv_set_position(&world->asv,position);
-  }
-  fprintf(stdout, "--> position set to (%f m, %f m, %f m).\n", 
-          world->asv.origin_position.x,
-          world->asv.origin_position.y,
-          world->asv.origin_position.z);
+  
   // Set attitude
   if(is_heel_available && is_trim_available && is_heading_available)
   {
@@ -1191,6 +1181,17 @@ void world_init(struct World* world, char* filename)
           world->asv.attitude.heel, 
           world->asv.attitude.trim,
           world->asv.attitude.heading);
+
+  // Set position
+  if(is_x_available && is_y_available && is_z_available)
+  {
+    struct Point position = (struct Point){x,y,z};
+    asv_set_position(&world->asv,position);
+  }
+  fprintf(stdout, "--> position set to (%f m, %f m, %f m).\n", 
+          world->asv.origin_position.x,
+          world->asv.origin_position.y,
+          world->asv.origin_position.z);
 }
 
 void world_set_frame(struct World* world, double time)

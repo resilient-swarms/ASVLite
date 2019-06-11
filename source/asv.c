@@ -24,8 +24,9 @@ static double get_encounter_frequency(double wave_freq,
 static void set_cog(struct Asv* asv)
 {
   // Match the position of the COG with that of the position of the origin.
-  asv->cog_position.x = asv->origin_position.x + asv->spec.cog.x;
-  asv->cog_position.y = asv->origin_position.y + asv->spec.cog.y;
+  double l = sqrt(pow(asv->spec.cog.x, 2.0) + pow(asv->spec.cog.y, 2.0));
+  asv->cog_position.x = asv->origin_position.x + l * sin(asv->attitude.heading);
+  asv->cog_position.y = asv->origin_position.y + l * cos(asv->attitude.heading);
   asv->cog_position.z = asv->origin_position.z + asv->spec.cog.z;
 }
 
@@ -621,6 +622,11 @@ void asv_init(struct Asv* asv,
   
   // Initialise the propellers
   asv->count_propellers = 0;
+  
+  // Initialise the floating attitude of the ASV
+  asv->attitude.heel = 0.0;
+  asv->attitude.trim = 0.0;
+  asv->attitude.heading = 0.0;
 
   // Initialise the position of the ASV
   asv->origin_position.x = 0.0;
@@ -639,11 +645,6 @@ void asv_init(struct Asv* asv,
   }
   // Reset the cog position.
   set_cog(asv); // Match the position of the cog with that of origin
-
-  // Initialise the floating attitude of the ASV
-  asv->attitude.heel = 0.0;
-  asv->attitude.trim = 0.0;
-  asv->attitude.heading = 0.0;
 
   // Initialise time record 
   asv->dynamics.time = 0.0;
