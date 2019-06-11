@@ -493,24 +493,39 @@ static void set_propeller_force(struct Asv* asv)
   {
     double thrust = asv->propellers[i].thrust;
     double trim = asv->propellers[i].orientation.trim;
-    double heading   = asv->propellers[i].orientation.heading;
+    double prop_angle = asv->propellers[i].orientation.heading;
+    double prop_cog_angle = atan(
+        (asv->propellers[i].position.y - asv->spec.cog.y)/
+        (asv->spec.cog.x - asv->propellers[i].position.x));
+    double thrust_cog_angle = prop_cog_angle + prop_angle;
     
-    double F_x = thrust*cos(asv->propellers[i].orientation.trim) *
-                        cos(asv->propellers[i].orientation.heading);
-    double F_y = thrust*cos(asv->propellers[i].orientation.trim) *
-                        sin(asv->propellers[i].orientation.heading);
-    double F_z = thrust*sin(asv->propellers[i].orientation.trim);
+    double F_prop_to_cog = thrust * cos(thrust_cog_angle);
+    double F_x = F_prop_to_cog*cos(asv->propellers[i].orientation.trim) *
+                               cos(prop_cog_angle);
+    double F_y = -F_prop_to_cog*cos(asv->propellers[i].orientation.trim) *
+                               sin(prop_cog_angle);
+    double F_z = F_prop_to_cog*sin(asv->propellers[i].orientation.trim);
     
     double x = asv->spec.cog.x - asv->propellers[i].position.x;
     double y = asv->spec.cog.y - asv->propellers[i].position.y;
     double z = asv->propellers[i].position.z - asv->spec.cog.z;
+ 
+    double F_perp_to_cog = thrust * sin(thrust_cog_angle);
+    double M_x = F_perp_to_cog * 
+                 cos(asv->propellers[i].orientation.trim) * 
+                 cos(prop_cog_angle) * z + 
+                 F_perp_to_cog * sin(asv->propellers[i].orientation.trim) * y;
+    double M_y = F_perp_to_cog * 
+                 cos(asv->propellers[i].orientation.trim) *
+                 sin(prop_cog_angle) * z + 
+                 F_perp_to_cog * sin(asv->propellers[i].orientation.trim) * x; 
+    double M_z = F_perp_to_cog * sqrt(x*x + y*y);
+    if(asv->propellers[i].position.x < asv->spec.cog.x &&
+       asv->propellers[i].orientation.heading < PI)
+    {
+      M_z = -M_z;
+    }
 
-    double M_x = F_y*z + F_z*y;
-    double M_y = F_x*z + F_z*x;
-    double M_z = F_y*x + F_x*y;
-
-    F_y = 0.0;
-    F_z = 0.0;
     asv->dynamics.F_propeller[surge]  += F_x;
     asv->dynamics.F_propeller[sway]   += F_y;
     asv->dynamics.F_propeller[heave]  += F_z;
