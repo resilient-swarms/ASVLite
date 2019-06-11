@@ -55,7 +55,10 @@ int main(int argc, char** argv)
   clock_t start, end;
   for(double t = 0.0; t < duration; t += (frame_length/1000.0))
   {
+    // Start clock to measure time for each simulation step.
     start = clock();
+
+    // Get the wave elevation if wave is simulated.
     double wave_elevation = 0.0;
     if(world.wave)
     {  
@@ -63,7 +66,15 @@ int main(int argc, char** argv)
                                           &world.asv.cog_position, 
                                           t);
     }
+
+    // Set the propeller thrust and orientation.
+    struct Attitude orientation = (struct Attitude){0.0, 0.0, 0.0};
+    asv_propeller_set_thrust(&world.asv.propellers[0], 100.0, orientation);
+    
+    // Get the asv dynamics for the current time step.
     world_set_frame(&world, t);
+
+    // Print the results.
     fprintf(fp, "%f %f %f %f %f %f %f %f \n", 
             t, 
             wave_elevation,
@@ -73,6 +84,8 @@ int main(int argc, char** argv)
             world.asv.attitude.heel * 180.0/PI, 
             world.asv.attitude.trim * 180.0/PI, 
             world.asv.attitude.heading * 180.0/PI); 
+
+    // Stop clock.
     end = clock();
   }
   fprintf(stdout, "--> time taken per simulation cycle = %f milli-sec. \n", 

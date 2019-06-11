@@ -495,13 +495,15 @@ static void set_propeller_force(struct Asv* asv)
     double trim = asv->propellers[i].orientation.trim;
     double heading   = asv->propellers[i].orientation.heading;
     
-    double F_x = thrust*cos(trim)*cos(heading);
-    double F_y = thrust*cos(trim)*sin(heading) ;
-    double F_z = thrust*cos(heading)*sin(trim);
+    double F_x = thrust*cos(asv->propellers[i].orientation.trim) *
+                        cos(asv->propellers[i].orientation.heading);
+    double F_y = thrust*cos(asv->propellers[i].orientation.trim) *
+                        sin(asv->propellers[i].orientation.heading);
+    double F_z = thrust*sin(asv->propellers[i].orientation.trim);
     
-    double x = asv->cog_position.x - asv->propellers[i].position.x;
-    double y = asv->propellers[i].position.y - asv->cog_position.y;
-    double z = asv->propellers[i].position.z - asv->cog_position.z;
+    double x = asv->spec.cog.x - asv->propellers[i].position.x;
+    double y = asv->spec.cog.y - asv->propellers[i].position.y;
+    double z = asv->propellers[i].position.z - asv->spec.cog.z;
 
     double M_x = F_y*z + F_z*y;
     double M_y = F_x*z + F_z*x;
