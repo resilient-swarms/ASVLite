@@ -491,17 +491,17 @@ static void set_propeller_force(struct Asv* asv)
   // Calculate force from each propeller.
   for(int i = 0; i < asv->count_propellers; ++i)
   {
-    double thrust = asv->propeller[i].thrust;
-    double trim = asv->propeller[i].orientation.trim;
-    double heading   = asv->propeller[i].orientation.heading;
+    double thrust = asv->propellers[i].thrust;
+    double trim = asv->propellers[i].orientation.trim;
+    double heading   = asv->propellers[i].orientation.heading;
     
     double F_x = thrust*cos(trim)*cos(heading);
     double F_y = thrust*cos(trim)*sin(heading) ;
     double F_z = thrust*cos(heading)*sin(trim);
     
-    double x = asv->cog_position.x - asv->propeller[i].position.x;
-    double y = asv->propeller[i].position.y - asv->cog_position.y;
-    double z = asv->propeller[i].position.z - asv->cog_position.z;
+    double x = asv->cog_position.x - asv->propellers[i].position.x;
+    double y = asv->propellers[i].position.y - asv->cog_position.y;
+    double z = asv->propellers[i].position.z - asv->cog_position.z;
 
     double M_x = F_y*z + F_z*y;
     double M_y = F_x*z + F_z*x;
@@ -788,7 +788,7 @@ int asv_set_propeller(struct Asv* asv, struct Asv_propeller propeller)
     return 0;
   }
   
-  asv->propeller[asv->count_propellers] = propeller;
+  asv->propellers[asv->count_propellers] = propeller;
   ++asv->count_propellers;
   
   return 1;

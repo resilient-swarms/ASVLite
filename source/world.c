@@ -1067,14 +1067,14 @@ void world_init(struct World* world, char* filename)
     struct Point propeller_position = (struct Point){propeller_1_x, 
                                                      propeller_1_y, 
                                                      propeller_1_z}; 
-    asv_propeller_init(&world->asv.propeller[0], propeller_position); 
-    asv_set_propeller(&world->asv, world->asv.propeller[0]);
+    asv_propeller_init(&world->asv.propellers[0], propeller_position); 
+    asv_set_propeller(&world->asv, world->asv.propellers[0]);
     fprintf(stdout, "--> propeller 1 created and fixed "
                     "to asv at position (%f m, %f m, %f m) "
                     "with respect to body-fixed frame. \n", 
-                    world->asv.propeller[0].position.x, 
-                    world->asv.propeller[0].position.y, 
-                    world->asv.propeller[0].position.y); 
+                    world->asv.propellers[0].position.x, 
+                    world->asv.propellers[0].position.y, 
+                    world->asv.propellers[0].position.z); 
   }
   else 
   {
@@ -1087,14 +1087,14 @@ void world_init(struct World* world, char* filename)
     struct Point propeller_position = (struct Point){propeller_2_x, 
                                                propeller_2_y, 
                                                propeller_2_z}; 
-    asv_propeller_init(&world->asv.propeller[1], propeller_position); 
-    asv_set_propeller(&world->asv, world->asv.propeller[1]);
+    asv_propeller_init(&world->asv.propellers[1], propeller_position); 
+    asv_set_propeller(&world->asv, world->asv.propellers[1]);
     fprintf(stdout, "--> propeller 2 created and fixed "
                     "to asv at position (%f m, %f m, %f m) "
                     "with reference to body-fixed frame. \n", 
-                    world->asv.propeller[1].position.x, 
-                    world->asv.propeller[1].position.y, 
-                    world->asv.propeller[1].position.y); 
+                    world->asv.propellers[1].position.x, 
+                    world->asv.propellers[1].position.y, 
+                    world->asv.propellers[1].position.z); 
   }  
   else 
   {
@@ -1108,35 +1108,35 @@ void world_init(struct World* world, char* filename)
     struct Point propeller_position = (struct Point){propeller_3_x, 
                                                propeller_3_y, 
                                                propeller_3_z}; 
-    asv_propeller_init(&world->asv.propeller[2], propeller_position); 
-    asv_set_propeller(&world->asv, world->asv.propeller[2]);
+    asv_propeller_init(&world->asv.propellers[2], propeller_position); 
+    asv_set_propeller(&world->asv, world->asv.propellers[2]);
     fprintf(stdout, "--> propeller 3 created and fixed "
                     "to asv at position (%f m, %f m, %f m) "
                     "with reference to body-fixed frame. \n", 
-                    world->asv.propeller[2].position.x, 
-                    world->asv.propeller[2].position.y, 
-                    world->asv.propeller[2].position.y); 
+                    world->asv.propellers[2].position.x, 
+                    world->asv.propellers[2].position.y, 
+                    world->asv.propellers[2].position.z); 
   }  
   else 
   {
     fprintf(stdout, "--> propeller 3 = NULL.\n");
   }
 
-  if(is_propeller_4_x_available && 
+  if(is_propeller_4_x_available &&  
       is_propeller_4_y_available && 
       is_propeller_4_z_available)
   {
     struct Point propeller_position = (struct Point){propeller_4_x, 
                                                propeller_4_y, 
                                                propeller_4_z}; 
-    asv_propeller_init(&world->asv.propeller[3], propeller_position); 
-    asv_set_propeller(&world->asv, world->asv.propeller[3]);
+    asv_propeller_init(&world->asv.propellers[3], propeller_position); 
+    asv_set_propeller(&world->asv, world->asv.propellers[3]);
     fprintf(stdout, "--> propeller 4 created and fixed "
                     "to asv at position (%f, %f, %f) "
                     "with reference to body-fixed frame. \n", 
-                    world->asv.propeller[3].position.x, 
-                    world->asv.propeller[3].position.y, 
-                    world->asv.propeller[3].position.y); 
+                    world->asv.propellers[3].position.x, 
+                    world->asv.propellers[3].position.y, 
+                    world->asv.propellers[3].position.z); 
   }  
   else 
   {

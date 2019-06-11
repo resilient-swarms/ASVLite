@@ -81,7 +81,7 @@ struct Asv
   struct Wind* wind;
   struct Current* current;
   struct Asv_specification spec;
-  struct Asv_propeller propeller[COUNT_PROPELLERS_MAX];
+  struct Asv_propeller propellers[COUNT_PROPELLERS_MAX];
   int count_propellers; // Number of propellers attached to ASV.
   struct Asv_dynamics dynamics;
   struct Point origin_position; // Position of the body-fixed frame in the 
