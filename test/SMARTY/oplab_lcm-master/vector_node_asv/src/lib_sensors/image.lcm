@@ -1,0 +1,16 @@
+package image;
+struct image
+{
+    double   timestamp;
+    int64_t  count;
+    string   filename;
+    string   image_string;
+}
+struct visual_track
+{
+    double   timestamp;
+    int64_t  count;
+    float    x;
+    float    y;
+    string   tracking_string;
+}

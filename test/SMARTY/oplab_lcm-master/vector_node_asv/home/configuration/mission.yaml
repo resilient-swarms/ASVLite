@@ -1,0 +1,28 @@
+#YAML 1.0
+mission: REMOTE
+behaviour: remote_control #visual_odometry # check_routine # modelbased control # emulation #remote_control
+feature: circle #could be SIFT
+
+colour:
+# RED
+  minimum_HSV: 
+    H: 170 # 0 to 180
+    S: 20 # 0 to 255
+    V: 20 # 0 to 255
+  maximum_HSV:
+    H: 10 #  0 to 180
+    S: 240 # 0 to 255
+    V: 240 # 0 to 255
+  track_frames: 24
+  minimum_radius_ratio: 0.01  
+
+waypoints:
+  type: relative_position #could be recurseve_loop, just doingbox/lawnmower/circle
+  number: 1   # total number of waypoints. However this might be redundant or conflict with number of elements in the wp list
+  radius: 1   # radial distance threshold to consider that the platform reached the desired WP
+
+  waypoint_0:
+    north: 0  # northig position of the waypoint
+    east: 0 # easting position of the waypoint
+    heading: 0 # desired heading in degrees for the current waypoint. This parameter could be ignored by the controller if no heading control is given
+    timeout: 20 # maximum time to wait to reach current waypoint

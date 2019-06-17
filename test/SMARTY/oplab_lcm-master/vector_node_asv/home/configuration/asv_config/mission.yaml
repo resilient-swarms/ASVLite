@@ -1,0 +1,26 @@
+#YAML 1.0
+mission: sess6070lab
+behaviour: visual_tracking #visual_odometry # check_routine # modelbased control
+feature: circle #could be SIFT
+
+colour:
+# RED
+  minimum_HSV: 
+    H: 170 # 0 to 180
+    S: 30 # 0 to 255
+    V: 30 # 0 to 255
+  maximum_HSV:
+    H: 10 #  0 to 180
+    S: 240 # 0 to 255
+    V: 240 # 0 to 255
+  track_frames: 24
+  minimum_radius_ratio: 0.01  
+
+waypoints:
+  type: relative_position #could be recurseve_loop, just doingbox/lawnmower/circle
+  number: 1
+  waypoint_0:
+    north: 0  
+    east: 0
+    heading: 0
+    timeout: 3600 #s

@@ -1,0 +1,15 @@
+ASV-Smarty:
+	192.168.60.201:50001 (Python socket to accept incoming connection from Laptop client)
+
+Laptop:
+	192.168.60.61
+
+Qualisys:
+	192.168.10.1:22223 (for little endian system)
+				:22226 (for UDP discovery service)
+
+Router:
+	192.168.60.100		(Router configuration webpage)
+
+LCM:
+	udpm://239.255.76.67:7667

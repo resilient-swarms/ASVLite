@@ -1,0 +1,7 @@
+package strain;
+struct strain
+{
+    double   timestamp;
+    float    strain_value;
+    string   strain_string;
+}

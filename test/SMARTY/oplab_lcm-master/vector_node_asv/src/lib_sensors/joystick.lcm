@@ -1,0 +1,7 @@
+package joystick;
+struct joystick
+{
+    double   timestamp;
+    float    axis_value[6];
+    string   joystick_string;
+}

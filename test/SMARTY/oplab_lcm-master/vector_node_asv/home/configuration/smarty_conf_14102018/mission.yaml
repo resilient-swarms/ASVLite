@@ -1,0 +1,28 @@
+#YAML 1.0
+mission: SESS6070
+behaviour: visual_tracking #visual_odometry # check_routine # modelbased control
+feature: circle #could be SIFT
+
+colour:
+# RED
+  minimum_HSV: 
+    H: 150 # 0 to 180
+    S: 20 # 0 to 255
+    V: 20 # 0 to 255
+  maximum_HSV:
+    H: 30 #  0 to 180
+    S: 240 # 0 to 255
+    V: 240 # 0 to 255
+  track_frames: 24
+  minimum_radius_ratio: 0.01  
+
+waypoints:
+  type: relative_position #could be recursive_loop, just doingbox/lawnmower/circle
+  number: 1
+  waypoint_0:
+    # Qualisys current coordinates [mm]: x =  -744   y = -2608    z = -562 
+    north: 0  # in visual tracking this is presently an angle relative to the camera field of view from -1 to 1 (0 at centre) to have the target
+    east: 0 # in visual tracking this is presently an angle relative to the camera field of view from -1 to 1 (0 at centre) to have the target
+    heading: 0 # heading in degrees
+    timeout: 3600 #s
+

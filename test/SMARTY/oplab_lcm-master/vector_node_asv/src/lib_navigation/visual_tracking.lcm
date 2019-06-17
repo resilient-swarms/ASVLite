@@ -1,0 +1,10 @@
+package navigation;
+struct tracking_nav
+{
+    double   timestamp;
+    string   label;
+    double   elapse;
+    double   waypoint[3];
+    double   timeout;
+    string   waypoint_string;
+}

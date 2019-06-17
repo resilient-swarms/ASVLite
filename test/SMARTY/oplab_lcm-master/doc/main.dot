@@ -1,0 +1,34 @@
+digraph smarty_diagram {
+	rankdir=LR;
+	size="12,12";
+	overlap=false;
+	splines=true;
+	sep=0.2;
+
+	node [shape = ellipse, color=black]
+	M_1 [label = "start_mission.sh", color=blue] 
+	M_2 [label = "stop_mission.sh", color=blue]
+	M_3 [label = "mission.yaml", shape = box, color = green, fillcolor=grey80, style=filled] 
+	M_4 [label = "vehicle.yaml", shape = box, color = green, fillcolor=grey80, style=filled] 
+	M_5 [label = "parser.sh"] 
+	M_6 [label = "check_acquisition.sh"] 
+	M_7 [label = "infinite_watchman.sh"] 
+	M_8 [label = "start_flag.txt", shape = box, color = green, fillcolor=grey80, style=filled] 
+	M_9 [label = "watchman_restarts.txt", shape = box, color = green, fillcolor=grey80, style=filled] 
+	M_10 [label = "start_lcm.sh"] 
+	M_11 [label = "stop_lcm.sh"] 
+	M_12 [label = "asv_main.py", color=blue, fillcolor=gold, style=filled] 
+	M_13 [label = "lcm-spy-gen.sh"] 
+
+	M_1 -> {M_5 M_12}
+	M_2 -> M_12
+	M_6 -> {M_1 M_2 M_10 M_11}
+	M_7 -> {M_6 M_9}
+	{M_3 M_4} -> {M_1 M_12}
+	# M_4 -> {M_1 M_12}
+	M_8 -> M_12
+	M_1 -> M_7 [style=dashed,color=red];
+
+}
+
+

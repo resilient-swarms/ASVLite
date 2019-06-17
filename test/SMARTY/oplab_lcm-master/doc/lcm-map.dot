@@ -1,0 +1,52 @@
+digraph smarty_lcm_diagram {
+	rankdir=LR;
+	size="12,12";
+	overlap=false;
+	splines=true;
+	sep=0.2;
+
+	node [shape = ellipse, color=blue]
+	M1 [label = "asv_main.py"] 
+	M2 [label = "pid_control.py"]
+	M3 [label = "pwm_thruster.py"] 
+	M4 [label = "lcm_handler.py"] 
+	M5 [label = "visual_tracking.py"] 
+	M6 [label = "qualisys_tracking.py"] 
+	M7 [label = "rpi_host_server.py"] 
+	M8 [label = "parse_camera_module_v2.py"] 
+	M9 [label = "parse_sensehat.py"] 
+	M10 [label = "parse_strain_gauge.py"] 
+	M11 [label = "host_qualisys_client_host_rpi_client.py", color=black] 
+
+	node [shape = rectangle, color=green]
+	L1 [label = "pid"] 
+	L2 [label = "qualisys"] 
+	L3 [label = "tracking_nav"] 
+	L4 [label = "visual_track"] 
+	L5 [label = "strain"] 
+	L6 [label = "imu"] 
+	L7 [label = "env"] 
+	L8 [label = "image"] 
+	L9 [label = "pwm"] 
+
+	M1 -> {L1}
+	M2 -> {L1}
+	M3 -> {L9}
+	M4 -> {L1 L2 L3 L4 L6 L7 L8 L9}
+	M5 -> {L3}
+	M6 -> {L3}
+	M7 -> {L2}
+	M8 -> {L4 L8}
+	M9 -> {L6 L7}
+	M10 -> {L5}
+
+	edge [color=red]
+
+	{L2 L3 L4 L6} -> M2
+	{L1} -> M3
+	{L2} -> M6
+
+	edge [color=green, label="IP:50001"]
+	M11 -> {M7}
+
+}

@@ -1,0 +1,142 @@
+#YAML 1.0
+platform: Smarty
+log:
+  format: VNA_standard_lcm
+
+control:
+  filepath: control/
+  filename: control.txt
+  method: PID
+  surge:
+     kp: 4 #4
+     ki: 0
+     kd: 0
+  sway:
+     kp: 4 #4
+     ki: 0
+     kd: 0
+  yaw:
+     kp: 0.001 #0.01
+     ki: 0
+     kd: 0
+  limits:
+    surge_thrust: 4 #N
+    sway_thrust: 4 #N
+    yaw_moment: 0.2 #Nm
+
+model:
+  mass: 5 #kg
+  surge_added_mass: 7 #kg assuming a cylinder of D=0.3 and h=0.1, rho*pi*(D/2)^2*h
+  sway_added_mass: 7 #kg assuming a cylinder of D=0.3 and h=0.1, rho*pi*(D/2)^2*h
+  surge_drag_coefficient: 7.05 # 0.5*rho*D*h*Cd where Cd=0.47 for a cylinder 
+  sway_drag_coefficient: 7.05 #
+  inertia: 0.045 #kg.m2 assuming a cylinder (D=0.3m) 0.5*m*(D/2)^2
+  yaw_drag_coefficient: 0.01 # a small number
+    
+
+actuators:
+  number: 4
+  filepath: actuation/
+  filename: thruster.txt
+  actuator_0:
+    type: thruster
+    orientation: -30 #degrees to surge
+    surge_offset: 0.085 #m from centreline
+    sway_offset: 0.085 #m from centreline
+    forward_direction: clockwise
+    forward_thrust_max: 3 #N
+    reverse_thrust_max: -3 #N
+    pwm:
+      neutral: 1500 #us
+      forward_min: 1545 #us
+      forward_max: 1600 #us 0.7N 1600 0.4N 1580
+      reverse_min: 1455 #us
+      reverse_max: 1365 #us 0.7N 1365 0.4N 1390
+      acceleration: 10 #see maestro.py (0.25us)/(10ms)/(80ms)
+  actuator_1:
+    type: thruster
+    orientation: +30 #degrees to surge
+    surge_offset: -0.085 #m from centreline
+    sway_offset: 0.085 #m from centreline
+    forward_direction: clockwise
+    forward_thrust_max: 3 #N
+    reverse_thrust_max: -3 #N
+    pwm:
+      neutral: 1500 #us
+      forward_min: 1545 #us
+      forward_max: 1600 #us 0.7N 1600 0.4N 1580
+      reverse_min: 1455 #us
+      reverse_max: 1365 #us 0.7N 1365 0.4N 1390
+      acceleration: 10 #see maestro.py
+  actuator_2:
+    type: thruster
+    orientation: -30 #degrees to surge
+    surge_offset: -0.085 #m from centreline
+    sway_offset: -0.085 #m from centreline
+    forward_direction: counter_clockwise
+    forward_thrust_max: 3 #N
+    reverse_thrust_max: -3 #N
+    pwm:
+      neutral: 1500 #us
+      forward_min: 1455 #us
+      forward_max: 1400 #us 0.7N 1400 0.4N 1420
+      reverse_min: 1545 #us
+      reverse_max: 1635 #us 0.7N 1635 0.4N 1610
+      acceleration: 10 #see maestro.py
+  actuator_3:
+    type: thruster
+    orientation: 30 #degrees to surge
+    surge_offset: 0.085 #m from centreline
+    sway_offset: -0.085 #m from centreline
+    forward_direction: counter_clockwise
+    forward_thrust_max: 3 #N
+    reverse_thrust_max: -3 #N
+    pwm:
+      neutral: 1500 #us
+      forward_min: 1455 #us
+      forward_max: 1400 #us 0.7N 1400
+      reverse_min: 1545 #us
+      reverse_max: 1635 #us 0.7N 1635
+      acceleration: 10 #see maestro.py 
+
+sensors:
+  imu:
+    device: sensehat
+    filepath: navigation/
+    filename: imu.txt
+
+  environment:
+    device: sensehat
+    filepath: environment/
+    filename: environment.txt
+  
+  camera:
+    device: camera_module_v2
+    filepath: image/
+    filename: image.txt
+    store: 10 # store every Nth, where 0 is don't store
+    horizontal_resolution: 192
+    horizontal_field_of_view: 90.0 #24.2 # in degrees, full angle
+    vertical_field_of_view: 70.0 #19.0 # in degrees, full angle
+    horizontal_angular_offset: -4 # how the roll sensor is set relative to the camera
+    vertical_angular_offset: -2 # how the roll sensor is set relative to the camera
+
+
+leds:
+  device: sensehat
+  white:
+    red: 255
+    green: 255
+    blue: 255
+  red:
+    red: 255
+    green: 100
+    blue: 100
+  green:
+    red: 80
+    green: 255
+    blue: 80
+  blue:
+    red: 0
+    green: 200
+    blue: 255

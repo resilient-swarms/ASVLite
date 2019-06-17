@@ -1,0 +1,10 @@
+package thruster;
+struct pwm
+{
+    double   timestamp;
+    int8_t   number;
+    string   label[number];
+    double   thrust_command[number];
+    double   pwm_command[number];
+    string   pwm_string;
+}
