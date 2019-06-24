@@ -11,4 +11,16 @@ struct Point
   double z; // z coordinate in meter.
 };
 
+/**
+ * Structure to represent the angles.
+ */
+struct Attitude
+{
+  double heel;    // Angle in radian with x-axis.
+  double trim;    // Angle in radian with y-axis.
+  double heading; // Angle in radian with z-axis.
+}; 
+
+
+
 #endif // GEOMETRY_H

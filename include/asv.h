@@ -13,16 +13,6 @@ struct Wind;
 #define COUNT_PROPELLERS_MAX 4 /* Maximum number of propellers an ASV can have*/
 
 /**
- * Structure to represent the angles.
- */
-struct Attitude
-{
-  double heel;    // Angle in radian with x-axis.
-  double trim;    // Angle in radian with y-axis.
-  double heading; // Angle in radian with z-axis.
-}; 
-
-/**
  * Structure to represent the propeller of an ASV.
  */
 struct Asv_propeller
