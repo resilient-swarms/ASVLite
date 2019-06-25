@@ -85,8 +85,16 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   double position_thrust= controller->kp_position* controller->error_position +
                         controller->error_int_position + 
                         controller->kd_position*controller->error_diff_position;
-  controller->thrust_fore_ps = position_thrust - heading_thrust;
-  controller->thrust_fore_sb = position_thrust + heading_thrust;
-  controller->thrust_aft_ps  = position_thrust - heading_thrust;
-  controller->thrust_aft_sb  = position_thrust + heading_thrust;
+  
+  double thrust = 0.0;
+  
+  thrust = position_thrust - heading_thrust;
+  thrust = (thrust > 5.0)? 5.0:thrust;
+  controller->thrust_fore_ps = thrust;
+  controller->thrust_aft_sb  = thrust;
+  
+  thrust = position_thrust + heading_thrust;
+  thrust = (thrust > 5.0)? 5.0:thrust;
+  controller->thrust_fore_sb = thrust;
+  controller->thrust_aft_ps  = thrust;
 }
