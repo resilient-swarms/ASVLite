@@ -4,6 +4,7 @@
 #include "world.h"
 #include "asv.h"
 #include "constants.h"
+#include "pid_controller.h"
 
 int main(int argc, char** argv)
 {
@@ -36,11 +37,23 @@ int main(int argc, char** argv)
     return 1;
   }
 
+  // Initialise the PID controller
+  struct PID_controller controller;
+  pid_controller_init(&controller);
+  struct Point way_point = (struct Point){100.0, 100.0, 0};
+  pid_controller_set_way_point(&controller, way_point);
+  controller.kp_heading = 1.0;
+  controller.ki_heading = 1.0;
+  controller.kd_heading = 1.0;
+  controller.kp_position = 1.0;
+  controller.ki_position = 1.0;
+  controller.kd_position = 1.0;
+
   // Start simulation
   fprintf(stdout, "Star simulation: \n");
   
   double frame_length = 10.0; // time duration of each frame in milli-seconds 
-  double duration = 1200.0; // time duration of animation.
+  double duration = 1200.0; // time duration of animation in seconds.
   fprintf(stdout, "--> frame duration = %f milli_seconds. \n", frame_length);
   fprintf(stdout, "--> simulation duration = %f seconds. \n", duration);
   
@@ -68,9 +81,24 @@ int main(int argc, char** argv)
     }
 
     // Set the propeller thrust and orientation.
-    struct Attitude orientation = (struct Attitude){0.0, 0.0, 0.0};
-    asv_propeller_set_thrust(&world.asv.propellers[0], 100.0, orientation);
-    
+    struct Attitude propeller_orientation = (struct Attitude){0.0,0.0,0.0};
+    pid_controller_set_current_state(&controller, 
+                                   world.asv.cog_position,
+                                   world.asv.attitude);
+    pid_controller_set_thrust(&controller);
+    asv_propeller_set_thrust(&world.asv.propellers[0], 
+                             controller.thrust_fore_ps,
+                             propeller_orientation);
+    asv_propeller_set_thrust(&world.asv.propellers[1], 
+                             controller.thrust_fore_sb,
+                             propeller_orientation);
+    asv_propeller_set_thrust(&world.asv.propellers[2], 
+                             controller.thrust_aft_ps,
+                             propeller_orientation);
+    asv_propeller_set_thrust(&world.asv.propellers[3], 
+                             controller.thrust_aft_sb,
+                             propeller_orientation);
+
     // Get the asv dynamics for the current time step.
     world_set_frame(&world, t);
 
@@ -80,7 +108,7 @@ int main(int argc, char** argv)
             wave_elevation,
             world.asv.cog_position.x, 
             world.asv.cog_position.y, 
-            world.asv.cog_position.z, 
+            world.asv.cog_position.z -(world.asv.spec.cog.z - world.asv.spec.T), 
             world.asv.attitude.heel * 180.0/PI, 
             world.asv.attitude.trim * 180.0/PI, 
             world.asv.attitude.heading * 180.0/PI); 
