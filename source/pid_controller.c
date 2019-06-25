@@ -48,17 +48,27 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   // Calculate the heading error in radian.
   double error_heading = controller->heading_required - 
                          controller->asv_attitude.heading;
+  // Clamp the heading error
+  double max_error_heading = 5.0*PI/180.0; // Set the max heading error to 5deg.
+  error_heading = (error_heading > max_error_heading)? 
+                  max_error_heading: error_heading;
   
   // Calculate the integral heading error.
   controller->error_int_heading += controller->ki_heading * error_heading;
   
   // Clamp the integral heading error.
+  controller->error_int_heading = 
+    (controller->error_int_heading > 4.0*max_error_heading)?
+    4.0*max_error_heading: controller->error_int_heading;
   
   // Calculate the differential heading error.
   controller->error_diff_heading = error_heading - controller->error_heading;
   controller->error_heading = error_heading; 
   
   // Clamp the differential heading error.
+  controller->error_diff_heading = 
+    (controller->error_diff_heading > 4.0*max_error_heading)?
+    4.0*max_error_heading: controller->error_diff_heading;
   
   // Calculate position error - distance to way-point from current position.
   double x1 = controller->asv_position.x;
@@ -66,17 +76,28 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   double x2 = controller->way_point.x;
   double y2 = controller->way_point.y;
   double error_position = sqrt(pow(x2-x1, 2.0) + pow(y2-y1, 2.0));
+
+  // Clamp the position error.
+  double max_error_position = 5.0; // Set the max position error to 5m.
+  error_position = (error_position > max_error_position)? 
+                   max_error_position: error_position;
   
   // Calculate the integral error for position.
   controller->error_int_position += controller->ki_position * error_position;
   
   // Clamp the integral error for position.
+  controller->error_int_position = 
+    (controller->error_int_position > 4.0*max_error_position)?
+    4.0*max_error_position: controller->error_int_position;
   
   // Calculate the differential error for position.
   controller->error_diff_position = error_position - controller->error_position;
   controller->error_position = error_position;
   
   // Clamp the differential error for position.
+  controller->error_diff_position = 
+    (controller->error_diff_position > 4.0*max_error_position)?
+    4.0*max_error_position: controller->error_diff_position;
   
   // Calculate propeller thrust.
   double heading_thrust = controller->kp_heading * controller->error_heading + 
