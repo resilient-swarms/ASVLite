@@ -18,6 +18,7 @@ SET( SOURCE
   source/asv.c
   source/world.c
   source/main.c
+  source/pid_controller.c
   )
 
 # LibXml2

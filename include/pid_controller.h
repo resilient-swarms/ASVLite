@@ -13,6 +13,12 @@ struct PID_controller
   struct Attitude asv_attitude; // Current roll, pitch and yaw angles of
                                 // ASV. The angles are measured in radians.
   struct Point way_point; // Desired position.
+  double kp_heading;
+  double ki_heading;
+  double kd_heading;
+  double kp_position;
+  double ki_position;
+  double kd_position;
   
   // Outputs
   // -------
@@ -23,8 +29,20 @@ struct PID_controller
   
   // Intermediate calculation variables
   // ----------------------------------
-  
+  double heading_required;
+  double error_heading;
+  double error_int_heading;
+  double error_diff_heading;
+  double error_position;
+  double error_int_position;
+  double error_diff_position;
 };
+
+/**
+ * Function to initialise the member variables of struct controller.
+ * @param controller to be initialised.
+ */
+void pid_controller_init(struct PID_controller* controller);
 
 /**
  * Function to set the current position and attitude of the ASV.
