@@ -57,14 +57,19 @@ int main(int argc, char** argv)
   fprintf(stdout, "--> frame duration = %f milli_seconds. \n", frame_length);
   fprintf(stdout, "--> simulation duration = %f seconds. \n", duration);
   
-  fprintf(fp, "#[1]time(sec)  "
-               "[2]wave_elevation(m)  " 
-               "[3]cog_x(m)  "
-               "[4]cog_y(m)  "
-               "[5]cog_z(m)  "
-               "[6]heel(deg)  "
-               "[7]trim(deg)  "
-               "[8]heading(deg) \n");
+  fprintf(fp, "#[01]time(sec)  "
+               "[02]wave_elevation(m)  " 
+               "[03]cog_x(m)  "
+               "[04]cog_y(m)  "
+               "[05]cog_z(m)  "
+               "[06]heel(deg)  "
+               "[07]trim(deg)  "
+               "[08]heading(deg) " 
+               "[09]thrust_fore_ps(N) "
+               "[10]thrust_fore_sb(N) "
+               "[11]thrust_aft_ps(N)  "
+               "[12]thrust_aft_sb(N)  "
+               "\n");
   clock_t start, end;
   for(double t = 0.0; t < duration; t += (frame_length/1000.0))
   {
@@ -103,7 +108,7 @@ int main(int argc, char** argv)
     world_set_frame(&world, t);
 
     // Print the results.
-    fprintf(fp, "%f %f %f %f %f %f %f %f \n", 
+    fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f \n", 
             t, 
             wave_elevation,
             world.asv.cog_position.x, 
@@ -111,7 +116,11 @@ int main(int argc, char** argv)
             world.asv.cog_position.z -(world.asv.spec.cog.z - world.asv.spec.T), 
             world.asv.attitude.heel * 180.0/PI, 
             world.asv.attitude.trim * 180.0/PI, 
-            world.asv.attitude.heading * 180.0/PI); 
+            world.asv.attitude.heading * 180.0/PI,
+            controller.thrust_fore_ps, 
+            controller.thrust_fore_sb,
+            controller.thrust_aft_ps,
+            controller.thrust_aft_sb); 
 
     // Stop clock.
     end = clock();
