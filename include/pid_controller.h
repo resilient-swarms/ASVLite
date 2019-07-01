@@ -29,7 +29,6 @@ struct PID_controller
   
   // Intermediate calculation variables
   // ----------------------------------
-  double heading_required;
   double error_heading;
   double error_int_heading;
   double error_diff_heading;

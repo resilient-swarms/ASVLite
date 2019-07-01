@@ -40,14 +40,14 @@ int main(int argc, char** argv)
   // Initialise the PID controller
   struct PID_controller controller;
   pid_controller_init(&controller);
-  struct Point way_point = (struct Point){0.0, 100.0, 0};
+  struct Point way_point = (struct Point){50.0, 100.0, 0};
   pid_controller_set_way_point(&controller, way_point);
-  controller.kp_heading = 1.0 * 0.01;
-  controller.ki_heading = 1.0 * 0.01;
-  controller.kd_heading = 1.0 * 0.01;
-  controller.kp_position = 1.0* 0.01;
-  controller.ki_position = 1.0* 0.01;
-  controller.kd_position = 1.0* 0.01;
+  controller.kp_heading  = 1.0 * 0.01;
+  controller.ki_heading  = 0.0 * 0.01;
+  controller.kd_heading  = 0.0 * 0.01;
+  controller.kp_position = 1.0 * 0.01;
+  controller.ki_position = 0.0 * 0.01;
+  controller.kd_position = 0.0 * 0.01;
 
   // Start simulation
   fprintf(stdout, "Star simulation: \n");
