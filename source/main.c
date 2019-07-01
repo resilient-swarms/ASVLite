@@ -40,7 +40,7 @@ int main(int argc, char** argv)
   // Initialise the PID controller
   struct PID_controller controller;
   pid_controller_init(&controller);
-  struct Point way_point = (struct Point){50.0, 100.0, 0};
+  struct Point way_point = (struct Point){-1000.0, -1000.0, 0};
   pid_controller_set_way_point(&controller, way_point);
   controller.kp_heading  = 1.0 * 0.01;
   controller.ki_heading  = 0.0 * 0.01;
