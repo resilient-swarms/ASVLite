@@ -40,14 +40,14 @@ int main(int argc, char** argv)
   // Initialise the PID controller
   struct PID_controller controller;
   pid_controller_init(&controller);
-  const int count_way_points = 5;
-  struct Point way_points[count_way_points] = 
-                               {(struct Point){1000.0, 0.0,    0.0},
-                                (struct Point){2000.0, 0.0,    0.0},
-                                (struct Point){2000.0, 1000.0, 0.0},
-                                (struct Point){1000.0, 1000.0, 0.0},
-                                (struct Point){1000.0, 0.0,    0.0}};
-
+  struct Point way_points[] = {(struct Point){1000.0, 0.0,    0.0},
+                               (struct Point){2000.0, 0.0,    0.0},
+                               (struct Point){2000.0, 1000.0, 0.0},
+                               (struct Point){1000.0, 1000.0, 0.0},
+                               (struct Point){1000.0, 0.0,    0.0}};
+  
+  const int count_way_points = sizeof(way_points)/sizeof(struct Point);
+  
   // Initialise simulation time.
   double time_step_size = 10.0; // time for each frame in milli-seconds 
   double run_time = 0.0; // initialise time
