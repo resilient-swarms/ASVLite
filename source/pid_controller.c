@@ -72,13 +72,18 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   
   // Calculate the heading error in radian.
   double heading_required = atan((x2 - x1)/(y2 - y1));
-  // atan gives values in the range of -PI/2 to PI/2.
+  // atan() gives values in the range of -PI/2 to PI/2.
   // correct the angle if it is in the 3rd of 4th quadrants. 
-  if(((x2-x1) < 0.0 && (y2-y1) < 0.0) || 
-     ((x2-x1) > 0.0 && (y2-y1) < 0.0))
+  if((x2-x1) < 0.0 && (y2-y1) < 0.0)
   {
-    heading_required += PI;
+    // 3rd quadrant
+    heading_required += -PI;
   } 
+  else if((x2-x1) > 0.0 && (y2-y1) < 0.0)
+  {
+    // 4th quadrant
+    heading_required += PI;
+  }
   
   double error_heading = heading_required - controller->asv_attitude.heading;
   // Clamp the heading error
