@@ -58,12 +58,6 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   // Calculate position error - distance to way-point from current position.
   double max_error_position = 500.0; // Set the max position error to 5m.
   double error_position = sqrt(pow(x2-x1, 2.0) + pow(y2-y1, 2.0));
-  // Using distance for error measurement has a drawback - distance is always 
-  // positive and does not let provide the information as to whether the 
-  // way-point is in front or behind. This next step gives a sign convention
-  // to the error. 
-  error_position = error_position * (sqrt(x2*x2 + y2*y2) - 
-                                     sqrt(x1*x1 + y1*y1));
 
   // Clamp the position error.
   if(fabs(error_position) > max_error_position)
