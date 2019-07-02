@@ -66,8 +66,17 @@ void pid_controller_set_thrust(struct PID_controller* controller)
                                      sqrt(x1*x1 + y1*y1));
 
   // Clamp the position error.
-  error_position = (error_position > max_error_position)? 
-                    max_error_position: error_position;
+  if(fabs(error_position) > max_error_position)
+  {
+    if(error_position > 0.0)
+    {
+      error_position = max_error_position;
+    }
+    else
+    {
+      error_position = -max_error_position;
+    }
+  }
   
   // Calculate the integral error for position.
   controller->error_int_position += controller->ki_position * error_position;
@@ -104,8 +113,17 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   double error_heading = heading_required - controller->asv_attitude.heading;
   // Clamp the heading error
   double max_error_heading = PI/6.0; // Set the max heading error.
-  error_heading = (error_heading > max_error_heading)? 
-                  max_error_heading: error_heading;
+  if(fabs(error_heading) > max_error_heading)
+  {
+    if(error_heading > 0.0)
+    {
+      error_heading = max_error_heading;
+    }
+    else
+    {
+      error_heading = -max_error_heading;
+    }
+  }
   
   // Calculate the integral heading error.
   controller->error_int_heading += controller->ki_heading * error_heading;
@@ -132,8 +150,17 @@ void pid_controller_set_thrust(struct PID_controller* controller)
                         controller->error_int_heading + 
                         controller->kd_heading * controller->error_diff_heading; 
   // Do not use more than 20% of thruster capacity for heading correction.
-  heading_thrust = (fabs(heading_thrust) > max_thrust) ? 
-                    max_thrust : heading_thrust;  
+  if(fabs(heading_thrust) > max_thrust * 0.2)
+  {
+    if(heading_thrust > 0.0)
+    {
+      heading_thrust = max_thrust * 0.2;
+    }
+    else
+    {
+      heading_thrust = -max_thrust * 0.2;
+    }
+  }
   double position_thrust= controller->kp_position* controller->error_position +
                         controller->error_int_position + 
                         controller->kd_position*controller->error_diff_position;
