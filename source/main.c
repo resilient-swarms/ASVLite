@@ -40,22 +40,34 @@ int main(int argc, char** argv)
   // Initialise the PID controller
   struct PID_controller controller;
   pid_controller_init(&controller);
-  struct Point way_point = (struct Point){-1000.0, -1000.0, 0};
-  pid_controller_set_way_point(&controller, way_point);
-  controller.kp_heading  = 1.0 * 0.01;
-  controller.ki_heading  = 0.0 * 0.01;
-  controller.kd_heading  = 0.0 * 0.01;
-  controller.kp_position = 1.0 * 0.01;
-  controller.ki_position = 0.0 * 0.01;
-  controller.kd_position = 0.0 * 0.01;
+  const int count_way_points = 5;
+  struct Point way_points[count_way_points] = 
+                               {(struct Point){1000.0, 0.0,    0.0},
+                                (struct Point){2000.0, 0.0,    0.0},
+                                (struct Point){2000.0, 1000.0, 0.0},
+                                (struct Point){1000.0, 1000.0, 0.0},
+                                (struct Point){1000.0, 0.0,    0.0}};
 
+  // Initialise simulation time.
+  double time_step_size = 10.0; // time for each frame in milli-seconds 
+  double run_time = 0.0; // initialise time
+
+  // PID controller set gain terms
+  double p_position = 1.0 * time_step_size/1000.0;
+  double i_position = 0.0 * time_step_size/1000.0;
+  double d_position = 0.0 * time_step_size/1000.0;
+  pid_controller_set_gains_position(&controller, 
+                                    p_position, i_position, d_position);
+  double p_heading = 1.0 * time_step_size/1000.0;
+  double i_heading = 0.0 * time_step_size/1000.0;
+  double d_heading = 0.0 * time_step_size/1000.0;
+  pid_controller_set_gains_heading(&controller, 
+                                   p_heading, i_heading, d_heading);
+  
   // Start simulation
   fprintf(stdout, "Star simulation: \n");
   
-  double frame_length = 10.0; // time duration of each frame in milli-seconds 
-  double duration = 1200.0; // time duration of animation in seconds.
-  fprintf(stdout, "--> frame duration = %f milli_seconds. \n", frame_length);
-  fprintf(stdout, "--> simulation duration = %f seconds. \n", duration);
+  fprintf(stdout, "--> time step size = %f milli_seconds. \n", time_step_size);
   
   fprintf(fp, "#[01]time(sec)  "
                "[02]wave_elevation(m)  " 
@@ -71,8 +83,10 @@ int main(int argc, char** argv)
                "[12]thrust_aft_sb(N)  "
                "\n");
   clock_t start, end;
-  for(double t = 0.0; t < duration; t += (frame_length/1000.0))
+  for(int i = 0; ; run_time+=(time_step_size/1000.0))
   {
+    pid_controller_set_way_point(&controller, way_points[i]);
+
     // Start clock to measure time for each simulation step.
     start = clock();
 
@@ -82,7 +96,7 @@ int main(int argc, char** argv)
     {  
       wave_elevation = wave_get_elevation(world.wave, 
                                           &world.asv.cog_position, 
-                                          t);
+                                          run_time);
     }
 
     // Set the propeller thrust and orientation.
@@ -105,11 +119,11 @@ int main(int argc, char** argv)
                              propeller_orientation);
 
     // Get the asv dynamics for the current time step.
-    world_set_frame(&world, t);
+    world_set_frame(&world, run_time);
 
     // Print the results.
     fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f \n", 
-            t, 
+            run_time, 
             wave_elevation,
             world.asv.cog_position.x, 
             world.asv.cog_position.y, 
@@ -124,7 +138,21 @@ int main(int argc, char** argv)
 
     // Stop clock.
     end = clock();
+
+    // If reached a way-point then move on to next
+    double x1 = world.asv.cog_position.x;
+    double y1 = world.asv.cog_position.y;
+    double x2 = way_points[i].x;
+    double y2 = way_points[i].y;
+    double error = sqrt(pow(x2-x1, 2.0) + pow(y2-y1, 2.0));
+    double margin = 0.5; // acceptable error margin in m.
+    if(error <= margin)
+    {
+      ++i;
+    }
   }
+
+  fprintf(stdout, "--> simulation duration = %f seconds. \n", run_time/1000.0);
   fprintf(stdout, "--> time taken per simulation cycle = %f milli-sec. \n", 
           ((double)(end - start)) / CLOCKS_PER_SEC * 1000);
   fprintf(stdout, "--> simulation data written to file %s. \n", 
