@@ -63,6 +63,9 @@ int main(int argc, char** argv)
   double d_heading = 0.0 * time_step_size/1000.0;
   pid_controller_set_gains_heading(&controller, 
                                    p_heading, i_heading, d_heading);
+
+  // Propeller orientations are fixed.
+  struct Attitude propeller_orientation = (struct Attitude){0.0,0.0,0.0};
   
   // Start simulation
   fprintf(stdout, "Star simulation: \n");
@@ -99,12 +102,14 @@ int main(int argc, char** argv)
                                           run_time);
     }
 
-    // Set the propeller thrust and orientation.
-    struct Attitude propeller_orientation = (struct Attitude){0.0,0.0,0.0};
+    // Inform PID controller of the current state.
     pid_controller_set_current_state(&controller, 
                                    world.asv.cog_position,
                                    world.asv.attitude);
+    // PID controller estimate thrust to be applied on each propeller.
     pid_controller_set_thrust(&controller);
+    
+    // Set the propeller thrust and orientation.
     asv_propeller_set_thrust(&world.asv.propellers[0], 
                              controller.thrust_fore_ps,
                              propeller_orientation);
