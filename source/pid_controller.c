@@ -11,6 +11,22 @@ void pid_controller_init(struct PID_controller* controller)
   controller->error_diff_position    = 0.0;
 }
 
+void pid_controller_set_gains_position(struct PID_controller* controller, 
+                                      double p, double i, double d)
+{
+  controller->kp_position = p;
+  controller->ki_position = i;
+  controller->kd_position = d;
+}
+
+void pid_controller_set_gains_heading(struct PID_controller* controller, 
+                                      double p, double i, double d)
+{
+  controller->kp_heading = p;
+  controller->ki_heading = i;
+  controller->kd_heading = d;
+}
+
 void pid_controller_set_current_state(struct PID_controller* controller,
                                       struct Point position,
                                       struct Attitude attitude)

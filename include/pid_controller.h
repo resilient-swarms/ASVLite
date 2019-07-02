@@ -44,6 +44,18 @@ struct PID_controller
 void pid_controller_init(struct PID_controller* controller);
 
 /**
+ * Function to set the gain terms for position.
+ */
+void pid_controller_set_gains_position(struct PID_controller* controller, 
+                                      double p, double i, double d);
+
+/**
+ * Function to set the gain terms for heading.
+ */
+void pid_controller_set_gains_heading(struct PID_controller* controller, 
+                                     double p, double i, double d);
+
+/**
  * Function to set the current position and attitude of the ASV.
  * @param controller for which the inputs are to be set.
  * @param position is the current position of the ASV. 
