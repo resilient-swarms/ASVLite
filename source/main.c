@@ -40,11 +40,16 @@ int main(int argc, char** argv)
   // Initialise the PID controller
   struct PID_controller controller;
   pid_controller_init(&controller);
-  struct Point way_points[] = {(struct Point){1000.0, 0.0,    0.0},
-                               (struct Point){2000.0, 0.0,    0.0},
-                               (struct Point){2000.0, 1000.0, 0.0},
-                               (struct Point){1000.0, 1000.0, 0.0},
-                               (struct Point){1000.0, 0.0,    0.0}};
+  struct Point way_points[] = {
+                               (struct Point){1000.0, 0.0,     0.0},
+                               (struct Point){2000.0, 0.0,     0.0},
+                               (struct Point){2000.0, 1000.0,  0.0},
+                               (struct Point){1000.0, 1000.0,  0.0},
+                               (struct Point){1000.0, 0.0,     0.0},
+                               (struct Point){1000.0, -1000.0, 0.0},
+                               (struct Point){0.0,    -1000.0, 0.0},
+                               (struct Point){0.0,    0.0,     0.0}
+                              };
   
   const int count_way_points = sizeof(way_points)/sizeof(struct Point);
   
