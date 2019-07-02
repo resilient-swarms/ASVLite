@@ -83,7 +83,7 @@ int main(int argc, char** argv)
                "[12]thrust_aft_sb(N)  "
                "\n");
   clock_t start, end;
-  for(int i = 0; ; run_time+=(time_step_size/1000.0))
+  for(int i = 0; i < count_way_points; run_time+=(time_step_size/1000.0))
   {
     pid_controller_set_way_point(&controller, way_points[i]);
 
