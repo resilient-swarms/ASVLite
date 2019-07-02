@@ -148,6 +148,7 @@ int main(int argc, char** argv)
     double margin = 0.5; // acceptable error margin in m.
     if(error <= margin)
     {
+      fprintf(stdout, "--> reached way-point[%i]. \n", i);
       ++i;
     }
   }
