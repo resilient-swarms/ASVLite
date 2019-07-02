@@ -56,10 +56,14 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   double y2 = controller->way_point.y;
  
   // Calculate position error - distance to way-point from current position.
-  double max_error_position = 500.0; // Set the max position error to 5m.
+  double max_error_position = 500.0; // Set the max position error to so that
+                                     // propeller can operate full throttle 
+                                     // if possible.
   double error_position = sqrt(pow(x2-x1, 2.0) + pow(y2-y1, 2.0));
 
   // Clamp the position error.
+  // The error is always going to be positive if measured as distance but still
+  // to make the code future proof, the negative magnitude is also considered.
   if(fabs(error_position) > max_error_position)
   {
     if(error_position > 0.0)
@@ -73,21 +77,37 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   }
   
   // Calculate the integral error for position.
-  controller->error_int_position += controller->ki_position * error_position;
+  controller->error_int_position += error_position;
   
   // Clamp the integral error for position.
-  controller->error_int_position = 
-    (controller->error_int_position > 4.0*max_error_position)?
-    4.0*max_error_position: controller->error_int_position;
+  if(fabs(controller->error_int_position) > max_error_position)
+  {
+    if(controller->error_int_position > 0.0)
+    {
+      controller->error_int_position = max_error_position;
+    }
+    else
+    {
+      controller->error_int_position = -max_error_position;
+    }
+  }
   
   // Calculate the differential error for position.
   controller->error_diff_position = error_position - controller->error_position;
   controller->error_position = error_position;
   
   // Clamp the differential error for position.
-  controller->error_diff_position = 
-    (controller->error_diff_position > 4.0*max_error_position)?
-    4.0*max_error_position: controller->error_diff_position;
+  if(fabs(controller->error_diff_position) > max_error_position)
+  {
+    if(controller->error_diff_position > 0.0)
+    {
+      controller->error_diff_position = max_error_position;
+    }
+    else
+    {
+      controller->error_diff_position = -max_error_position;
+    }
+  }
   
   // Calculate the heading error in radian.
   double heading_required = atan((x2 - x1)/(y2 - y1));
@@ -120,29 +140,46 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   }
   
   // Calculate the integral heading error.
-  controller->error_int_heading += controller->ki_heading * error_heading;
+  controller->error_int_heading += error_heading;
   
   // Clamp the integral heading error.
-  controller->error_int_heading = 
-    (controller->error_int_heading > 4.0*max_error_heading)?
-    4.0*max_error_heading: controller->error_int_heading;
+  if(controller->error_int_heading > max_error_heading)
+  {
+    if(controller->error_int_heading > 0.0)
+    {
+      controller->error_int_heading = max_error_heading;
+    }
+    else
+    {
+      controller->error_int_heading = -max_error_heading;
+    }
+  }
   
   // Calculate the differential heading error.
   controller->error_diff_heading = error_heading - controller->error_heading;
   controller->error_heading = error_heading; 
   
   // Clamp the differential heading error.
-  controller->error_diff_heading = 
-    (controller->error_diff_heading > 4.0*max_error_heading)?
-    4.0*max_error_heading: controller->error_diff_heading;
+  if(fabs(controller->error_diff_heading) > max_error_heading)
+  {
+    if(controller->error_diff_heading > 0.0)
+    {
+      controller->error_diff_heading = max_error_heading;
+    }
+    else
+    {
+      controller->error_diff_heading = -max_error_heading;
+    }
+  }
  
   // Calculate propeller thrust.
   double max_thrust = 5.0; // SMARTY platform thruster has a maximum 
                            // capacity of 5N. 
 
-  double heading_thrust = controller->kp_heading * controller->error_heading + 
-                        controller->error_int_heading + 
-                        controller->kd_heading * controller->error_diff_heading; 
+  double heading_thrust = 
+    controller->kp_heading * controller->error_heading      + 
+    controller->ki_heading * controller->error_int_heading  + 
+    controller->kd_heading * controller->error_diff_heading; 
   // Do not use more than 20% of thruster capacity for heading correction.
   if(fabs(heading_thrust) > max_thrust * 0.2)
   {
@@ -155,9 +192,10 @@ void pid_controller_set_thrust(struct PID_controller* controller)
       heading_thrust = -max_thrust * 0.2;
     }
   }
-  double position_thrust= controller->kp_position* controller->error_position +
-                        controller->error_int_position + 
-                        controller->kd_position*controller->error_diff_position;
+  double position_thrust= 
+    controller->kp_position * controller->error_position      +
+    controller->ki_position * controller->error_int_position  + 
+    controller->kd_position * controller->error_diff_position;
   
   double thrust_ps = position_thrust + heading_thrust; // left side thrust
   double thrust_sb = position_thrust - heading_thrust; // right side thrust

@@ -60,12 +60,12 @@ int main(int argc, char** argv)
   // PID controller set gain terms
   double p_position = 1.0 * time_step_size/1000.0;
   double i_position = 0.0 * time_step_size/1000.0;
-  double d_position = 0.0 * time_step_size/1000.0;
+  double d_position = -10.0 * time_step_size/1000.0;
   pid_controller_set_gains_position(&controller, 
                                     p_position, i_position, d_position);
   double p_heading = 1.0 * time_step_size/1000.0;
   double i_heading = 0.0 * time_step_size/1000.0;
-  double d_heading = 0.0 * time_step_size/1000.0;
+  double d_heading = -10.0 * time_step_size/1000.0;
   pid_controller_set_gains_heading(&controller, 
                                    p_heading, i_heading, d_heading);
 
