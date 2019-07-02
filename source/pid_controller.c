@@ -163,12 +163,6 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   double thrust_sb = position_thrust - heading_thrust; // right side thrust
   thrust_ps = (fabs(thrust_ps) > max_thrust)? max_thrust : thrust_ps;
   thrust_sb = (fabs(thrust_sb) > max_thrust)? max_thrust : thrust_sb;
-  // Before applying the thrust to the thrusters check if the position is within
-  // the error margin, if so then set the thrust to 0N.
-  if(sqrt(pow(x2-x1, 2.0) + pow(y2-y1, 2.0)) <= 1.0)
-  {
-    thrust_ps = thrust_sb = 0.0;
-  }
   controller->thrust_fore_ps = controller->thrust_aft_ps  = thrust_ps;
   controller->thrust_fore_sb = controller->thrust_aft_sb  = thrust_sb;
 }
