@@ -150,7 +150,7 @@ int main(int argc, char** argv)
     double x2 = way_points[i].x;
     double y2 = way_points[i].y;
     double error = sqrt(pow(x2-x1, 2.0) + pow(y2-y1, 2.0));
-    double margin = 0.5; // acceptable error margin in m.
+    double margin = 2.0; // acceptable error margin in m.
     if(error <= margin)
     {
       fprintf(stdout, "--> reached way-point[%i] (%f m, %f m, %f m). \n", 
@@ -159,7 +159,7 @@ int main(int argc, char** argv)
     }
   }
 
-  fprintf(stdout, "--> simulation duration = %f seconds. \n", run_time/1000.0);
+  fprintf(stdout, "--> task duration = %f seconds. \n", run_time/1000.0);
   fprintf(stdout, "--> time taken per simulation cycle = %f milli-sec. \n", 
           ((double)(end - start)) / CLOCKS_PER_SEC * 1000);
   fprintf(stdout, "--> simulation data written to file %s. \n", 
