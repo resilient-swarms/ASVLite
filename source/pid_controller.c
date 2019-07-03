@@ -66,14 +66,8 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   // to make the code future proof, the negative magnitude is also considered.
   if(fabs(error_position) > max_error_position)
   {
-    if(error_position > 0.0)
-    {
-      error_position = max_error_position;
-    }
-    else
-    {
-      error_position = -max_error_position;
-    }
+    error_position = (error_position > 0.0)? 
+                      max_error_position : -max_error_position;
   }
   
   // Calculate the integral error for position.
@@ -82,14 +76,8 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   // Clamp the integral error for position.
   if(fabs(controller->error_int_position) > max_error_position)
   {
-    if(controller->error_int_position > 0.0)
-    {
-      controller->error_int_position = max_error_position;
-    }
-    else
-    {
-      controller->error_int_position = -max_error_position;
-    }
+    controller->error_int_position = (controller->error_int_position > 0.0)?
+                                      max_error_position : -max_error_position;
   }
   
   // Calculate the differential error for position.
@@ -99,14 +87,8 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   // Clamp the differential error for position.
   if(fabs(controller->error_diff_position) > max_error_position)
   {
-    if(controller->error_diff_position > 0.0)
-    {
-      controller->error_diff_position = max_error_position;
-    }
-    else
-    {
-      controller->error_diff_position = -max_error_position;
-    }
+    controller->error_diff_position = (controller->error_diff_position > 0.0)?
+                                       max_error_position : -max_error_position;
   }
   
   // Calculate the heading error in radian.
@@ -127,32 +109,20 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   double error_heading = heading_required - controller->asv_attitude.heading;
   // Clamp the heading error
   double max_error_heading = PI/6.0; // Set the max heading error.
-  if(fabs(error_heading) > max_error_heading)
+   if(fabs(error_heading) > max_error_heading)
   {
-    if(error_heading > 0.0)
-    {
-      error_heading = max_error_heading;
-    }
-    else
-    {
-      error_heading = -max_error_heading;
-    }
+    error_heading = (error_heading > 0.0)? 
+                     max_error_heading : -max_error_heading;
   }
   
   // Calculate the integral heading error.
   controller->error_int_heading += error_heading;
   
   // Clamp the integral heading error.
-  if(controller->error_int_heading > max_error_heading)
+  if(fabs(controller->error_int_heading) > max_error_heading)
   {
-    if(controller->error_int_heading > 0.0)
-    {
-      controller->error_int_heading = max_error_heading;
-    }
-    else
-    {
-      controller->error_int_heading = -max_error_heading;
-    }
+    controller->error_int_heading = (controller->error_int_heading > 0.0)?
+                                    max_error_heading : -max_error_heading;
   }
   
   // Calculate the differential heading error.
@@ -162,14 +132,8 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   // Clamp the differential heading error.
   if(fabs(controller->error_diff_heading) > max_error_heading)
   {
-    if(controller->error_diff_heading > 0.0)
-    {
-      controller->error_diff_heading = max_error_heading;
-    }
-    else
-    {
-      controller->error_diff_heading = -max_error_heading;
-    }
+    controller->error_diff_heading = (controller->error_diff_heading > 0.0)?
+                                      max_error_heading : -max_error_heading;
   }
  
   // Calculate propeller thrust.
@@ -199,8 +163,14 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   
   double thrust_ps = position_thrust + heading_thrust; // left side thrust
   double thrust_sb = position_thrust - heading_thrust; // right side thrust
-  thrust_ps = (fabs(thrust_ps) > max_thrust)? max_thrust : thrust_ps;
-  thrust_sb = (fabs(thrust_sb) > max_thrust)? max_thrust : thrust_sb;
+  if(fabs(thrust_ps) > max_thrust)
+  {
+    thrust_ps = (thrust_ps > 0.0)? max_thrust : -max_thrust;
+  } 
+  if(fabs(thrust_sb) > max_thrust)
+  {
+    thrust_sb = (thrust_sb > 0.0)? max_thrust : -max_thrust;
+  }
   controller->thrust_fore_ps = controller->thrust_aft_ps  = thrust_ps;
   controller->thrust_fore_sb = controller->thrust_aft_sb  = thrust_sb;
 }
