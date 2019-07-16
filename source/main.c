@@ -41,13 +41,13 @@ int main(int argc, char** argv)
   struct PID_controller controller;
   pid_controller_init(&controller);
   struct Point way_points[] = {
-                               (struct Point){1000.0, 0.0,     0.0},
-                               (struct Point){2000.0, 0.0,     0.0},
-                               (struct Point){2000.0, 1000.0,  0.0},
-                               (struct Point){1000.0, 1000.0,  0.0},
-                               (struct Point){1000.0, 0.0,     0.0},
-                               (struct Point){1000.0, -1000.0, 0.0},
-                               (struct Point){0.0,    -1000.0, 0.0},
+                               (struct Point){100.0, 0.0,     0.0},
+                               (struct Point){200.0, 0.0,     0.0},
+                               (struct Point){200.0, 100.0,  0.0},
+                               (struct Point){100.0, 100.0,  0.0},
+                               (struct Point){100.0, 0.0,     0.0},
+                               (struct Point){100.0, -100.0, 0.0},
+                               (struct Point){0.0,    -100.0, 0.0},
                                (struct Point){0.0,    0.0,     0.0}
                               };
   
@@ -59,12 +59,12 @@ int main(int argc, char** argv)
 
   // PID controller set gain terms
   double p_position = 1.0 * time_step_size/1000.0;
-  double i_position = 0.0 * time_step_size/1000.0;
+  double i_position = 0.1 * time_step_size/1000.0;
   double d_position = -10.0 * time_step_size/1000.0;
   pid_controller_set_gains_position(&controller, 
                                     p_position, i_position, d_position);
   double p_heading = 1.0 * time_step_size/1000.0;
-  double i_heading = 0.0 * time_step_size/1000.0;
+  double i_heading = 0.1 * time_step_size/1000.0;
   double d_heading = -10.0 * time_step_size/1000.0;
   pid_controller_set_gains_heading(&controller, 
                                    p_heading, i_heading, d_heading);
@@ -155,7 +155,7 @@ int main(int argc, char** argv)
     double x2 = way_points[i].x;
     double y2 = way_points[i].y;
     double error = sqrt(pow(x2-x1, 2.0) + pow(y2-y1, 2.0));
-    double margin = 2.0; // acceptable error margin in m.
+    double margin = 1.0; // acceptable error margin in m.
     if(error <= margin)
     {
       fprintf(stdout, "--> reached way-point[%i] (%f m, %f m, %f m). \n", 

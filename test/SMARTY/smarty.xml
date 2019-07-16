@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <world>
   <wind>
-    <speed type="xs:decimal"></speed>
-    <direction type="xs:decimal"></direction> 
+    <speed type="xs:decimal">2</speed>
+    <direction type="xs:decimal">0.0</direction> 
   </wind>
   <current>
     <speed type="xs:decimal"></speed>
@@ -10,9 +10,9 @@
   </current>
   <wave>
     <wind type="xs:boolean"></wind>
-    <sig_wave_ht type="xs:decimal"></sig_wave_ht>
+    <sig_wave_ht type="xs:decimal">10.0</sig_wave_ht>
     <peak_spectral_freq type="xs:decimal"></peak_spectral_freq>
-    <heading type="xs:decimal"></heading>
+    <heading type="xs:decimal">120.0</heading>
   </wave>
   <asv_spec>
     <L_wl type="xs:decimal">0.3</L_wl>
