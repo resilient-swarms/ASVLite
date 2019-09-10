@@ -1,22 +1,18 @@
 #include <stdlib.h> // for generating random numbers.
 #include <math.h>
 #include "wave.h"
-#include "wind.h"
 #include "constants.h"
 
-static void wave_init(struct Wave* wave, 
-                      struct Wind* wind, 
-                      double significant_wave_height, 
-                      double peak_spectral_frequency,
-                      double wave_heading)
+void wave_init(struct Wave* wave, 
+               double sig_wave_ht,
+               double wave_heading)
 {
   // Allocate space for spectrum
   wave->spectrum = (struct Regular_wave*)malloc(COUNT_WAVE_SPECTRAL_DIRECTIONS * 
                                                 COUNT_WAVE_SPECTRAL_FREQUENCIES*
                                                 sizeof(struct Regular_wave));
-  double major_wave_direction = (wind == NULL)? wave_heading : wind->direction;
-  wave->min_spectral_wave_heading = major_wave_direction - PI/2.0;
-  wave->max_spectral_wave_heading = major_wave_direction + PI/2.0;
+  wave->min_spectral_wave_heading = wave_heading - PI/2.0;
+  wave->max_spectral_wave_heading = wave_heading + PI/2.0;
   // wave directions should be in the range (0, 2PI)
   if(wave->min_spectral_wave_heading < 0.0)
   {
@@ -26,8 +22,7 @@ static void wave_init(struct Wave* wave,
   {
     wave->max_spectral_frequency -= 2.0*PI;
   }
-  
-  
+    
   // Bretschneider spectrum
   // Ref: Proceedings of the 23rd ITTC - Vol II, Table A.2, A.3.
   // S(f) = (A/f^5) exp(-B/f^4)
@@ -40,28 +35,10 @@ static void wave_init(struct Wave* wave,
   double alpha = 0.0081;
   double beta = 0.74;
   double A = alpha * G*G * pow(2.0*PI, -4.0);
-  double B = 0.0;
-  double H_s = 0.0;
-  double f_p = 0.0;
-  if(wind != NULL)
-  { 
-    double U = wind->speed; 
-    B = beta * pow(2.0*PI*U/G, -4.0);
-    H_s = 2.0* sqrt(A/B);
-    f_p = 0.946 * pow(B, 0.25);
-  }
-  else if (significant_wave_height != 0.0)
-  {
-    H_s = significant_wave_height;
-    B = 4.0*alpha*G*G / (pow(2.0*PI, 4.0)* H_s*H_s);
-    f_p = 0.946 * pow(B, 0.25);
-  }
-  else if (peak_spectral_frequency != 0.0)
-  {
-    f_p = peak_spectral_frequency;
-    B = (5.0/4.0)*pow(f_p, 4.0);
-    H_s = 2.0* sqrt(A/B);
-  }
+  double H_s = sig_wave_ht;
+  double B = 4.0*alpha*G*G / (pow(2.0*PI, 4.0)* H_s*H_s);
+  double f_p = 0.946 * pow(B, 0.25);
+
   wave->significant_wave_height = H_s;
   wave->peak_spectral_frequency = f_p;
   wave->min_spectral_frequency = 0.652 * f_p;
@@ -97,25 +74,6 @@ static void wave_init(struct Wave* wave,
                         amplitude, f, phase, mu);
     }
   }
-}
-
-void wave_init_with_wind(struct Wave* wave, struct Wind* wind)
-{
-  wave_init(wave, wind, 0.0, 0.0, 0.0);
-}
-
-void wave_init_with_sig_wave_ht(struct Wave* wave, 
-                                double sig_wave_ht,
-                                double wave_heading)
-{
-  wave_init(wave, NULL, sig_wave_ht, 0.0, wave_heading);
-}
-
-void wave_init_with_peak_freq(struct Wave* wave, 
-                              double peak_spectral_freq, 
-                              double wave_heading)
-{
-  wave_init(wave, NULL, 0.0, peak_spectral_freq, wave_heading);
 }
 
 double wave_get_elevation(struct Wave* wave, 
