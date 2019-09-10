@@ -40,17 +40,18 @@ int main(int argc, char** argv)
   struct World world;
   world_init(&world, argv[1]);
 
-  // Init time.
+  // Init clock.
   double time_step_size = 10.0; // time step size in milli-seconds 
   double run_time = 0.0; // initialise time
   int t = 0; // counter for time steps
+  clock_t start, end;
   
   // Start simulation
   for(double h = 0.0; h <= 15; h=h+0.5)
   {
     // Reset time for each simulation
     run_time = 0.0; 
-    int t = 0; 
+    t = 0; 
 
     // Reset the world
     if(h != 0.0)
@@ -73,10 +74,6 @@ int main(int argc, char** argv)
     // Initialise the PID controller
     struct PID_controller controller;
     pid_controller_init(&controller);
-    struct Point way_points[] = {
-                                 (struct Point){100.0, 100.0, 0.0},
-                                };
-    const int count_way_points = sizeof(way_points)/sizeof(struct Point);
     // PID controller set gain terms
     double p_position = 1.0 * time_step_size/1000.0;
     double i_position = 0.1 * time_step_size/1000.0;
@@ -88,17 +85,26 @@ int main(int argc, char** argv)
     double d_heading = -10.0 * time_step_size/1000.0;
     pid_controller_set_gains_heading(&controller, 
                                      p_heading, i_heading, d_heading);
+
+    // Set destination
+    struct Point destination = (struct Point){100.0, 100.0, 0.0};
     
     fprintf(stdout, 
       "\nStar simulation for significant wave height of {%f} m. \n", h);
     fprintf(stdout, "--> time step size = %f milli_seconds. \n", 
             time_step_size);
+    
+    // Current error in position
+    double x1 = world.asv.cog_position.x;
+    double y1 = world.asv.cog_position.y;
+    double x2 = destination.x;
+    double y2 = destination.y;
+    double margin = 1.0; // acceptable error margin in m.
     // Start clock to measure time.
-    clock_t start, end;
     start = clock();
-    for(int i = 0; i < count_way_points; ++t)
+    while(sqrt(pow(x2-x1, 2.0) + pow(y2-y1, 2.0)) > margin)
     {
-      pid_controller_set_way_point(&controller, way_points[i]);
+      pid_controller_set_way_point(&controller, destination);
 
       // Get the wave elevation if wave is simulated.
       double wave_elevation = 0.0;
@@ -150,6 +156,7 @@ int main(int argc, char** argv)
         simulation_data[t].thrust_fore_sb = controller.thrust_fore_sb;
         simulation_data[t].thrust_aft_ps = controller.thrust_aft_ps;
         simulation_data[t].thrust_aft_sb = controller.thrust_aft_sb;
+        ++t;
       }
       else
       {
@@ -158,19 +165,9 @@ int main(int argc, char** argv)
         //return 0;
       }     
 
-      // If reached a way-point then move on to next
-      double x1 = world.asv.cog_position.x;
-      double y1 = world.asv.cog_position.y;
-      double x2 = way_points[i].x;
-      double y2 = way_points[i].y;
-      double error = sqrt(pow(x2-x1, 2.0) + pow(y2-y1, 2.0));
-      double margin = 1.0; // acceptable error margin in m.
-      if(error <= margin)
-      {
-        fprintf(stdout, "--> reached way-point[%i] (%f m, %f m, %f m). \n", 
-                i, way_points[i].x, way_points[i].y, way_points[i].z);
-        ++i;
-      }
+      // reset variables for computing error
+      x1 = world.asv.cog_position.x;
+      y1 = world.asv.cog_position.y;
     }
     // Stop clock.
     end = clock();
