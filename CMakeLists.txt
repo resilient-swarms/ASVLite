@@ -13,10 +13,7 @@ INCLUDE_DIRECTORIES(
 SET( SOURCE
   source/regular_wave.c
   source/wave.c
-  source/wind.c
-  source/current.c
   source/asv.c
-  source/world.c
   source/main.c
   source/pid_controller.c
   )
