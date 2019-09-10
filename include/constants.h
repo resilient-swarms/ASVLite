@@ -8,4 +8,11 @@
 #define SEA_WATER_DENSITY 1025 /* Sea water density in Kg/m3 */
 #define AIR_DENSITY 1.2 /* Kg/m3 */
 
+#define COUNT_ASV_SPECTRAL_DIRECTIONS 360
+#define COUNT_ASV_SPECTRAL_FREQUENCIES 100
+
+#define COUNT_DOF 6 /* Number of degrees of freedom for the motion of ASV. */
+#define COUNT_PROPELLERS_MAX 4 /* Maximum number of propellers an ASV can have*/
+
+
 #endif // CONSTANTS_H

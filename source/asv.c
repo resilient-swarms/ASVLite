@@ -1,9 +1,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include "asv.h"
-#include "constants.h"
-#include "wave.h"
-#include "wind.h"
 
 // Enum to correctly index the motions in the matrices for asv dynamics.
 enum i_dof{surge, sway, heave, roll, pitch, yaw}; // to index the DOF
@@ -383,64 +380,6 @@ static void set_wave_force(struct Asv* asv, double time)
   } 
 }
 
-static void set_wind_force_all_directions(struct Asv* asv)
-{
-  // Assumptions:
-  // Longitudinal project area assumed as a triangle.
-  // Transverse project area assumed as a rectangle.
-  // Wind assumed as blowing at steady speed.
-  
-  double A_sway = 0.5 * asv->spec.L_wl * (asv->spec.D - asv->spec.T);
-  double A_surge = asv->spec.B_wl * (asv->spec.D - asv->spec.T);
-  double h_roll = ((1.0/3.0)*(asv->spec.D - asv->spec.T) + asv->spec.T) - 
-                  asv->spec.cog.z;
-  double h_pitch = (0.5*(asv->spec.D - asv->spec.T) + asv->spec.T) - 
-                  asv->spec.cog.z;
-
-  for(int i = 0; i < 360; ++i)
-  {
-    double angle = (PI/180.0) * i; // direction at which the wind is blowing to 
-                                   // in radians.
-    // Resolve the wind velocity along the x and y direction (body-frame used)
-    double v_x = asv->wind->speed * cos(angle);
-    double v_y = asv->wind->speed * sin(angle);
-
-    // Calculate forces
-    double C = 1.16; // Drag coefficient
-    double f_surge = 0.5 * AIR_DENSITY * C * A_surge * v_x * fabs(v_x);
-    double f_sway  = 0.5 * AIR_DENSITY * C * A_sway * v_y * fabs(v_y);
-    double f_roll  = f_sway * h_roll;
-    double f_pitch = f_surge * h_pitch;  
-    asv->dynamics.F_wind_all_directions[i][surge] = f_surge;
-    asv->dynamics.F_wind_all_directions[i][sway]  = f_sway;
-    asv->dynamics.F_wind_all_directions[i][roll]  = f_roll;
-    asv->dynamics.F_wind_all_directions[i][pitch] = f_pitch;
-    // heave and yaw assumed as zero.
-  }
-}
-
-// Function to calculate the wind force for the current time step.
-static void set_wind_force(struct Asv* asv)
-{
-  // Compute the wind angle with respect to ASV
-  double wind_direction_from = asv->wind->direction;
-  double wind_direction_to = (asv->wind->direction < PI) ? 
-                              PI + asv->wind->direction :
-                              asv->wind->direction - PI;
-  double wind_direction_wrt_asv = wind_direction_to - asv->attitude.heading ;// 
-                                  // wind direction the wind is blowing to with 
-                                  // respect to the asv.
-  // Better to keep angle +ve
-  wind_direction_wrt_asv = (wind_direction_wrt_asv < 0.0)? 
-                            2*PI + wind_direction_wrt_asv : 
-                            wind_direction_wrt_asv;
-
-  // Compute the index to get the wind force 
-  int index = round(wind_direction_wrt_asv * 180.0/PI);
-
-  asv->dynamics.F_wind = asv->dynamics.F_wind_all_directions[index];
-}
-
 // Function to calculate the propeller force for the current time step.
 static void set_propeller_force(struct Asv* asv)
 {
@@ -528,8 +467,7 @@ static void set_net_force(struct Asv* asv)
 {
   for(int i = 0; i < COUNT_DOF; ++i)
   {
-    asv->dynamics.F[i] = asv->dynamics.F_wave[i]       
-                         + asv->dynamics.F_wind[i]       
+    asv->dynamics.F[i] = asv->dynamics.F_wave[i]            
                          + asv->dynamics.F_propeller[i]  
                          + asv->dynamics.F_drag[i]       
                          + asv->dynamics.F_restoring[i];
@@ -593,17 +531,9 @@ static void set_attitude(struct Asv* asv)
   asv->attitude.trim    += asv->dynamics.X[pitch];
 }
 
-void asv_init(struct Asv* asv, 
-              struct Asv_specification spec, 
-              struct Wave* wave,
-              struct Wind* wind,
-              struct Current* current)
+void asv_init(struct Asv* asv, struct Asv_specification spec)
 {
-  // Copy pointers. 
   asv->spec = spec; 
-  asv->wave = wave; // Could be NULL.
-  asv->wind = wind; // Could be NULL.
-  asv->current = current; // Could be NULL.
   
   // Initialise the propellers
   asv->count_propellers = 0;
@@ -617,18 +547,6 @@ void asv_init(struct Asv* asv,
   asv->origin_position.x = 0.0;
   asv->origin_position.y = 0.0;
   asv->origin_position.z = 0.0;
-  set_cog(asv); // Match the position of the cog with that of origin
-  // Place the asv vertically in the correct position.
-  if(wave == NULL)
-  {
-    asv->origin_position.z = -asv->spec.T;
-  }
-  else
-  {
-    asv->origin_position.z = wave_get_elevation(wave, &asv->cog_position, 0.0)
-                             -asv->spec.T; 
-  }
-  // Reset the cog position.
   set_cog(asv); // Match the position of the cog with that of origin
 
   // Initialise time record 
@@ -650,9 +568,7 @@ void asv_init(struct Asv* asv,
   		  asv->dynamics.F_propeller                   [k] = 0.0;
   		  asv->dynamics.F_drag                        [k] = 0.0;
   		  asv->dynamics.F_restoring                   [k] = 0.0;
-        asv->dynamics.F_wind_all_directions   [i]   [k] = 0.0;
         asv->dynamics.F_unit_wave                [j][k] = 0.0;
-        asv->dynamics.F_wind = asv->dynamics.F_wind_all_directions[0];
   		}
     }
   }
@@ -663,24 +579,27 @@ void asv_init(struct Asv* asv,
   set_drag_coefficient(asv);
   // Set the stiffness matrix
   set_stiffness(asv);
+}
 
-  if(asv->wave)
-  {
-    // Set minimum encounter frequency
-    asv->dynamics.F_unit_wave_freq_min = get_encounter_frequency(
-                                          asv->wave->min_spectral_frequency,
-                                          asv->spec.max_speed, 0.0);
-    asv->dynamics.F_unit_wave_freq_max = get_encounter_frequency(
-                                          asv->wave->max_spectral_frequency,
-                                          asv->spec.max_speed, 2.0*PI);
-    // Set the wave force for unit waves
-    set_unit_wave_force(asv);
-  }
-  if(asv->wind)
-  {
-    // Set the wind force for all directions
-    set_wind_force_all_directions(asv);
-  }
+void asv_set_wave(struct Asv* asv, struct Wave* wave)
+{
+  asv->wave = wave;
+  
+  // Place the asv vertically in the correct position W.R.T wave
+  asv->origin_position.z = wave_get_elevation(wave, &asv->cog_position, 0.0)
+                             -asv->spec.T; 
+  // Reset the cog position.
+  set_cog(asv); // Match the position of the cog with that of origin
+
+  // Set minimum encounter frequency
+  asv->dynamics.F_unit_wave_freq_min = get_encounter_frequency(
+                                        asv->wave->min_spectral_frequency,
+                                        asv->spec.max_speed, 0.0);
+  asv->dynamics.F_unit_wave_freq_max = get_encounter_frequency(
+                                        asv->wave->max_spectral_frequency,
+                                        asv->spec.max_speed, 2.0*PI);
+  // Set the wave force for unit waves
+  set_unit_wave_force(asv);
 }
 
 void asv_set_position(struct Asv* asv, struct Point position)
@@ -704,12 +623,6 @@ void asv_set_dynamics(struct Asv* asv, double time)
   {
     // Get the wave force for the current time step
     set_wave_force(asv, time);
-  }
-  
-  if(asv->wind)
-  {
-    // Get the wind force for the current time step
-    set_wind_force(asv);
   }
   
   // Get the propeller force for the current time step

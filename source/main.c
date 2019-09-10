@@ -1,10 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include "world.h"
 #include "asv.h"
-#include "constants.h"
-#include "pid_controller.h"
 
 #define BUFFER_SIZE 50000
 
@@ -26,171 +23,150 @@ struct Simulation_data
   double thrust_fore_sb; // N.
   double thrust_aft_ps;  // N.
   double thrust_aft_sb;  // N.
-}simulation_data[BUFFER_SIZE];
+};
 
 int main(int argc, char** argv)
 {
   if(argc != 2)
   {
-    fprintf(stderr, "Error. Usage: %s input_file.xml.\n", argv[0]);
+    fprintf(stderr, "Error. Usage: %s output_file_prefix.\n", argv[0]);
     return 1;
   }
 
-  // Init world
-  struct World world;
-  world_init(&world, argv[1]);
+  // vehicle specification
+  struct Asv_specification asv_spec;
+  asv_spec.L_wl      = 0.3;
+  asv_spec.B_wl      = 0.3;
+  asv_spec.D         = 0.3;
+  asv_spec.T         = 0.1;
+  asv_spec.max_speed = 2.0;
+  asv_spec.disp      = 0.007;
+  asv_spec.r_roll    = 0.08;
+  asv_spec.r_pitch   = 0.08;
+  asv_spec.r_yaw     = 0.106;
+  asv_spec.cog.x     = 0.15;
+  asv_spec.cog.y     = 0.0;
+  asv_spec.cog.z     = 0.15;
 
-  // Init clock.
-  double time_step_size = 10.0; // time step size in milli-seconds 
-  double run_time = 0.0; // initialise time
-  int t = 0; // counter for time steps
-  clock_t start, end;
+  // set vehicle propellers
+  struct Asv_propeller propellers[4];
+  asv_propeller_init(&(propellers[0]), (struct Point){1.585, -0.085, -0.125});
+  asv_propeller_init(&(propellers[1]), (struct Point){1.585, +0.085, -0.125});
+  asv_propeller_init(&(propellers[2]), (struct Point){1.415, -0.085, -0.125});
+  asv_propeller_init(&(propellers[3]), (struct Point){1.415, +0.085, -0.125});
 
-  // Propeller orientations are fixed.
-  struct Attitude propeller_orientation = (struct Attitude){0.0,0.0,0.0};
+  // vehicle to move to destination point
+  struct Point destination = (struct Point){0.0, 10.0, 0};
 
-  // Set destination
-  struct Point destination = (struct Point){100.0, 100.0, 0.0};
-  
-  // Start simulation
-  for(double h = 0.0; h <= 15; h=h+0.5)
+  // start simultion
+  for(double h = 0.0; h <= 15.0; h=h+0.5)
   {
-    // Reset time for each simulation
-    run_time = 0.0; 
-    t = 0; 
-
-    // Reset the world
-    if(h != 0.0)
-    {
-      if(world.wave == NULL)
-      {
-        world.wave = (struct Wave*)malloc(sizeof(struct Wave));
-      }
-      wave_init_with_sig_wave_ht(world.wave, h, 0.0);
-      asv_init(&world.asv, 
-               world.asv.spec, 
-               world.wave, 
-               world.wind, 
-               world.current);
-    }
-
-    fprintf(stdout, 
-      "\nStar simulation for significant wave height of {%f} m. \n", h);
-    fprintf(stdout, "--> time step size = %f milli_seconds. \n", 
-            time_step_size);
-    
-    // Start clock to measure time.
-    start = clock();
-    while(world.asv.cog_position.x < destination.x)
-    {
-      // Get the wave elevation if wave is simulated.
-      double wave_elevation = 0.0;
-      if(world.wave)
-      {  
-        wave_elevation = wave_get_elevation(world.wave, 
-                                            &world.asv.cog_position, 
-                                            run_time);
-      }
-
-      // Set the propeller thrust and orientation.
-      asv_propeller_set_thrust(&world.asv.propellers[0], 
-                               5.0,
-                               propeller_orientation);
-      asv_propeller_set_thrust(&world.asv.propellers[1], 
-                               5.0,
-                               propeller_orientation);
-      asv_propeller_set_thrust(&world.asv.propellers[2], 
-                               5.0,
-                               propeller_orientation);
-      asv_propeller_set_thrust(&world.asv.propellers[3], 
-                               5.0,
-                               propeller_orientation);
-
-      // Get the asv dynamics for the current time step.
-      world_set_frame(&world, run_time);
-
-      // Record the simulated data.
-      if(t < BUFFER_SIZE)
-      {
-        run_time = (t*time_step_size)/1000.0; // seconds
-        simulation_data[t].time = run_time;
-        simulation_data[t].wave_elevation = wave_elevation;
-        simulation_data[t].cog_x = world.asv.cog_position.x;
-        simulation_data[t].cog_y = world.asv.cog_position.y;
-        simulation_data[t].cog_z = world.asv.cog_position.z -
-                                  (world.asv.spec.cog.z - world.asv.spec.T);
-        simulation_data[t].heel = world.asv.attitude.heel * 180.0/PI;
-        simulation_data[t].trim = world.asv.attitude.trim * 180.0/PI;
-        simulation_data[t].heel = world.asv.attitude.heading * 180.0/PI;
-        ++t;
-      }
-      else
-      {
-        fprintf(stderr, "Error: no buffer space for simulated data. \n");
-        break;
-        //return 0;
-      }     
-    }
-    // Stop clock.
-    end = clock();
-
-    // Record the results.
-    // Open output text file. 
-    char* in_file = argv[1];
+    // Open file to print result
     char out_file[120];
-    if(strlen(in_file) > 114)
-    {
-      fprintf(stderr, "Error. Filename too long. Cannot create output file.\n");
-      return 1;
-    }
-    for(int i = 0; i<strlen(in_file)-4; ++i)
-    {
-      out_file[i] = in_file[i];
-    }
-    sprintf(out_file+strlen(in_file)-4, "_%.2f.txt", h);
+    sprintf(out_file, "%s_%.2f.txt", argv[1], h);
     FILE* fp;
     if(!(fp = fopen(out_file, "w")))
     {
       fprintf(stderr, "Error. Cannot open output file %s.\n", out_file);
       return 1;
     }
-    // Print the results to the file
-    fprintf(fp, "# task duration = %f seconds.\n", run_time);
-    fprintf(fp, "# time taken for simulation = %f sec. \n", 
-            ((double)(end - start)) / CLOCKS_PER_SEC);
-    
-    fprintf(fp, "#[01]time(sec)  "
-               "[02]wave_elevation(m)  " 
-               "[03]cog_x(m)  "
-               "[04]cog_y(m)  "
-               "[05]cog_z(m)  "
-               "[06]heel(deg)  "
-               "[07]trim(deg)  "
-               "[08]heading(deg) " 
-               "\n");
-    for(int i = 0; i < t; ++i)
+
+    // Buffer to store simulation data before writing to file.
+    struct Simulation_data buffer[BUFFER_SIZE];
+
+    // init vehicle
+    struct Asv asv;
+    asv_init(&asv, asv_spec);
+    asv_set_propeller(&asv, propellers[0]);
+    asv_set_propeller(&asv, propellers[1]);
+    asv_set_propeller(&asv, propellers[2]);
+    asv_set_propeller(&asv, propellers[3]);
+
+    // init wave
+    struct Wave wave;
+    double wave_heading = 0.0;
+    if(h != 0.0)
     {
-      fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f \n", 
-              simulation_data[i].time,
-              simulation_data[i].wave_elevation,
-              simulation_data[i].cog_x, 
-              simulation_data[i].cog_y, 
-              simulation_data[i].cog_z, 
-              simulation_data[i].heel, 
-              simulation_data[i].trim, 
-              simulation_data[i].heading);
+      wave_init(&wave, h, wave_heading);
+      asv_set_wave(&asv, &wave);
     }
 
-    fprintf(stdout, "--> task duration = %f seconds. \n", run_time);
-    fprintf(stdout, "--> time taken for simulation = %f sec. \n", 
+    // start clock
+    double time = 0.0;
+    int t = 0;
+    double time_step_size = 10.0; //milli-sec
+    clock_t start, end;
+    start = clock();
+
+    while(asv.cog_position.y <= destination.y)
+    {
+      // time
+      time = t*time_step_size/1000.0; //sec
+
+      // set propeller thrust
+      asv_propeller_set_thrust(&(asv.propellers[0]), 
+        5.0, (struct Attitude){0.0,0.0,0.0});
+      asv_propeller_set_thrust(&(asv.propellers[1]), 
+        5.0, (struct Attitude){0.0,0.0,0.0});
+      asv_propeller_set_thrust(&(asv.propellers[2]), 
+        5.0, (struct Attitude){0.0,0.0,0.0});
+      asv_propeller_set_thrust(&(asv.propellers[3]), 
+        5.0, (struct Attitude){0.0,0.0,0.0});
+
+      // compute new position and attitude
+      asv_set_dynamics(&asv, time);
+
+      // compute wave elevation
+      double wave_elevation = 0.0;
+      if(h != 0.0)
+      {
+        wave_elevation = wave_get_elevation(&wave, &asv.cog_position, time);
+      }
+
+      // save the buffer
+      buffer[t].time = time;
+      buffer[t].wave_elevation = wave_elevation;
+      buffer[t].cog_x = asv.cog_position.x;
+      buffer[t].cog_y = asv.cog_position.y;
+      buffer[t].cog_z = asv.cog_position.z - (asv.spec.cog.z - asv.spec.T);
+      buffer[t].heel = asv.attitude.heel * 180.0/PI;
+      buffer[t].trim = asv.attitude.trim * 180.0/PI;
+      buffer[t].heel = asv.attitude.heading * 180.0/PI;
+
+      // increment time
+      ++t;
+    }
+
+    // end clock
+    end = clock();
+    double simulation_time = (end - start) / CLOCKS_PER_SEC;
+
+    // Display on screen
+    fprintf(stdout, "# significant wave height = %f m.\n", h);
+    fprintf(stdout, "# task duration = %f seconds.\n", time);
+    fprintf(stdout, "# time taken for simulation = %f sec. \n", 
             ((double)(end - start)) / CLOCKS_PER_SEC);
-    fprintf(stdout, "--> simulation data written to file %s. \n", 
-            out_file);
+
+    // write buffer to file and close the file.
+    fprintf(fp, "# significant wave height = %f m.\n", h);
+    fprintf(fp, "# task duration = %f seconds.\n", time);
+    fprintf(fp, "# time taken for simulation = %f sec. \n", 
+            ((double)(end - start)) / CLOCKS_PER_SEC);
+    for(int i = 0; i <= t; ++i)
+    {
+      fprintf(fp, "%f %f %f %f %f %f %f %f \n", 
+              buffer[i].time,
+              buffer[i].wave_elevation,
+              buffer[i].cog_x, 
+              buffer[i].cog_y, 
+              buffer[i].cog_z, 
+              buffer[i].heel, 
+              buffer[i].trim, 
+              buffer[i].heading);
+    }
+
     fclose(fp);
   }
-  
-  world_clean(&world);
-  fprintf(stdout, "End simulation. \n");
 
   return 0;
 }

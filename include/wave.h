@@ -3,9 +3,6 @@
 
 #include "regular_wave.h"
 
-// Forward declaration of wind model.
-struct Wind;
-
 #define COUNT_WAVE_SPECTRAL_FREQUENCIES 20
 #define COUNT_WAVE_SPECTRAL_DIRECTIONS  10
 
@@ -41,15 +38,6 @@ struct Wave
 };
 
 /**
- * Initialise the irregular wave on the sea surface using the wind data. 
- * @param wave is the pointer to the wave object to be initialised. Assumes wave 
- * is not a null pointer and that all values in the structure are to be 
- * overwritten.
- * @param wind is the pointer to the wind model. 
- */
-void wave_init_with_wind(struct Wave* wave, struct Wind* wind);
-
-/**
  * Initialise the irregular wave on the sea using significant wave height as
  * input.
  * @param wave is the pointer to the wave object to be initialised. Assumes wave 
@@ -58,22 +46,9 @@ void wave_init_with_wind(struct Wave* wave, struct Wind* wind);
  * @param sig_wave_height is the significant wave height to achieve for the
  * irregular sea being initialised. Value should be non-zero positive.
  */
-void wave_init_with_sig_wave_ht(struct Wave* wave, 
-                                double sig_wave_height, 
-                                double wave_heading);
-
-/**
- * Initialise the irregular wave on the sea using the peak spectral frequency to
- * as input. 
- * @param wave is the pointer to the wave object to be initialised. Assumes wave
- * is not a null pointer and that all values in the structure are to be 
- * overwritten.
- * @param peak_spectral_freq is the peak spectral frequency to achieve for the 
- * irregular sea being initialised. Value should be non-zero positive.
- */
-void wave_init_with_peak_freq(struct Wave* wave, 
-                              double peak_spectral_freq, 
-                              double wave_heading);
+void wave_init(struct Wave* wave, 
+               double sig_wave_height, 
+               double wave_heading);
 
 /**
  * Free memory allocated.
