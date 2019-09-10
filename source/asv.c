@@ -531,13 +531,9 @@ static void set_attitude(struct Asv* asv)
   asv->attitude.trim    += asv->dynamics.X[pitch];
 }
 
-void asv_init(struct Asv* asv, 
-              struct Asv_specification spec, 
-              struct Wave* wave)
+void asv_init(struct Asv* asv, struct Asv_specification spec)
 {
-  // Copy pointers. 
   asv->spec = spec; 
-  asv->wave = wave; // Could be NULL.
   
   // Initialise the propellers
   asv->count_propellers = 0;
@@ -551,18 +547,6 @@ void asv_init(struct Asv* asv,
   asv->origin_position.x = 0.0;
   asv->origin_position.y = 0.0;
   asv->origin_position.z = 0.0;
-  set_cog(asv); // Match the position of the cog with that of origin
-  // Place the asv vertically in the correct position.
-  if(wave == NULL)
-  {
-    asv->origin_position.z = -asv->spec.T;
-  }
-  else
-  {
-    asv->origin_position.z = wave_get_elevation(wave, &asv->cog_position, 0.0)
-                             -asv->spec.T; 
-  }
-  // Reset the cog position.
   set_cog(asv); // Match the position of the cog with that of origin
 
   // Initialise time record 
@@ -595,19 +579,27 @@ void asv_init(struct Asv* asv,
   set_drag_coefficient(asv);
   // Set the stiffness matrix
   set_stiffness(asv);
+}
 
-  if(asv->wave)
-  {
-    // Set minimum encounter frequency
-    asv->dynamics.F_unit_wave_freq_min = get_encounter_frequency(
-                                          asv->wave->min_spectral_frequency,
-                                          asv->spec.max_speed, 0.0);
-    asv->dynamics.F_unit_wave_freq_max = get_encounter_frequency(
-                                          asv->wave->max_spectral_frequency,
-                                          asv->spec.max_speed, 2.0*PI);
-    // Set the wave force for unit waves
-    set_unit_wave_force(asv);
-  }
+void asv_set_wave(struct Asv* asv, struct Wave* wave)
+{
+  asv->wave = wave;
+  
+  // Place the asv vertically in the correct position W.R.T wave
+  asv->origin_position.z = wave_get_elevation(wave, &asv->cog_position, 0.0)
+                             -asv->spec.T; 
+  // Reset the cog position.
+  set_cog(asv); // Match the position of the cog with that of origin
+
+  // Set minimum encounter frequency
+  asv->dynamics.F_unit_wave_freq_min = get_encounter_frequency(
+                                        asv->wave->min_spectral_frequency,
+                                        asv->spec.max_speed, 0.0);
+  asv->dynamics.F_unit_wave_freq_max = get_encounter_frequency(
+                                        asv->wave->max_spectral_frequency,
+                                        asv->spec.max_speed, 2.0*PI);
+  // Set the wave force for unit waves
+  set_unit_wave_force(asv);
 }
 
 void asv_set_position(struct Asv* asv, struct Point position)

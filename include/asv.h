@@ -92,6 +92,17 @@ void asv_propeller_set_thrust(struct Asv_propeller* propeller,
                               struct Attitude orientation);
 
 /**
+ * Function to initialise a model of ASV. This function initialises all
+ * properties of the ASV and also places the ASV in the origin of the global
+ * frame at its still water floating condition.
+ * @param asv is the object to be initialised.
+ * @param spec is the pointer to the specifications. Assumes that spec is not
+ * NULL and has a lifetime at least equal to that of pointer asv.
+ */
+void asv_init(struct Asv* asv, 
+              struct Asv_specification spec);
+
+/**
  * Function to set a propeller in an ASV.
  * @param asv to which the propeller is to be fixed.
  * @param propeller to be fixed. Pointer propeller should have at least the same 
@@ -101,20 +112,7 @@ void asv_propeller_set_thrust(struct Asv_propeller* propeller,
 int asv_set_propeller(struct Asv* asv, struct Asv_propeller propeller);
 
 
-/**
- * Function to initialise a model of ASV. This function initialises all
- * properties of the ASV and also places the ASV in the origin of the global
- * frame at its still water floating condition.
- * @param asv is the object to be initialised.
- * @param spec is the pointer to the specifications. Assumes that spec is not
- * NULL and has a lifetime at least equal to that of pointer asv.
- * @param wave is the pointer to the wave model. Value can be set to NULL if
- * wave forces are not required to be simulated. Pointer wave should have at
- * least the same life time of pointer asv.
- */
-void asv_init(struct Asv* asv, 
-              struct Asv_specification spec, 
-              struct Wave* wave);
+void asv_set_wave(struct Asv* asv, struct Wave* wave);
 
 /**
  * Function to set the initial position of the ASV in the global frame. The 
