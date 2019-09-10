@@ -1,179 +1,172 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include "world.h"
 #include "asv.h"
-#include "constants.h"
-#include "pid_controller.h"
+
+#define BUFFER_SIZE 50000
+
+/**
+ * A simple struct to record the simulated data for each time step of 
+ * simulation.
+ */
+struct Simulation_data
+{
+  double time; // sec.
+  double wave_elevation; // Wave elevation at the position of the vehicle, m.
+  double cog_x;   // m.
+  double cog_y;   // m.
+  double cog_z;   // m.
+  double heel;    // deg.
+  double trim;    // deg. 
+  double heading; // deg.
+  double thrust_fore_ps; // N.
+  double thrust_fore_sb; // N.
+  double thrust_aft_ps;  // N.
+  double thrust_aft_sb;  // N.
+};
 
 int main(int argc, char** argv)
 {
   if(argc != 2)
   {
-    fprintf(stderr, "Error. Usage: %s input_file.xml.\n", argv[0]);
+    fprintf(stderr, "Error. Usage: %s output_file_prefix.\n", argv[0]);
     return 1;
   }
 
-  struct World world;
-  world_init(&world, argv[1]);
+  // vehicle specification
+  struct Asv_specification asv_spec;
+  asv_spec.L_wl      = 0.3;
+  asv_spec.B_wl      = 0.3;
+  asv_spec.D         = 0.3;
+  asv_spec.T         = 0.1;
+  asv_spec.max_speed = 2.0;
+  asv_spec.disp      = 0.007;
+  asv_spec.r_roll    = 0.08;
+  asv_spec.r_pitch   = 0.08;
+  asv_spec.r_yaw     = 0.106;
+  asv_spec.cog.x     = 0.15;
+  asv_spec.cog.y     = 0.0;
+  asv_spec.cog.z     = 0.15;
 
-  // Open output file to print results
-  char* in_file = argv[1];
-  char out_file[120];
-  if(strlen(in_file) > 114)
+  // set vehicle propellers
+  struct Asv_propeller propellers[4];
+  asv_propeller_init(&(propellers[0]), (struct Point){1.585, -0.085, -0.125});
+  asv_propeller_init(&(propellers[1]), (struct Point){1.585, +0.085, -0.125});
+  asv_propeller_init(&(propellers[2]), (struct Point){1.415, -0.085, -0.125});
+  asv_propeller_init(&(propellers[3]), (struct Point){1.415, +0.085, -0.125});
+
+  // vehicle to move to destination point
+  struct Point destination = (struct Point){0.0, 10.0, 0};
+
+  // start simultion
+  for(double h = 0.0; h <= 15.0; h=h+0.5)
   {
-    fprintf(stderr, "Error. Filename too long. Cannot create output file.\n");
-    return 1;
-  }
-  for(int i = 0; i<strlen(in_file)-4; ++i)
-  {
-    out_file[i] = in_file[i];
-  }
-  strcpy(out_file+strlen(in_file)-4, "_out.txt");
-  FILE* fp;
-  if(!(fp = fopen(out_file, "w")))
-  {
-    fprintf(stderr, "Error. Cannot open output file %s.\n", out_file);
-    return 1;
-  }
+    // Open file to print result
+    char out_file[120];
+    sprintf(out_file, "%s_%.2f.txt", argv[1], h);
+    FILE* fp;
+    if(!(fp = fopen(out_file, "w")))
+    {
+      fprintf(stderr, "Error. Cannot open output file %s.\n", out_file);
+      return 1;
+    }
 
-  // Initialise the PID controller
-  struct PID_controller controller;
-  pid_controller_init(&controller);
-  struct Point way_points[] = {
-                               (struct Point){100.0, 0.0,     0.0},
-                               (struct Point){200.0, 0.0,     0.0},
-                               (struct Point){200.0, 100.0,  0.0},
-                               (struct Point){100.0, 100.0,  0.0},
-                               (struct Point){100.0, 0.0,     0.0},
-                               (struct Point){100.0, -100.0, 0.0},
-                               (struct Point){0.0,    -100.0, 0.0},
-                               (struct Point){0.0,    0.0,     0.0}
-                              };
-  
-  const int count_way_points = sizeof(way_points)/sizeof(struct Point);
-  
-  // Initialise simulation time.
-  double time_step_size = 10.0; // time for each frame in milli-seconds 
-  double run_time = 0.0; // initialise time
+    // Buffer to store simulation data before writing to file.
+    struct Simulation_data buffer[BUFFER_SIZE];
 
-  // PID controller set gain terms
-  double p_position = 1.0 * time_step_size/1000.0;
-  double i_position = 0.1 * time_step_size/1000.0;
-  double d_position = -10.0 * time_step_size/1000.0;
-  pid_controller_set_gains_position(&controller, 
-                                    p_position, i_position, d_position);
-  double p_heading = 1.0 * time_step_size/1000.0;
-  double i_heading = 0.1 * time_step_size/1000.0;
-  double d_heading = -10.0 * time_step_size/1000.0;
-  pid_controller_set_gains_heading(&controller, 
-                                   p_heading, i_heading, d_heading);
+    // init vehicle
+    struct Asv asv;
+    asv_init(&asv, asv_spec);
+    asv_set_propeller(&asv, propellers[0]);
+    asv_set_propeller(&asv, propellers[1]);
+    asv_set_propeller(&asv, propellers[2]);
+    asv_set_propeller(&asv, propellers[3]);
 
-  // Propeller orientations are fixed.
-  struct Attitude propeller_orientation = (struct Attitude){0.0,0.0,0.0};
-  
-  // Start simulation
-  fprintf(stdout, "Star simulation: \n");
-  
-  fprintf(stdout, "--> time step size = %f milli_seconds. \n", time_step_size);
-  
-  fprintf(fp, "#[01]time(sec)  "
-               "[02]wave_elevation(m)  " 
-               "[03]cog_x(m)  "
-               "[04]cog_y(m)  "
-               "[05]cog_z(m)  "
-               "[06]heel(deg)  "
-               "[07]trim(deg)  "
-               "[08]heading(deg) " 
-               "[09]thrust_fore_ps(N) "
-               "[10]thrust_fore_sb(N) "
-               "[11]thrust_aft_ps(N)  "
-               "[12]thrust_aft_sb(N)  "
-               "\n");
-  clock_t start, end;
-  for(int i = 0; i < count_way_points; run_time+=(time_step_size/1000.0))
-  {
-    pid_controller_set_way_point(&controller, way_points[i]);
+    // init wave
+    struct Wave wave;
+    double wave_heading = 0.0;
+    if(h != 0.0)
+    {
+      wave_init(&wave, h, wave_heading);
+      asv_set_wave(&asv, &wave);
+    }
 
-    // Start clock to measure time for each simulation step.
+    // start clock
+    double time = 0.0;
+    int t = 0;
+    double time_step_size = 10.0; //milli-sec
+    clock_t start, end;
     start = clock();
 
-    // Get the wave elevation if wave is simulated.
-    double wave_elevation = 0.0;
-    if(world.wave)
-    {  
-      wave_elevation = wave_get_elevation(world.wave, 
-                                          &world.asv.cog_position, 
-                                          run_time);
-    }
-
-    // Inform PID controller of the current state.
-    pid_controller_set_current_state(&controller, 
-                                   world.asv.cog_position,
-                                   world.asv.attitude);
-    // PID controller estimate thrust to be applied on each propeller.
-    pid_controller_set_thrust(&controller);
-    
-    // Set the propeller thrust and orientation.
-    asv_propeller_set_thrust(&world.asv.propellers[0], 
-                             controller.thrust_fore_ps,
-                             propeller_orientation);
-    asv_propeller_set_thrust(&world.asv.propellers[1], 
-                             controller.thrust_fore_sb,
-                             propeller_orientation);
-    asv_propeller_set_thrust(&world.asv.propellers[2], 
-                             controller.thrust_aft_ps,
-                             propeller_orientation);
-    asv_propeller_set_thrust(&world.asv.propellers[3], 
-                             controller.thrust_aft_sb,
-                             propeller_orientation);
-
-    // Get the asv dynamics for the current time step.
-    world_set_frame(&world, run_time);
-
-    // Print the results.
-    fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f \n", 
-            run_time, 
-            wave_elevation,
-            world.asv.cog_position.x, 
-            world.asv.cog_position.y, 
-            world.asv.cog_position.z -(world.asv.spec.cog.z - world.asv.spec.T), 
-            world.asv.attitude.heel * 180.0/PI, 
-            world.asv.attitude.trim * 180.0/PI, 
-            world.asv.attitude.heading * 180.0/PI,
-            controller.thrust_fore_ps, 
-            controller.thrust_fore_sb,
-            controller.thrust_aft_ps,
-            controller.thrust_aft_sb); 
-
-    // Stop clock.
-    end = clock();
-
-    // If reached a way-point then move on to next
-    double x1 = world.asv.cog_position.x;
-    double y1 = world.asv.cog_position.y;
-    double x2 = way_points[i].x;
-    double y2 = way_points[i].y;
-    double error = sqrt(pow(x2-x1, 2.0) + pow(y2-y1, 2.0));
-    double margin = 1.0; // acceptable error margin in m.
-    if(error <= margin)
+    while(asv.cog_position.y <= destination.y)
     {
-      fprintf(stdout, "--> reached way-point[%i] (%f m, %f m, %f m). \n", 
-              i, way_points[i].x, way_points[i].y, way_points[i].z);
-      ++i;
+      // time
+      time = t*time_step_size/1000.0; //sec
+
+      // set propeller thrust
+      asv_propeller_set_thrust(&(asv.propellers[0]), 
+        5.0, (struct Attitude){0.0,0.0,0.0});
+      asv_propeller_set_thrust(&(asv.propellers[1]), 
+        5.0, (struct Attitude){0.0,0.0,0.0});
+      asv_propeller_set_thrust(&(asv.propellers[2]), 
+        5.0, (struct Attitude){0.0,0.0,0.0});
+      asv_propeller_set_thrust(&(asv.propellers[3]), 
+        5.0, (struct Attitude){0.0,0.0,0.0});
+
+      // compute new position and attitude
+      asv_set_dynamics(&asv, time);
+
+      // compute wave elevation
+      double wave_elevation = 0.0;
+      if(h != 0.0)
+      {
+        wave_elevation = wave_get_elevation(&wave, &asv.cog_position, time);
+      }
+
+      // save the buffer
+      buffer[t].time = time;
+      buffer[t].wave_elevation = wave_elevation;
+      buffer[t].cog_x = asv.cog_position.x;
+      buffer[t].cog_y = asv.cog_position.y;
+      buffer[t].cog_z = asv.cog_position.z - (asv.spec.cog.z - asv.spec.T);
+      buffer[t].heel = asv.attitude.heel * 180.0/PI;
+      buffer[t].trim = asv.attitude.trim * 180.0/PI;
+      buffer[t].heel = asv.attitude.heading * 180.0/PI;
+
+      // increment time
+      ++t;
     }
+
+    // end clock
+    end = clock();
+    double simulation_time = (end - start) / CLOCKS_PER_SEC;
+
+    // Display on screen
+    fprintf(stdout, "# significant wave height = %f m.\n", h);
+    fprintf(stdout, "# task duration = %f seconds.\n", time);
+    fprintf(stdout, "# time taken for simulation = %f sec. \n", 
+            ((double)(end - start)) / CLOCKS_PER_SEC);
+
+    // write buffer to file and close the file.
+    fprintf(fp, "# significant wave height = %f m.\n", h);
+    fprintf(fp, "# task duration = %f seconds.\n", time);
+    fprintf(fp, "# time taken for simulation = %f sec. \n", 
+            ((double)(end - start)) / CLOCKS_PER_SEC);
+    for(int i = 0; i <= t; ++i)
+    {
+      fprintf(fp, "%f %f %f %f %f %f %f %f \n", 
+              buffer[i].time,
+              buffer[i].wave_elevation,
+              buffer[i].cog_x, 
+              buffer[i].cog_y, 
+              buffer[i].cog_z, 
+              buffer[i].heel, 
+              buffer[i].trim, 
+              buffer[i].heading);
+    }
+
+    fclose(fp);
   }
-
-  fprintf(stdout, "--> task duration = %f seconds. \n", run_time/1000.0);
-  fprintf(stdout, "--> time taken per simulation cycle = %f milli-sec. \n", 
-          ((double)(end - start)) / CLOCKS_PER_SEC * 1000);
-  fprintf(stdout, "--> simulation data written to file %s. \n", 
-          out_file);
-  fclose(fp);
-  
-  fprintf(stdout, "End simulation. \n");
-
-  world_clean(&world);
 
   return 0;
 }
