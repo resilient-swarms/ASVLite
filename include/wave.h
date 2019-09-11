@@ -45,6 +45,7 @@ struct Wave
  * overwritten.
  * @param sig_wave_height is the significant wave height to achieve for the
  * irregular sea being initialised. Value should be non-zero positive.
+ * @param wave_heading in radians
  */
 void wave_init(struct Wave* wave, 
                double sig_wave_height, 

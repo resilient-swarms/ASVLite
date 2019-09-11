@@ -84,7 +84,7 @@ int main(int argc, char** argv)
 
     // init wave
     struct Wave wave;
-    double wave_heading = 0.0;
+    double wave_heading = PI;
     if(h != 0.0)
     {
       wave_init(&wave, h, wave_heading);
@@ -152,6 +152,15 @@ int main(int argc, char** argv)
     fprintf(fp, "# task duration = %f seconds.\n", time);
     fprintf(fp, "# time taken for simulation = %f sec. \n", 
             ((double)(end - start)) / CLOCKS_PER_SEC);
+    fprintf(fp, "#[01]time(sec)  "
+               "[02]wave_elevation(m)  " 
+               "[03]cog_x(m)  "
+               "[04]cog_y(m)  "
+               "[05]cog_z(m)  "
+               "[06]heel(deg)  "
+               "[07]trim(deg)  "
+               "[08]heading(deg) " 
+               "\n");
     for(int i = 0; i <= t; ++i)
     {
       fprintf(fp, "%f %f %f %f %f %f %f %f \n", 
