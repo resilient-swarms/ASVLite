@@ -6,25 +6,11 @@
 #define COUNT_WAVE_SPECTRAL_FREQUENCIES 20
 #define COUNT_WAVE_SPECTRAL_DIRECTIONS  10
 
-/**
- * Structure to define the model of irregular wave on the sea surface. The wave 
- * model can provide the wave elevation at any location at any instance of time.
- *
- * The irregular sea wave is considered as resultant of super-positioning of a 
- * collection of many regular waves. Wave spectrum helps to make the collection 
- * of regular waves such that the irregular wave formed by the super-positioning 
- * has the required statistical properties of the irregular sea simulated.
- *
- * Bretschneider spectrum is used for creating the collection of regular wave.
- * Bretschneider spectrum is a continues spectrum but for the implementation it 
- * has be converted to a discrete spectrum. COUNT_SPECTRAL_FREQUENCIES specifies 
- * the number of discrete frequencies in the spectrum and 
- * COUNT_SPECTRAL_DIRECTIONS specifies the number of discrete number of
- * directions in the spectrum.
- */
 struct Wave
 {
-  struct Regular_wave* spectrum ; // List of regular waves in the irregular sea.
+  // List of regular waves in the irregular sea.
+  struct Regular_wave spectrum[COUNT_WAVE_SPECTRAL_DIRECTIONS]
+                              [COUNT_WAVE_SPECTRAL_FREQUENCIES];
   double min_spectral_frequency;  // Lower limit (0.1%) of spectral energy 
                                   // threshold.
   double max_spectral_frequency;  // Upper limit (99.9%) of spectral energy 
@@ -40,8 +26,8 @@ struct Wave
 /**
  * Initialise the irregular wave on the sea using significant wave height as
  * input.
- * @param wave is the pointer to the wave object to be initialised. Assumes wave 
- * is not a null pointer and that all values in the structure are to be
+ * @param wave is the pointer to the wave object to be initialised. Assumes 
+ * wave is not a null pointer and that all values in the structure are to be
  * overwritten.
  * @param sig_wave_height is the significant wave height to achieve for the
  * irregular sea being initialised. Value should be non-zero positive.
@@ -50,11 +36,6 @@ struct Wave
 void wave_init(struct Wave* wave, 
                double sig_wave_height, 
                double wave_heading);
-
-/**
- * Free memory allocated.
- */
-void wave_clean(struct Wave* wave);
 
 /**
  * Get sea surface elevation at the given location for the given time. 
