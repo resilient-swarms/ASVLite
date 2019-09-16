@@ -13,6 +13,7 @@ INCLUDE_DIRECTORIES(
 # ------------
 SET( SOURCE
   dependency/tomlc99/toml.c
+  source/input.c
   source/regular_wave.c
   source/wave.c
   source/asv.c
