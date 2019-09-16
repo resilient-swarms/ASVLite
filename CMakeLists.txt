@@ -6,11 +6,13 @@ PROJECT(asv_simulator C)
 # --------------------------------
 INCLUDE_DIRECTORIES(
   include
+  dependency/tomlc99
   )
 
 # SOURCE FILES
 # ------------
 SET( SOURCE
+  dependency/tomlc99/toml.c
   source/regular_wave.c
   source/wave.c
   source/asv.c

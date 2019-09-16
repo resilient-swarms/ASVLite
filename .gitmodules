@@ -1,3 +1,6 @@
 [submodule "dependency/eigen-git-mirror"]
 	path = dependency/eigen-git-mirror
 	url = https://github.com/eigenteam/eigen-git-mirror.git
+[submodule "dependency/tomlc99"]
+	path = dependency/tomlc99
+	url = https://github.com/cktan/tomlc99.git
