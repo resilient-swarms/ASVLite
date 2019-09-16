@@ -298,14 +298,12 @@ static void set_wave_force(struct Asv* asv, double time)
   {
     for(int j = 0; j < COUNT_WAVE_SPECTRAL_FREQUENCIES; ++j)
     {
-      struct Regular_wave* reg_wave = asv->wave->spectrum + 
-                                      (i * COUNT_WAVE_SPECTRAL_DIRECTIONS + j);
       // Compute the encounter frequency
-      double angle = reg_wave->direction - asv->attitude.heading;
+      double angle = asv->wave.spectrum[i][j].direction - asv->attitude.heading;
       // Better to keep angle +ve
       angle = (angle < 0.0)? 2*PI + angle : angle;
       // Get encounter frequency
-      double freq = get_encounter_frequency(reg_wave->frequency,
+      double freq = get_encounter_frequency(asv->wave.spectrum[i][j].frequency,
                                             asv->dynamics.V[surge], angle);
 
       // Get the index for unit wave force for the encounter frequency
@@ -315,35 +313,35 @@ static void set_wave_force(struct Asv* asv, double time)
       int index = round(freq/freq_step_size);
 
       // Compute the scaling factor to compute the wave force from unit wave
-      double scale = reg_wave->amplitude * 2.0;
+      double scale = asv->wave.spectrum[i][j].amplitude * 2.0;
 
       // Assume the wave force to be have zero phase lag with the wave
-      double phase_cog = regular_wave_get_phase(reg_wave, 
+      double phase_cog = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
                                                 &asv->cog_position, 
                                                 time); // wave phase at the cog
                                                        // position.
       struct Point point_aft = asv->cog_position;
       point_aft.x -= (asv->spec.L_wl*0.25)*cos(asv->attitude.heading);
       point_aft.y -= (asv->spec.L_wl*0.25)*sin(asv->attitude.heading);
-      double phase_aft = regular_wave_get_phase(reg_wave, 
+      double phase_aft = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
                                                 &point_aft, 
                                                 time);
       struct Point point_fore = asv->cog_position;
       point_fore.x += (asv->spec.L_wl*0.25)*cos(asv->attitude.heading);
       point_fore.y += (asv->spec.L_wl*0.25)*sin(asv->attitude.heading);
-      double phase_fore = regular_wave_get_phase(reg_wave, 
+      double phase_fore = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
                                                  &point_fore, 
                                                  time);
       struct Point point_ps = asv->cog_position;
       point_ps.x -= (asv->spec.B_wl*0.25)*sin(asv->attitude.heading);
       point_ps.y += (asv->spec.B_wl*0.25)*cos(asv->attitude.heading);
-      double phase_ps = regular_wave_get_phase(reg_wave, 
+      double phase_ps = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
                                                &point_ps, 
                                                time);
       struct Point point_sb = asv->cog_position;
       point_sb.x += (asv->spec.B_wl*0.25)*sin(asv->attitude.heading);
       point_sb.y -= (asv->spec.B_wl*0.25)*cos(asv->attitude.heading);
-      double phase_sb = regular_wave_get_phase(reg_wave, 
+      double phase_sb = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
                                                &point_sb, 
                                                time);
       
@@ -531,10 +529,8 @@ static void set_attitude(struct Asv* asv)
   asv->attitude.trim    += asv->dynamics.X[pitch];
 }
 
-void asv_init(struct Asv* asv, struct Asv_specification spec)
+void asv_init(struct Asv* asv)
 {
-  asv->spec = spec; 
-  
   // Initialise the propellers
   asv->count_propellers = 0;
   
@@ -581,27 +577,6 @@ void asv_init(struct Asv* asv, struct Asv_specification spec)
   set_stiffness(asv);
 }
 
-void asv_set_wave(struct Asv* asv, struct Wave* wave)
-{
-  asv->wave = wave;
-  
-  // Place the asv vertically in the correct position W.R.T wave
-  asv->origin_position.z = wave_get_elevation(wave, &asv->cog_position, 0.0)
-                             -asv->spec.T; 
-  // Reset the cog position.
-  set_cog(asv); // Match the position of the cog with that of origin
-
-  // Set minimum encounter frequency
-  asv->dynamics.F_unit_wave_freq_min = get_encounter_frequency(
-                                        asv->wave->min_spectral_frequency,
-                                        asv->spec.max_speed, 0.0);
-  asv->dynamics.F_unit_wave_freq_max = get_encounter_frequency(
-                                        asv->wave->max_spectral_frequency,
-                                        asv->spec.max_speed, 2.0*PI);
-  // Set the wave force for unit waves
-  set_unit_wave_force(asv);
-}
-
 void asv_set_position(struct Asv* asv, struct Point position)
 {
   asv->origin_position.x = position.x;
@@ -619,7 +594,27 @@ void asv_set_attitude(struct Asv* asv, struct Attitude attitude)
 
 void asv_set_dynamics(struct Asv* asv, double time)
 {
-  if(asv->wave)
+  if(time == 0)
+  {
+    // Place the asv vertically in the correct position W.R.T wave
+    asv->origin_position.z = 
+      wave_get_elevation(&asv->wave, &asv->cog_position, 0.0)
+      -asv->spec.T; 
+    // Reset the cog position.
+    set_cog(asv); // Match the position of the cog with that of origin
+
+    // Set minimum encounter frequency
+    asv->dynamics.F_unit_wave_freq_min = get_encounter_frequency(
+                                        asv->wave.min_spectral_frequency,
+                                        asv->spec.max_speed, 0.0);
+    asv->dynamics.F_unit_wave_freq_max = get_encounter_frequency(
+                                        asv->wave.max_spectral_frequency,
+                                        asv->spec.max_speed, 2.0*PI);
+    // Set the wave force for unit waves
+    set_unit_wave_force(asv);
+  }
+
+  if(asv->using_waves)
   {
     // Get the wave force for the current time step
     set_wave_force(asv, time);

@@ -1,6 +1,7 @@
 #ifndef ASV_H
 #define ASV_H
 
+#include <stdbool.h>
 #include "constants.h"
 #include "geometry.h"
 #include "wave.h"
@@ -58,10 +59,14 @@ struct Asv_dynamics
 
 struct Asv
 {
-  struct Wave* wave;
+  // Input
+  bool using_waves; // false for still water else true.
+  struct Wave wave;
   struct Asv_specification spec;
-  struct Asv_propeller propellers[COUNT_PROPELLERS_MAX];
   int count_propellers; // Number of propellers attached to ASV.
+  struct Asv_propeller propellers[COUNT_PROPELLERS_MAX];
+  
+  // Output
   struct Asv_dynamics dynamics;
   struct Point origin_position; // Position of the body-fixed frame in the 
                                 // global frame for the current time step.
@@ -72,47 +77,10 @@ struct Asv
 };
 
 /**
- * Function to initialise a propeller for an ASV.
- * @param propeller object to be initialised.
- * @param position of the propeller in the ASV in body-fixed frame.
- */
-void asv_propeller_init(struct Asv_propeller* propeller, 
-                        struct Point position); 
-
-/**
- * Function to set the magnitude and direction of thrust force for the
- * propeller.
- * @param propeller for which the thrust is to be set.
- * @param thrust is the magnitude of thrust force in newton.
- * @param orientation is the direction of propeller thrust force in body-fixed
- * frame.
- */
-void asv_propeller_set_thrust(struct Asv_propeller* propeller, 
-                              double thrust,
-                              struct Attitude orientation);
-
-/**
- * Function to initialise a model of ASV. This function initialises all
- * properties of the ASV and also places the ASV in the origin of the global
- * frame at its still water floating condition.
+ * Function to initialise a model of ASV.
  * @param asv is the object to be initialised.
- * @param spec is the pointer to the specifications. Assumes that spec is not
- * NULL and has a lifetime at least equal to that of pointer asv.
  */
-void asv_init(struct Asv* asv, 
-              struct Asv_specification spec);
-
-/**
- * Function to set a propeller in an ASV.
- * @param asv to which the propeller is to be fixed.
- * @param propeller to be fixed. Pointer propeller should have at least the same 
- * life time as pointer asv.
- * @param return 1 if successful else 0.
- */
-int asv_set_propeller(struct Asv* asv, struct Asv_propeller propeller);
-
-
-void asv_set_wave(struct Asv* asv, struct Wave* wave);
+void asv_init(struct Asv* asv);
 
 /**
  * Function to set the initial position of the ASV in the global frame. The 
@@ -127,11 +95,24 @@ void asv_set_position(struct Asv* asv, struct Point position);
 void asv_set_attitude(struct Asv* asv, struct Attitude attitude);
 
 /**
+ * Function to set the magnitude and direction of thrust force for the
+ * propeller.
+ * @param propeller for which the thrust is to be set.
+ * @param thrust is the magnitude of thrust force in newton.
+ * @param orientation is the direction of propeller thrust force in body-fixed
+ * frame.
+ */
+void asv_propeller_set_thrust(struct Asv_propeller* propeller, 
+                              double thrust,
+                              struct Attitude orientation);
+
+/**
  * Function to set the position and attitude of the ASV for the given time step.
  * @param asv is the pointer to the asv object for which the position is to be
- * computed.
+ * computed. **Note:** Time 0 must always be run first to complete the 
+ * initialisation. 
  * @param time is the time for which the position is to be computed.
  */
-void asv_set_dynamics(struct Asv* asv, double time);
+void asv_compute_dynamics(struct Asv* asv, double time);
 
 #endif // ASV_H
