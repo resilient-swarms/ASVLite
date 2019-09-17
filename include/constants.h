@@ -17,5 +17,6 @@
 #define COUNT_WAYPOINTS_MAX 20 /* Maximum number of waypoints through which the 
                                   ASV will navigate */
 
+#define OUTPUT_BUFFER_SIZE 50000 
 
 #endif // CONSTANTS_H

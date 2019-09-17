@@ -592,7 +592,7 @@ void asv_set_attitude(struct Asv* asv, struct Attitude attitude)
   asv->attitude.heading = attitude.heading;
 }
 
-void asv_set_dynamics(struct Asv* asv, double time)
+void asv_compute_dynamics(struct Asv* asv, double time)
 {
   if(time == 0)
   {

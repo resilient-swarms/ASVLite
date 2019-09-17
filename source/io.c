@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "toml.h"
-#include "input.h"
+#include "io.h"
 
 double set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
 {
@@ -402,4 +402,46 @@ double set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   // done reading inputs
   toml_free(input);
   return time_step_size;
+}
+
+void write_output(char* file, 
+                  int buffer_length,
+                  double wave_ht, 
+                  double wave_heading, 
+                  double task_duration,
+                  double simulation_time)
+{
+  FILE* fp;
+  if(!(fp = fopen(file, "w")))
+  {
+    fprintf(stderr, "Error. Cannot open output file %s.\n", file);
+    exit(1);
+  }
+  // write buffer to file and close the file.
+  fprintf(fp, "# significant wave height = %f m.\n", wave_ht);
+  fprintf(fp, "# wave heading = %f m.\n", wave_heading);
+  fprintf(fp, "# task duration = %f seconds.\n", task_duration);
+  fprintf(fp, "# time taken for simulation = %f sec. \n", simulation_time);
+  fprintf(fp, "#[01]time(sec)  "
+             "[02]wave_elevation(m)  " 
+             "[03]cog_x(m)  "
+             "[04]cog_y(m)  "
+             "[05]cog_z(m)  "
+             "[06]heel(deg)  "
+             "[07]trim(deg)  "
+             "[08]heading(deg) " 
+             "\n");
+  for(int i = 0; i < buffer_length; ++i)
+  {
+    fprintf(fp, "%f %f %f %f %f %f %f %f \n", 
+            buffer[i].time,
+            buffer[i].wave_elevation,
+            buffer[i].cog_x, 
+            buffer[i].cog_y, 
+            buffer[i].cog_z, 
+            buffer[i].heel, 
+            buffer[i].trim, 
+            buffer[i].heading);
+  }
+  fclose(fp);
 }
