@@ -39,6 +39,7 @@ struct Asv_specification
 struct Asv_dynamics
 {
   double time;
+  double time_step_size; 
   double M[COUNT_DOF]; // Mass (+ added mass).
   double C[COUNT_DOF]; // Drag force coefficients.
   double K[COUNT_DOF]; // Stiffness.
