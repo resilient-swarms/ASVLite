@@ -30,14 +30,11 @@ int main(int argc, char** argv)
   struct Waypoints waypoints;
 
   // Set input data
-  double time_step_size = 0.0; // in millisec
-  time_step_size = set_input(argv[1], &asv, &waypoints);
-  // If time_step_size == 0.0, then set it to default value of 10 millisec.
-  time_step_size = (time_step_size == 0.0)? 10 : time_step_size;
+  set_input(argv[1], &asv, &waypoints);
 
   // Init waves
-  asv.using_waves = (wave_ht == 0.0); 
-  if(!asv.using_waves)
+  asv.using_waves = (wave_ht != 0.0); 
+  if(asv.using_waves)
   {
     wave_init(&asv.wave, wave_ht, wave_heading * PI/180.0);
   }
@@ -74,7 +71,7 @@ int main(int argc, char** argv)
       else
       {
         // compute time
-        time = t*time_step_size/1000.0; //sec
+        time = t * asv.dynamics.time_step_size /1000.0; //sec
 
         // set propeller thrust and direction
         for(int p = 0; p < asv.count_propellers; ++p)
