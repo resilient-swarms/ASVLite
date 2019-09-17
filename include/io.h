@@ -37,9 +37,8 @@ struct
  * @param file is the path to the input toml file. 
  * @param asv is the asv object for which the input values are to be set. 
  * @param waypoints through which the vehicle has to navigate. 
- * @return clock step size if provided in the input file else 0.0.
  */
-double set_input(char* file, struct Asv* asv, struct Waypoints* waypoints);
+void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints);
 
 /**
  * Function to write the simulated data to file. 

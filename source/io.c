@@ -2,7 +2,7 @@
 #include "toml.h"
 #include "io.h"
 
-double set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
+void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
 {
   // buffer to hold raw data from input file. 
   const char* raw;
@@ -397,11 +397,13 @@ double set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
 	      toml_free(input);
 	      exit(1);
       }
+      // If time step size not set in input file, then default to 10 millisec
+      asv->dynamics.time_step_size = (time_step_size == 0.0)? 
+                                      10 : time_step_size;
     }  
   }
   // done reading inputs
   toml_free(input);
-  return time_step_size;
 }
 
 void write_output(char* file, 
