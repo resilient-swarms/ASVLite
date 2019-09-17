@@ -14,5 +14,8 @@
 #define COUNT_DOF 6 /* Number of degrees of freedom for the motion of ASV. */
 #define COUNT_PROPELLERS_MAX 4 /* Maximum number of propellers an ASV can have*/
 
+#define COUNT_WAYPOINTS_MAX 20 /* Maximum number of waypoints through which the 
+                                  ASV will navigate */
+
 
 #endif // CONSTANTS_H

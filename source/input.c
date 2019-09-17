@@ -1,8 +1,8 @@
 #include <stdlib.h>
-#include "input.h"
 #include "toml.h"
+#include "input.h"
 
-int set_input(char* file, struct Asv* asv)
+double set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
 {
   // buffer to hold raw data from input file. 
   const char* raw;
@@ -225,6 +225,12 @@ int set_input(char* file, struct Asv* asv)
 
   // Locate array of tables [propeller]
   toml_array_t* tables = toml_array_in(input, "propeller");
+  if(tables == 0)
+  {
+    fprintf(stderr, "ERROR: missing [[propeller]].\n");
+	  toml_free(input);
+	  exit(1);
+  }
   // get number of propellers
   asv->count_propellers = toml_array_nelem(tables);
   if(asv->count_propellers > COUNT_PROPELLERS_MAX)
@@ -238,12 +244,6 @@ int set_input(char* file, struct Asv* asv)
   for(int i = 0; i < asv->count_propellers; ++i)
   {
     table = toml_table_at(tables, i);
-    if(table == 0)
-    {
-      fprintf(stderr, "ERROR: missing [[propeller]].\n");
-	    toml_free(input);
-	    exit(1);
-    }
     // Extract values in table [[propeller]]
     // x
     raw = toml_raw_in(table, "x");
@@ -289,6 +289,117 @@ int set_input(char* file, struct Asv* asv)
     }
   }
 
+  // Locate table [vehicle_position]
+  table = toml_table_in(input, "vehicle_position");
+  if(table == 0)
+  {
+    fprintf(stderr, "ERROR: missing [vehicle_position].\n");
+	  toml_free(input);
+	  exit(1);
+  }
+  // Extract values in table [vehicle_position]
+  // x
+  raw = toml_raw_in(table, "x");
+  if(raw == 0)
+  {
+    fprintf(stderr, "ERROR: missing 'x' in [vehicle_position].\n");
+	  toml_free(input);
+	  exit(1);
+  }
+  if(toml_rtod(raw, &(asv->origin_position.x)))
+  {
+    fprintf(stderr, "ERROR: bad value in 'vehicle_position.x'\n");
+	  toml_free(input);
+	  exit(1);
+  }
+  // y
+  raw = toml_raw_in(table, "y");
+  if(raw == 0)
+  {
+    fprintf(stderr, "ERROR: missing 'y' in [vehicle_position].\n");
+	  toml_free(input);
+	  exit(1);
+  }
+  if(toml_rtod(raw, &(asv->origin_position.y)))
+  {
+    fprintf(stderr, "ERROR: bad value in 'vehicle_position.y'\n");
+	  toml_free(input);
+	  exit(1);
+  }
+
+  // Locate array of tables [waypoint]
+  tables = toml_array_in(input, "waypoint");
+  if(tables == 0)
+  {
+    fprintf(stderr, "ERROR: missing [[waypoint]].\n");
+	  toml_free(input);
+	  exit(1);
+  }
+  // get number of waypoints
+  waypoints->count = toml_array_nelem(tables);
+  if(waypoints->count > COUNT_WAYPOINTS_MAX)
+  {
+    fprintf(stderr,"ERROR: number of waypoints (%d) exceed max limit (%i)'\n", 
+            waypoints->count, COUNT_WAYPOINTS_MAX);
+	  toml_free(input);
+	  exit(1);
+  }
+  // Set waypoint data
+  for(int i = 0; i < waypoints->count; ++i)
+  {
+    table = toml_table_at(tables, i);
+    // Extract values in table [[waypoint]]
+    // x
+    raw = toml_raw_in(table, "x");
+    if(raw == 0)
+    {
+      fprintf(stderr, "ERROR: missing 'x' in [waypoint][%d].\n", i);
+	    toml_free(input);
+	    exit(1);
+    }
+    if(toml_rtod(raw, &(waypoints->points[i].x)))
+    {
+      fprintf(stderr, "ERROR: bad value in 'waypoint.x'\n");
+	    toml_free(input);
+	    exit(1);
+    }
+    // y
+    raw = toml_raw_in(table, "y");
+    if(raw == 0)
+    {
+      fprintf(stderr, "ERROR: missing 'y' in [waypoint][%d].\n");
+	    toml_free(input);
+	    exit(1);
+    }
+    if(toml_rtod(raw, &(waypoints->points[i].y)))
+    {
+      fprintf(stderr, "ERROR: bad value in 'waypoint.y'\n");
+	    toml_free(input);
+	    exit(1);
+    }
+  }
+
+  // **** Matrix *****
+
+  // Locate table [clock]
+  double time_step_size = 0.0;
+  table = toml_table_in(input, "clock");
+  if(table != 0)
+  {
+    // Extract values in table [clock]
+    // time_step_size
+    raw = toml_raw_in(table, "time_step_size");
+    if(raw != 0)
+    {
+      if(toml_rtod(raw, &time_step_size))
+      {
+        fprintf(stderr, "ERROR: bad value in 'time_step_size'\n");
+	      toml_free(input);
+	      exit(1);
+      }
+    }  
+  }
   // done reading inputs
   toml_free(input);
+  return time_step_size;
 }
