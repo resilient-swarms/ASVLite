@@ -25,15 +25,16 @@ int main(int argc, char** argv)
   // Init vehicle and waypoints
   struct Asv asv;
   struct Waypoints waypoints;
+  // set ASV inputs from input file.
   set_input(argv[1], &asv, &waypoints);
-  asv_init(&asv); // asv_init() should be called only after setting the asv_spec
-
-  // Init waves
+  // set ASV inputs that were passed in command line
   asv.using_waves = (wave_ht != 0.0); 
   if(asv.using_waves)
   {
     wave_init(&asv.wave, wave_ht, wave_heading * PI/180.0);
   }
+  // init the asv after setting all inputs.
+  asv_init(&asv);
 
   // Simulate
   int t = 0; // counter for time
@@ -99,7 +100,7 @@ int main(int argc, char** argv)
       }
     }
   }
-  start = clock();
+  end = clock();
   simulation_time = ((double)(end - start)) / CLOCKS_PER_SEC;
 
   // write output to file

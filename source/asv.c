@@ -530,17 +530,6 @@ static void set_attitude(struct Asv* asv)
 
 void asv_init(struct Asv* asv)
 { 
-  // Initialise the floating attitude of the ASV
-  asv->attitude.heel = 0.0;
-  asv->attitude.trim = 0.0;
-  asv->attitude.heading = 0.0;
-
-  // Initialise the position of the ASV
-  asv->origin_position.x = 0.0;
-  asv->origin_position.y = 0.0;
-  asv->origin_position.z = 0.0;
-  set_cog(asv); // Match the position of the cog with that of origin
-
   // Initialise time record 
   asv->dynamics.time = 0.0;
 
@@ -567,39 +556,35 @@ void asv_init(struct Asv* asv)
     }
   }
 
+  // Place the asv vertically in the correct position W.R.T wave
+  asv->origin_position.z = 
+    wave_get_elevation(&asv->wave, &asv->cog_position, 0.0)
+    -asv->spec.T; 
+  // Reset the cog position.
+  set_cog(asv); // Match the position of the cog with that of origin
+  // Set minimum and maximum encounter frequency
+  double max_speed_for_spectrum = 2.0 * asv->spec.max_speed;
+  asv->dynamics.F_unit_wave_freq_min = get_encounter_frequency(
+                                      asv->wave.min_spectral_frequency,
+                                      max_speed_for_spectrum, 0);
+  asv->dynamics.F_unit_wave_freq_max = get_encounter_frequency(
+                                      asv->wave.max_spectral_frequency,
+                                      max_speed_for_spectrum, PI);
+
   // Set the mass matrix
   set_mass(asv);
   // Set the drag coefficient matrix
   set_drag_coefficient(asv);
   // Set the stiffness matrix
   set_stiffness(asv);
+  // Set the wave force for unit waves
+  set_unit_wave_force(asv);
 }
 
 void asv_compute_dynamics(struct Asv* asv, double time)
 {
   // Update the time
   asv->dynamics.time = time;
-
-  if(time == 0)
-  {
-    // Place the asv vertically in the correct position W.R.T wave
-    asv->origin_position.z = 
-      wave_get_elevation(&asv->wave, &asv->cog_position, 0.0)
-      -asv->spec.T; 
-    // Reset the cog position.
-    set_cog(asv); // Match the position of the cog with that of origin
-
-    // Set minimum and maximum encounter frequency
-    double max_speed_for_spectrum = 2.0 * asv->spec.max_speed;
-    asv->dynamics.F_unit_wave_freq_min = get_encounter_frequency(
-                                        asv->wave.min_spectral_frequency,
-                                        max_speed_for_spectrum, 0);
-    asv->dynamics.F_unit_wave_freq_max = get_encounter_frequency(
-                                        asv->wave.max_spectral_frequency,
-                                        max_speed_for_spectrum, PI);
-    // Set the wave force for unit waves
-    set_unit_wave_force(asv);
-  }
 
   if(asv->using_waves)
   {

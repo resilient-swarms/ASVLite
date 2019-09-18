@@ -81,7 +81,7 @@ struct Asv
 
 /**
  * Function to initialise a model of ASV after setting the vehicle spec. 
- * **Note:** This function should be called only after setting Asv::spec.
+ * **Note:** This function should be called only after setting all input values.
  * @param asv is the object to be initialised.
  */
 void asv_init(struct Asv* asv);
@@ -89,8 +89,7 @@ void asv_init(struct Asv* asv);
 /**
  * Function to set the position and attitude of the ASV for the given time step.
  * @param asv is the pointer to the asv object for which the position is to be
- * computed. **Note:** Time 0 must always be run first to complete the 
- * initialisation. 
+ * computed. 
  * @param time is the time for which the position is to be computed.
  */
 void asv_compute_dynamics(struct Asv* asv, double time);
