@@ -327,6 +327,30 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
 	  exit(1);
   }
 
+  // Locate table [vehicle_heading]
+  table = toml_table_in(input, "vehicle_heading");
+  if(table == 0)
+  {
+    fprintf(stderr, "ERROR: missing [vehicle_heading].\n");
+	  toml_free(input);
+	  exit(1);
+  }
+  // Extract values in table [vehicle_heading]
+  // x
+  raw = toml_raw_in(table, "heading");
+  if(raw == 0)
+  {
+    fprintf(stderr, "ERROR: missing 'heading' in [vehicle_heading].\n");
+	  toml_free(input);
+	  exit(1);
+  }
+  if(toml_rtod(raw, &(asv->attitude.heading)))
+  {
+    fprintf(stderr, "ERROR: bad value in 'vehicle_heading.heading'\n");
+	  toml_free(input);
+	  exit(1);
+  }
+
   // Locate array of tables [waypoint]
   tables = toml_array_in(input, "waypoint");
   if(tables == 0)
@@ -399,7 +423,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
       }
       // If time step size not set in input file, then default to 10 millisec
       asv->dynamics.time_step_size = (time_step_size == 0.0)? 
-                                      10 : time_step_size;
+                                      10.0/1000.0 : time_step_size/1000.0;
     }  
   }
   // done reading inputs
