@@ -336,7 +336,8 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
 	  exit(1);
   }
   // Extract values in table [vehicle_heading]
-  // x
+  // heading
+  double heading = 0.0;
   raw = toml_raw_in(table, "heading");
   if(raw == 0)
   {
@@ -344,12 +345,18 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
 	  toml_free(input);
 	  exit(1);
   }
-  if(toml_rtod(raw, &(asv->attitude.heading)))
+  if(toml_rtod(raw, &(heading)))
   {
     fprintf(stderr, "ERROR: bad value in 'vehicle_heading.heading'\n");
 	  toml_free(input);
 	  exit(1);
   }
+  else
+  {
+    // convert to radians and set value
+    asv->attitude.heading = heading * PI/180.0;
+  }
+  
 
   // Locate array of tables [waypoint]
   tables = toml_array_in(input, "waypoint");
