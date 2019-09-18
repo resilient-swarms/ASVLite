@@ -2,9 +2,7 @@
 #define WAVE_H
 
 #include "regular_wave.h"
-
-#define COUNT_WAVE_SPECTRAL_FREQUENCIES 20
-#define COUNT_WAVE_SPECTRAL_DIRECTIONS  10
+#include "constants.h"
 
 struct Wave
 {
