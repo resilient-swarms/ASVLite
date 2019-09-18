@@ -285,7 +285,7 @@ static void set_unit_wave_force(struct Asv* asv)
 }
 
 // Function to compute the wave force for the current time step.
-static void set_wave_force(struct Asv* asv, double time)
+static void set_wave_force(struct Asv* asv)
 {
   // Reset the wave force to all zeros
   for(int k = 0; k < COUNT_DOF; ++k)
@@ -307,52 +307,51 @@ static void set_wave_force(struct Asv* asv, double time)
                                             asv->dynamics.V[surge], angle);
 
       // Get the index for unit wave force for the encounter frequency
+      double nf = COUNT_ASV_SPECTRAL_FREQUENCIES;
       double freq_step_size = (asv->dynamics.F_unit_wave_freq_max - 
                                asv->dynamics.F_unit_wave_freq_min) /
                               (COUNT_ASV_SPECTRAL_FREQUENCIES - 1.0);
-      int index = round(freq/freq_step_size);
+      int index = round((freq - asv->dynamics.F_unit_wave_freq_min)/
+                         freq_step_size);
 
       // Compute the scaling factor to compute the wave force from unit wave
       double scale = asv->wave.spectrum[i][j].amplitude * 2.0;
 
       // Assume the wave force to be have zero phase lag with the wave
+      // wave phase at the cog position.
       double phase_cog = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
                                                 &asv->cog_position, 
-                                                time); // wave phase at the cog
-                                                       // position.
+                                                asv->dynamics.time); 
+      // wave phase at the aft-CL position.
       struct Point point_aft = asv->cog_position;
       point_aft.x -= (asv->spec.L_wl*0.25)*cos(asv->attitude.heading);
       point_aft.y -= (asv->spec.L_wl*0.25)*sin(asv->attitude.heading);
       double phase_aft = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
                                                 &point_aft, 
-                                                time);
+                                                asv->dynamics.time);
+      // wave phase at the fore-CL position.
       struct Point point_fore = asv->cog_position;
       point_fore.x += (asv->spec.L_wl*0.25)*cos(asv->attitude.heading);
       point_fore.y += (asv->spec.L_wl*0.25)*sin(asv->attitude.heading);
       double phase_fore = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
                                                  &point_fore, 
-                                                 time);
+                                                 asv->dynamics.time);
+      // wave phase at the mid-PS position.
       struct Point point_ps = asv->cog_position;
       point_ps.x -= (asv->spec.B_wl*0.25)*sin(asv->attitude.heading);
       point_ps.y += (asv->spec.B_wl*0.25)*cos(asv->attitude.heading);
       double phase_ps = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
                                                &point_ps, 
-                                               time);
+                                               asv->dynamics.time);
+      // wave phase at the mid-SB position.
       struct Point point_sb = asv->cog_position;
       point_sb.x += (asv->spec.B_wl*0.25)*sin(asv->attitude.heading);
       point_sb.y -= (asv->spec.B_wl*0.25)*cos(asv->attitude.heading);
       double phase_sb = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
                                                &point_sb, 
-                                               time);
+                                               asv->dynamics.time);
       
       // Compute wave force
-      /*
-      for(int k = 0; k < COUNT_DOF; ++k)
-      {
-        asv->dynamics.F_wave[k] += (asv->dynamics.F_unit_wave[index][k] * 
-                                    scale * cos(phase));
-      }
-      */
       asv->dynamics.F_wave[surge] += 
         scale * asv->dynamics.F_unit_wave[index][surge] * 
         (cos(phase_aft - PI/2.0) - cos(phase_fore - PI/2.0));
@@ -480,21 +479,21 @@ static void set_acceleration(struct Asv* asv)
   }
 }
 
-static void set_velocity(struct Asv* asv, double time)
+static void set_velocity(struct Asv* asv)
 {
-  double delta_t = time - asv->dynamics.time;
+  // compute the velocity at the end of the time step
   for(int i = 0; i < COUNT_DOF; ++i)
   {
-    asv->dynamics.V[i] += asv->dynamics.A[i] * delta_t; 
+    asv->dynamics.V[i] += asv->dynamics.A[i] * asv->dynamics.time_step_size; 
   }
 }
 
-static void set_deflection(struct Asv* asv, double time)
+static void set_deflection(struct Asv* asv)
 {
-  double delta_t = time - asv->dynamics.time;
+  // compute the deflection at the end of the time step
   for(int i = 0; i < COUNT_DOF; ++i)
   {
-    asv->dynamics.X[i] = asv->dynamics.V[i] * delta_t; 
+    asv->dynamics.X[i] = asv->dynamics.V[i] * asv->dynamics.time_step_size; 
   }
 }
 
@@ -530,10 +529,7 @@ static void set_attitude(struct Asv* asv)
 }
 
 void asv_init(struct Asv* asv)
-{
-  // Initialise the propellers
-  asv->count_propellers = 0;
-  
+{ 
   // Initialise the floating attitude of the ASV
   asv->attitude.heel = 0.0;
   asv->attitude.trim = 0.0;
@@ -559,6 +555,8 @@ void asv_init(struct Asv* asv)
   		  asv->dynamics.C                             [k] = 0.0;
   		  asv->dynamics.K                             [k] = 0.0;
   		  asv->dynamics.X                             [k] = 0.0;
+        asv->dynamics.V                             [k] = 0.0;
+        asv->dynamics.A                             [k] = 0.0;
   		  asv->dynamics.F                             [k] = 0.0;
   		  asv->dynamics.F_wave                        [k] = 0.0;
   		  asv->dynamics.F_propeller                   [k] = 0.0;
@@ -577,23 +575,11 @@ void asv_init(struct Asv* asv)
   set_stiffness(asv);
 }
 
-void asv_set_position(struct Asv* asv, struct Point position)
-{
-  asv->origin_position.x = position.x;
-  asv->origin_position.y = position.y;
-  asv->origin_position.z = position.z;
-  set_cog(asv);
-}
-
-void asv_set_attitude(struct Asv* asv, struct Attitude attitude)
-{
-  asv->attitude.heel = attitude.heel;
-  asv->attitude.trim = attitude.trim;
-  asv->attitude.heading = attitude.heading;
-}
-
 void asv_compute_dynamics(struct Asv* asv, double time)
 {
+  // Update the time
+  asv->dynamics.time = time;
+
   if(time == 0)
   {
     // Place the asv vertically in the correct position W.R.T wave
@@ -603,13 +589,14 @@ void asv_compute_dynamics(struct Asv* asv, double time)
     // Reset the cog position.
     set_cog(asv); // Match the position of the cog with that of origin
 
-    // Set minimum encounter frequency
+    // Set minimum and maximum encounter frequency
+    double max_speed_for_spectrum = 2.0 * asv->spec.max_speed;
     asv->dynamics.F_unit_wave_freq_min = get_encounter_frequency(
                                         asv->wave.min_spectral_frequency,
-                                        asv->spec.max_speed, 0.0);
+                                        max_speed_for_spectrum, 0);
     asv->dynamics.F_unit_wave_freq_max = get_encounter_frequency(
                                         asv->wave.max_spectral_frequency,
-                                        asv->spec.max_speed, 2.0*PI);
+                                        max_speed_for_spectrum, PI);
     // Set the wave force for unit waves
     set_unit_wave_force(asv);
   }
@@ -617,7 +604,7 @@ void asv_compute_dynamics(struct Asv* asv, double time)
   if(asv->using_waves)
   {
     // Get the wave force for the current time step
-    set_wave_force(asv, time);
+    set_wave_force(asv);
   }
   
   // Get the propeller force for the current time step
@@ -637,19 +624,16 @@ void asv_compute_dynamics(struct Asv* asv, double time)
   set_acceleration(asv);
   
   // Compute the velocity for the current time step
-  set_velocity(asv, time);
+  set_velocity(asv);
   
   // Compute the deflection for the current time step in body-fixed frame
-  set_deflection(asv, time);
+  set_deflection(asv);
    
   // Compute the new attitude
   set_attitude(asv);
   
   // Translate the deflection to global frame and compute the new position.
   set_position(asv);
- 
-  // Update the time
-  asv->dynamics.time = time;
 }
 
 void asv_propeller_init(struct Asv_propeller* propeller,
@@ -660,17 +644,6 @@ void asv_propeller_init(struct Asv_propeller* propeller,
   propeller->position.z = position.z;
   
   propeller->thrust = 0.0;
-}
-
-void asv_propeller_set_thrust(struct Asv_propeller* propeller,
-                              double thrust,
-                              struct Attitude orientation)
-{
-  propeller->orientation.heel = orientation.heel;
-  propeller->orientation.trim = orientation.trim;
-  propeller->orientation.heading = orientation.heading;
-
-  propeller->thrust = thrust;
 }
 
 int asv_set_propeller(struct Asv* asv, struct Asv_propeller propeller)

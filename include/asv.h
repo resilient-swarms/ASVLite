@@ -38,8 +38,8 @@ struct Asv_specification
 
 struct Asv_dynamics
 {
-  double time;
-  double time_step_size; 
+  double time; // seconds
+  double time_step_size; // seconds
   double M[COUNT_DOF]; // Mass (+ added mass).
   double C[COUNT_DOF]; // Drag force coefficients.
   double K[COUNT_DOF]; // Stiffness.
@@ -61,51 +61,30 @@ struct Asv_dynamics
 struct Asv
 {
   // Input
-  bool using_waves; // false for still water else true.
-  struct Wave wave;
   struct Asv_specification spec;
   int count_propellers; // Number of propellers attached to ASV.
   struct Asv_propeller propellers[COUNT_PROPELLERS_MAX];
+  bool using_waves; // false for still water else true.
+  struct Wave wave;
+
+  // Initial used for input but later contains results. 
+  struct Point origin_position; // Position of the body-fixed frame in the 
+                                // global frame for the current time step.
+  struct Attitude attitude; // The heel and trim are in body-fixed frame and the
+                            // heading is in global frame.
   
   // Output
   struct Asv_dynamics dynamics;
-  struct Point origin_position; // Position of the body-fixed frame in the 
-                                // global frame for the current time step.
   struct Point cog_position; // Position of the centre of gravity of the ASV 
                              // in the global frame for the current time step.
-  struct Attitude attitude; // The heel and trim are in body-fixed frame and the
-                            // heading is in global frame.
 };
 
 /**
- * Function to initialise a model of ASV.
+ * Function to initialise a model of ASV after setting the vehicle spec. 
+ * **Note:** This function should be called only after setting Asv::spec.
  * @param asv is the object to be initialised.
  */
 void asv_init(struct Asv* asv);
-
-/**
- * Function to set the initial position of the ASV in the global frame. The 
- * position of the ASV is set by setting the position of the origin of the 
- * body-fixed frame in the global frame. 
- */
-void asv_set_position(struct Asv* asv, struct Point position);
-
-/**
- * Function to set the initial floating attitude of the ASV.
- */
-void asv_set_attitude(struct Asv* asv, struct Attitude attitude);
-
-/**
- * Function to set the magnitude and direction of thrust force for the
- * propeller.
- * @param propeller for which the thrust is to be set.
- * @param thrust is the magnitude of thrust force in newton.
- * @param orientation is the direction of propeller thrust force in body-fixed
- * frame.
- */
-void asv_propeller_set_thrust(struct Asv_propeller* propeller, 
-                              double thrust,
-                              struct Attitude orientation);
 
 /**
  * Function to set the position and attitude of the ASV for the given time step.
