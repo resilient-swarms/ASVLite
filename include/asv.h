@@ -7,7 +7,7 @@
 #include "wave.h"
 
 /**
- * Structure to represent the propeller of an ASV.
+ * Struct to hold all the inputs for the propeller.
  */
 struct Asv_propeller
 {
@@ -19,6 +19,9 @@ struct Asv_propeller
 };
 
 /**
+ * Struct to hold some of the input value of the vehicle. All 
+ * variables in this struct are inputs and should be set before calling 
+ * asv_init().
  * Coordinate system: Body-centric frame. The origin of the frame is on the
  * waterline at the aft end centre line.
  */
@@ -36,13 +39,22 @@ struct Asv_specification
   struct Point cog; // Centre of gravity in body-fixed frame.
 };
 
+/**
+ * Struct to contain both inputs and outputs of ASV dynamics. All input
+ * variables must be set before calling asv_compute_dynamics().
+ */
 struct Asv_dynamics
 {
-  double time; // seconds
+  // Input
   double time_step_size; // seconds
+  double time; // seconds
+  
+  // Optional inputs
   double M[COUNT_DOF]; // Mass (+ added mass).
   double C[COUNT_DOF]; // Drag force coefficients.
   double K[COUNT_DOF]; // Stiffness.
+  
+  // Output
   double X[COUNT_DOF]; // Deflection in body-fixed frame.
   double V[COUNT_DOF]; // Velocity of ASV in body-fixed frame.
   double A[COUNT_DOF]; // Acceleration of ASV in body-fixed frame.
@@ -58,6 +70,9 @@ struct Asv_dynamics
   double F_unit_wave_freq_max;
 };
 
+/**
+ * Stuct to contain both input and output of ASV motion in waves. 
+ */
 struct Asv
 {
   // Input
