@@ -22,15 +22,11 @@ int main(int argc, char** argv)
   char out_file[120];
   sprintf(out_file, "%s_%.2f_%.1f", argv[1], wave_ht, wave_heading);
 
-  // Init vehicle
+  // Init vehicle and waypoints
   struct Asv asv;
-  asv_init(&asv);
-
-  // Waypoints
   struct Waypoints waypoints;
-
-  // Set input data
   set_input(argv[1], &asv, &waypoints);
+  asv_init(&asv); // asv_init() should be called only after setting the asv_spec
 
   // Init waves
   asv.using_waves = (wave_ht != 0.0); 
@@ -71,7 +67,7 @@ int main(int argc, char** argv)
       else
       {
         // compute time
-        time = t * asv.dynamics.time_step_size /1000.0; //sec
+        time = t * asv.dynamics.time_step_size; //sec
 
         // set propeller thrust and direction
         for(int p = 0; p < asv.count_propellers; ++p)
