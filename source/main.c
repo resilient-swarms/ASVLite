@@ -96,7 +96,7 @@ int main(int argc, char** argv)
         buffer[t].cog_z = asv.cog_position.z - (asv.spec.cog.z - asv.spec.T);
         buffer[t].heel = asv.attitude.heel * 180.0/PI;
         buffer[t].trim = asv.attitude.trim * 180.0/PI;
-        buffer[t].heel = asv.attitude.heading * 180.0/PI;
+        buffer[t].heading = asv.attitude.heading * 180.0/PI;
       }
     }
   }
