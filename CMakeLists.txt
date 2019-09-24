@@ -21,14 +21,10 @@ SET( SOURCE
   source/pid_controller.c
   )
 
-# LibXml2
-FIND_PACKAGE(LibXml2 REQUIRED)
-INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR})
-
 # CREATE BINARIES
 # ---------------
 ADD_EXECUTABLE(asv_simulator ${SOURCE})
 
 # LINK LIBRARIES
 # --------------
-TARGET_LINK_LIBRARIES(asv_simulator m xml2)
+TARGET_LINK_LIBRARIES(asv_simulator m)
