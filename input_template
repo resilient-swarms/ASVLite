@@ -1,51 +1,51 @@
 [spec]
-L_wl = 0.3
-B_wl = 0.3
-D = 0.3
-T = 0.1
-displacement = 0.007
-max_speed = 2.0
+L_wl = 
+B_wl = 
+D = 
+T = 
+displacement = 
+max_speed = 
 
 [cog]
-x = 0.15 
-y = 0.0  
-z = 0.15 
+x = 
+y =   
+z =  
 
 [radius_of_gyration]
-roll = 0.08
-pitch = 0.08
-yaw = 0.106
+roll = 
+pitch = 
+yaw = 
 
 [[propeller]]
-x = 1.585
-y = -0.085
-z = -0.125
+x = 
+y = 
+z = 
 
 [[propeller]]
-x = 1.585
-y = 0.085
-z = -0.125
+x = 
+y = 
+z = 
 
 [[propeller]]
-x = 1.415
-y = -0.085
-z = -0.125
+x = 
+y = 
+z = 
 
 [[propeller]]
-x = 1.415
-y = 0.085
-z = -0.125
+x = 
+y = 
+z = 
 
 [vehicle_position]
-x = 0.0
-y = 0.0
+x = 
+y = 
 
 [vehicle_heading]
-heading = 90.0
+heading = 
 
 [[waypoint]]
-x = 10.0
-y = 0.0
+x = 
+y = 
 
 # Following set of inputs are optional
 # ------------------------------------
@@ -73,4 +73,4 @@ stiffness = [
 	[0, 0, 0, 0, 0, 0,]]
 
 [clock]
-time_step_size = 10
+time_step_size = 
