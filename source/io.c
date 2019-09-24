@@ -263,7 +263,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
     raw = toml_raw_in(table, "y");
     if(raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'y' in [propeller][%d].\n");
+      fprintf(stderr, "ERROR: missing 'y' in [propeller][%d].\n", i);
 	    toml_free(input);
 	    exit(1);
     }
@@ -277,7 +277,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
     raw = toml_raw_in(table, "z");
     if(raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'z' in [propeller][%d].\n");
+      fprintf(stderr, "ERROR: missing 'z' in [propeller][%d].\n", i);
 	    toml_free(input);
 	    exit(1);
     }
@@ -398,7 +398,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
     raw = toml_raw_in(table, "y");
     if(raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'y' in [waypoint][%d].\n");
+      fprintf(stderr, "ERROR: missing 'y' in [waypoint][%d].\n", i);
 	    toml_free(input);
 	    exit(1);
     }
@@ -462,11 +462,11 @@ void write_output(char* file,
              "[05]cog_z(m)  "
              "[06]heel(deg)  "
              "[07]trim(deg)  "
-             "[08]heading(deg) " 
+             "[08]heading(deg)" 
              "\n");
   for(int i = 0; i < buffer_length; ++i)
   {
-    fprintf(fp, "%f %f %f %f %f %f %f %f \n", 
+    fprintf(fp, "%f %f %f %f %f %f %f %f\n", 
             buffer[i].time,
             buffer[i].wave_elevation,
             buffer[i].cog_x, 
