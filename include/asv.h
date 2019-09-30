@@ -6,6 +6,11 @@
 #include "geometry.h"
 #include "wave.h"
 
+// Enum to correctly index the motions in the matrices for asv dynamics.
+enum i_dof{surge, sway, heave, roll, pitch, yaw}; // to index the DOF
+enum i_axis{x, y, z}; // to index the axis for linear motion
+enum i_attitude{heel, trim, heading}; // to index the floating attitude of ASV
+
 /**
  * Struct to hold all the inputs for the propeller.
  */

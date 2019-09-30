@@ -462,7 +462,7 @@ void write_output(char* file,
   if (size == 0) 
   {
     // file is empty, add header. 
-    fprintf(fp,"# "
+    fprintf(fp,
            "sig_wave_ht(m) "
            "wave_heading(deg) " 
            "time(sec) "
@@ -472,13 +472,15 @@ void write_output(char* file,
            "cog_z(m) "
            "heel(deg) "
            "trim(deg) "
-           "heading(deg)" 
+           "heading(deg) "
+           "surge_vel(m/s) "
+           "surge_acc(m/s2)" 
            );
   }
   // write buffer to file and close the file.
   for(int i = 0; i < buffer_length; ++i)
   {
-    fprintf(fp, "\n%f %f %f %f %f %f %f %f %f %f", 
+    fprintf(fp, "\n%f %f %f %f %f %f %f %f %f %f %f %f", 
             buffer[i].sig_wave_ht,
             buffer[i].wave_heading,
             buffer[i].time,
@@ -488,7 +490,9 @@ void write_output(char* file,
             buffer[i].cog_z, 
             buffer[i].heel, 
             buffer[i].trim, 
-            buffer[i].heading);
+            buffer[i].heading,
+            buffer[i].surge_velocity,
+            buffer[i].surge_acceleration);
   }
   fclose(fp);
 }

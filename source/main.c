@@ -98,6 +98,8 @@ int main(int argc, char** argv)
         buffer[t].heel = asv.attitude.heel * 180.0/PI;
         buffer[t].trim = asv.attitude.trim * 180.0/PI;
         buffer[t].heading = asv.attitude.heading * 180.0/PI;
+        buffer[t].surge_velocity = asv.dynamics.V[surge];
+        buffer[t].surge_acceleration = asv.dynamics.A[surge];
       }
     }
   }
