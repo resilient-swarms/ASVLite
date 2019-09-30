@@ -444,29 +444,43 @@ void write_output(char* file,
                   double task_duration,
                   double simulation_time)
 {
+  // output message
+  fprintf(stdout, "significant wave height = %f m.\n", wave_ht);
+  fprintf(stdout, "wave heading = %f m.\n", wave_heading);
+  fprintf(stdout, "task duration = %f seconds.\n", task_duration);
+  fprintf(stdout, "time taken for simulation = %f sec. \n\n", simulation_time);
+  
   FILE* fp;
-  if(!(fp = fopen(file, "w")))
+  if(!(fp = fopen(file, "a")))
   {
     fprintf(stderr, "Error. Cannot open output file %s.\n", file);
     exit(1);
   }
+  // Check if the file is empty and add header only for empty file.
+  fseek (fp, 0, SEEK_END);
+  long size = ftell(fp);
+  if (size == 0) 
+  {
+    // file is empty, add header. 
+    fprintf(fp,"# "
+           "sig_wave_ht(m) "
+           "wave_heading(deg) " 
+           "time(sec) "
+           "wave_elevation(m) " 
+           "cog_x(m) "
+           "cog_y(m) "
+           "cog_z(m) "
+           "heel(deg) "
+           "trim(deg) "
+           "heading(deg)" 
+           );
+  }
   // write buffer to file and close the file.
-  fprintf(fp, "# significant wave height = %f m.\n", wave_ht);
-  fprintf(fp, "# wave heading = %f m.\n", wave_heading);
-  fprintf(fp, "# task duration = %f seconds.\n", task_duration);
-  fprintf(fp, "# time taken for simulation = %f sec. \n", simulation_time);
-  fprintf(fp, "#[01]time(sec)  "
-             "[02]wave_elevation(m)  " 
-             "[03]cog_x(m)  "
-             "[04]cog_y(m)  "
-             "[05]cog_z(m)  "
-             "[06]heel(deg)  "
-             "[07]trim(deg)  "
-             "[08]heading(deg)" 
-             "\n");
   for(int i = 0; i < buffer_length; ++i)
   {
-    fprintf(fp, "%f %f %f %f %f %f %f %f\n", 
+    fprintf(fp, "\n%f %f %f %f %f %f %f %f %f %f", 
+            buffer[i].sig_wave_ht,
+            buffer[i].wave_heading,
             buffer[i].time,
             buffer[i].wave_elevation,
             buffer[i].cog_x, 

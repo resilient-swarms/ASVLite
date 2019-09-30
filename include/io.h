@@ -18,6 +18,8 @@ struct Waypoints
  */
 struct
 { 
+  double sig_wave_ht; // m
+  double wave_heading; // deg
   double time; // sec.
   double wave_elevation; // Wave elevation at the position of the vehicle, m.
   double cog_x;   // m.

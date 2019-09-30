@@ -19,6 +19,7 @@ struct Wave
   double max_spectral_wave_heading; // Maximum angle, in radians, in spectrum 
                                     // for wave heading.
   double significant_wave_height;   // Significant wave height in meter.
+  double heading; // wave heading in radians
 };
 
 /**

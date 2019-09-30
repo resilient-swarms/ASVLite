@@ -20,7 +20,7 @@ int main(int argc, char** argv)
 
   // Open output file 
   char out_file[120];
-  sprintf(out_file, "%s_%.2f_%.1f", argv[1], wave_ht, wave_heading);
+  sprintf(out_file, "%s_out", argv[1]);
 
   // Init vehicle and waypoints
   struct Asv asv;
@@ -28,8 +28,7 @@ int main(int argc, char** argv)
   // set ASV inputs from input file.
   set_input(argv[1], &asv, &waypoints);
   // set ASV inputs that were passed in command line
-  asv.using_waves = (wave_ht != 0.0); 
-  if(asv.using_waves)
+  if(asv.using_waves = (wave_ht != 0.0))
   {
     wave_init(&asv.wave, wave_ht, wave_heading * PI/180.0);
   }
@@ -57,7 +56,7 @@ int main(int argc, char** argv)
       }
 
       // check if reached destination
-      double proximity_margin = 1.0; // target proximity to waypoint
+      double proximity_margin = 5.0; // target proximity to waypoint
       double x = asv.cog_position.x - waypoints.points[i].x;
       double y = asv.cog_position.y - waypoints.points[i].y;
       double distance = sqrt(x*x + y*y);
@@ -89,6 +88,8 @@ int main(int argc, char** argv)
         }
 
         // save simulated data to buffer. 
+        buffer[t].sig_wave_ht = asv.wave.significant_wave_height;
+        buffer[t].wave_heading = asv.wave.heading * 180.0/PI;
         buffer[t].time = time;
         buffer[t].wave_elevation = wave_elevation;
         buffer[t].cog_x = asv.cog_position.x;

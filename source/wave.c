@@ -37,6 +37,7 @@ void wave_init(struct Wave* wave,
   double f_p = 0.946 * pow(B, 0.25);
 
   wave->significant_wave_height = H_s;
+  wave->heading = wave_heading;
   wave->peak_spectral_frequency = f_p;
   wave->min_spectral_frequency = 0.652 * f_p;
   wave->max_spectral_frequency = 5.946 * f_p;
