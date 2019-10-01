@@ -5,7 +5,8 @@
 
 void wave_init(struct Wave* wave, 
                double sig_wave_ht,
-               double wave_heading)
+               double wave_heading, 
+               long rand_seed)
 {
   // Allocate space for spectrum
   wave->min_spectral_wave_heading = wave_heading - PI/2.0;
@@ -66,8 +67,9 @@ void wave_init(struct Wave* wave,
       
       // Create a wave
       double amplitude = sqrt(2.0 * S * G_spectrum); 
-      double phase = rand()%(COUNT_WAVE_SPECTRAL_DIRECTIONS * 
-                             COUNT_WAVE_SPECTRAL_FREQUENCIES); 
+      wave->random_number_seed = rand_seed;
+      srand(wave->random_number_seed);
+      double phase = rand(); 
       regular_wave_init(&(wave->spectrum[i][j]), amplitude, f, phase, mu);
     }
   }

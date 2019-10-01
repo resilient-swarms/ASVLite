@@ -7,16 +7,19 @@
 
 int main(int argc, char** argv)
 {
-  if(argc != 4)
+  if(argc != 5)
   {
     fprintf(stderr, 
-      "Error. Usage: %s input_file sig_wave_ht(m) wave_heading(deg).\n", 
+      "Error. " 
+      "Usage: %s input_file sig_wave_ht(m) wave_heading(deg) rand_seed.\n", 
       argv[0]);
     return 1;
   }
   double wave_ht, wave_heading;
+  int rand_seed;
   sscanf(argv[2], "%lf", &wave_ht);
   sscanf(argv[3], "%lf", &wave_heading);
+  sscanf(argv[4], "%d", &rand_seed);
 
   // Open output file 
   char out_file[120];
@@ -30,7 +33,7 @@ int main(int argc, char** argv)
   // set ASV inputs that were passed in command line
   if(asv.using_waves = (wave_ht != 0.0))
   {
-    wave_init(&asv.wave, wave_ht, wave_heading * PI/180.0);
+    wave_init(&asv.wave, wave_ht, wave_heading * PI/180.0, rand_seed);
   }
   // init the asv after setting all inputs.
   asv_init(&asv);

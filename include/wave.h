@@ -20,6 +20,7 @@ struct Wave
                                     // for wave heading.
   double significant_wave_height;   // Significant wave height in meter.
   double heading; // wave heading in radians
+  long random_number_seed; 
 };
 
 /**
@@ -31,10 +32,12 @@ struct Wave
  * @param sig_wave_height is the significant wave height to achieve for the
  * irregular sea being initialised. Value should be non-zero positive.
  * @param wave_heading in radians
+ * @param rand_seed is the seed for random number generator. 
  */
 void wave_init(struct Wave* wave, 
                double sig_wave_height, 
-               double wave_heading);
+               double wave_heading, 
+               long rand_seed);
 
 /**
  * Get sea surface elevation at the given location for the given time. 
