@@ -319,29 +319,29 @@ static void set_wave_force(struct Asv* asv)
                                                 asv->dynamics.time); 
       // wave phase at the aft-CL position.
       struct Point point_aft = asv->cog_position;
-      point_aft.x -= (asv->spec.L_wl*0.25)*cos(asv->attitude.heading);
-      point_aft.y -= (asv->spec.L_wl*0.25)*sin(asv->attitude.heading);
+      point_aft.x -= (asv->spec.L_wl*0.25)*sin(asv->attitude.heading);
+      point_aft.y -= (asv->spec.L_wl*0.25)*cos(asv->attitude.heading);
       double phase_aft = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
                                                 &point_aft, 
                                                 asv->dynamics.time);
       // wave phase at the fore-CL position.
       struct Point point_fore = asv->cog_position;
-      point_fore.x += (asv->spec.L_wl*0.25)*cos(asv->attitude.heading);
-      point_fore.y += (asv->spec.L_wl*0.25)*sin(asv->attitude.heading);
+      point_fore.x += (asv->spec.L_wl*0.25)*sin(asv->attitude.heading);
+      point_fore.y += (asv->spec.L_wl*0.25)*cos(asv->attitude.heading);
       double phase_fore = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
                                                  &point_fore, 
                                                  asv->dynamics.time);
       // wave phase at the mid-PS position.
       struct Point point_ps = asv->cog_position;
-      point_ps.x -= (asv->spec.B_wl*0.25)*sin(asv->attitude.heading);
-      point_ps.y += (asv->spec.B_wl*0.25)*cos(asv->attitude.heading);
+      point_ps.x -= (asv->spec.B_wl*0.25)*cos(asv->attitude.heading);
+      point_ps.y += (asv->spec.B_wl*0.25)*sin(asv->attitude.heading);
       double phase_ps = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
                                                &point_ps, 
                                                asv->dynamics.time);
       // wave phase at the mid-SB position.
       struct Point point_sb = asv->cog_position;
-      point_sb.x += (asv->spec.B_wl*0.25)*sin(asv->attitude.heading);
-      point_sb.y -= (asv->spec.B_wl*0.25)*cos(asv->attitude.heading);
+      point_sb.x += (asv->spec.B_wl*0.25)*cos(asv->attitude.heading);
+      point_sb.y -= (asv->spec.B_wl*0.25)*sin(asv->attitude.heading);
       double phase_sb = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
                                                &point_sb, 
                                                asv->dynamics.time);
