@@ -16,10 +16,10 @@ int main(int argc, char** argv)
     return 1;
   }
   double wave_ht, wave_heading;
-  int rand_seed;
+  long rand_seed;
   sscanf(argv[2], "%lf", &wave_ht);
   sscanf(argv[3], "%lf", &wave_heading);
-  sscanf(argv[4], "%d", &rand_seed);
+  sscanf(argv[4], "%ld", &rand_seed);
 
   // Open output file 
   char out_file[120];
@@ -54,7 +54,13 @@ int main(int argc, char** argv)
         fprintf(stderr, "ERROR: output buffer exceeded.\n");
         // write output to file
         simulation_time = ((double)(end - start)) / CLOCKS_PER_SEC;
-        write_output(out_file, t, wave_ht, wave_heading, time, simulation_time);
+        write_output(out_file, 
+                     t, 
+                     wave_ht, 
+                     wave_heading, 
+                     rand_seed, 
+                     time, 
+                     simulation_time);
 	      exit(1);
       }
 
@@ -93,6 +99,7 @@ int main(int argc, char** argv)
         // save simulated data to buffer. 
         buffer[t].sig_wave_ht = asv.wave.significant_wave_height;
         buffer[t].wave_heading = asv.wave.heading * 180.0/PI;
+        buffer[t].random_number_seed = asv.wave.random_number_seed;
         buffer[t].time = time;
         buffer[t].wave_elevation = wave_elevation;
         buffer[t].cog_x = asv.cog_position.x;
@@ -110,7 +117,13 @@ int main(int argc, char** argv)
   simulation_time = ((double)(end - start)) / CLOCKS_PER_SEC;
 
   // write output to file
-  write_output(out_file, t, wave_ht, wave_heading, time, simulation_time);
+  write_output(out_file, 
+               t, 
+               wave_ht, 
+               wave_heading, 
+               rand_seed, 
+               time, 
+               simulation_time);
 
   return 0;
 }

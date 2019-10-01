@@ -441,12 +441,14 @@ void write_output(char* file,
                   int buffer_length,
                   double wave_ht, 
                   double wave_heading, 
+                  long rand_seed,
                   double task_duration,
                   double simulation_time)
 {
   // output message
   fprintf(stdout, "significant wave height = %f m.\n", wave_ht);
   fprintf(stdout, "wave heading = %f m.\n", wave_heading);
+  fprintf(stdout, "random number seed = %ld.\n", rand_seed);
   fprintf(stdout, "task duration = %f seconds.\n", task_duration);
   fprintf(stdout, "time taken for simulation = %f sec. \n\n", simulation_time);
   
@@ -465,6 +467,7 @@ void write_output(char* file,
     fprintf(fp,
            "sig_wave_ht(m) "
            "wave_heading(deg) " 
+           "rand_seed "
            "time(sec) "
            "wave_elevation(m) " 
            "cog_x(m) "
@@ -480,9 +483,10 @@ void write_output(char* file,
   // write buffer to file and close the file.
   for(int i = 0; i < buffer_length; ++i)
   {
-    fprintf(fp, "\n%f %f %f %f %f %f %f %f %f %f %f %f", 
+    fprintf(fp, "\n%f %f %ld %f %f %f %f %f %f %f %f %f %f", 
             buffer[i].sig_wave_ht,
             buffer[i].wave_heading,
+            buffer[i].random_number_seed,
             buffer[i].time,
             buffer[i].wave_elevation,
             buffer[i].cog_x, 

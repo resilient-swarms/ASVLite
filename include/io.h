@@ -20,6 +20,7 @@ struct
 { 
   double sig_wave_ht; // m
   double wave_heading; // deg
+  long random_number_seed;
   double time; // sec.
   double wave_elevation; // Wave elevation at the position of the vehicle, m.
   double cog_x;   // m.
@@ -53,6 +54,7 @@ void write_output(char* file,
                   int buffer_length,
                   double wave_ht, 
                   double wave_heading, 
+                  long rand_seed,
                   double task_duration,
                   double simulation_time);
 
