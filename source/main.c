@@ -7,29 +7,27 @@
 
 int main(int argc, char** argv)
 {
-  if(argc != 5)
+  if(argc != 6)
   {
     fprintf(stderr, 
       "Error. " 
-      "Usage: %s input_file sig_wave_ht(m) wave_heading(deg) rand_seed.\n", 
+      "Usage: %s in_file out_file sig_wave_ht(m) wave_heading(deg) rand_seed.\n", 
       argv[0]);
     return 1;
   }
   double wave_ht, wave_heading;
   long rand_seed;
-  sscanf(argv[2], "%lf", &wave_ht);
-  sscanf(argv[3], "%lf", &wave_heading);
-  sscanf(argv[4], "%ld", &rand_seed);
-
-  // Open output file 
-  char out_file[120];
-  sprintf(out_file, "%s_out", argv[1]);
+  char* in_file = argv[1];
+  char* out_file = argv[2];
+  sscanf(argv[3], "%lf", &wave_ht);
+  sscanf(argv[4], "%lf", &wave_heading);
+  sscanf(argv[5], "%ld", &rand_seed);
 
   // Init vehicle and waypoints
   struct Asv asv;
   struct Waypoints waypoints;
   // set ASV inputs from input file.
-  set_input(argv[1], &asv, &waypoints);
+  set_input(in_file, &asv, &waypoints);
   // set ASV inputs that were passed in command line
   if(asv.using_waves = (wave_ht != 0.0))
   {
