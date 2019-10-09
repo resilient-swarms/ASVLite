@@ -10,7 +10,7 @@ import subprocess
 import os
 # Measure time for simulations
 import time
-# Intrrupt handling
+# Interrupt handling
 import signal
 import sys
 
@@ -18,12 +18,13 @@ count_simulations = 0
 subprocesses = []
 
 def interrupt_handler(sig, frame):
-	print('You pressed Ctrl+C!')
+	print('\nKill all simulations.')
 	for ps in subprocesses:
 		pid = ps.pid
 		os.kill(pid, signal.SIGINT)
 	sys.exit(0)
 
+# Register the interrupt handler. 
 signal.signal(signal.SIGINT, interrupt_handler)
 
 # Motion is still water
@@ -35,8 +36,8 @@ subprocess.run(["../build/asv_simulator", "asv", "asv_still_water", "0.0", "0.0"
 
 # Read simulation data from file into dataframe
 data = pd.read_csv('asv_still_water', sep=" ")
-print(data.head())
 print(data.info())
+print(data.head().append(data.tail())) # Print head and tail of dataframe 
 
 # Plot
 fig_still_water = plt.figure()
@@ -74,86 +75,134 @@ plt.show()
 # ---------------
 # Run simulation
 start_time = time.time()
-wave_heights = np.arange(0.5, 2.51, 0.5)
-wave_headings = range(0, 360, 30)
-rand_seeds = range(0, 10)
-for wave_height in wave_heights:
-	for wave_heading in wave_headings:
-		for rand_seed in rand_seeds:
+wave_heights = np.arange(0.5, 2.51, 1.0)
+wave_headings = range(0, 360, 90)
+rand_seeds = range(1, 2)
+for rand_seed in rand_seeds:
+	subprocesses.clear()
+	for wave_height in wave_heights:
+		for wave_heading in wave_headings:
 			count_simulations += 1
 			out_file = "asv_{}_{}".format(wave_height, wave_heading)
 			print("count simulations = {} [wave_ht={}, wave_heading={}, rand_seed={}]".format(count_simulations, wave_height, wave_heading, rand_seed))
 			ps = subprocess.Popen(["../build/asv_simulator", "asv", out_file, str(wave_height), str(wave_heading), str(rand_seed)])
 			subprocesses.append(ps)
-exit_codes = [p.wait() for p in subprocesses]
+	exit_codes = [p.wait() for p in subprocesses]
 print("Simulations completed.")
 
 # Merge all output files to a single file
+file1 = open("asv_wave", "w")
 print("Merge files:")
 file_count = 0
 for wave_height in wave_heights:
 	for wave_heading in wave_headings:
-		out_file = "asv_{}_{}".format(wave_height, wave_heading)
-		file1 = open("asv_out_wave", "a")
-		file2 = open(out_file, "r")
-		print("... merging file {}".format(out_file))
+		file2_name = "asv_{}_{}".format(wave_height, wave_heading)
+		file2 = open(file2_name, "r")
+		print("... merging file {}".format(file2_name))
 		line_count = 0
 		for line in file2:
-			if(file_count != 0 and line_count == 0):
-				# ignore the header 
-				continue
+			if(file_count != 0 and line_count == 0): 
+				file1.write('\n') # ignore the header
 			else:
 				file1.write(line)
-				line_count += 1
+			line_count += 1
 		file_count += 1
-		print("... remove file {}".format(out_file))
-		file1.close()
-		os.remove(out_file)
+		file2.close()
+		print("... remove file {}".format(file2_name))
+		os.remove(file2_name)
+file1.close()
 
 # Clock
 end_time = time.time()
-print("Simulation time = {}".format(end_time - start_time))
+sim_time = end_time - start_time
+print("\nSimulation time = {0:0.2f}sec ({0:0.2f}min)\n".format(sim_time, sim_time/60.0))
 
 # Read simulation data from file into dataframe
-data = pd.read_csv('asv_out_wave', sep=" ")
-print(data.head())
+data = pd.read_csv('asv_wave', sep=" ")
 print(data.info())
+print(data.head().append(data.tail())) # Print head and tail of dataframe 
 
 # Plot
-fig_wave = plt.figure()
 # Relative heave
-df = DataFrame(data, columns=['sig_wave_ht(m)', 'wave_heading(deg)', 'rand_seed', 'wave_elevation(m)', 'cog_z(m)'])
-df['rel_heave(m)'] = df['cog_z(m)'] - df['wave_elevation(m)']
-df['rel_heave(m)'] = df['rel_heave(m)'].abs()
-ax1 = fig_wave.add_subplot(131, projection='3d')
-ax1.title.set_text('Heave (relative to sea surface)')
-ax1.set_xlabel('sig wave ht(m)')
-ax1.set_ylabel('wave heading(deg)')
-ax1.set_zlabel('heave(m)')
-x = df['sig_wave_ht(m)']
-y = df['wave_heading(deg)']
-z = df['rel_heave(m)']
-ax1.scatter(x,y,z)
-# Pitch
-df = DataFrame(data, columns=['sig_wave_ht(m)', 'wave_heading(deg)', 'rand_seed', 'trim(deg)'])
-ax2 = fig_wave.add_subplot(132, projection='3d')
-ax2.title.set_text('Trim')
-ax2.set_xlabel('sig wave ht(m)')
-ax2.set_ylabel('wave heading(deg)')
-ax2.set_zlabel('trim(deg)')
-x = df['sig_wave_ht(m)']
-y = df['wave_heading(deg)']
-z = df['trim(deg)']
-ax2.scatter(x,y,z)
-# Heel
-df = DataFrame(data, columns=['sig_wave_ht(m)', 'wave_heading(deg)', 'rand_seed', 'heel(deg)'])
-ax3 = fig_wave.add_subplot(133, projection='3d')
-ax3.title.set_text('Heel')
-ax3.set_xlabel('sig wave ht(m)')
-ax3.set_ylabel('wave heading(deg)')
-ax3.set_zlabel('heel(deg)')
-x = df['sig_wave_ht(m)']
-y = df['wave_heading(deg)']
-z = df['heel(deg)']
-ax3.scatter(x,y,z)
+fig_heave = plt.figure()
+dfs = DataFrame(data, columns=['sig_wave_ht(m)', 'wave_heading(deg)', 'wave_elevation(m)', 'cog_z(m)'])
+dfs['rel_heave(m)'] = dfs['cog_z(m)'] - dfs['wave_elevation(m)']
+dfs['rel_heave(m)'] = dfs['rel_heave(m)']
+dfs = dfs.groupby('sig_wave_ht(m)')
+nrows = len(wave_heights)
+ncols = len(wave_headings)
+n = 0
+for (wave_ht, df) in dfs:
+	df = df.groupby('wave_heading(deg)')
+	for(wave_heading, table) in df:
+		n += 1
+		heave = table['rel_heave(m)']
+		heave = heave.values
+		ax = fig_heave.add_subplot(nrows, ncols, n)
+		ax.title.set_text('Heave (wave_ht={}m, wave_heading={}deg)'.format(wave_ht, wave_heading))
+		bp_dict = ax.boxplot(heave, vert=False)
+		for line in bp_dict['medians']:
+			# get position data for median line
+			(x, y) = line.get_xydata()[1] # top of median line
+			# overlay median value
+			ax.text(x, y, "%.3f" % x, horizontalalignment='center') # draw above, centered
+		for line in bp_dict['boxes']:
+			(x, y) = line.get_xydata()[0] # bottom of left line
+			ax.text(x, y, "%.3f" % x, horizontalalignment='right', verticalalignment='top') # centered, below
+			(x, y) = line.get_xydata()[3] # bottom of right line
+			ax.text(x, y, "%.3f" % x, horizontalalignment='left', verticalalignment='top') # centered, below
+plt.show()
+# Trim
+fig_trim = plt.figure()
+dfs = DataFrame(data, columns=['sig_wave_ht(m)', 'wave_heading(deg)', 'trim(deg)'])
+dfs = dfs.groupby('sig_wave_ht(m)')
+nrows = len(wave_heights)
+ncols = len(wave_headings)
+n = 0
+for (wave_ht, df) in dfs:
+	df = df.groupby('wave_heading(deg)')
+	for(wave_heading, table) in df:
+		n += 1
+		trim = table['trim(deg)']
+		trim = trim.values
+		ax = fig_trim.add_subplot(nrows, ncols, n)
+		ax.title.set_text('Trim (wave_ht={}m, wave_heading={}deg)'.format(wave_ht, wave_heading))
+		bp_dict = ax.boxplot(trim, vert=False)
+		for line in bp_dict['medians']:
+			# get position data for median line
+			(x, y) = line.get_xydata()[1] # top of median line
+			# overlay median value
+			ax.text(x, y, "%.3f" % x, horizontalalignment='center') # draw above, centered
+		for line in bp_dict['boxes']:
+			(x, y) = line.get_xydata()[0] # bottom of left line
+			ax.text(x, y, "%.3f" % x, horizontalalignment='right', verticalalignment='top') # centered, below
+			(x, y) = line.get_xydata()[3] # bottom of right line
+			ax.text(x, y, "%.3f" % x, horizontalalignment='left', verticalalignment='top') # centered, below
+plt.show()
+# Trim
+fig_heel = plt.figure()
+dfs = DataFrame(data, columns=['sig_wave_ht(m)', 'wave_heading(deg)', 'heel(deg)'])
+dfs = dfs.groupby('sig_wave_ht(m)')
+nrows = len(wave_heights)
+ncols = len(wave_headings)
+n = 0
+for (wave_ht, df) in dfs:
+	df = df.groupby('wave_heading(deg)')
+	for(wave_heading, table) in df:
+		n += 1
+		heel = table['heel(deg)']
+		heel = heel.values
+		ax = fig_heel.add_subplot(nrows, ncols, n)
+		ax.title.set_text('Heel (wave_ht={}m, wave_heading={}deg)'.format(wave_ht, wave_heading))
+		bp_dict = ax.boxplot(heel, vert=False)
+		for line in bp_dict['medians']:
+			# get position data for median line
+			(x, y) = line.get_xydata()[1] # top of median line
+			# overlay median value
+			ax.text(x, y, "%.3f" % x, horizontalalignment='center') # draw above, centered
+		for line in bp_dict['boxes']:
+			(x, y) = line.get_xydata()[0] # bottom of left line
+			ax.text(x, y, "%.3f" % x, horizontalalignment='right', verticalalignment='top') # centered, below
+			(x, y) = line.get_xydata()[3] # bottom of right line
+			ax.text(x, y, "%.3f" % x, horizontalalignment='left', verticalalignment='top') # centered, below
 plt.show()
