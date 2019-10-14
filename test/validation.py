@@ -5,6 +5,7 @@ from pandas import DataFrame
 # Plot 
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
+from matplotlib import cm
 # Run command line
 import subprocess
 import os
@@ -76,7 +77,7 @@ plt.show()
 # Run simulation
 start_time = time.time()
 wave_heights = np.arange(0.5, 2.51, 0.5)
-wave_headings = range(0, 360, 30)
+wave_headings = np.arange(0.0, 360.0, 30.0)
 rand_seeds = range(1, 11)
 for rand_seed in rand_seeds:
 	subprocesses.clear()
@@ -125,7 +126,7 @@ print(data.head().append(data.tail())) # Print head and tail of dataframe
 # Plot
 # Relative heave
 fig_heave = plt.figure()
-fig_heave.suptitle('Heave (with respect to sea surface)')
+fig_heave.suptitle('Heave, in m, with respect to sea surface. (wave_ht, wave_heading)')
 dfs = DataFrame(data, columns=['sig_wave_ht(m)', 'wave_heading(deg)', 'wave_elevation(m)', 'cog_z(m)'])
 dfs['rel_heave(m)'] = dfs['cog_z(m)'] - dfs['wave_elevation(m)']
 dfs['rel_heave(m)'] = dfs['rel_heave(m)']
@@ -133,14 +134,17 @@ dfs = dfs.groupby('sig_wave_ht(m)')
 nrows = len(wave_heights)
 ncols = len(wave_headings)
 n = 0
+heave_mean = []
 for (wave_ht, df) in dfs:
 	df = df.groupby('wave_heading(deg)')
+	heave_mean_row = []
 	for(wave_heading, table) in df:
 		n += 1
-		heave = table['rel_heave(m)']
+		heave = table['rel_heave(m)'].abs()
+		heave_mean_row.append(heave.mean())
 		heave = heave.values
 		ax = fig_heave.add_subplot(nrows, ncols, n)
-		ax.title.set_text('({}m, {}deg)'.format(wave_ht, wave_heading))
+		ax.title.set_text('({}, {})'.format(wave_ht, wave_heading))
 		bp_dict = ax.boxplot(heave, vert=False)
 		for line in bp_dict['medians']:
 			# get position data for median line
@@ -152,23 +156,37 @@ for (wave_ht, df) in dfs:
 			ax.text(x, y, "%.3f" % x, horizontalalignment='right', verticalalignment='top') # centered, below
 			(x, y) = line.get_xydata()[3] # bottom of right line
 			ax.text(x, y, "%.3f" % x, horizontalalignment='left', verticalalignment='top') # centered, below
+	heave_mean.append(heave_mean_row)
 plt.show()
+# Surface plot
+heave_3D = plt.figure()
+heave_3D.suptitle('Heave')
+ax = heave_3D.gca(projection='3d')
+X, Y = np.meshgrid(wave_heights, wave_headings)
+Z = np.array(heave_mean)
+surf = ax.plot_surface(X, Y, np.transpose(Z), cmap=cm.coolwarm, linewidth=0, antialiased=False)
+heave_3D.colorbar(surf, shrink=0.5, aspect=5)
+plt.show()
+
 # Trim
 fig_trim = plt.figure()
-fig_trim.suptitle('Trim(deg)')
+fig_trim.suptitle('Trim, in deg. (wave_ht, wave_heading)')
 dfs = DataFrame(data, columns=['sig_wave_ht(m)', 'wave_heading(deg)', 'trim(deg)'])
 dfs = dfs.groupby('sig_wave_ht(m)')
 nrows = len(wave_heights)
 ncols = len(wave_headings)
 n = 0
+trim_mean = []
 for (wave_ht, df) in dfs:
 	df = df.groupby('wave_heading(deg)')
+	trim_mean_row = []
 	for(wave_heading, table) in df:
 		n += 1
-		trim = table['trim(deg)']
+		trim = table['trim(deg)'].abs()
+		trim_mean_row.append(trim.mean())
 		trim = trim.values
 		ax = fig_trim.add_subplot(nrows, ncols, n)
-		ax.title.set_text('({}m, {}deg)'.format(wave_ht, wave_heading))
+		ax.title.set_text('({}, {})'.format(wave_ht, wave_heading))
 		bp_dict = ax.boxplot(trim, vert=False)
 		for line in bp_dict['medians']:
 			# get position data for median line
@@ -180,23 +198,37 @@ for (wave_ht, df) in dfs:
 			ax.text(x, y, "%.3f" % x, horizontalalignment='right', verticalalignment='top') # centered, below
 			(x, y) = line.get_xydata()[3] # bottom of right line
 			ax.text(x, y, "%.3f" % x, horizontalalignment='left', verticalalignment='top') # centered, below
+	trim_mean.append(trim_mean_row)
 plt.show()
-# Trim
+# Surface plot
+trim_3D = plt.figure()
+trim_3D.suptitle('Trim')
+ax = trim_3D.gca(projection='3d')
+X, Y = np.meshgrid(wave_heights, wave_headings)
+Z = np.array(trim_mean)
+surf = ax.plot_surface(X, Y, np.transpose(Z), cmap=cm.coolwarm, linewidth=0, antialiased=False)
+heave_3D.colorbar(surf, shrink=0.5, aspect=5)
+plt.show()
+
+# Heel
 fig_heel = plt.figure()
-fig_heel.suptitle('Heel(deg)')
+fig_heel.suptitle('Heel, in deg. (wave_ht, wave_heading)')
 dfs = DataFrame(data, columns=['sig_wave_ht(m)', 'wave_heading(deg)', 'heel(deg)'])
 dfs = dfs.groupby('sig_wave_ht(m)')
 nrows = len(wave_heights)
 ncols = len(wave_headings)
 n = 0
+heel_mean = []
 for (wave_ht, df) in dfs:
 	df = df.groupby('wave_heading(deg)')
+	heel_mean_row = []
 	for(wave_heading, table) in df:
 		n += 1
-		heel = table['heel(deg)']
+		heel = table['heel(deg)'].abs()
+		heel_mean_row.append(heel.mean())
 		heel = heel.values
 		ax = fig_heel.add_subplot(nrows, ncols, n)
-		ax.title.set_text('({}m, {}deg)'.format(wave_ht, wave_heading))
+		ax.title.set_text('({}, {})'.format(wave_ht, wave_heading))
 		bp_dict = ax.boxplot(heel, vert=False)
 		for line in bp_dict['medians']:
 			# get position data for median line
@@ -208,4 +240,14 @@ for (wave_ht, df) in dfs:
 			ax.text(x, y, "%.3f" % x, horizontalalignment='right', verticalalignment='top') # centered, below
 			(x, y) = line.get_xydata()[3] # bottom of right line
 			ax.text(x, y, "%.3f" % x, horizontalalignment='left', verticalalignment='top') # centered, below
+	heel_mean.append(heel_mean_row)
+plt.show()
+# Surface plot
+heel_3D = plt.figure()
+heel_3D.suptitle('Heel')
+ax = trim_3D.gca(projection='3d')
+X, Y = np.meshgrid(wave_heights, wave_headings)
+Z = np.array(heel_mean)
+surf = ax.plot_surface(X, Y, np.transpose(Z), cmap=cm.coolwarm, linewidth=0, antialiased=False)
+heave_3D.colorbar(surf, shrink=0.5, aspect=5)
 plt.show()
