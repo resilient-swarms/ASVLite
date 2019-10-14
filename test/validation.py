@@ -75,7 +75,7 @@ plt.show()
 # ---------------
 # Run simulation
 start_time = time.time()
-wave_heights = np.arange(0.5, 2.51, 1.0)
+wave_heights = np.arange(0.5, 2.51, 1)
 wave_headings = range(0, 360, 90)
 rand_seeds = range(1, 2)
 for rand_seed in rand_seeds:
@@ -125,6 +125,7 @@ print(data.head().append(data.tail())) # Print head and tail of dataframe
 # Plot
 # Relative heave
 fig_heave = plt.figure()
+fig_heave.suptitle('Heave (with respect to sea surface)')
 dfs = DataFrame(data, columns=['sig_wave_ht(m)', 'wave_heading(deg)', 'wave_elevation(m)', 'cog_z(m)'])
 dfs['rel_heave(m)'] = dfs['cog_z(m)'] - dfs['wave_elevation(m)']
 dfs['rel_heave(m)'] = dfs['rel_heave(m)']
@@ -139,7 +140,7 @@ for (wave_ht, df) in dfs:
 		heave = table['rel_heave(m)']
 		heave = heave.values
 		ax = fig_heave.add_subplot(nrows, ncols, n)
-		ax.title.set_text('Heave (wave_ht={}m, wave_heading={}deg)'.format(wave_ht, wave_heading))
+		ax.title.set_text('({}m, {}deg)'.format(wave_ht, wave_heading))
 		bp_dict = ax.boxplot(heave, vert=False)
 		for line in bp_dict['medians']:
 			# get position data for median line
@@ -154,6 +155,7 @@ for (wave_ht, df) in dfs:
 plt.show()
 # Trim
 fig_trim = plt.figure()
+fig_trim.suptitle('Trim(deg)')
 dfs = DataFrame(data, columns=['sig_wave_ht(m)', 'wave_heading(deg)', 'trim(deg)'])
 dfs = dfs.groupby('sig_wave_ht(m)')
 nrows = len(wave_heights)
@@ -166,7 +168,7 @@ for (wave_ht, df) in dfs:
 		trim = table['trim(deg)']
 		trim = trim.values
 		ax = fig_trim.add_subplot(nrows, ncols, n)
-		ax.title.set_text('Trim (wave_ht={}m, wave_heading={}deg)'.format(wave_ht, wave_heading))
+		ax.title.set_text('({}m, {}deg)'.format(wave_ht, wave_heading))
 		bp_dict = ax.boxplot(trim, vert=False)
 		for line in bp_dict['medians']:
 			# get position data for median line
@@ -181,6 +183,7 @@ for (wave_ht, df) in dfs:
 plt.show()
 # Trim
 fig_heel = plt.figure()
+fig_heel.suptitle('Heel(deg)')
 dfs = DataFrame(data, columns=['sig_wave_ht(m)', 'wave_heading(deg)', 'heel(deg)'])
 dfs = dfs.groupby('sig_wave_ht(m)')
 nrows = len(wave_heights)
@@ -193,7 +196,7 @@ for (wave_ht, df) in dfs:
 		heel = table['heel(deg)']
 		heel = heel.values
 		ax = fig_heel.add_subplot(nrows, ncols, n)
-		ax.title.set_text('Heel (wave_ht={}m, wave_heading={}deg)'.format(wave_ht, wave_heading))
+		ax.title.set_text('({}m, {}deg)'.format(wave_ht, wave_heading))
 		bp_dict = ax.boxplot(heel, vert=False)
 		for line in bp_dict['medians']:
 			# get position data for median line
