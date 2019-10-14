@@ -75,9 +75,9 @@ plt.show()
 # ---------------
 # Run simulation
 start_time = time.time()
-wave_heights = np.arange(0.5, 2.51, 1)
-wave_headings = range(0, 360, 90)
-rand_seeds = range(1, 2)
+wave_heights = np.arange(0.5, 2.51, 0.5)
+wave_headings = range(0, 360, 30)
+rand_seeds = range(1, 11)
 for rand_seed in rand_seeds:
 	subprocesses.clear()
 	for wave_height in wave_heights:
