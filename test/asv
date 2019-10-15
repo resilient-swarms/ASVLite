@@ -41,11 +41,11 @@ x = 0.0
 y = 0.0
 
 [vehicle_heading]
-heading = 90.0
+heading = 0.0
 
 [[waypoint]]
-x = 100.0
-y = 0.0
+x = 0.0
+y = 100.0
 
 # Following set of inputs are optional
 # ------------------------------------
