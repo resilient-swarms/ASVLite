@@ -258,9 +258,16 @@ static void set_unit_wave_force(struct Asv* asv)
     // direction = 0.0 and phase = 0.0.
     struct Regular_wave wave;
     regular_wave_init(&wave, H_w/2.0, freq, 0.0, 0.0);
+
+    // Maximum slope of wave
+    double slope_max = H_w/2.0 * wave.wave_number;
     
     // Calculate wave pressure at centre of buoyancy
     double P = SEA_WATER_DENSITY* G* wave.amplitude* exp(wave.wave_number* z);
+    // Max pressure difference longitudinally
+    double P_diff_long = (P/wave.wave_length)*(2.0*a/3.0);
+    // Max pressure difference transversely 
+    double P_diff_trans = (P/wave.wave_length)*(2.0*b/3.0);
 
     // Heave force
     // The heave force is maximum when the wave peak of the wave is at midship
@@ -268,14 +275,23 @@ static void set_unit_wave_force(struct Asv* asv)
     asv->dynamics.F_unit_wave[i][heave] = A_heave * P;
 
     // Surge force
-    double A_surge = 0.5*PI*b*c;;
+    double A_surge = b * (slope_max * 4.0*a/3.0);
     asv->dynamics.F_unit_wave[i][surge] = A_surge * P;
 
     // Sway force
-    double A_sway = 0.5*PI*a*c;
+    double A_sway = a * (slope_max * 4.0*b/3.0);
     asv->dynamics.F_unit_wave[i][sway] = A_sway * P;
 
-    // roll, pitch and yaw moments assumed as zero
+    // Roll moment
+    // Max pressure difference between SB and PS
+    double P_roll_diff = (P/wave.wave_length)*(2.0*b/3.0);
+    asv->dynamics.F_unit_wave[i][roll] = A_heave * P_diff_trans * (4.0*b/3.0);
+
+    // Pitch moment
+    // Max pressure difference between fore and aft
+    asv->dynamics.F_unit_wave[i][pitch] = A_heave * P_diff_long * (4.0*a/3.0);
+
+    // Yaw moment assumed to be 0.
   }
 }
 
@@ -317,56 +333,22 @@ static void set_wave_force(struct Asv* asv)
       double phase_cog = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
                                                 &asv->cog_position, 
                                                 asv->dynamics.time); 
-      // wave phase at the aft-CL position.
-      struct Point point_aft = asv->cog_position;
-      point_aft.x -= (asv->spec.L_wl*0.25)*sin(asv->attitude.heading);
-      point_aft.y -= (asv->spec.L_wl*0.25)*cos(asv->attitude.heading);
-      double phase_aft = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
-                                                &point_aft, 
-                                                asv->dynamics.time);
-      // wave phase at the fore-CL position.
-      struct Point point_fore = asv->cog_position;
-      point_fore.x += (asv->spec.L_wl*0.25)*sin(asv->attitude.heading);
-      point_fore.y += (asv->spec.L_wl*0.25)*cos(asv->attitude.heading);
-      double phase_fore = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
-                                                 &point_fore, 
-                                                 asv->dynamics.time);
-      // wave phase at the mid-PS position.
-      struct Point point_ps = asv->cog_position;
-      point_ps.x -= (asv->spec.B_wl*0.25)*cos(asv->attitude.heading);
-      point_ps.y += (asv->spec.B_wl*0.25)*sin(asv->attitude.heading);
-      double phase_ps = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
-                                               &point_ps, 
-                                               asv->dynamics.time);
-      // wave phase at the mid-SB position.
-      struct Point point_sb = asv->cog_position;
-      point_sb.x += (asv->spec.B_wl*0.25)*cos(asv->attitude.heading);
-      point_sb.y -= (asv->spec.B_wl*0.25)*sin(asv->attitude.heading);
-      double phase_sb = regular_wave_get_phase(&(asv->wave.spectrum[i][j]), 
-                                               &point_sb, 
-                                               asv->dynamics.time);
       
       // Compute wave force
       asv->dynamics.F_wave[surge] += 
         scale * asv->dynamics.F_unit_wave[index][surge] * 
-        (cos(phase_aft - PI/2.0) - cos(phase_fore - PI/2.0));
+        cos(phase_cog - PI/2.0) * cos(angle);
       asv->dynamics.F_wave[sway] += 
         scale * asv->dynamics.F_unit_wave[index][sway] * 
-        (cos(phase_ps - PI/2.0) - cos(phase_sb - PI/2.0));
+        cos(phase_cog - PI/2.0) * sin(angle);
       asv->dynamics.F_wave[heave] += 
         scale * asv->dynamics.F_unit_wave[index][heave] * cos(phase_cog);
-      // roll moment = differential_heave_force * lever
-      // differential_heave_force = F_heave_ps - F_heave_sb
-      // lever = (2/3B) - 0.5B = B/6.0
       asv->dynamics.F_wave[roll] += 
-        scale * asv->dynamics.F_unit_wave[index][heave] *
-        (cos(phase_ps) - cos(phase_sb)) * asv->spec.B_wl/6.0;
-      // pitch moment = differential_heave_force * lever
-      // differential_heave_force = F_heave_aft - F_heave_fore
-      // lever = (2/3L) - 0.5L = L/6.0
+        scale * asv->dynamics.F_unit_wave[index][roll] * 
+        cos(phase_cog - PI/2.0) * sin(angle);
       asv->dynamics.F_wave[pitch] += 
-        scale * asv->dynamics.F_unit_wave[index][heave] *
-        (cos(phase_aft) - cos(phase_fore)) * asv->spec.L_wl/6.0;
+        scale * asv->dynamics.F_unit_wave[index][pitch] * 
+        cos(phase_cog -PI/2.0) * cos(angle);
       // yaw moment = 0.0
     }
   } 
