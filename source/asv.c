@@ -283,15 +283,17 @@ static void set_unit_wave_force(struct Asv* asv)
     asv->dynamics.F_unit_wave[i][sway] = A_sway * P;
 
     // Roll moment
-    // Max pressure difference between SB and PS
+    // Based on max pressure difference between SB and PS
     double P_roll_diff = (P/wave.wave_length)*(2.0*b/3.0);
     asv->dynamics.F_unit_wave[i][roll] = A_heave * P_diff_trans * (4.0*b/3.0);
 
     // Pitch moment
-    // Max pressure difference between fore and aft
+    // Based on max pressure difference between fore and aft
     asv->dynamics.F_unit_wave[i][pitch] = A_heave * P_diff_long * (4.0*a/3.0);
 
-    // Yaw moment assumed to be 0.
+    // Yaw moment
+    // Based on max pressure difference between fore and aft
+    //asv->dynamics.F_unit_wave[i][yaw] = A_sway * P_diff_long * (4.0*a/3.0);
   }
 }
 
@@ -348,8 +350,11 @@ static void set_wave_force(struct Asv* asv)
         cos(phase_cog - PI/2.0) * sin(angle);
       asv->dynamics.F_wave[pitch] += 
         scale * asv->dynamics.F_unit_wave[index][pitch] * 
-        cos(phase_cog -PI/2.0) * cos(angle);
-      // yaw moment = 0.0
+        cos(phase_cog - PI/2.0) * cos(angle);
+      //asv->dynamics.F_wave[yaw] += 
+      //  scale * asv->dynamics.F_unit_wave[index][yaw] * 
+      //  cos(phase_cog -PI/2.0) * cos(angle);
+      
     }
   } 
 }
