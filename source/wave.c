@@ -17,7 +17,7 @@ void wave_init(struct Wave* wave,
   {
     wave->min_spectral_wave_heading += 2.0*PI; 
   }
-  if(wave->max_spectral_frequency > 2.0*PI)
+  if(wave->max_spectral_frequency >= 2.0*PI)
   {
     wave->max_spectral_frequency -= 2.0*PI;
   }
@@ -51,7 +51,7 @@ void wave_init(struct Wave* wave,
     double mu = wave->min_spectral_wave_heading + i * wave_heading_step_size;
     // wave heading is expected to be in the range (0, 2PI). Correct the wave
     // heading if value our of the range.
-    mu = (mu > 2.0*PI)? mu - 2.0*PI: mu;
+    mu = (mu >= 2.0*PI)? mu - 2.0*PI: mu;
 
     double frequency_step_size = (wave->max_spectral_frequency - 
                                   wave->min_spectral_frequency) /
