@@ -18,9 +18,9 @@ import sys
 
 # Simulations
 # -----------
-wave_heights = np.arange(0.5, 2.51, 0.5)
+wave_heights = np.arange(0.5, 2.1, 0.5)
 wave_headings = np.arange(0.0, 361.0, 45.0)
-trials = np.arange(1, 5, 1)
+trials = np.arange(1, 4, 1)
 count_simulations = 0
 subprocesses = []
 
@@ -185,11 +185,36 @@ def contour_plot(data, title):
 	plt.colorbar()
 	plt.show()
 
+def scatter_plot(data, title):
+	fig = plt.figure()
+	fig.suptitle(title)
+	X, Y = np.meshgrid(wave_heights, wave_headings)
+	Z = np.zeros(shape=(n_wave_hts, n_wave_headings))
+	for i in range(n_wave_hts):
+		for j in range(n_wave_headings):
+			Z_trials = np.zeros(shape=(n_trials,1)) # mean amplitude of each trial
+			for k in range(n_trials):
+				amps = np.array(data[i][j][k])
+				abs_amps = np.absolute(amps)
+				Z_trials[k] = np.median(abs_amps)
+			Z[i][j] = Z_trials.mean()
+	contour = plt.scatter(X, Y, c=np.transpose(Z), cmap=cm.coolwarm)
+	plt.colorbar()
+	plt.show()
+
+
 box_plot(wave, 'wave_elevation(m)')
 contour_plot(wave, 'wave_elevation(m)')
+scatter_plot(wave, 'wave_elevation(m)')
+
 box_plot(heave, 'Heave(m)')
 contour_plot(heave, 'Heave(m)')
+scatter_plot(heave, 'Heave(m)')
+
 box_plot(pitch, 'Pitch(deg)')
 contour_plot(pitch, 'Pitch(deg)')
+scatter_plot(pitch, 'Pitch(deg)')
+
 box_plot(roll, 'Roll(deg)')
 contour_plot(roll, 'Roll(deg)')
+scatter_plot(roll, 'Roll(deg)')
