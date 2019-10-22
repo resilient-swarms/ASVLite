@@ -349,10 +349,10 @@ static void set_wave_force(struct Asv* asv)
       // Compute wave force
       asv->dynamics.F_wave[surge] += 
         scale * asv->dynamics.F_unit_wave[index][surge] * 
-        (cos(phase_aft - PI/2.0) - cos(phase_fore - PI/2.0));
+        (cos(phase_aft) - cos(phase_fore));
       asv->dynamics.F_wave[sway] += 
         scale * asv->dynamics.F_unit_wave[index][sway] * 
-        (cos(phase_ps - PI/2.0) - cos(phase_sb - PI/2.0));
+        (cos(phase_ps) - cos(phase_sb));
       asv->dynamics.F_wave[heave] += 
         scale * asv->dynamics.F_unit_wave[index][heave] * cos(phase_cog);
       // roll moment = differential_heave_force * lever
