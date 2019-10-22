@@ -267,18 +267,20 @@ static void set_unit_wave_force(struct Asv* asv)
       // Max pressure difference transversely 
       double P_slope_max_trans = P * wave.wave_number * sin(direction);
       // Max pressure gradient along the length of the ASV
-      double P_gradient_max_long = fabs(P_slope_max_long * (4.0/3.0) * a);
+      double P_gradient_max_long = P_slope_max_long * (4.0/3.0) * a;
       // Max pressure gradient along the breadth of the ASV
-      double P_gradient_max_trans = fabs(P_slope_max_trans * (4.0/3.0) * b);
+      double P_gradient_max_trans = P_slope_max_trans * (4.0/3.0) * b;
 
       // Projected areas of the vehicle for computing force from pressure:
       // Maximum slope of wave
       double wave_slope_max_long = H_w/2.0 * wave.wave_number * cos(direction);
       double wave_slope_max_trans = H_w/2.0 * wave.wave_number * sin(direction);
       double A_z = PI*a*b; // Projected waterplane area
-      double A_x = fabs(b *(wave_slope_max_long * 4.0*a/3.0));// Projected area
+      double A_x = fabs(asv->spec.B_wl *
+                        (wave_slope_max_long * 4.0*a/3.0));// Projected area
                                                           // trans section
-      double A_y = fabs(a *(wave_slope_max_trans * 4.0*b/3.0));// Projected area
+      double A_y = fabs(asv->spec.L_wl *
+                        (wave_slope_max_trans * 4.0*b/3.0));// Projected area
                                                            // longitudinall  
 
       // Max surge force
@@ -358,19 +360,19 @@ static void set_wave_force(struct Asv* asv)
       // Compute wave force
       asv->dynamics.F_wave[surge] += 
         scale * asv->dynamics.F_unit_wave[i_dir][i_freq][surge] * 
-        cos(phase_cog + PI/2.0) * cos(phase_cog + PI/2.0);
+        sin(phase_cog) * fabs(sin(phase_cog));
       asv->dynamics.F_wave[sway]  += 
         scale * asv->dynamics.F_unit_wave[i_dir][i_freq][sway]  * 
-        cos(phase_cog + PI/2.0) * cos(phase_cog + PI/2.0);
+        sin(phase_cog) * fabs(sin(phase_cog));
       asv->dynamics.F_wave[heave] += 
         scale * asv->dynamics.F_unit_wave[i_dir][i_freq][heave] * 
         cos(phase_cog);
       asv->dynamics.F_wave[roll]  += 
         scale * asv->dynamics.F_unit_wave[i_dir][i_freq][roll]  * 
-        cos(phase_cog + PI/2.0) * cos(phase_cog + PI/2.0);
+        sin(phase_cog) * fabs(sin(phase_cog));
       asv->dynamics.F_wave[pitch] += 
         scale * asv->dynamics.F_unit_wave[i_dir][i_freq][pitch] * 
-        cos(phase_cog + PI/2.0) * cos(phase_cog + PI/2.0);
+        sin(phase_cog) * fabs(sin(phase_cog));
       //asv->dynamics.F_wave[yaw]   += 
       //  scale * asv->dynamics.F_unit_wave[i_dir][i_freq][yaw]   * 
       //  cos(phase_cog + PI/2.0);
