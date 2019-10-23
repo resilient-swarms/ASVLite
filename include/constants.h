@@ -1,6 +1,10 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#ifdef WIN
+#define _USE_MATH_DEFINES
+#endif
+
 #include <math.h>
 
 #define PI M_PI

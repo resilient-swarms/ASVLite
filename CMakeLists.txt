@@ -27,4 +27,8 @@ ADD_EXECUTABLE(asv_simulator ${SOURCE})
 
 # LINK LIBRARIES
 # --------------
-TARGET_LINK_LIBRARIES(asv_simulator m)
+TARGET_LINK_LIBRARIES(asv_simulator)
+
+IF (WIN32)
+  add_compile_definitions(WIN)
+ENDIF()
