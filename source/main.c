@@ -79,7 +79,7 @@ int main(int argc, char** argv)
         // set propeller thrust and direction
         for(int p = 0; p < asv.count_propellers; ++p)
         {
-          asv.propellers[p].thrust = 5.0;
+          asv.propellers[p].thrust = .25; //N
           asv.propellers[p].orientation = (struct Attitude){0.0, 0.0, 0.0};
         } 
 
