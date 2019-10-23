@@ -46,3 +46,9 @@ double regular_wave_get_elevation(struct Regular_wave* wave,
   double wave_phase = regular_wave_get_phase(wave, location, time); 
   return wave->amplitude * cos(wave_phase);
 } 
+
+double regular_wave_get_pressure_amp(struct Regular_wave* wave, double z)
+{
+  double P = SEA_WATER_DENSITY* G* wave->amplitude* exp(wave->wave_number* z);
+  return P;
+}

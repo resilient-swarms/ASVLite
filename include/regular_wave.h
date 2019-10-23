@@ -62,4 +62,12 @@ double regular_wave_get_elevation(struct Regular_wave* wave,
                                   struct Point* location, 
                                   double time);
 
+/**
+ * Get wave pressure amplitude at depth z.
+ * @param wave for which the pressure amplitude is to be computed. 
+ * @z is the depth at which the pressure amplitude is to be computed. 
+ * @return pressure amplitude in N/m2.
+ */
+double regular_wave_get_pressure_amp(struct Regular_wave* wave, double z);
+
 #endif // REGULAR_WAVE_H
