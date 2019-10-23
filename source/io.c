@@ -327,27 +327,67 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
 	  exit(1);
   }
 
-  // Locate table [vehicle_heading]
-  table = toml_table_in(input, "vehicle_heading");
+  // Locate table [vehicle_attitude]
+  table = toml_table_in(input, "vehicle_attitude");
   if(table == 0)
   {
-    fprintf(stderr, "ERROR: missing [vehicle_heading].\n");
+    fprintf(stderr, "ERROR: missing [vehicle_attitude].\n");
 	  toml_free(input);
 	  exit(1);
   }
-  // Extract values in table [vehicle_heading]
+  // Extract values in table [vehicle_attitude]
+  // heel
+  double heel = 0.0;
+  raw = toml_raw_in(table, "heel");
+  if(raw == 0)
+  {
+    fprintf(stderr, "ERROR: missing 'heel' in [vehicle_attitude].\n");
+	  toml_free(input);
+	  exit(1);
+  }
+  if(toml_rtod(raw, &(heel)))
+  {
+    fprintf(stderr, "ERROR: bad value in 'vehicle_attitude.heel'\n");
+	  toml_free(input);
+	  exit(1);
+  }
+  else
+  {
+    // convert to radians and set value
+    asv->attitude.heel = heel * PI/180.0;
+  }
+  // trim
+  double trim = 0.0;
+  raw = toml_raw_in(table, "trim");
+  if(raw == 0)
+  {
+    fprintf(stderr, "ERROR: missing 'trim' in [vehicle_attitude].\n");
+	  toml_free(input);
+	  exit(1);
+  }
+  if(toml_rtod(raw, &(trim)))
+  {
+    fprintf(stderr, "ERROR: bad value in 'vehicle_attitude.trim'\n");
+	  toml_free(input);
+	  exit(1);
+  }
+  else
+  {
+    // convert to radians and set value
+    asv->attitude.trim = trim * PI/180.0;
+  }
   // heading
   double heading = 0.0;
   raw = toml_raw_in(table, "heading");
   if(raw == 0)
   {
-    fprintf(stderr, "ERROR: missing 'heading' in [vehicle_heading].\n");
+    fprintf(stderr, "ERROR: missing 'heading' in [vehicle_attitude].\n");
 	  toml_free(input);
 	  exit(1);
   }
   if(toml_rtod(raw, &(heading)))
   {
-    fprintf(stderr, "ERROR: bad value in 'vehicle_heading.heading'\n");
+    fprintf(stderr, "ERROR: bad value in 'vehicle_attitude.heading'\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -357,7 +397,6 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
     asv->attitude.heading = heading * PI/180.0;
   }
   
-
   // Locate array of tables [waypoint]
   tables = toml_array_in(input, "waypoint");
   if(tables == 0)
