@@ -333,10 +333,18 @@ static void set_wave_force(struct Asv* asv)
                                                &point_sb, 
                                                asv->dynamics.time);
 
+      // Compute the difference between the points
+      double x = point_sb.x - point_ps.x;
+      double y = point_sb.y - point_ps.y;
+      double lever_trans = sqrt(x*x + y*y)/2.0;
+      x = point_fore.x - point_aft.x;
+      y = point_fore.y - point_aft.y;
+      double lever_long = sqrt(x*x + y*y)/2.0;
+
       // Compute areas for force calculation based on pressure
-      double A_z = PI*a*b; // Projected waterplane area
-      double A_x = (2.0*b) * fabs(point_aft.z - point_fore.z); // trans section
+      double A_x = (2.0*b) * fabs(point_aft.z - point_fore.z); // trans area
       double A_y = (2.0*a) * fabs(point_ps.z - point_sb.z); // profile area
+      double A_z = PI*a*b; // waterplane area
 
       // Compute the pressure difference between fore and aft point
       double P_diff_long = asv->dynamics.P_unit_wave[index] * 
@@ -349,19 +357,16 @@ static void set_wave_force(struct Asv* asv)
       asv->dynamics.F_wave[surge] += scale * P_diff_long * A_x;
       asv->dynamics.F_wave[sway] += scale * P_diff_trans * A_y;
       asv->dynamics.F_wave[heave] += 
-        scale * asv->dynamics.P_unit_wave[index] * A_z * cos(phase_cog);
-      // roll moment = differential_heave_force * lever
-      // differential_heave_force = F_heave_ps - F_heave_sb
-      // lever = (2/3B) - 0.5B = B/6.0
+        scale * (asv->dynamics.P_unit_wave[index] * cos(phase_cog)) * A_z;
+      // roll moment = differential_heave_force * lever_trans
       asv->dynamics.F_wave[roll] += 
         scale * asv->dynamics.P_unit_wave[index] * A_z *
-        (cos(phase_ps) - cos(phase_sb)) * asv->spec.B_wl/6.0;
-      // pitch moment = differential_heave_force * lever
-      // differential_heave_force = F_heave_aft - F_heave_fore
-      // lever = (2/3L) - 0.5L = L/6.0
+        (cos(phase_ps) - cos(phase_sb)) * lever_trans;
+      // pitch moment = differential_heave_force * lever_fore
+      // lever = a/2
       asv->dynamics.F_wave[pitch] += 
         scale * asv->dynamics.P_unit_wave[index] * A_z *
-        (cos(phase_aft) - cos(phase_fore)) * asv->spec.L_wl/6.0;
+        (cos(phase_aft) - cos(phase_fore)) * lever_long;
       // yaw moment = 0.0
     }
   } 
