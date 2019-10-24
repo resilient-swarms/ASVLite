@@ -21,14 +21,18 @@ SET( SOURCE
   source/pid_controller.c
   )
 
+# PREPROCESSOR MACROS
+# -------------------
+IF(WIN32)
+  ADD_COMPILE_DEFINITIONS(WIN32)
+ENDIF()
+
 # CREATE BINARIES
 # ---------------
 ADD_EXECUTABLE(asv_simulator ${SOURCE})
 
-# LINK LIBRARIES
+# LINK LIBRARIES 
 # --------------
-TARGET_LINK_LIBRARIES(asv_simulator)
-
-IF (WIN32)
-  add_compile_definitions(WIN)
+IF(UNIX)
+  TARGET_LINK_LIBRARIES(asv_simulator m)
 ENDIF()

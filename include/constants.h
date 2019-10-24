@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#ifdef WIN
+#ifdef WIN32
 #define _USE_MATH_DEFINES
 #endif
 
