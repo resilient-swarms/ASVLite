@@ -226,25 +226,6 @@ static void set_stiffness(struct Asv* asv)
 
 static void set_unit_wave_pressure(struct Asv* asv)
 {
-  // Assumptions:
-  // 1. Assume the underwater volume to be a semi-ellipsoid with centre of
-  // buoyancy at the centroid of the volume.
-  // 2. Assume the wave pressure as constant along he projected surface of the 
-  // hull.
-  // 3. All measurements are with respect to body-frame - origin on waterline at 
-  // aft end centreline. Positive measurements towards fore, port side and up.
-  // 4. Unit wave height = 1 m.
-  
-  // Dimensions of ellipsoid
-  double a = asv->spec.L_wl/ 2.0;
-  double b = asv->spec.B_wl/ 2.0;
-  double c = asv->spec.T;
-  // Distance of centroid of ellipsoid from waterline.
-  double z = - 4.0*c/(3.0*PI);
-
-  // Distance of COG from COB
-  double BG = fabs((asv->spec.cog.z - asv->spec.T) - z);
-  
   double H_w = 1.0; // unit wave height in m.
 
   // Calculate the forces for each encounter wave freq
@@ -260,7 +241,8 @@ static void set_unit_wave_pressure(struct Asv* asv)
     regular_wave_init(&wave, H_w/2.0, freq, 0.0, 0.0);
     
     // Calculate wave pressure amplitude for the regular wave at the cog depth
-    asv->dynamics.P_unit_wave[i] = regular_wave_get_pressure_amp(&wave, z);
+    asv->dynamics.P_unit_wave[i] = 
+      regular_wave_get_pressure_amp(&wave, asv->spec.T);
   }
 }
 
