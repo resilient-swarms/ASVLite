@@ -367,7 +367,8 @@ static void set_wave_force(struct Asv* asv)
       asv->dynamics.F_wave[pitch] += 
         scale * asv->dynamics.P_unit_wave[index] * A_z *
         (cos(phase_aft) - cos(phase_fore)) * lever_long;
-      // yaw moment = 0.0
+      // yaw moment
+      asv->dynamics.F_wave[yaw] += scale * P_diff_long * A_y * lever_long;
     }
   } 
 }
