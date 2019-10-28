@@ -486,7 +486,7 @@ void write_output(char* file,
 {
   // output message
   fprintf(stdout, "significant wave height = %f m.\n", wave_ht);
-  fprintf(stdout, "wave heading = %f m.\n", wave_heading);
+  fprintf(stdout, "wave heading = %f deg.\n", wave_heading);
   fprintf(stdout, "random number seed = %ld.\n", rand_seed);
   fprintf(stdout, "task duration = %f seconds.\n", task_duration);
   fprintf(stdout, "time taken for simulation = %f sec. \n\n", simulation_time);
