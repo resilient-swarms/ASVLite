@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
 #include "asv.h"
@@ -283,6 +284,11 @@ static void set_wave_force(struct Asv* asv)
                               (COUNT_ASV_SPECTRAL_FREQUENCIES - 1.0);
       int index = round((freq - asv->dynamics.P_unit_wave_freq_min)/
                          freq_step_size);
+      if(index >= COUNT_ASV_SPECTRAL_FREQUENCIES)
+      {
+        fprintf(stderr, "FATAL ERROR! Array index out of bounds. \n");
+        exit(1);
+      }
 
       // Compute the scaling factor to compute the wave force from unit wave
       double scale = wave->amplitude * 2.0;
