@@ -336,10 +336,14 @@ static void set_wave_force(struct Asv* asv)
       // Compute the difference between the points
       double x = point_sb.x - point_ps.x;
       double y = point_sb.y - point_ps.y;
+      double z = point_sb.z - point_ps.z;
       double lever_trans = sqrt(x*x + y*y)/2.0;
+      double lever_vertical_trans = z;
       x = point_fore.x - point_aft.x;
       y = point_fore.y - point_aft.y;
+      z = point_fore.z - point_aft.z;
       double lever_long = sqrt(x*x + y*y)/2.0;
+      double lever_vertical_long = z;
 
       // Compute areas for force calculation based on pressure
       double A_x = (2.0*b) * fabs(point_aft.z - point_fore.z); // trans area
@@ -361,14 +365,18 @@ static void set_wave_force(struct Asv* asv)
       // roll moment = differential_heave_force * lever_trans
       asv->dynamics.F_wave[roll] += 
         scale * asv->dynamics.P_unit_wave[index] * A_z *
-        (cos(phase_ps) - cos(phase_sb)) * lever_trans;
+        (cos(phase_ps) - cos(phase_sb)) * lever_trans +
+        scale * asv->dynamics.P_unit_wave[index] * A_y * 
+        (cos(phase_ps) - cos(phase_sb)) * lever_vertical_trans;
       // pitch moment = differential_heave_force * lever_fore
       // lever = a/2
       asv->dynamics.F_wave[pitch] += 
         scale * asv->dynamics.P_unit_wave[index] * A_z *
-        (cos(phase_aft) - cos(phase_fore)) * lever_long;
+        (cos(phase_aft) - cos(phase_fore)) * lever_long +
+        scale * asv->dynamics.P_unit_wave[index] * A_x * 
+        (cos(phase_aft) - cos(phase_fore)) * lever_vertical_long;
       // yaw moment
-      asv->dynamics.F_wave[yaw] += scale * P_diff_long * A_y * lever_long;
+      //asv->dynamics.F_wave[yaw] += scale * P_diff_long * A_y * lever_long;
     }
   } 
 }
