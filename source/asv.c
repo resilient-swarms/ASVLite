@@ -109,6 +109,11 @@ static void set_mass(struct Asv* asv)
   added_mass_surge= 0.5 * SEA_WATER_DENSITY * C_a_axial * asv->spec.disp;
   added_mass_sway = 0.5 *SEA_WATER_DENSITY * C_a_lateral * asv->spec.disp;
   added_mass_heave= SEA_WATER_DENSITY * C_a_lateral * asv->spec.disp;
+
+  // Moment of inertia for angular motions
+  double I_roll = mass * r_roll * r_roll;
+  double I_pitch = mass * r_pitch * r_pitch;
+  double I_yaw = mass * r_yaw * r_yaw;
   
   // Added mass for rotational motion for a hemispheroid. 
   // Ref: The complete expression for "added mass" of a rigid body moving in an
@@ -124,7 +129,9 @@ static void set_mass(struct Asv* asv)
                           (2.0*(b*b - a*a) + (b*b + a*a)*(beta_0 - alpha_0)) *
                           (4.0/3.0) * PI * SEA_WATER_DENSITY * a * b*b
                           );
+  added_mass_pitch = (added_mass_pitch > I_pitch) ? I_pitch : added_mass_pitch;
   added_mass_yaw = added_mass_pitch;
+  added_mass_yaw = (added_mass_yaw > I_yaw) ? I_yaw : added_mass_yaw;
 
   asv->dynamics.M[surge] = mass + added_mass_surge;
   asv->dynamics.M[sway]  = mass + added_mass_sway;
