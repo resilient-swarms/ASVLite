@@ -236,21 +236,22 @@ static void set_unit_wave_pressure(struct Asv* asv)
 {
   double H_w = 1.0; // unit wave height in m.
 
-  // Calculate the forces for each encounter wave freq
+  // Calculate the pressure for each encounter wave freq
   double freq_step_size = (asv->dynamics.P_unit_wave_freq_max - 
                            asv->dynamics.P_unit_wave_freq_min)/
                           (COUNT_ASV_SPECTRAL_FREQUENCIES - 1); 
   for(int i = 0; i < COUNT_ASV_SPECTRAL_FREQUENCIES; ++i)
   {
     double freq = asv->dynamics.P_unit_wave_freq_min + i * freq_step_size;
+    asv->dynamics.P_unit_wave[i][0] = freq;
     // Create a regular wave for the freq with wave height = 0.01, 
     // direction = 0.0 and phase = 0.0.
     struct Regular_wave wave;
     regular_wave_init(&wave, H_w/2.0, freq, 0.0, 0.0);
     
     // Calculate wave pressure amplitude for the regular wave at the cog depth
-    asv->dynamics.P_unit_wave[i] = 
-      regular_wave_get_pressure_amp(&wave, asv->spec.T);
+    asv->dynamics.P_unit_wave[i][1] = 
+      regular_wave_get_pressure_amp(&wave, -asv->spec.T);
   }
 }
 
@@ -261,6 +262,9 @@ static void set_wave_force(struct Asv* asv)
   double a = asv->spec.L_wl/ 2.0;
   double b = asv->spec.B_wl/ 2.0;
   double c = asv->spec.T;
+  double A_trans = PI/2.0 * b * c;
+  double A_profile = PI/2.0 * a * c;
+  double A_waterplane = PI * a * b;
 
   // Reset the wave force to all zeros
   for(int k = 0; k < COUNT_DOF; ++k)
@@ -297,8 +301,7 @@ static void set_wave_force(struct Asv* asv)
         exit(1);
       }
       // Check if index points to the correct frequency
-      if(!(freq >= asv->dynamics.P_unit_wave[index-1][0] && 
-           freq <= asv->dynamics.P_unit_wave[index+1][0]))
+      if(fabs(freq - asv->dynamics.P_unit_wave[index][0]) > freq_step_size)
       {
         fprintf(stderr, "FATAL ERROR! Incorrect array index. \n");
         exit(1);
@@ -314,8 +317,8 @@ static void set_wave_force(struct Asv* asv)
                                                 asv->dynamics.time); 
       // wave phase at the aft-CL position.
       struct Point point_aft = asv->cog_position;
-      point_aft.x -= (asv->spec.L_wl*0.25)*sin(asv->attitude.heading);
-      point_aft.y -= (asv->spec.L_wl*0.25)*cos(asv->attitude.heading);
+      point_aft.x -= (a/30)*sin(asv->attitude.heading);
+      point_aft.y -= (a/3.0)*cos(asv->attitude.heading);
       point_aft.z = regular_wave_get_elevation(wave, 
                                                &point_aft, 
                                                asv->dynamics.time);
@@ -324,8 +327,8 @@ static void set_wave_force(struct Asv* asv)
                                                 asv->dynamics.time);
       // wave phase at the fore-CL position.
       struct Point point_fore = asv->cog_position;
-      point_fore.x += (asv->spec.L_wl*0.25)*sin(asv->attitude.heading);
-      point_fore.y += (asv->spec.L_wl*0.25)*cos(asv->attitude.heading);
+      point_fore.x += (a/3.0)*sin(asv->attitude.heading);
+      point_fore.y += (a/3.0)*cos(asv->attitude.heading);
       point_fore.z = regular_wave_get_elevation(wave, 
                                                &point_fore, 
                                                asv->dynamics.time);
@@ -334,8 +337,8 @@ static void set_wave_force(struct Asv* asv)
                                                  asv->dynamics.time);
       // wave phase at the mid-PS position.
       struct Point point_ps = asv->cog_position;
-      point_ps.x -= (asv->spec.B_wl*0.25)*cos(asv->attitude.heading);
-      point_ps.y += (asv->spec.B_wl*0.25)*sin(asv->attitude.heading);
+      point_ps.x -= (b/3.0)*cos(asv->attitude.heading);
+      point_ps.y += (b/3.0)*sin(asv->attitude.heading);
       point_ps.z = regular_wave_get_elevation(wave, 
                                                &point_ps, 
                                                asv->dynamics.time);
@@ -344,8 +347,8 @@ static void set_wave_force(struct Asv* asv)
                                                asv->dynamics.time);
       // wave phase at the mid-SB position.
       struct Point point_sb = asv->cog_position;
-      point_sb.x += (asv->spec.B_wl*0.25)*cos(asv->attitude.heading);
-      point_sb.y -= (asv->spec.B_wl*0.25)*sin(asv->attitude.heading);
+      point_sb.x += (b/3.0)*cos(asv->attitude.heading);
+      point_sb.y -= (b/3.0)*sin(asv->attitude.heading);
       point_sb.z = regular_wave_get_elevation(wave, 
                                                &point_sb, 
                                                asv->dynamics.time);
@@ -354,47 +357,41 @@ static void set_wave_force(struct Asv* asv)
                                                asv->dynamics.time);
 
       // Compute the difference between the points
-      double x = point_sb.x - point_ps.x;
-      double y = point_sb.y - point_ps.y;
-      double z = point_sb.z - point_ps.z;
-      double lever_trans = sqrt(x*x + y*y)/2.0;
-      double lever_vertical_trans = z;
-      x = point_fore.x - point_aft.x;
-      y = point_fore.y - point_aft.y;
-      z = point_fore.z - point_aft.z;
-      double lever_long = sqrt(x*x + y*y)/2.0;
-      double lever_vertical_long = z;
+      double lever_trans = b / 3.0;
+      //double lever_vertical_trans = z - asv->cog_position.z;
+      double lever_long = a / 3.0;
+      //double lever_vertical_long = z - asv->cog_position.z;
 
       // Compute areas for force calculation based on pressure
-      double A_x = (2.0*b) * fabs(point_aft.z - point_fore.z); // trans area
-      double A_y = (2.0*a) * fabs(point_ps.z - point_sb.z); // profile area
-      double A_z = PI*a*b; // waterplane area
+      double A_x = PI/2.0 * b * fabs(point_aft.z - point_fore.z); // trans area
+      //A_x = (A_x > A_trans) ? A_trans : A_x;
+      double A_y = PI/2.0 * a * fabs(point_ps.z - point_sb.z); // profile area
+      //A_y = (A_y > A_profile) ? A_profile : A_y;
+      double A_z = A_waterplane;
 
       // Compute the pressure difference between fore and aft point
-      double P_diff_long = asv->dynamics.P_unit_wave[index] * 
+      double P_diff_long = asv->dynamics.P_unit_wave[index][1] * 
                            (cos(phase_fore) - cos(phase_aft));
       // Compute the pressure difference between SB and PS point
-      double P_diff_trans = asv->dynamics.P_unit_wave[index] * 
+      double P_diff_trans = asv->dynamics.P_unit_wave[index][1] * 
                             (cos(phase_sb) - cos(phase_ps));
       
       // Compute wave force
-      asv->dynamics.F_wave[surge] += scale * P_diff_long * A_x;
-      asv->dynamics.F_wave[sway] += scale * P_diff_trans * A_y;
       asv->dynamics.F_wave[heave] += 
-        scale * (asv->dynamics.P_unit_wave[index] * cos(phase_cog)) * A_z;
+        scale * (asv->dynamics.P_unit_wave[index][1] * cos(phase_cog)) * A_z;
+      // Other than for heave, limit the wave scaling to the vessel depth
+      //scale = (scale > asv->spec.D)? asv->spec.D : scale;
+      asv->dynamics.F_wave[surge] += scale * P_diff_long * A_x;
+      asv->dynamics.F_wave[sway]  += scale * P_diff_trans * A_y;
       // roll moment = differential_heave_force * lever_trans
       asv->dynamics.F_wave[roll] += 
-        scale * asv->dynamics.P_unit_wave[index] * A_z *
-        (cos(phase_ps) - cos(phase_sb)) * lever_trans +
-        scale * asv->dynamics.P_unit_wave[index] * A_y * 
-        (cos(phase_ps) - cos(phase_sb)) * lever_vertical_trans;
+        scale * P_diff_trans * A_z * lever_trans; /* +
+        scale * P_diff_trans * A_y * lever_vertical_trans;*/
       // pitch moment = differential_heave_force * lever_fore
       // lever = a/2
       asv->dynamics.F_wave[pitch] += 
-        scale * asv->dynamics.P_unit_wave[index] * A_z *
-        (cos(phase_aft) - cos(phase_fore)) * lever_long +
-        scale * asv->dynamics.P_unit_wave[index] * A_x * 
-        (cos(phase_aft) - cos(phase_fore)) * lever_vertical_long;
+        scale * P_diff_long * A_z * lever_long; /* +
+        scale * P_diff_long * A_x * lever_vertical_long;*/
       // yaw moment
       //asv->dynamics.F_wave[yaw] += scale * P_diff_long * A_y * lever_long;
     }
@@ -560,7 +557,8 @@ void asv_init(struct Asv* asv)
   // Initialise all the vectors matrices to zero.
   for(int j = 0; j < COUNT_ASV_SPECTRAL_FREQUENCIES; ++j)
   {
-    asv->dynamics.P_unit_wave[j] = 0.0;
+    asv->dynamics.P_unit_wave[j][0] = 0.0;
+    asv->dynamics.P_unit_wave[j][1] = 0.0;
   }
   for(int k = 0; k < COUNT_DOF; ++k)
   {
@@ -579,8 +577,7 @@ void asv_init(struct Asv* asv)
 
   // Place the asv vertically in the correct position W.R.T wave
   asv->origin_position.z = 
-    wave_get_elevation(&asv->wave, &asv->cog_position, 0.0)
-    -asv->spec.T; 
+    wave_get_elevation(&asv->wave, &asv->origin_position, 0.0) - asv->spec.T; 
   // Reset the cog position.
   set_cog(asv); // Match the position of the cog with that of origin
 

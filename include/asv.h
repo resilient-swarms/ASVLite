@@ -70,7 +70,8 @@ struct Asv_dynamics
   double F_drag[COUNT_DOF];
   double F_restoring[COUNT_DOF];
 
-  double P_unit_wave[COUNT_ASV_SPECTRAL_FREQUENCIES];
+  double P_unit_wave[COUNT_ASV_SPECTRAL_FREQUENCIES][2]; // index 0 - freq
+                                                         // index 1 - pressure
   double P_unit_wave_freq_min;
   double P_unit_wave_freq_max;
 };

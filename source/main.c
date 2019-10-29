@@ -63,7 +63,7 @@ int main(int argc, char** argv)
       }
 
       // check if reached destination
-      double proximity_margin = 5.0; // target proximity to waypoint
+      double proximity_margin = 10.0; // target proximity to waypoint
       double x = asv.cog_position.x - waypoints.points[i].x;
       double y = asv.cog_position.y - waypoints.points[i].y;
       double distance = sqrt(x*x + y*y);
@@ -79,7 +79,7 @@ int main(int argc, char** argv)
         // set propeller thrust and direction
         for(int p = 0; p < asv.count_propellers; ++p)
         {
-          asv.propellers[p].thrust = .25; //N
+          asv.propellers[p].thrust = 0.25; //N
           asv.propellers[p].orientation = (struct Attitude){0.0, 0.0, 0.0};
         } 
 
