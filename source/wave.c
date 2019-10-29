@@ -10,8 +10,17 @@ void wave_init(struct Wave* wave,
 {
   // Allocate space for spectrum
   wave->heading = wave_heading;
-  wave->min_spectral_wave_heading = wave->heading - PI/2.0;
-  wave->max_spectral_wave_heading = wave->heading + PI/2.0;
+  if(COUNT_WAVE_SPECTRAL_DIRECTIONS > 1)
+  {
+    wave->min_spectral_wave_heading = wave->heading - PI/2.0;
+    wave->max_spectral_wave_heading = wave->heading + PI/2.0;
+  }
+  else
+  {
+    wave->min_spectral_wave_heading = wave->heading;
+    wave->max_spectral_wave_heading = wave->heading;
+  }
+  
   // wave directions should be in the range (0, 2PI)
   if(wave->min_spectral_wave_heading < 0.0)
   {
@@ -45,13 +54,12 @@ void wave_init(struct Wave* wave,
 
   // Create regular waves
   // For each heading angle
-  double wave_heading_step_size = PI / (COUNT_WAVE_SPECTRAL_DIRECTIONS - 1);
+  double wave_heading_step_size = (COUNT_WAVE_SPECTRAL_DIRECTIONS > 1) ?
+                                  PI/(COUNT_WAVE_SPECTRAL_DIRECTIONS - 1) : 0.0;
+  double mu = -PI/2.0;
   for(int i = 0; i < COUNT_WAVE_SPECTRAL_DIRECTIONS; ++i)
   {
-    double mu = wave->min_spectral_wave_heading + i * wave_heading_step_size;
-    // wave heading is expected to be in the range (0, 2PI). Correct the wave
-    // heading if value our of the range.
-    mu = (mu >= 2.0*PI)? mu - 2.0*PI: mu;
+    mu += wave_heading_step_size;
 
     double frequency_step_size = (wave->max_spectral_frequency - 
                                   wave->min_spectral_frequency) /
@@ -63,14 +71,33 @@ void wave_init(struct Wave* wave,
       
       // Direction function G = (2/PI) * cos(mu)*cos(mu) * delta_mu
       // delta_mu = wave_heading_step_size
-      double G_spectrum = (2.0/PI) * cos(mu)*cos(mu) * wave_heading_step_size;
+      double G_spectrum = 1.0;
+      if(COUNT_WAVE_SPECTRAL_DIRECTIONS > 1)
+      {
+        G_spectrum = (2.0/PI) * cos(mu)*cos(mu) * wave_heading_step_size;
+      }
       
       // Create a wave
       double amplitude = sqrt(2.0 * S * G_spectrum); 
       wave->random_number_seed = rand_seed;
       srand(wave->random_number_seed);
       double phase = rand(); 
-      regular_wave_init(&(wave->spectrum[i][j]), amplitude, f, phase, mu);
+      double wave_heading = (COUNT_WAVE_SPECTRAL_DIRECTIONS > 1) ? 
+                            mu + wave->heading : wave->heading;
+      // wave directions should be in the range (0, 2PI)
+      if(wave_heading < 0.0)
+      {
+        wave_heading += 2.0*PI; 
+      }
+      if(wave_heading >= 2.0*PI)
+      {
+        wave_heading -= 2.0*PI;
+      }
+      regular_wave_init(&(wave->spectrum[i][j]), 
+                        amplitude, 
+                        f, 
+                        phase, 
+                        wave_heading);
     }
   }
 }
