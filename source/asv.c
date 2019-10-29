@@ -296,6 +296,13 @@ static void set_wave_force(struct Asv* asv)
         fprintf(stderr, "FATAL ERROR! Array index out of bounds. \n");
         exit(1);
       }
+      // Check if index points to the correct frequency
+      if(!(freq >= asv->dynamics.P_unit_wave[index-1][0] && 
+           freq <= asv->dynamics.P_unit_wave[index+1][0]))
+      {
+        fprintf(stderr, "FATAL ERROR! Incorrect array index. \n");
+        exit(1);
+      }
 
       // Compute the scaling factor to compute the wave force from unit wave
       double scale = wave->amplitude * 2.0;
