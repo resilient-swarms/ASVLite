@@ -21,7 +21,7 @@ from pathlib import Path
 # Simulations
 # -----------
 wave_heights = np.arange(0.5, 2.1, 0.5)
-wave_headings = np.arange(0.0, 361.0, 15.0)
+wave_headings = np.arange(0.0, 361.0, 22.5)
 trials = np.arange(1, 2, 1)
 count_wave_hts = wave_heights.shape[0]
 count_wave_headings = wave_headings.shape[0]
@@ -32,6 +32,9 @@ subprocesses = []
 heave = [[[] for i_wave_heading in range(count_wave_headings)] for i_wave_ht in range(count_wave_hts)]
 pitch = [[[] for i_wave_heading in range(count_wave_headings)] for i_wave_ht in range(count_wave_hts)]
 roll  = [[[] for i_wave_heading in range(count_wave_headings)] for i_wave_ht in range(count_wave_hts)]
+sig_heave = [[[] for i_wave_heading in range(count_wave_headings)] for i_wave_ht in range(count_wave_hts)]
+sig_pitch = [[[] for i_wave_heading in range(count_wave_headings)] for i_wave_ht in range(count_wave_hts)]
+sig_roll  = [[[] for i_wave_heading in range(count_wave_headings)] for i_wave_ht in range(count_wave_hts)]
 
 # Create the subdirectory for output files
 #out_dir = os.getcwd()
@@ -130,7 +133,15 @@ def append_data(table, col_heading):
 				file = out_dir + "/{}_{}_{}".format(trials[i], wave_heights[j], wave_headings[k])
 				dfs = read_data_from_file(file)
 				data = get_abs_amplitudes(dfs[col_heading])
-				table[j][k].append(data)
+				table[j][k].extend(data)
+
+# Function to compute the significant motion amptitudes
+def set_significant_amplitudes(table, sig_table):
+	for i in range(count_wave_hts):
+		for j in range(count_wave_headings):
+			top_third = round(len(table[i][j])/3.0)
+			table[i][j].sort(reverse = True)
+			sig_table[i][j].extend(table[i][j][:top_third])
 
 # Plot
 # ----
@@ -190,22 +201,28 @@ end_time = time.time()
 sim_time_sec = end_time - start_time
 sim_time_min = (sim_time_sec/60.0)
 print("\nSimulation time = {0:0.2f}sec ({0:0.2f}min)\n".format(sim_time_sec, sim_time_min))
-
 # merge_files()
-
 # Read each file and get motion amplitudes
 append_data(heave, 'cog_z(m)')
 append_data(pitch, 'trim(deg)')
 append_data(roll, 'heel(deg)')
+# Se the significant motion amplitudes
+set_significant_amplitudes(heave, sig_heave)
+set_significant_amplitudes(pitch, sig_pitch)
+set_significant_amplitudes(roll, sig_roll)
+
 
 box_plot(heave, 'Heave(m)')
-contour_plot(heave, 'Heave(m)')
-scatter_plot(heave, 'Heave(m)')
+box_plot(sig_heave, 'Significant Heave(m)')
+contour_plot(sig_heave, 'Heave(m)')
+scatter_plot(sig_heave, 'Heave(m)')
 
 box_plot(pitch, 'Pitch(deg)')
-contour_plot(pitch, 'Pitch(deg)')
-scatter_plot(pitch, 'Pitch(deg)')
+box_plot(sig_pitch, 'Significant Pitch(deg)')
+contour_plot(sig_pitch, 'Pitch(deg)')
+scatter_plot(sig_pitch, 'Pitch(deg)')
 
 box_plot(roll, 'Roll(deg)')
-contour_plot(roll, 'Roll(deg)')
-scatter_plot(roll, 'Roll(deg)')
+box_plot(sig_roll, 'Significant Roll(deg)')
+contour_plot(sig_roll, 'Roll(deg)')
+scatter_plot(sig_roll, 'Roll(deg)')
