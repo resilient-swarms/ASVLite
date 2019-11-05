@@ -30,6 +30,7 @@ ENDIF()
 # CREATE BINARIES
 # ---------------
 ADD_EXECUTABLE(asv_simulator ${SOURCE})
+SET_PROPERTY(TARGET asv_simulator PROPERTY C_STANDARD 11)
 
 # LINK LIBRARIES 
 # --------------
