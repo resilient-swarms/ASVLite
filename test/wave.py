@@ -49,177 +49,161 @@ sig_roll  = pd.DataFrame(columns=['wave_ht', 'wave_heading', 'sig_amplitude'])
 # Interrupt handler
 # -----------------
 def interrupt_handler(sig, frame):  
-  # Kill all subprocesses and also clean all intermediate files. 
-  print('\nKill all simulations.')
-  for ps in subprocesses:
-    pid = ps.pid
-    os.kill(pid, signal.SIGINT)
-  print('Clean files:')
-  for wave_height in wave_heights:
-    for wave_heading in wave_headings:
-      file_name = out_dir + "/{}_{}_{}".format(trial, wave_height, wave_heading)
-      os.remove(file_name)
-      print("... removed file {}".format(file_name))
-  sys.exit(0)
+    # Kill all subprocesses and also clean all intermediate files. 
+    print('\nKill all simulations.')
+    for ps in subprocesses:
+        pid = ps.pid
+        os.kill(pid, signal.SIGINT)
+    print('Clean files:')
+    for wave_height in wave_heights:
+        for wave_heading in wave_headings:
+            file_name = out_dir + "/{}_{}_{}".format(trial, 
+                                                     wave_height, 
+                                                     wave_heading)
+            os.remove(file_name)
+            print("... removed file {}".format(file_name))
+    sys.exit(0)
 
 # Register the interrupt handler. 
 signal.signal(signal.SIGINT, interrupt_handler)
 
-# Merge intermediate files into a single file
-# -------------------------------------------
-def merge_files():
-  file_name = out_dir + "/asv_wave"
-  file = open(file_name, "w")
-  print("Merge files:")
-  file_count = 0
-  for wave_height in wave_heights:
-    for wave_heading in wave_headings:
-      file2_name = out_dir + "/{}_{}_{}".format(trial, 
-                                                wave_height, 
-                                                wave_heading)
-      file2 = open(file2_name, "r")
-      print("... merging file {}".format(file2_name))
-      line_count = 0
-      for line in file2:
-        if(file_count != 0 and line_count == 0): 
-          file.write('\n') # ignore the header
-        else:
-          file.write(line)
-        line_count += 1
-      file_count += 1
-      file2.close()
-      print("... remove file {}".format(file2_name))
-      os.remove(file2_name)
-  file.close()
-
 # Read simulation data from file into dataframe
 # ---------------------------------------------
 def read_data_from_file(file_name):
-  data = pd.read_csv(file_name, sep=" ")
-  #print(data.info())
-  #print(data.head().append(data.tail())) # Print head and tail of dataframe 
-  dfs = DataFrame(data, columns=[ 'sig_wave_ht(m)', 
-                  'wave_heading(deg)', 
-                  'rand_seed',
-                  'wave_elevation(m)', 
-                  'cog_z(m)', 
-                  'trim(deg)',
-                  'heel(deg)' ])
-  return dfs
+    data = pd.read_csv(file_name, sep=" ")
+    dfs = DataFrame(data, columns=[ 'sig_wave_ht(m)', 
+                                    'wave_heading(deg)', 
+                                    'rand_seed',
+                                    'wave_elevation(m)',
+                                    'cog_z(m)', 
+                                    'trim(deg)',
+                                    'heel(deg)' ])
+    return dfs
 
 # Function to get array of amplitudes
 # -----------------------------------
 # This function creates a list motion amplitudes from the given list of 
 # instantaneous values. 
 def get_abs_amplitudes(values):
-  amplitudes = []
-  is_first = True
-  val_previous = 0.0
-  val_max = 0.0
-  for val in values:
-    if(val * val_previous > 0.0):
-      if(abs(val) > abs(val_max)):
-        val_max = val
-      else:
-        pass
-    else:
-      # zero crossing or first entry
-      if(is_first):
-        is_first = False
-      else:
-        amplitudes.append(abs(val_max))
-      val_max = val
-    val_previous = val
-  return amplitudes
+    amplitudes = []
+    is_first = True
+    val_previous = 0.0
+    val_max = 0.0
+    for val in values:
+        if(val * val_previous > 0.0):
+            if(abs(val) > abs(val_max)):
+                val_max = val
+            else:
+                pass
+        else:
+            # zero crossing or first entry
+            if(is_first):
+                is_first = False
+            else:
+                amplitudes.append(abs(val_max))
+            val_max = val
+        val_previous = val
+    return amplitudes
 
 # Function to read each file and set data into the tables for motion amplitudes.
 def append_data(col_heading):
-  table = pd.DataFrame(columns=['wave_ht', 'wave_heading', 'amplitude'])
-  for i in range(count_trials):
-    for j in range(count_wave_hts):
-      for k in range(count_wave_headings):
-        file = out_dir + "/{}_{}_{}".format(trials[i], 
-                                            wave_heights[j], 
-                                            wave_headings[k])
-        dfs = read_data_from_file(file)
-        data = get_abs_amplitudes(dfs[col_heading])
-        for n in range(len(data)):
-          table = table.append({'wave_ht':wave_heights[j], 
-                                'wave_heading': wave_headings[k], 
-                                'amplitude':data[n]}, 
-                                ignore_index=True)
-  return(table)
+    table = pd.DataFrame(columns=['wave_ht', 'wave_heading', 'amplitude'])
+    for i in range(count_trials):
+        for j in range(count_wave_hts):
+            for k in range(count_wave_headings):
+                print("Append data for {} {} {}".format(trials[i], 
+							wave_heights[j], 
+							wave_headings[k]))
+                file = out_dir + "/{}_{}_{}".format(trials[i], 
+                                                    wave_heights[j], 
+                                                    wave_headings[k])
+                dfs = read_data_from_file(file)
+                data = get_abs_amplitudes(dfs[col_heading])
+                for n in range(len(data)):
+                    table = table.append({'wave_ht':wave_heights[j], 
+                                          'wave_heading': wave_headings[k], 
+                                          'amplitude':data[n]}, 
+                                         ignore_index=True)
+    return(table)
 
 # Function to compute the significant motion amptitudes
 def set_significant_amplitudes(table):
-  sig_table = pd.DataFrame(columns=['wave_ht', 'wave_heading', 'sig_amplitude'])
-  for i in range(count_wave_hts):
-    for j in range(count_wave_headings):
-      (count_rows, count_cols) = table.shape
-      top_third = round(count_rows/3)
-      table.sort_values(by=['amplitude'], ascending=False, inplace=True)
-      for n in range(top_third):
-        amp = table.iloc[n]['amplitude']
-        sig_table = sig_table.append({'wave_ht':wave_heights[i], 
-                                      'wave_heading': wave_headings[j], 
-                                      'sig_amplitude':amp}, 
-                                      ignore_index=True)
-  return(sig_table)
+    sig_table = pd.DataFrame(columns=['wave_ht','wave_heading','sig_amplitude'])
+    for i in range(count_wave_hts):
+        for j in range(count_wave_headings):
+            (count_rows, count_cols) = table.shape
+            top_third = round(count_rows/3)
+            table.sort_values(by=['amplitude'], ascending=False, inplace=True)
+            for n in range(top_third):
+                amp = table.iloc[n]['amplitude']
+                sig_table = sig_table.append({'wave_ht':wave_heights[i], 
+                                              'wave_heading': wave_headings[j], 
+                                              'sig_amplitude':amp}, 
+                                             ignore_index=True)
+    return(sig_table)
 
 # Plot
 # ----
 def box_plot(data, title, column):
-  fig, axs = plt.subplots(count_wave_hts)
-  data = data.groupby('wave_ht')
-  i = 0
-  for (ht, df) in data:
-    df.boxplot(column=[column], by=['wave_heading'], ax=axs[i])
-    i += 1
-  plt.show()
+    fig, axs = plt.subplots(count_wave_hts)
+    data = data.groupby('wave_ht')
+    i = 0
+    for (ht, df) in data:
+        print("Making box_plot for wave height {}".format(ht))
+        df.boxplot(column=[column], by=['wave_heading'], ax=axs[i])
+        i += 1
+    plt.savefig(out_dir+"/boxplot_{}.png".format(title), 
+                bbox_inches='tight')
 
 def contour_plot(data, title):
-  fig = plt.figure()
-  fig.suptitle(title)
-  X, Y = np.meshgrid(wave_heights, wave_headings)
-  Z = np.zeros(shape=(count_wave_hts, count_wave_headings))
-  for i in range(count_wave_hts):
-    for j in range(count_wave_headings):
-      amps = np.array(data[i][j])
-      abs_amps = np.absolute(amps)
-      Z[i][j] = abs_amps.mean()
-  contour = plt.contourf(X, Y, np.transpose(Z), cmap=cm.coolwarm)
-  plt.colorbar()
-  plt.show()
+    fig = plt.figure()
+    fig.suptitle(title)
+    X, Y = np.meshgrid(wave_heights, wave_headings)
+    Z = np.zeros(shape=(count_wave_hts, count_wave_headings))
+    for i in range(count_wave_hts):
+        for j in range(count_wave_headings):
+            amps = np.array(data[i][j])
+            abs_amps = np.absolute(amps)
+            Z[i][j] = abs_amps.mean()
+    contour = plt.contourf(X, Y, np.transpose(Z), cmap=cm.coolwarm)
+    plt.colorbar()
+    plt.show()
 
 def scatter_plot(data, title):
-  fig = plt.figure()
-  fig.suptitle(title)
-  X, Y = np.meshgrid(wave_heights, wave_headings)
-  Z = np.zeros(shape=(count_wave_hts, count_wave_headings))
-  for i in range(count_wave_hts):
-    for j in range(count_wave_headings):
-      amps = np.array(data[i][j])
-      abs_amps = np.absolute(amps)
-      Z[i][j] = abs_amps.mean()
-  contour = plt.scatter(X, Y, c=np.transpose(Z), cmap=cm.coolwarm)
-  plt.colorbar()
-  plt.show()
+    fig = plt.figure()
+    fig.suptitle(title)
+    X, Y = np.meshgrid(wave_heights, wave_headings)
+    Z = np.zeros(shape=(count_wave_hts, count_wave_headings))
+    for i in range(count_wave_hts):
+        for j in range(count_wave_headings):
+            amps = np.array(data[i][j])
+            abs_amps = np.absolute(amps)
+            Z[i][j] = abs_amps.mean()
+    contour = plt.scatter(X, Y, c=np.transpose(Z), cmap=cm.coolwarm)
+    plt.colorbar()
+    plt.show()
 
 # Run simulation
 # --------------
 start_time = time.time()
 for trial in trials:
-  subprocesses.clear()
-  for wave_height in wave_heights:
-    for wave_heading in wave_headings:
-      count_simulations += 1
-      out_file = out_dir + "/{}_{}_{}".format(trial, wave_height, wave_heading)
-      print("count simulations = {} [trial={}, wave_ht={}, wave_heading={}]".
-            format(count_simulations, trial, wave_height, wave_heading))
-      ps = subprocess.Popen([simulator_app, "asv", out_file, str(wave_height), 
-                             str(wave_heading), str(trial)])
-      subprocesses.append(ps)
-  exit_codes = [p.wait() for p in subprocesses]
+    subprocesses.clear()
+    for wave_height in wave_heights:
+        for wave_heading in wave_headings:
+            count_simulations += 1
+            out_file = out_dir + "/{}_{}_{}".format(trial, 
+                                                    wave_height, 
+                                                    wave_heading)
+            print("count simulations:{}[trial={}, wave_ht={}, wave_heading={}]".
+                  format(count_simulations, trial, wave_height, wave_heading))
+            ps = subprocess.Popen([simulator_app, 
+                                   "asv", 
+                                   out_file, 
+                                   str(wave_height), 
+                                   str(wave_heading), 
+                                   str(trial)])
+            subprocesses.append(ps)
+    exit_codes = [p.wait() for p in subprocesses]
 print("Simulations completed.")
 end_time = time.time()
 sim_time_sec = end_time - start_time
@@ -228,13 +212,16 @@ print("\nSimulation time = {0:0.2f}sec ({0:0.2f}min)\n".
       format(sim_time_sec, sim_time_min))
 # merge_files()
 # Read each file and get motion amplitudes
+print("\nAppend data for heave")
 heave = append_data('cog_z(m)')
+print("\nAppend data for pitch")
 pitch = append_data('trim(deg)')
+print("\nAppend data for roll")
 roll = append_data('heel(deg)')
 # Se the significant motion amplitudes
-sig_heave = set_significant_amplitudes(heave)
-sig_pitch = set_significant_amplitudes(pitch)
-sig_roll = set_significant_amplitudes(roll)
+#sig_heave = set_significant_amplitudes(heave)
+#sig_pitch = set_significant_amplitudes(pitch)
+#sig_roll = set_significant_amplitudes(roll)
 
 box_plot(heave, 'Heave(m)', 'amplitude')
 #box_plot(sig_heave, 'Significant Heave(m)', 'sig_amplitude')
