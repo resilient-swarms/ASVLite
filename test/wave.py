@@ -20,12 +20,12 @@ from pathlib import Path
 
 # Simulator App
 # -------------
-simulator_app = "/home/toby/build/asv_simulator"
+app_dir = str(Path.home()) + "/build"
+simulator_app = app_dir + "/asv_simulator"
 
 # Create the subdirectory for output files
 #out_dir = os.getcwd()
-out_dir = str(Path.home())
-out_dir = out_dir + "/asv_out"
+out_dir = str(Path.home()) + "/asv_out"
 os.mkdir(out_dir)
 
 # Simulations
