@@ -51,7 +51,8 @@ int wave_init(struct Wave* wave,
  * @param location at which the elevation is to be computed.
  * @param time for which the elevation is to be computed. Time is measured in 
  * seconds from start of simulation.
- * @return wave elevation in meter.
+ * @return wave elevation in meter. Function returns value 0.0 if wave is
+ * nullptr or time is negative. 
  */
 double wave_get_elevation(struct Wave* wave, 
                           struct Dimensions* location, 

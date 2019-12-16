@@ -117,6 +117,11 @@ double wave_get_elevation(struct Wave* wave,
                           struct Dimensions* location,
                           double time)
 {
+  // check if wave is nullptr or time is negative
+  if(!wave || time < 0.0)
+  {
+    return 0.0;
+  }
   double elevation = 0.0;
   for(int i = 0; i < COUNT_WAVE_SPECTRAL_DIRECTIONS; ++i)
   {
