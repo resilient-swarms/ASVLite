@@ -29,7 +29,7 @@ int main(int argc, char** argv)
   // set ASV inputs from input file.
   set_input(in_file, &asv, &waypoints);
   // set ASV inputs that were passed in command line
-  if(asv.using_waves = (wave_ht != 0.0))
+  if((asv.using_waves = (wave_ht != 0.0)))
   {
     wave_init(&asv.wave, wave_ht, wave_heading * PI/180.0, rand_seed);
   }
