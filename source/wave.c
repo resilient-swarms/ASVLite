@@ -3,11 +3,21 @@
 #include "wave.h"
 #include "constants.h"
 
-void wave_init(struct Wave* wave, 
-               double sig_wave_ht,
-               double wave_heading, 
-               long rand_seed)
+int wave_init(struct Wave* wave, 
+              double sig_wave_ht,
+              double wave_heading, 
+              long rand_seed)
 {
+  // Check if wave is nullptr
+  if(!wave)
+  {
+    return 1;
+  }
+  // Check if sig_wave_ht is zero or -ve.
+  if(sig_wave_ht <= 0.0)
+  {
+    return 2;
+  }
   // Allocate space for spectrum
   wave->heading = wave_heading;
   if(COUNT_WAVE_SPECTRAL_DIRECTIONS > 1)
@@ -26,9 +36,9 @@ void wave_init(struct Wave* wave,
   {
     wave->min_spectral_wave_heading += 2.0*PI; 
   }
-  if(wave->max_spectral_frequency >= 2.0*PI)
+  if(wave->max_spectral_wave_heading >= 2.0*PI)
   {
-    wave->max_spectral_frequency -= 2.0*PI;
+    wave->max_spectral_wave_heading -= 2.0*PI;
   }
     
   // Bretschneider spectrum
@@ -100,10 +110,11 @@ void wave_init(struct Wave* wave,
                         wave_heading);
     }
   }
+  return 0; // no error return.
 }
 
 double wave_get_elevation(struct Wave* wave, 
-                          struct Point* location,
+                          struct Dimensions* location,
                           double time)
 {
   double elevation = 0.0;

@@ -80,7 +80,7 @@ int main(int argc, char** argv)
         for(int p = 0; p < asv.count_propellers; ++p)
         {
           asv.propellers[p].thrust = 0.25; //N
-          asv.propellers[p].orientation = (struct Attitude){0.0, 0.0, 0.0};
+          asv.propellers[p].orientation = (struct Dimensions){0.0, 0.0, 0.0};
         } 
 
         // compute new position and attitude.
@@ -103,9 +103,9 @@ int main(int argc, char** argv)
         buffer[t].cog_x = asv.cog_position.x;
         buffer[t].cog_y = asv.cog_position.y;
         buffer[t].cog_z = asv.cog_position.z - (asv.spec.cog.z - asv.spec.T);
-        buffer[t].heel = asv.attitude.heel * 180.0/PI;
-        buffer[t].trim = asv.attitude.trim * 180.0/PI;
-        buffer[t].heading = asv.attitude.heading * 180.0/PI;
+        buffer[t].heel = asv.attitude.x * 180.0/PI;
+        buffer[t].trim = asv.attitude.y * 180.0/PI;
+        buffer[t].heading = asv.attitude.z * 180.0/PI;
         buffer[t].surge_velocity = asv.dynamics.V[surge];
         buffer[t].surge_acceleration = asv.dynamics.A[surge];
       }

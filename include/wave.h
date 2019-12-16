@@ -6,7 +6,15 @@
 
 struct Wave
 {
-  // List of regular waves in the irregular sea.
+  // Input variables
+  // ---------------
+  double significant_wave_height;   // Significant wave height in meter.
+  double heading; // wave heading in radians
+  long random_number_seed; 
+  
+  // Output variables
+  // ----------------
+  // Table of regular waves in the irregular sea.
   struct Regular_wave spectrum[COUNT_WAVE_SPECTRAL_DIRECTIONS]
                               [COUNT_WAVE_SPECTRAL_FREQUENCIES];
   double min_spectral_frequency;  // Lower limit (0.1%) of spectral energy 
@@ -18,23 +26,20 @@ struct Wave
                                     // for wave heading.
   double max_spectral_wave_heading; // Maximum angle, in radians, in spectrum 
                                     // for wave heading.
-  double significant_wave_height;   // Significant wave height in meter.
-  double heading; // wave heading in radians
-  long random_number_seed; 
 };
 
 /**
- * Initialise the irregular wave on the sea using significant wave height as
- * input.
- * @param wave is the pointer to the wave object to be initialised. Assumes 
- * wave is not a null pointer and that all values in the structure are to be
- * overwritten.
- * @param sig_wave_height is the significant wave height to achieve for the
- * irregular sea being initialised. Value should be non-zero positive.
+ * Initialise the irregular wave.
+ * @param wave is the pointer to the wave object to be initialised.
+ * @param sig_wave_height is the significant wave height. Value should be 
+ * non-zero positive.
  * @param wave_heading in radians
  * @param rand_seed is the seed for random number generator. 
+ * @return 0 if no error encountered. 
+ *         1 if wave is nullptr. 
+ *         2 if sig_wave_height is 0 or negative value.
  */
-void wave_init(struct Wave* wave, 
+int wave_init(struct Wave* wave, 
                double sig_wave_height, 
                double wave_heading, 
                long rand_seed);
@@ -49,7 +54,7 @@ void wave_init(struct Wave* wave,
  * @return wave elevation in meter.
  */
 double wave_get_elevation(struct Wave* wave, 
-                          struct Point* location, 
+                          struct Dimensions* location, 
                           double time);
 
 #endif // WAVE_H

@@ -16,10 +16,10 @@ enum i_attitude{heel, trim, heading}; // to index the floating attitude of ASV
  */
 struct Asv_propeller
 {
-  struct Point position; // Position of propeller force vector in ASV's 
-                         // body-fixed frame.
-  struct Attitude orientation; // Orientation of the force vector of the 
-                               // propeller in body-fixed frame.
+  struct Dimensions position; // Position of propeller force vector in ASV's 
+                              // body-fixed frame.
+  struct Dimensions orientation; // Orientation of the force vector of the 
+                                 // propeller in body-fixed frame.
   double thrust; // Magnitude of propeller force.
 };
 
@@ -41,7 +41,7 @@ struct Asv_specification
   double r_roll; // roll radius of gyration.
   double r_pitch; // pitch radius of gyration.
   double r_yaw; // yaw radius of gyration.
-  struct Point cog; // Centre of gravity in body-fixed frame.
+  struct Dimensions cog; // Centre of gravity in body-fixed frame.
 };
 
 /**
@@ -89,14 +89,14 @@ struct Asv
   struct Wave wave;
 
   // Initial used for input but later contains results. 
-  struct Point origin_position; // Position of the body-fixed frame in the 
+  struct Dimensions origin_position; // Position of the body-fixed frame in the 
                                 // global frame for the current time step.
-  struct Attitude attitude; // The heel and trim are in body-fixed frame and the
+  struct Dimensions attitude; // The heel and trim are in body-fixed frame and the
                             // heading is in global frame.
   
   // Output
   struct Asv_dynamics dynamics;
-  struct Point cog_position; // Position of the centre of gravity of the ASV 
+  struct Dimensions cog_position; // Position of the centre of gravity of the ASV 
                              // in the global frame for the current time step.
 };
 

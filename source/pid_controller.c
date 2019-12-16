@@ -28,19 +28,19 @@ void pid_controller_set_gains_heading(struct PID_controller* controller,
 }
 
 void pid_controller_set_current_state(struct PID_controller* controller,
-                                      struct Point position,
-                                      struct Attitude attitude)
+                                      struct Dimensions position,
+                                      struct Dimensions attitude)
 {
   controller->asv_position.x = position.x;
   controller->asv_position.y = position.y;
   controller->asv_position.z = position.z;
-  controller->asv_attitude.heel = attitude.heel;
-  controller->asv_attitude.trim = attitude.trim;
-  controller->asv_attitude.heading = attitude.heading;  
+  controller->asv_attitude.x = attitude.x;
+  controller->asv_attitude.y = attitude.y;
+  controller->asv_attitude.z = attitude.z;  
 }
 
 void pid_controller_set_way_point(struct PID_controller* controller,
-                                  struct Point way_point)
+                                  struct Dimensions way_point)
 {
   controller->way_point.x = way_point.x;
   controller->way_point.y = way_point.y;
@@ -106,7 +106,7 @@ void pid_controller_set_thrust(struct PID_controller* controller)
     heading_required += PI;
   }
   
-  double error_heading = heading_required - controller->asv_attitude.heading;
+  double error_heading = heading_required - controller->asv_attitude.z;
   // Clamp the heading error
   double max_error_heading = PI/6.0; // Set the max heading error.
    if(fabs(error_heading) > max_error_heading)

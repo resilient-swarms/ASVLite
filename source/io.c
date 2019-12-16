@@ -354,7 +354,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   else
   {
     // convert to radians and set value
-    asv->attitude.heel = heel * PI/180.0;
+    asv->attitude.x = heel * PI/180.0;
   }
   // trim
   double trim = 0.0;
@@ -374,7 +374,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   else
   {
     // convert to radians and set value
-    asv->attitude.trim = trim * PI/180.0;
+    asv->attitude.y = trim * PI/180.0;
   }
   // heading
   double heading = 0.0;
@@ -394,7 +394,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   else
   {
     // convert to radians and set value
-    asv->attitude.heading = heading * PI/180.0;
+    asv->attitude.z = heading * PI/180.0;
   }
   
   // Locate array of tables [waypoint]

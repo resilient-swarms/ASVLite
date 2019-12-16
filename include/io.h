@@ -4,12 +4,12 @@
 #include "asv.h"
 
 /**
- * A simle structure to store the waypoints. 
+ * A simple structure to store the waypoints. 
  */
 struct Waypoints
 {
   int count;
-  struct Point points[COUNT_WAYPOINTS_MAX];
+  struct Dimensions points[COUNT_WAYPOINTS_MAX];
 };
 
 /**

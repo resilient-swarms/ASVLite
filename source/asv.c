@@ -18,8 +18,8 @@ static void set_cog(struct Asv* asv)
 {
   // Match the position of the COG with that of the position of the origin.
   double l = sqrt(pow(asv->spec.cog.x, 2.0) + pow(asv->spec.cog.y, 2.0));
-  asv->cog_position.x = asv->origin_position.x + l * sin(asv->attitude.heading);
-  asv->cog_position.y = asv->origin_position.y + l * cos(asv->attitude.heading);
+  asv->cog_position.x = asv->origin_position.x + l * sin(asv->attitude.z);
+  asv->cog_position.y = asv->origin_position.y + l * cos(asv->attitude.z);
   asv->cog_position.z = asv->origin_position.z + asv->spec.cog.z;
 }
 
@@ -281,7 +281,7 @@ static void set_wave_force(struct Asv* asv)
       struct Regular_wave* wave = &(asv->wave.spectrum[i][j]);
 
       // Compute the encounter frequency
-      double angle = wave->direction - asv->attitude.heading;
+      double angle = wave->direction - asv->attitude.z;
       // Better to keep angle +ve
       angle = (angle < 0.0)? 2*PI + angle : angle;
       // Get encounter frequency
@@ -316,9 +316,9 @@ static void set_wave_force(struct Asv* asv)
                                                 &asv->cog_position, 
                                                 asv->dynamics.time); 
       // wave phase at the aft-CL position.
-      struct Point point_aft = asv->cog_position;
-      point_aft.x -= (a/30)*sin(asv->attitude.heading);
-      point_aft.y -= (a/3.0)*cos(asv->attitude.heading);
+      struct Dimensions point_aft = asv->cog_position;
+      point_aft.x -= (a/30)*sin(asv->attitude.z);
+      point_aft.y -= (a/3.0)*cos(asv->attitude.z);
       point_aft.z = regular_wave_get_elevation(wave, 
                                                &point_aft, 
                                                asv->dynamics.time);
@@ -326,9 +326,9 @@ static void set_wave_force(struct Asv* asv)
                                                 &point_aft, 
                                                 asv->dynamics.time);
       // wave phase at the fore-CL position.
-      struct Point point_fore = asv->cog_position;
-      point_fore.x += (a/3.0)*sin(asv->attitude.heading);
-      point_fore.y += (a/3.0)*cos(asv->attitude.heading);
+      struct Dimensions point_fore = asv->cog_position;
+      point_fore.x += (a/3.0)*sin(asv->attitude.z);
+      point_fore.y += (a/3.0)*cos(asv->attitude.z);
       point_fore.z = regular_wave_get_elevation(wave, 
                                                &point_fore, 
                                                asv->dynamics.time);
@@ -336,9 +336,9 @@ static void set_wave_force(struct Asv* asv)
                                                  &point_fore, 
                                                  asv->dynamics.time);
       // wave phase at the mid-PS position.
-      struct Point point_ps = asv->cog_position;
-      point_ps.x -= (b/3.0)*cos(asv->attitude.heading);
-      point_ps.y += (b/3.0)*sin(asv->attitude.heading);
+      struct Dimensions point_ps = asv->cog_position;
+      point_ps.x -= (b/3.0)*cos(asv->attitude.z);
+      point_ps.y += (b/3.0)*sin(asv->attitude.z);
       point_ps.z = regular_wave_get_elevation(wave, 
                                                &point_ps, 
                                                asv->dynamics.time);
@@ -346,9 +346,9 @@ static void set_wave_force(struct Asv* asv)
                                                &point_ps, 
                                                asv->dynamics.time);
       // wave phase at the mid-SB position.
-      struct Point point_sb = asv->cog_position;
-      point_sb.x += (b/3.0)*cos(asv->attitude.heading);
-      point_sb.y -= (b/3.0)*sin(asv->attitude.heading);
+      struct Dimensions point_sb = asv->cog_position;
+      point_sb.x += (b/3.0)*cos(asv->attitude.z);
+      point_sb.y -= (b/3.0)*sin(asv->attitude.z);
       point_sb.z = regular_wave_get_elevation(wave, 
                                                &point_sb, 
                                                asv->dynamics.time);
@@ -411,19 +411,19 @@ static void set_propeller_force(struct Asv* asv)
   for(int i = 0; i < asv->count_propellers; ++i)
   {
     double thrust = asv->propellers[i].thrust;
-    double trim = asv->propellers[i].orientation.trim;
-    double prop_angle = asv->propellers[i].orientation.heading;
+    double trim = asv->propellers[i].orientation.y;
+    double prop_angle = asv->propellers[i].orientation.z;
     double prop_cog_angle = atan(
         (asv->propellers[i].position.y - asv->spec.cog.y)/
         (asv->spec.cog.x - asv->propellers[i].position.x));
     double thrust_cog_angle = prop_cog_angle + prop_angle;
     
     double F_prop_to_cog = thrust * cos(thrust_cog_angle);
-    double F_x = F_prop_to_cog*cos(asv->propellers[i].orientation.trim) *
+    double F_x = F_prop_to_cog*cos(asv->propellers[i].orientation.y) *
                                cos(prop_cog_angle);
-    double F_y = -F_prop_to_cog*cos(asv->propellers[i].orientation.trim) *
+    double F_y = -F_prop_to_cog*cos(asv->propellers[i].orientation.y) *
                                sin(prop_cog_angle);
-    double F_z = F_prop_to_cog*sin(asv->propellers[i].orientation.trim);
+    double F_z = F_prop_to_cog*sin(asv->propellers[i].orientation.y);
     
     double x = asv->spec.cog.x - asv->propellers[i].position.x;
     double y = asv->spec.cog.y - asv->propellers[i].position.y;
@@ -431,16 +431,16 @@ static void set_propeller_force(struct Asv* asv)
  
     double F_perp_to_cog = thrust * sin(thrust_cog_angle);
     double M_x = F_perp_to_cog * 
-                 cos(asv->propellers[i].orientation.trim) * 
+                 cos(asv->propellers[i].orientation.y) * 
                  cos(prop_cog_angle) * z + 
-                 F_perp_to_cog * sin(asv->propellers[i].orientation.trim) * y;
+                 F_perp_to_cog * sin(asv->propellers[i].orientation.y) * y;
     double M_y = F_perp_to_cog * 
-                 cos(asv->propellers[i].orientation.trim) *
+                 cos(asv->propellers[i].orientation.y) *
                  sin(prop_cog_angle) * z + 
-                 F_perp_to_cog * sin(asv->propellers[i].orientation.trim) * x; 
+                 F_perp_to_cog * sin(asv->propellers[i].orientation.y) * x; 
     double M_z = F_perp_to_cog * sqrt(x*x + y*y);
     if(asv->propellers[i].position.x < asv->spec.cog.x &&
-       asv->propellers[i].orientation.heading < PI)
+       asv->propellers[i].orientation.z < PI)
     {
       M_z = -M_z;
     }
@@ -473,10 +473,10 @@ static void set_restoring_force(struct Asv* asv)
   asv->dynamics.F_restoring[heave] = asv->dynamics.K[heave] * dist;
   
   // Roll restoring force 
-  asv->dynamics.F_restoring[roll] = -asv->dynamics.K[roll] * asv->attitude.heel;
+  asv->dynamics.F_restoring[roll] = -asv->dynamics.K[roll] * asv->attitude.x;
 
   // Pitch restoring force
-  asv->dynamics.F_restoring[pitch]= -asv->dynamics.K[pitch]* asv->attitude.trim;
+  asv->dynamics.F_restoring[pitch]= -asv->dynamics.K[pitch]* asv->attitude.y;
   
   // No restoring force for sway, yaw and surge. 
 }
@@ -521,10 +521,10 @@ static void set_deflection(struct Asv* asv)
 // Compute deflection in global frame and set position of origin and cog.
 static void set_position(struct Asv* asv)
 {
-  double deflection_x = asv->dynamics.X[surge]*sin(asv->attitude.heading) -
-                        asv->dynamics.X[sway]*cos(asv->attitude.heading);
-  double deflection_y = asv->dynamics.X[surge]*cos(asv->attitude.heading) + 
-                        asv->dynamics.X[sway]*sin(asv->attitude.heading);
+  double deflection_x = asv->dynamics.X[surge]*sin(asv->attitude.z) -
+                        asv->dynamics.X[sway]*cos(asv->attitude.z);
+  double deflection_y = asv->dynamics.X[surge]*cos(asv->attitude.z) + 
+                        asv->dynamics.X[sway]*sin(asv->attitude.z);
                         
   double deflection_z = asv->dynamics.X[heave];
   
@@ -535,8 +535,8 @@ static void set_position(struct Asv* asv)
 
   // Update origin position
   double l = sqrt(pow(asv->spec.cog.x, 2.0) + pow(asv->spec.cog.y, 2.0));
-  asv->origin_position.x = asv->cog_position.x - l * sin(asv->attitude.heading);
-  asv->origin_position.y = asv->cog_position.y - l * cos(asv->attitude.heading);
+  asv->origin_position.x = asv->cog_position.x - l * sin(asv->attitude.z);
+  asv->origin_position.y = asv->cog_position.y - l * cos(asv->attitude.z);
   asv->origin_position.z = asv->cog_position.z - asv->spec.cog.z;
   
 }
@@ -544,9 +544,9 @@ static void set_position(struct Asv* asv)
 // Compute the attitude for the current time step
 static void set_attitude(struct Asv* asv)
 {
-  asv->attitude.heading += asv->dynamics.X[yaw];
-  asv->attitude.heel    += asv->dynamics.X[roll];
-  asv->attitude.trim    += asv->dynamics.X[pitch];
+  asv->attitude.z += asv->dynamics.X[yaw];
+  asv->attitude.x    += asv->dynamics.X[roll];
+  asv->attitude.y    += asv->dynamics.X[pitch];
 }
 
 void asv_init(struct Asv* asv)
@@ -641,7 +641,7 @@ void asv_compute_dynamics(struct Asv* asv, double time)
 }
 
 void asv_propeller_init(struct Asv_propeller* propeller,
-                        struct Point position)
+                        struct Dimensions position)
 {
   propeller->position.x = position.x;
   propeller->position.y = position.y;

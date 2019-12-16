@@ -2,25 +2,14 @@
 #define GEOMETRY_H
 
 /**
- * Structure to represent a point in 3D space.
+ * Structure to represent a 3D quantity.
  */
-struct Point
+struct Dimensions
 {
-  double x; // x coordinate in meter.
-  double y; // y coordinate in meter.
-  double z; // z coordinate in meter.
+  double x; 
+  double y; 
+  double z; 
 };
-
-/**
- * Structure to represent the angles.
- */
-struct Attitude
-{
-  double heel;    // Angle in radian with x-axis.
-  double trim;    // Angle in radian with y-axis.
-  double heading; // Angle in radian with z-axis.
-}; 
-
 
 
 #endif // GEOMETRY_H
