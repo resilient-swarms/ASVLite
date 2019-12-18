@@ -295,15 +295,9 @@ static void set_wave_force(struct Asv* asv)
                               (COUNT_ASV_SPECTRAL_FREQUENCIES - 1.0);
       int index = round((freq - asv->dynamics.P_unit_wave_freq_min)/
                          freq_step_size);
-      if(index >= COUNT_ASV_SPECTRAL_FREQUENCIES)
+      if(index >= COUNT_ASV_SPECTRAL_FREQUENCIES || index < 0)
       {
         fprintf(stderr, "FATAL ERROR! Array index out of bounds. \n");
-        exit(1);
-      }
-      // Check if index points to the correct frequency
-      if(fabs(freq - asv->dynamics.P_unit_wave[index][0]) > freq_step_size)
-      {
-        fprintf(stderr, "FATAL ERROR! Incorrect array index. \n");
         exit(1);
       }
 
