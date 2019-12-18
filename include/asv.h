@@ -11,6 +11,9 @@ enum i_dof{surge, sway, heave, roll, pitch, yaw}; // to index the DOF
 enum i_axis{x, y, z}; // to index the axis for linear motion
 enum i_attitude{heel, trim, heading}; // to index the floating attitude of ASV
 
+// Enum for the wave type used for hydrodynamics
+enum Wave_type{still_water, regular_wave, irregular_wave};
+
 /**
  * Struct to hold all the inputs for the propeller.
  */
@@ -85,7 +88,7 @@ struct Asv
   struct Asv_specification spec;
   int count_propellers; // Number of propellers attached to ASV.
   struct Asv_propeller propellers[COUNT_PROPELLERS_MAX];
-  bool using_waves; // false for still water else true.
+  enum Wave_type wave_type; // type of wave used. 
   struct Wave wave;
 
   // Initial used for input but later contains results. 

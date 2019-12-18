@@ -599,7 +599,7 @@ void asv_compute_dynamics(struct Asv* asv, double time)
   // Update the time
   asv->dynamics.time = time;
 
-  if(asv->using_waves)
+  if(asv->wave_type == irregular_wave)
   {
     // Get the wave force for the current time step
     set_wave_force(asv);
