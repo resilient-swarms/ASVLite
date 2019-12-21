@@ -10,6 +10,10 @@
 # ----------------
 .ycm_extra_conf.py
 
+# Ignore tags
+# -----------
+tags
+
 # build directory
 # ---------------
 build
