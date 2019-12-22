@@ -332,7 +332,7 @@ static void set_wave_force(struct Asv* asv)
                                                 asv->dynamics.time); 
       // wave phase at the aft-CL position.
       struct Dimensions point_aft = asv->cog_position;
-      point_aft.x -= (a/30)*sin(asv->attitude.z);
+      point_aft.x -= (a/3.0)*sin(asv->attitude.z);
       point_aft.y -= (a/3.0)*cos(asv->attitude.z);
       point_aft.z = regular_wave_get_elevation(wave, 
                                                &point_aft, 
@@ -378,9 +378,9 @@ static void set_wave_force(struct Asv* asv)
       //double lever_vertical_long = z - asv->cog_position.z;
 
       // Compute areas for force calculation based on pressure
-      double A_x = PI/2.0 * b * fabs(point_aft.z - point_fore.z); // trans area
+      double A_x = b * fabs(point_aft.z - point_fore.z); // trans area
       A_x = (A_x > A_trans) ? A_trans : A_x;
-      double A_y = PI/2.0 * a * fabs(point_ps.z - point_sb.z); // profile area
+      double A_y = a * fabs(point_ps.z - point_sb.z); // profile area
       A_y = (A_y > A_profile) ? A_profile : A_y;
       double A_z = A_waterplane;
       
