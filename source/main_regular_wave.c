@@ -97,9 +97,9 @@ int main(int argc, char** argv)
         double wave_elevation = 0.0;
         if(asv.wave_type == regular_wave)
         {
-          struct Dimensions point = {100, 0, 0};
+          struct Dimensions wave_probe = {0, 0, 0};
           wave_elevation = regular_wave_get_elevation(&asv.regular_wave, 
-                                              &asv.cog_position, time);
+                                              &wave_probe, time);
         }
 
         // save simulated data to buffer. 
