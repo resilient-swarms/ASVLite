@@ -75,6 +75,7 @@ struct Asv_dynamics
 
   double P_unit_wave[COUNT_ASV_SPECTRAL_FREQUENCIES][2]; // index 0 - freq
                                                          // index 1 - pressure
+  double P_unit_regular_wave; // Pressure for wave_type = regular_wave.
   double P_unit_wave_freq_min;
   double P_unit_wave_freq_max;
 };

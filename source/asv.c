@@ -240,17 +240,28 @@ static void set_unit_wave_pressure(struct Asv* asv)
   double freq_step_size = (asv->dynamics.P_unit_wave_freq_max - 
                            asv->dynamics.P_unit_wave_freq_min)/
                           (COUNT_ASV_SPECTRAL_FREQUENCIES - 1); 
-  for(int i = 0; i < COUNT_ASV_SPECTRAL_FREQUENCIES; ++i)
+  if(asv->wave_type == irregular_wave)
   {
-    double freq = asv->dynamics.P_unit_wave_freq_min + i * freq_step_size;
-    asv->dynamics.P_unit_wave[i][0] = freq;
-    // Create a regular wave for the freq with wave height = 0.01, 
-    // direction = 0.0 and phase = 0.0.
+    for(int i = 0; i < COUNT_ASV_SPECTRAL_FREQUENCIES; ++i)
+    {
+      double freq = asv->dynamics.P_unit_wave_freq_min + i * freq_step_size;
+      asv->dynamics.P_unit_wave[i][0] = freq;
+      // Create a regular wave for the freq with wave height = 0.01, 
+      // direction = 0.0 and phase = 0.0.
+      struct Regular_wave wave;
+      regular_wave_init(&wave, H_w/2.0, freq, 0.0, 0.0);
+    
+      // Calculate wave pressure amplitude for the regular wave at the cog depth
+      asv->dynamics.P_unit_wave[i][1] = 
+        regular_wave_get_pressure_amp(&wave, -asv->spec.T);
+    }
+  }
+  else if(asv->wave_type == regular_wave)
+  {
+    double freq = asv->regular_wave.frequency;
     struct Regular_wave wave;
     regular_wave_init(&wave, H_w/2.0, freq, 0.0, 0.0);
-    
-    // Calculate wave pressure amplitude for the regular wave at the cog depth
-    asv->dynamics.P_unit_wave[i][1] = 
+    asv->dynamics.P_unit_regular_wave = 
       regular_wave_get_pressure_amp(&wave, -asv->spec.T);
   }
 }
@@ -296,7 +307,8 @@ static void set_wave_force(struct Asv* asv)
       double freq = get_encounter_frequency(wave->frequency,
                                             asv->dynamics.V[surge], angle);
       int index = 0;
-      double scale = 1;
+      // Compute the scaling factor to compute the wave force from unit wave
+      double scale = wave->amplitude * 2.0;
       if(asv->wave_type == irregular_wave)
       {
         // Get the index for unit wave force for the encounter frequency
@@ -311,9 +323,6 @@ static void set_wave_force(struct Asv* asv)
           fprintf(stderr, "FATAL ERROR! Array index out of bounds. \n");
           exit(1);
         }
-
-        // Compute the scaling factor to compute the wave force from unit wave
-        scale = wave->amplitude * 2.0;
       }
 
       // Assume the wave force to be have zero phase lag with the wave
@@ -370,9 +379,9 @@ static void set_wave_force(struct Asv* asv)
 
       // Compute areas for force calculation based on pressure
       double A_x = PI/2.0 * b * fabs(point_aft.z - point_fore.z); // trans area
-      //A_x = (A_x > A_trans) ? A_trans : A_x;
+      A_x = (A_x > A_trans) ? A_trans : A_x;
       double A_y = PI/2.0 * a * fabs(point_ps.z - point_sb.z); // profile area
-      //A_y = (A_y > A_profile) ? A_profile : A_y;
+      A_y = (A_y > A_profile) ? A_profile : A_y;
       double A_z = A_waterplane;
       
       // Compute the pressure difference between fore and aft point
@@ -383,7 +392,7 @@ static void set_wave_force(struct Asv* asv)
       }
       else if(asv->wave_type == regular_wave)
       {
-        P = regular_wave_get_pressure_amp(wave, -asv->spec.T);
+        P = asv->dynamics.P_unit_regular_wave;
       }
       double P_diff_long = P *(cos(phase_fore) - cos(phase_aft));
       // Compute the pressure difference between SB and PS point

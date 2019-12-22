@@ -35,7 +35,7 @@ int main(int argc, char** argv)
   {
     asv.wave_type = regular_wave;
     regular_wave_init(&asv.regular_wave, 
-                      wave_ht, 
+                      wave_ht/2.0, 
                       frequency, 
                       phase_lag * PI/180.0, 
                       wave_heading * PI/180.0);
