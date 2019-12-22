@@ -278,10 +278,14 @@ static void set_wave_force(struct Asv* asv)
     for(int j = 0; j < COUNT_WAVE_SPECTRAL_FREQUENCIES; ++j)
     {
       // Regular wave
-      struct Regular_wave* wave = &(asv->wave.spectrum[i][j]);
+      struct Regular_wave* wave = 0;
       if(asv->wave_type == regular_wave)
       {
         wave = &(asv->regular_wave);
+      }
+      if(asv->wave_type == irregular_wave)
+      {
+        wave = &(asv->wave.spectrum[i][j]);
       }
 
       // Compute the encounter frequency
@@ -359,7 +363,7 @@ static void set_wave_force(struct Asv* asv)
                                                asv->dynamics.time);
 
       // Compute the difference between the points
-      double lever_trans = b / 3.0;
+      double leasvver_trans = b / 3.0;
       //double lever_vertical_trans = z - asv->cog_position.z;
       double lever_long = a / 3.0;
       //double lever_vertical_long = z - asv->cog_position.z;
@@ -379,7 +383,7 @@ static void set_wave_force(struct Asv* asv)
       }
       else if(asv->wave_type == regular_wave)
       {
-        P = regular_wave_get_pressure_amp(&asv->regular_wave, -asv->spec.T);
+        P = regular_wave_get_pressure_amp(wave, -asv->spec.T);
       }
       double P_diff_long = P *(cos(phase_fore) - cos(phase_aft));
       // Compute the pressure difference between SB and PS point
