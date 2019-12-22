@@ -26,3 +26,5 @@ build
 # Jupyter notebook checkpoints
 # ----------------------------
 .ipynb_checkpoints
+
+test
