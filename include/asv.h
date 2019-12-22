@@ -90,6 +90,7 @@ struct Asv
   struct Asv_propeller propellers[COUNT_PROPELLERS_MAX];
   enum Wave_type wave_type; // type of wave used. 
   struct Wave wave;
+  struct Regular_wave regular_wave;
 
   // Initial used for input but later contains results. 
   struct Dimensions origin_position; // Position of the body-fixed frame in the 

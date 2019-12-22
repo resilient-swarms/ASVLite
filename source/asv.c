@@ -279,6 +279,10 @@ static void set_wave_force(struct Asv* asv)
     {
       // Regular wave
       struct Regular_wave* wave = &(asv->wave.spectrum[i][j]);
+      if(asv->wave_type == regular_wave)
+      {
+        wave = &(asv->regular_wave);
+      }
 
       // Compute the encounter frequency
       double angle = wave->direction - asv->attitude.z;
@@ -287,22 +291,26 @@ static void set_wave_force(struct Asv* asv)
       // Get encounter frequency
       double freq = get_encounter_frequency(wave->frequency,
                                             asv->dynamics.V[surge], angle);
-
-      // Get the index for unit wave force for the encounter frequency
-      double nf = COUNT_ASV_SPECTRAL_FREQUENCIES;
-      double freq_step_size = (asv->dynamics.P_unit_wave_freq_max - 
-                               asv->dynamics.P_unit_wave_freq_min) /
-                              (COUNT_ASV_SPECTRAL_FREQUENCIES - 1.0);
-      int index = round((freq - asv->dynamics.P_unit_wave_freq_min)/
-                         freq_step_size);
-      if(index >= COUNT_ASV_SPECTRAL_FREQUENCIES || index < 0)
+      int index = 0;
+      double scale = 1;
+      if(asv->wave_type == irregular_wave)
       {
-        fprintf(stderr, "FATAL ERROR! Array index out of bounds. \n");
-        exit(1);
-      }
+        // Get the index for unit wave force for the encounter frequency
+        double nf = COUNT_ASV_SPECTRAL_FREQUENCIES;
+        double freq_step_size = (asv->dynamics.P_unit_wave_freq_max - 
+                                 asv->dynamics.P_unit_wave_freq_min) /
+                                (COUNT_ASV_SPECTRAL_FREQUENCIES - 1.0);
+        index = round((freq - asv->dynamics.P_unit_wave_freq_min)/
+                           freq_step_size);
+        if(index >= COUNT_ASV_SPECTRAL_FREQUENCIES || index < 0)
+        {
+          fprintf(stderr, "FATAL ERROR! Array index out of bounds. \n");
+          exit(1);
+        }
 
-      // Compute the scaling factor to compute the wave force from unit wave
-      double scale = wave->amplitude * 2.0;
+        // Compute the scaling factor to compute the wave force from unit wave
+        scale = wave->amplitude * 2.0;
+      }
 
       // Assume the wave force to be have zero phase lag with the wave
       // wave phase at the cog position.
@@ -362,17 +370,24 @@ static void set_wave_force(struct Asv* asv)
       double A_y = PI/2.0 * a * fabs(point_ps.z - point_sb.z); // profile area
       //A_y = (A_y > A_profile) ? A_profile : A_y;
       double A_z = A_waterplane;
-
+      
       // Compute the pressure difference between fore and aft point
-      double P_diff_long = asv->dynamics.P_unit_wave[index][1] * 
-                           (cos(phase_fore) - cos(phase_aft));
+      double P = 0.0;
+      if(asv->wave_type == irregular_wave)
+      {
+        P = asv->dynamics.P_unit_wave[index][1];
+      }
+      else if(asv->wave_type == regular_wave)
+      {
+        P = regular_wave_get_pressure_amp(&asv->regular_wave, -asv->spec.T);
+      }
+      double P_diff_long = P *(cos(phase_fore) - cos(phase_aft));
       // Compute the pressure difference between SB and PS point
-      double P_diff_trans = asv->dynamics.P_unit_wave[index][1] * 
-                            (cos(phase_sb) - cos(phase_ps));
+      double P_diff_trans = P * (cos(phase_sb) - cos(phase_ps));
       
       // Compute wave force
       asv->dynamics.F_wave[heave] += 
-        scale * (asv->dynamics.P_unit_wave[index][1] * cos(phase_cog)) * A_z;
+        scale * (P * cos(phase_cog)) * A_z;
       // Other than for heave, limit the wave scaling to the vessel depth
       //scale = (scale > asv->spec.D)? asv->spec.D : scale;
       asv->dynamics.F_wave[surge] += scale * P_diff_long * A_x;
@@ -388,7 +403,12 @@ static void set_wave_force(struct Asv* asv)
         scale * P_diff_long * A_x * lever_vertical_long;*/
       // yaw moment
       //asv->dynamics.F_wave[yaw] += scale * P_diff_long * A_y * lever_long;
+      
+      if(asv->wave_type == regular_wave)
+        break;
     }
+    if(asv->wave_type == regular_wave)
+      break;
   } 
 }
 
@@ -599,7 +619,8 @@ void asv_compute_dynamics(struct Asv* asv, double time)
   // Update the time
   asv->dynamics.time = time;
 
-  if(asv->wave_type == irregular_wave)
+  if(asv->wave_type == irregular_wave ||
+     asv->wave_type == regular_wave)
   {
     // Get the wave force for the current time step
     set_wave_force(asv);
