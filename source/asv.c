@@ -363,7 +363,7 @@ static void set_wave_force(struct Asv* asv)
                                                asv->dynamics.time);
 
       // Compute the difference between the points
-      double leasvver_trans = b / 3.0;
+      double lever_trans = b / 3.0;
       //double lever_vertical_trans = z - asv->cog_position.z;
       double lever_long = a / 3.0;
       //double lever_vertical_long = z - asv->cog_position.z;
