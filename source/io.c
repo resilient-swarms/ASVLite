@@ -516,13 +516,15 @@ void write_output(char* file,
            "trim(deg) "
            "heading(deg) "
            "surge_vel(m/s) "
-           "surge_acc(m/s2)" 
+           "surge_acc(m/s2) " 
+           "F_surge(N) "
+           "F_sway(N)"
            );
   }
   // write buffer to file and close the file.
   for(int i = 0; i < buffer_length; ++i)
   {
-    fprintf(fp, "\n%f %f %ld %f %f %f %f %f %f %f %f %f %f", 
+    fprintf(fp, "\n%f %f %ld %f %f %f %f %f %f %f %f %f %f %f %f", 
             buffer[i].sig_wave_ht,
             wave_heading,
             rand_seed,
@@ -535,7 +537,9 @@ void write_output(char* file,
             buffer[i].trim, 
             buffer[i].heading,
             buffer[i].surge_velocity,
-            buffer[i].surge_acceleration);
+            buffer[i].surge_acceleration,
+            buffer[i].F_surge,
+            buffer[i].F_sway);
   }
   fclose(fp);
 }

@@ -76,16 +76,17 @@ int main(int argc, char** argv)
   while(fgets(thrust_file_line, MAX_LINE_LENGTH, thrust_file) != NULL)
   {
     // set propeller thrust and direction
-    // TODO: Set propeller force.
+    // Set propeller force.
     double thrust_vec[4];
     get_thrust_vec(thrust_file_line, thrust_vec); 
-    asv.propellers[0].thrust = sqrt(thrust_vec[2] * thrust_vec[2] +
-                                    thrust_vec[3] * thrust_vec[3]); //N
-    // TODO: time when the propeller should be applied.
+    asv.propellers[0].thrust = sqrt(thrust_vec[2]*thrust_vec[2] + 
+                                    thrust_vec[3]*thrust_vec[3]);
+    // time when the propeller should be applied.
     double t1 = thrust_vec[1];
-    asv.propellers[0].orientation = (struct Dimensions){0.0, 0.0, 0.0};
+    double thrust_angle = atan(thrust_vec[3]/thrust_vec[2]);
+    asv.propellers[0].orientation = (struct Dimensions){0.0, 0.0, thrust_angle};
     
-    for(;t<t1;++t) 
+    for(;t<=t1;++t) 
     {
       // check buffer limit reached
       if(t >= OUTPUT_BUFFER_SIZE)
@@ -132,6 +133,8 @@ int main(int argc, char** argv)
       buffer[t].heading = asv.attitude.z * 180.0/PI;
       buffer[t].surge_velocity = asv.dynamics.V[surge];
       buffer[t].surge_acceleration = asv.dynamics.A[surge];
+      buffer[t].F_surge = thrust_vec[2];
+      buffer[t].F_sway = thrust_vec[3];
     }
   }
   end = clock();

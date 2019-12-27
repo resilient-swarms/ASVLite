@@ -35,6 +35,8 @@ struct
   double thrust_aft_sb;  // N.
   double surge_velocity; // m/s.
   double surge_acceleration; // m/s2. 
+  double F_surge; // N
+  double F_sway; //N
 } buffer[OUTPUT_BUFFER_SIZE];
 
 /**
