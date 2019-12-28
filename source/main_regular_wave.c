@@ -75,16 +75,16 @@ int main(int argc, char** argv)
   char thrust_file_line[MAX_LINE_LENGTH];
   while(fgets(thrust_file_line, MAX_LINE_LENGTH, thrust_file) != NULL)
   {
-    // set propeller thrust and direction
     // Set propeller force.
     double thrust_vec[4];
     get_thrust_vec(thrust_file_line, thrust_vec); 
-    asv.propellers[0].thrust = sqrt(thrust_vec[2]*thrust_vec[2] + 
-                                    thrust_vec[3]*thrust_vec[3]);
     // time when the propeller should be applied.
     double t1 = thrust_vec[1];
-    double thrust_angle = atan(thrust_vec[3]/thrust_vec[2]);
-    asv.propellers[0].orientation = (struct Dimensions){0.0, 0.0, thrust_angle};
+    // set propeller thrust and direction
+    asv.propellers[0].thrust = thrust_vec[2];
+    asv.propellers[1].thrust = thrust_vec[3];
+    asv.propellers[0].orientation = (struct Dimensions){0.0, 0.0, 0.0};
+    asv.propellers[1].orientation = (struct Dimensions){0.0, 0.0, PI/2.0};
     
     for(;t<=t1;++t) 
     {
