@@ -46,99 +46,37 @@ static void set_mass(struct Asv* asv)
   // ---------------------
   // ASV shape idealisation:
   // For the purpose of calculating the added mass the shape of the ASV is
-  // assumed to be a semi-spheroid, with the transverse cross section as a 
-  // semi-circle and the waterline as an ellipse.
+  // assumed to be a elliptic-cylinder.
   double a = asv->spec.L_wl/2.0;
-  // Find b such the volume of the semi-spheroid is equal to the displacement 
-  // of the vessel.
-  double b = sqrt(((3.0/4.0) * (2.0*asv->spec.disp/(PI * a)))); 
+  double b = asv->spec.B_wl/2.0; 
+  double c = asv->spec.T;
 
-  double e = sqrt(1.0 - pow(b/a, 2.0));
-  double alpha_0 = (2.0*(1 - e*e)/(e*e*e)) * (0.5*log10((1+e)/(1-e)) - e);
-  double beta_0 = (1.0/(e*e)) - ((1-e*e)/(2*e*e*e)) * log10((1+e)/(1-e));
-
-  // Ref: DNVGL-RP-N103 Table A-2 (page 210)
-  // Surge added mass = rho * Ca_axial * disp
-  double C_a_axial = 0.0;
-  double C_a_lateral = 0.0;
-  if(a/b <= 1.0)
-  {
-    C_a_axial = 0.5;
-    C_a_lateral = 0.5;
-  }
-  else if(a/b > 1.0 && a/b <= 1.5)
-  {
-    C_a_axial = 0.5 - (0.5 - 0.304)/(0.5)*(a/b - 1.0);
-    C_a_lateral = 0.5 + (0.622 - 0.5)/(0.5)*(a/b - 1.0);
-  }
-  else if(a/b > 1.5 && a/b <= 2.0)
-  {
-    C_a_axial = 0.304 - (0.304 - 0.210)/(0.5)*(a/b - 1.5);
-    C_a_lateral = 0.622 + (0.704 - 0.622)/(0.5)*(a/b - 1.5);
-  }
-  else if(a/b > 2.0 && a/b <= 2.5)
-  {
-    C_a_axial = 0.210 - (0.210 - 0.156)/(0.5)*(a/b - 2.0);
-    C_a_lateral = 0.704 + (0.762- 0.704)/(0.5)*(a/b - 2.0);
-  }
-  else if(a/b > 2.5 && a/b <= 4.0)
-  {
-    C_a_axial = 0.156 - (0.156 - 0.082)/(1.5)*(a/b - 2.5);
-    C_a_lateral = 0.762 + (0.86 - 0.762)/(1.5)*(a/b - 2.5);
-  }
-  else if(a/b > 4.0 && a/b <= 5.0)
-  {
-    C_a_axial = 0.082 - (0.082 - 0.059)/(1.0)*(a/b - 4.0);
-    C_a_lateral = 0.86 + (0.894 - 0.86)/(1.0)*(a/b - 4.0);
-  }
-  else if(a/b > 5.0 && a/b <= 6.0)
-  {
-    C_a_axial = 0.059 - (0.059 - 0.045)/(1.0)*(a/b - 5.0);
-    C_a_lateral = 0.894 + (0.917 - 0.894)/(1.0)*(a/b - 5.0);
-  }
-  else if(a/b > 6.0 && a/b <= 7.0)
-  {
-    C_a_axial = 0.045 - (0.045 - 0.036)/(1.0)*(a/b - 6.0);
-    C_a_lateral = 0.917 + (0.933 - 0.917)/(1.0)*(a/b - 6.0);
-  }
-  else
-  {
-    C_a_axial = 0.036 - (0.036 - 0.029)/(1.0)*(a/b - 7.0);
-    C_a_lateral = 0.933 + (0.945 - 0.933)/(1.0)*(a/b - 7.0);
-  }
-  added_mass_surge= 0.5 * SEA_WATER_DENSITY * C_a_axial * asv->spec.disp;
-  added_mass_sway = 0.5 *SEA_WATER_DENSITY * C_a_lateral * asv->spec.disp;
-  added_mass_heave= SEA_WATER_DENSITY * C_a_lateral * asv->spec.disp;
+  // Ref: DNVGL-RP-N103 Table A-1 (page 205)
+  // Surge added mass = rho * Ca * Ar
+  double C_a = 1.0;
+  double Ar_surge = PI*b*b;
+  double Ar_sway = PI*a*a;
+  double Ar_heave = PI*a*b;
+  added_mass_surge= SEA_WATER_DENSITY * C_a * Ar_surge * c;
+  added_mass_sway= SEA_WATER_DENSITY * C_a * Ar_sway * c;
+  added_mass_heave= SEA_WATER_DENSITY * C_a * Ar_heave * c;
 
   // Moment of inertia for angular motions
   double I_roll = mass * r_roll * r_roll;
   double I_pitch = mass * r_pitch * r_pitch;
   double I_yaw = mass * r_yaw * r_yaw;
   
-  // Added mass for rotational motion for a hemispheroid. 
-  // Ref: The complete expression for "added mass" of a rigid body moving in an
-  // ideal fluid. Frederick H Imlay. Page 16-17.
-  // Note: the formula given in the above reference is for a full spheroid but
-  // the shape that is assumed in this implementation is for a hemispheroid.
-  // Therefore multiply added mass by 0.5.
-  added_mass_roll = 0.0;
-  added_mass_pitch = fabs(
-                          0.5 *
-                          (1.0/5.0) *
-                          pow(b*b - a*a, 2.0)*(alpha_0 - beta_0) / 
-                          (2.0*(b*b - a*a) + (b*b + a*a)*(beta_0 - alpha_0)) *
-                          (4.0/3.0) * PI * SEA_WATER_DENSITY * a * b*b
-                          );
-  added_mass_pitch = (added_mass_pitch > I_pitch) ? I_pitch : added_mass_pitch;
-  added_mass_yaw = added_mass_pitch;
+  added_mass_roll = SEA_WATER_DENSITY * PI/8.0 * b * (2*a);
+  added_mass_pitch = SEA_WATER_DENSITY * PI/8.0 * a * (2*b);
+  added_mass_yaw = SEA_WATER_DENSITY * PI/8.0 * (a*a-b*b)*(a*a-b*b);
   added_mass_yaw = (added_mass_yaw > I_yaw) ? I_yaw : added_mass_yaw;
-
+  
   asv->dynamics.M[surge] = mass + added_mass_surge;
   asv->dynamics.M[sway]  = mass + added_mass_sway;
   asv->dynamics.M[heave] = mass + added_mass_heave;
-  asv->dynamics.M[roll] = mass * r_roll*r_roll + added_mass_roll;
-  asv->dynamics.M[pitch] = mass * r_pitch*r_pitch + added_mass_pitch;
-  asv->dynamics.M[yaw] = mass * r_yaw*r_yaw + added_mass_yaw;
+  asv->dynamics.M[roll] = mass * r_roll*r_roll /* + added_mass_roll */;
+  asv->dynamics.M[pitch] = mass * r_pitch*r_pitch /*+ added_mass_pitch */;
+  asv->dynamics.M[yaw] = mass * r_yaw*r_yaw /* + added_mass_yaw */;
 }
 
 // Method to compute the drag coefficient for an ellipse based on 
