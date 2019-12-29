@@ -378,9 +378,9 @@ static void set_wave_force(struct Asv* asv)
       //double lever_vertical_long = z - asv->cog_position.z;
 
       // Compute areas for force calculation based on pressure
-      double A_x = b * fabs(point_aft.z - point_fore.z); // trans area
+      double A_x = (2.0*b) * fabs(point_aft.z - point_fore.z); // trans area
       A_x = (A_x > A_trans) ? A_trans : A_x;
-      double A_y = a * fabs(point_ps.z - point_sb.z); // profile area
+      double A_y = (2.0*a) * fabs(point_ps.z - point_sb.z); // profile area
       A_y = (A_y > A_profile) ? A_profile : A_y;
       double A_z = A_waterplane;
       
