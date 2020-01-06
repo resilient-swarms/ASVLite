@@ -88,11 +88,18 @@ int main(int argc, char** argv)
       t0 = epoch;
       t = epoch; 
     }
-    // set propeller thrust and direction
-    asv.propellers[0].thrust = thrust_vec[1];
-    asv.propellers[1].thrust = thrust_vec[2];
-    asv.propellers[0].orientation = (struct Dimensions){0.0, 0.0, PI};
-    asv.propellers[1].orientation = (struct Dimensions){0.0, 0.0, PI/2.0};
+    // set propeller thrust and direction assuming there are 4 propellers in the 
+    // order - (aft,ps), (fore, ps), (fore, sb), (aft, sb)
+    // Forward thrust - assumptions: uses propeller 0 and 2
+    asv.propellers[0].thrust = thrust_vec[1]/2.0;
+    asv.propellers[2].thrust = thrust_vec[1]/2.0;
+    asv.propellers[0].orientation = (struct Dimensions){0.0, 0.0, 0.0};
+    asv.propellers[2].orientation = (struct Dimensions){0.0, 0.0, 0.0};
+    // Sway thrust - assumption: uses propellers 1 and 3
+    asv.propellers[1].thrust = thrust_vec[2]/2.0;
+    asv.propellers[3].thrust = thrust_vec[2]/2.0;
+    asv.propellers[1].orientation = (struct Dimensions){0.0, 0.0, 3.0*PI/2.0};
+    asv.propellers[3].orientation = (struct Dimensions){0.0, 0.0, 3.0*PI/2.0};
     
     for(;t<=epoch;++t) 
     {
