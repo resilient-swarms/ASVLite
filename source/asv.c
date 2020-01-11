@@ -314,13 +314,6 @@ static void set_wave_force(struct Asv* asv)
       //double lever_vertical_trans = z - asv->cog_position.z;
       double lever_long = a / 3.0;
       //double lever_vertical_long = z - asv->cog_position.z;
-
-      // Compute areas for force calculation based on pressure
-      double A_x = (2.0*b) * fabs(point_aft.z - point_fore.z); // trans area
-      A_x = (A_x > A_trans) ? A_trans : A_x;
-      double A_y = (2.0*a) * fabs(point_ps.z - point_sb.z); // profile area
-      A_y = (A_y > A_profile) ? A_profile : A_y;
-      double A_z = A_waterplane;
       
       // Compute the pressure difference between fore and aft point
       double P = 0.0;
@@ -338,22 +331,12 @@ static void set_wave_force(struct Asv* asv)
       
       // Compute wave force
       asv->dynamics.F_wave[heave] += 
-        scale * (P * cos(phase_cog)) * A_z;
-      // Other than for heave, limit the wave scaling to the vessel depth
-      //scale = (scale > asv->spec.D)? asv->spec.D : scale;
-      asv->dynamics.F_wave[surge] += scale * P_diff_long * A_x;
-      asv->dynamics.F_wave[sway]  += scale * P_diff_trans * A_y;
-      // roll moment = differential_heave_force * lever_trans
-      asv->dynamics.F_wave[roll] += 
-        scale * P_diff_trans * A_z * lever_trans; /* +
-        scale * P_diff_trans * A_y * lever_vertical_trans;*/
-      // pitch moment = differential_heave_force * lever_fore
-      // lever = a/2
-      asv->dynamics.F_wave[pitch] += 
-        scale * P_diff_long * A_z * lever_long; /* +
-        scale * P_diff_long * A_x * lever_vertical_long;*/
-      // yaw moment
-      //asv->dynamics.F_wave[yaw] += scale * P_diff_long * A_y * lever_long;
+        scale * (P * cos(phase_cog)) * A_waterplane;
+      asv->dynamics.F_wave[surge] += scale * P_diff_long * A_trans;
+      asv->dynamics.F_wave[sway]  += scale * P_diff_trans * A_profile;
+      asv->dynamics.F_wave[roll] += scale * P_diff_trans * A_waterplane * lever_trans;
+      asv->dynamics.F_wave[pitch] += scale * P_diff_long * A_waterplane * lever_long;
+      asv->dynamics.F_wave[yaw] += scale * P_diff_trans * (A_profile/2.0) * lever_long;
       
       if(asv->wave_type == regular_wave)
         break;
