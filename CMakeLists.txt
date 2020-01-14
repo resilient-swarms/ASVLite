@@ -17,7 +17,7 @@ SET( SOURCE
   source/regular_wave.c
   source/wave.c
   source/asv.c
-  source/main_regular_wave.c
+  source/main.c
   source/pid_controller.c
   )
 
