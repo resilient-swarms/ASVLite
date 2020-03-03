@@ -21,11 +21,12 @@ enum Wave_type{still_water, regular_wave, irregular_wave};
  */
 struct Asv_propeller
 {
-  struct Dimensions position; // Position of propeller force vector in ASV's 
-                              // body-fixed frame.
-  struct Dimensions orientation; // Orientation of the force vector of the 
-                                 // propeller in body-fixed frame.
-  double thrust; // Magnitude of propeller force.
+  struct Dimensions position; //!< Input variable. Position of propeller force 
+                              //!< vector in ASV's body-fixed frame.
+  struct Dimensions orientation; //!< Input variable. Orientation of the force 
+                                 //!< vector of the propeller in body-fixed 
+                                 //!< frame.
+  double thrust; //!< Magnitude of propeller force in Newton.
 };
 
 /**
@@ -37,16 +38,18 @@ struct Asv_propeller
  */
 struct Asv_specification
 {
-  double L_wl; // Length waterline in m.
-  double B_wl; // Breadth waterline in m.
-  double D; // Depth of the ASV in m.
-  double T; // Draught of the ASV in m.
-  double max_speed; // Maximum operational speed of the ASV in m/s.
-  double disp; // Displacement of the ASV in m3.
-  double r_roll; // roll radius of gyration.
-  double r_pitch; // pitch radius of gyration.
-  double r_yaw; // yaw radius of gyration.
-  struct Dimensions cog; // Centre of gravity in body-fixed frame.
+  double L_wl;      //!< Input variable. Length waterline in m.
+  double B_wl;      //!< Input variable. Breadth waterline in m.
+  double D;         //!< Input variable. Depth of the ASV in m.
+  double T;         //!< Input variable. Draught of the ASV in m.
+  double max_speed; //!< Input variable. Maximum operational speed of the ASV in 
+                    //!< m/s.
+  double disp;   //!< Input variable. Displacement of the ASV in m3.
+  double r_roll; //!< Input variable. roll radius of gyration.
+  double r_pitch;//!< Input variable. pitch radius of gyration.
+  double r_yaw;  //!< Input variable. yaw radius of gyration.
+  struct Dimensions cog; //!< Input variable. Centre of gravity in body-fixed 
+                         //!< frame.
 };
 
 /**
@@ -56,30 +59,36 @@ struct Asv_specification
 struct Asv_dynamics
 {
   // Input
-  double time_step_size; // seconds
-  double time; // seconds
+  double time_step_size; //!< Input variable. Time step size in seconds.
+  double time; //!< Input variable. Time since start of simulation in seconds.
   
-  // Optional inputs
-  double M[COUNT_DOF]; // Mass (+ added mass).
-  double C[COUNT_DOF]; // Drag force coefficients.
-  double K[COUNT_DOF]; // Stiffness.
+  // Future work: Set these as over writeable inputs
+  double M[COUNT_DOF]; //!< Output variable. Mass + added mass in Kg.
+  double C[COUNT_DOF]; //!< Output variable. Drag force coefficients.
+  double K[COUNT_DOF]; //!< Output variable. Stiffness.
   
   // Output
-  double X[COUNT_DOF]; // Deflection in body-fixed frame.
-  double V[COUNT_DOF]; // Velocity of ASV in body-fixed frame.
-  double A[COUNT_DOF]; // Acceleration of ASV in body-fixed frame.
+  double X[COUNT_DOF]; //!< Output variable. Deflection in body-fixed frame.
+  double V[COUNT_DOF]; //!< Output variable. Velocity of ASV in body-fixed frame.
+  double A[COUNT_DOF]; //!< Output variable. Acceleration of ASV in body-fixed 
+                       //!< frame.
   
-  double F[COUNT_DOF]; // Net force.
-  double F_wave[COUNT_DOF];
-  double F_propeller[COUNT_DOF];
-  double F_drag[COUNT_DOF];
-  double F_restoring[COUNT_DOF];
+  double F[COUNT_DOF]; //!< Output variable. Net force.
+  double F_wave[COUNT_DOF]; //!< Output variable. Wave force.
+  double F_propeller[COUNT_DOF]; //!< Output variable. Propeller force.
+  double F_drag[COUNT_DOF]; //!< Output variable. Quadratic force force.
+  double F_restoring[COUNT_DOF]; //!< Output variable. Hydrostatic restoring 
+                                 //!< force.
 
-  double P_unit_wave[COUNT_ASV_SPECTRAL_FREQUENCIES][2]; // index 0 - freq
-                                                         // index 1 - pressure
-  double P_unit_regular_wave; // Pressure for wave_type = regular_wave.
-  double P_unit_wave_freq_min;
-  double P_unit_wave_freq_max;
+  double P_unit_wave[COUNT_ASV_SPECTRAL_FREQUENCIES][2]; //!< Output variable. 
+    //!< 2D array with wave pressure amplitude. Index 0 is wave freq and index 
+    //!< 1 gives the corresponding wave pressure amplitude. 
+  double P_unit_regular_wave; //!< Output variable. Pressure amplitude when 
+                              //!< wave_type is set as regular_wave.
+  double P_unit_wave_freq_min;//!< Output variable. Minimum wave frequency 
+                              //!< considered in array P_unit_wave.
+  double P_unit_wave_freq_max;//!< Output variable. Maximum wave frequency 
+                              //!< considered in array P_unit_wave.
 };
 
 /**
@@ -88,23 +97,33 @@ struct Asv_dynamics
 struct Asv
 {
   // Input
-  struct Asv_specification spec;
-  int count_propellers; // Number of propellers attached to ASV.
-  struct Asv_propeller propellers[COUNT_PROPELLERS_MAX];
-  enum Wave_type wave_type; // type of wave used. 
-  struct Wave wave;
-  struct Regular_wave regular_wave;
+  struct Asv_specification spec; //!< Input variable. ASV specification.
+  int count_propellers; //!< Input variable. Number of propellers attached to 
+                        //!< ASV. Should not be greater than
+                        //!< COUNT_PROPELLERS_MAX defined in file constants.h.
+  struct Asv_propeller propellers[COUNT_PROPELLERS_MAX]; //!< Input variable. 
+                                                         //!< ASV propeller
+                                                         //!< instances. 
+  enum Wave_type wave_type; //!< Input variable. Type of wave used. 
+  struct Wave wave; //!< Input variable. Irregular wave instance. 
+  struct Regular_wave regular_wave; //!< Input variable. Regular wave instance. 
+                                    //!< Used only when wave_type is set as 
+                                    //!< regular wave.
 
   // Initial used for input but later contains results. 
-  struct Dimensions origin_position; // Position of the body-fixed frame in the 
-                                // global frame for the current time step.
-  struct Dimensions attitude; // The heel and trim are in body-fixed frame and the
-                            // heading is in global frame.
+  struct Dimensions origin_position; //!< Initially set as input but later 
+                                     //!< contains output. Position of the 
+                                     //!< body-fixed frame in the global frame 
+                                     //!< for the current time step.
+  struct Dimensions attitude; //!< Initially set as input but later contains 
+                              //!< output. The heel and trim are in body-fixed 
+                              //!< frame and the heading is in global frame.
   
   // Output
-  struct Asv_dynamics dynamics;
-  struct Dimensions cog_position; // Position of the centre of gravity of the ASV 
-                             // in the global frame for the current time step.
+  struct Asv_dynamics dynamics; //!< Output variable. ASV dynamics variables. 
+  struct Dimensions cog_position; //!< Output variable. Position of the centre 
+                             //!< of gravity of the ASV in the global frame for 
+                             //!< the current time step.
 };
 
 /**

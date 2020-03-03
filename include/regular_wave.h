@@ -10,19 +10,19 @@ struct Regular_wave
 {
   // Input variables
   // ---------------
-  double amplitude; // Amplitude of the wave in meter.
-  double frequency; // Frequency of the wave in Hz.
-  double phase_lag; // Phase lag of the wave in radian.
-  double direction; // Direction of propagation of the wave with respect to 
-                    // geographic north. Angle measured positive in 
-                    // clockwise direction such that east is at PI/2 radians to
-                    // north.
+  double amplitude; //!< Input variable. Amplitude of the wave in meter.
+  double frequency; //!< Input variable. Frequency of the wave in Hz.
+  double phase_lag; //!< Input variable. Phase lag of the wave in radian.
+  double direction; //!< Input variable. Direction of propagation of the wave 
+                    //!< with respect to geographic north. Angle measured
+                    //!< positive in clockwise direction such that east is at
+                    //!< PI/2 radians to !< north.
   
   // Output variables
   // ----------------
-  double time_period; // Time period of the wave in seconds.
-  double wave_length; // Wave length in meter.
-  double wave_number; // Wave number. Dimensionless.
+  double time_period; //!< Output variable. Time period of the wave in seconds.
+  double wave_length; //!< Output variable. Wave length in meter.
+  double wave_number; //!< Output variable. Wave number. Dimensionless.
 }; 
 
 /**

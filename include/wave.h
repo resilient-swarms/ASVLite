@@ -8,24 +8,26 @@ struct Wave
 {
   // Input variables
   // ---------------
-  double significant_wave_height;   // Significant wave height in meter.
-  double heading; // wave heading in radians
-  long random_number_seed; 
+  double significant_wave_height; //!< Input variable. Significant wave height 
+                                  //!< in meter.
+  double heading; //!< Input variable. Wave heading in radians.
+  long random_number_seed; //!< Input variable. Random number generator seed. 
   
   // Output variables
   // ----------------
-  // Table of regular waves in the irregular sea.
   struct Regular_wave spectrum[COUNT_WAVE_SPECTRAL_DIRECTIONS]
-                              [COUNT_WAVE_SPECTRAL_FREQUENCIES];
-  double min_spectral_frequency;  // Lower limit (0.1%) of spectral energy 
-                                  // threshold.
-  double max_spectral_frequency;  // Upper limit (99.9%) of spectral energy 
-                                  // threshold.
-  double peak_spectral_frequency; // Spectral peak frequency in Hz.
-  double min_spectral_wave_heading; // Minimum angle, in radians, in spectrum
-                                    // for wave heading.
-  double max_spectral_wave_heading; // Maximum angle, in radians, in spectrum 
-                                    // for wave heading.
+                              [COUNT_WAVE_SPECTRAL_FREQUENCIES]; //!< Output 
+                    //!< variable. Table of regular waves in the irregular sea.
+  double min_spectral_frequency;  //!<Output variable. Lower limit (0.1%) of 
+                                  //! spectral energy threshold.
+  double max_spectral_frequency;  //!< Output variable. Upper limit (99.9%) of 
+                                  //!< spectral energy threshold.
+  double peak_spectral_frequency; //!< Output variable. Spectral peak frequency 
+                                  //!< in Hz.
+  double min_spectral_wave_heading; //!< Output variable. Minimum angle, in 
+                                    //!< radians, in spectrum for wave heading.
+  double max_spectral_wave_heading; //!< Output variable. Maximum angle, in 
+                                    //!< radians, in spectrum for wave heading.
 };
 
 /**
