@@ -485,11 +485,12 @@ void write_output(char* file,
                   double simulation_time)
 {
   // output message
-  fprintf(stdout, "significant wave height = %f m.\n", wave_ht);
-  fprintf(stdout, "wave heading = %f deg.\n", wave_heading);
-  fprintf(stdout, "random number seed = %ld.\n", rand_seed);
-  fprintf(stdout, "task duration = %f seconds.\n", task_duration);
-  fprintf(stdout, "time taken for simulation = %f sec. \n\n", simulation_time);
+  //fprintf(stdout, "significant wave height = %f m.\n", wave_ht);
+  //fprintf(stdout, "wave heading = %f deg.\n", wave_heading);
+  //fprintf(stdout, "random number seed = %ld.\n", rand_seed);
+  //fprintf(stdout, "task duration = %f sec.\n", task_duration);
+  //fprintf(stdout, "time taken for simulation = %f sec. \n\n", simulation_time);
+  fprintf(stdout, "%f sec, %f sec, %fx \n", task_duration, simulation_time, task_duration/simulation_time);
   
   FILE* fp;
   if(!(fp = fopen(file, "a")))
