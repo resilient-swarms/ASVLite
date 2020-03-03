@@ -28,3 +28,6 @@ Shown below is an example for a sea state of significant wave height of 1.2m and
 ./asv_simulator input_file out_file 1.2 20.0 3
 ```
 
+## Using ASV-Swarm as a software library. 
+Refer the Doxygen generated documentation in directory `doc` for details on the 
+programming interface provided by ASV-Swarm.
