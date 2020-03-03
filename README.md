@@ -1,4 +1,4 @@
-# asv-swarm
+# ASV-Swarm
 
 ## Introduction
 A simulator for swarm of marine robots.
