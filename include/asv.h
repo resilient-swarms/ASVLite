@@ -6,12 +6,14 @@
 #include "geometry.h"
 #include "wave.h"
 
-// Enum to correctly index the motions in the matrices for asv dynamics.
-enum i_dof{surge, sway, heave, roll, pitch, yaw}; // to index the DOF
-enum i_axis{x, y, z}; // to index the axis for linear motion
-enum i_attitude{heel, trim, heading}; // to index the floating attitude of ASV
+// Index for DoF for asv dynamics.
+enum i_dof{surge, sway, heave, roll, pitch, yaw}; 
+// Index for axis for linear motion:
+enum i_axis{x, y, z};
+// Index for floating attitude of ASV:
+enum i_attitude{heel, trim, heading}; 
 
-// Enum for the wave type used for hydrodynamics
+// Enum for the wave type used for hydrodynamics:
 enum Wave_type{still_water, regular_wave, irregular_wave};
 
 /**
