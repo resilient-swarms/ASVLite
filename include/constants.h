@@ -12,8 +12,8 @@
 #define SEA_WATER_DENSITY 1025 /* Sea water density in Kg/m3 */
 #define AIR_DENSITY 1.2 /* Kg/m3 */
 
-#define COUNT_WAVE_SPECTRAL_FREQUENCIES 20
-#define COUNT_WAVE_SPECTRAL_DIRECTIONS  13 /* Ideal if this is an odd number.*/
+#define COUNT_WAVE_SPECTRAL_FREQUENCIES 15
+#define COUNT_WAVE_SPECTRAL_DIRECTIONS  5 /* Ideal if this is an odd number.*/
 
 #define COUNT_ASV_SPECTRAL_DIRECTIONS 360
 #define COUNT_ASV_SPECTRAL_FREQUENCIES 100
@@ -24,6 +24,6 @@
 #define COUNT_WAYPOINTS_MAX 20 /* Maximum number of waypoints through which the 
                                   ASV will navigate */
 
-#define OUTPUT_BUFFER_SIZE 200000 
+#define OUTPUT_BUFFER_SIZE 200000
 
 #endif // CONSTANTS_H
