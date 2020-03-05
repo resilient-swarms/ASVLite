@@ -39,5 +39,5 @@ The file `example_input.toml` shows the format of the input file.
 
 ## Using ASV-Swarm as a software library. 
 
-Refer the Doxygen generated documentation in directory `doc` for details on the 
+Refer the Doxygen generated documentation in directory `doc/html/index.html` for details on the 
 programming interface provided by ASV-Swarm.
