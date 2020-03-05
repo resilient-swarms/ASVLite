@@ -1,0 +1,67 @@
+# Comment lines, such as this line, start with a #.
+
+# Physical specification of the vehicle. 
+[spec]
+L_wl = 0.3
+B_wl = 0.3
+D = 0.3
+T = 0.1
+displacement = 0.007
+max_speed = 2.0
+
+# Center of gravity of the vehicle.
+[cog]
+x = 0.15
+y = 0.00
+z = -0.2
+
+# Radius of gyration of the vehicle.
+[radius_of_gyration]
+roll = 0.08
+pitch = 0.08
+yaw = 0.106
+
+# Set the position of propellers. 
+# Here we set 4 propellers for the vehicle.
+# Propeller - 1 
+[[propeller]]
+x = 0.065
+y = -0.085
+z = -0.0485
+# Propeller - 2
+[[propeller]]
+x = 0.235
+y = -0.085
+z = -0.0485
+# Propeller - 3
+[[propeller]]
+x = 0.235
+y = 0.085
+z = -0.0485
+Propeller - 4
+[[propeller]]
+x = 0.065
+y = 0.085
+z = -0.0485
+
+# Initial position of the vehicle.
+[vehicle_position]
+x = 100.0
+y = 100.0
+
+# Initial floating attitude of the vehicle. 
+[vehicle_attitude]
+heel = 0
+trim = 0
+heading = 0
+
+# Define the waypoints for navigation. 
+[[waypoint]]
+x = 100.0
+y = 150.0
+
+
+# Following set of inputs are optional
+# Set the time step size for simulation.
+[clock]
+time_step_size = 40
