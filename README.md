@@ -105,5 +105,5 @@ time_step_size = 40
 
 ## Using ASV-Swarm as a software library. 
 
-Refer the Doxygen generated documentation in directory `doc/html/index.html` for details on the 
-programming interface provided by ASV-Swarm.
+Refer the Doxygen generated documentation, `doc/html/index.html`, for details on 
+the programming interface provided by ASV-Swarm.
