@@ -74,7 +74,7 @@ z = -0.0485
 x = 0.235
 y = 0.085
 z = -0.0485
-Propeller - 4
+# Propeller - 4
 [[propeller]]
 x = 0.065
 y = 0.085
