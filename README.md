@@ -12,7 +12,6 @@ changes in the environment.
 
 ## Build instruction
 ``` 
-cd ~
 git clone --recurse-submodules https://github.com/resilient-swarms/asv-swarm.git
 cd asv-swarm
 mkdir build
