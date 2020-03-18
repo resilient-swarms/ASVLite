@@ -10,6 +10,8 @@ techniques. ASV-Swarm also has a low computational overhead making it ideal for
 onboard simulation for applications such as online learning for adaptation to
 changes in the environment. 
 
+If you are using this simulator for your reasearch, then please cite: [ASV-Swarm: a high-performance simulator for the dynamics of a swarm of autonomous marine vehicles in waves](https://arxiv.org/abs/2003.04599).
+
 ## Build instruction
 ``` 
 git clone --recurse-submodules https://github.com/resilient-swarms/asv-swarm.git
