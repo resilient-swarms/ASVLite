@@ -336,7 +336,7 @@ static void set_wave_force(struct Asv* asv)
       asv->dynamics.F_wave[sway]  += scale * P_diff_trans * A_profile;
       asv->dynamics.F_wave[roll] += scale * P_diff_trans * (A_waterplane/2.0) * lever_trans;
       asv->dynamics.F_wave[pitch] += scale * P_diff_long * (A_waterplane/2.0) * lever_long;
-      asv->dynamics.F_wave[yaw] += scale * P_diff_long * (A_profile/2.0) * lever_long;
+      asv->dynamics.F_wave[yaw] += scale * P_diff_long * (A_profile/2.0) * lever_long * 0.0; // <-- RESTRAIN YAW MOTION.
       
       if(asv->wave_type == regular_wave)
         break;

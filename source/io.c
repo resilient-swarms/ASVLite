@@ -2,6 +2,8 @@
 #include "toml.h"
 #include "io.h"
 
+struct Buffer buffer[OUTPUT_BUFFER_SIZE];
+
 void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
 {
   // buffer to hold raw data from input file. 
@@ -490,7 +492,7 @@ void write_output(char* file,
   //fprintf(stdout, "random number seed = %ld.\n", rand_seed);
   //fprintf(stdout, "task duration = %f sec.\n", task_duration);
   //fprintf(stdout, "time taken for simulation = %f sec. \n\n", simulation_time);
-  fprintf(stdout, "%f sec, %f sec, %fx \n", task_duration, simulation_time, task_duration/simulation_time);
+  fprintf(stdout, "%f sec, %f sec, %f x \n", task_duration, simulation_time, task_duration/simulation_time);
   
   FILE* fp;
   if(!(fp = fopen(file, "a")))

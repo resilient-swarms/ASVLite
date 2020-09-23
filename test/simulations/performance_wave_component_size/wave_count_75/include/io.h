@@ -16,7 +16,7 @@ struct Waypoints
  * A simple struct to record the simulated data for each time step of 
  * simulation.
  */
-struct
+struct Buffer
 { 
   double sig_wave_ht; // m
   double wave_heading; // deg
@@ -37,7 +37,8 @@ struct
   double surge_acceleration; // m/s2. 
   double F_surge; // N
   double F_sway; //N
-} buffer[OUTPUT_BUFFER_SIZE];
+};
+extern struct Buffer buffer[OUTPUT_BUFFER_SIZE];
 
 /**
  * Function to read the input file and set the ASV's input values. 
