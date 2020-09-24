@@ -2,6 +2,10 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0)
 
 PROJECT(visualisation)
 
+SET(CMAKE_CXX_STANDARD 14)
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_CXX_EXTENSIONS OFF)
+
 # FIND LIBRARIES
 # --------------
 # VTK 
@@ -24,31 +28,35 @@ message (STATUS "VTK_VERSION: ${VTK_VERSION}")
 # INCLUDE HEADER FILES DIRECTORIES
 # --------------------------------
 INCLUDE_DIRECTORIES(
-  ./include
+  ../include
   ../dependency/tomlc99
+  include
   )
 
 # SOURCE FILES
 # ------------
+# simulator source files
 SET( SOURCE
-  dependency/tomlc99/toml.c
-  source/io.c
-  source/regular_wave.c
-  source/wave.c
-  source/asv.c
-  source/main_visualisation.cpp
-  source/scene.cpp
-  #source/sea_surface_actor.cpp
+  ../dependency/tomlc99/toml.c
+  ../source/io.c
+  ../source/regular_wave.c
+  ../source/wave.c
+  ../source/asv.c
   )
+#visualisation source files
+SET( SOURCE
+  source/sea_surface_actor.cpp
+)
+
 
 # CREATE BINARIES
 # ---------------
-ADD_EXECUTABLE(asv_simulator ${SOURCE})
+ADD_EXECUTABLE(visualisation ${SOURCE})
 
 # LINK LIBRARIES 
 # --------------
-TARGET_LINK_LIBRARIES(asv_simulator m ${VTK_LIBRARIES})
+TARGET_LINK_LIBRARIES(visualisation m ${VTK_LIBRARIES})
 vtk_module_autoinit(
-  TARGETS asv_simulator
+  TARGETS visualisation
   MODULES ${VTK_LIBRARIES}
 )
