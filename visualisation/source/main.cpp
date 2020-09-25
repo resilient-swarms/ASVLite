@@ -52,9 +52,9 @@ extern "C" int main(int argc, char** argv)
   // Create actor for sea surface
   Visualisation::Sea_surface_actor sea_surface_actor(&asv.wave);
   // Override the default field dimension. Field length in m.
-  sea_surface_actor.set_field_length(1000.0); 
+  sea_surface_actor.set_field_length(2.0); 
   // Override the default number of control points on the sea surface. 
-  sea_surface_actor.set_sea_surface_grid_size(20);
+  sea_surface_actor.set_sea_surface_grid_size(10);
 
   // Create actor for ASV 
   //Visualisation::ASV_actor asv_actor();

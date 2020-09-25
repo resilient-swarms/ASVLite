@@ -16,6 +16,9 @@ Sea_surface_actor::Sea_surface_actor(struct Wave* wave):
   // TODO: 
   // Initialise count_rows_sea_surface_points. Should be greater than 1.
   // Initialise sea_surface_points
+  // timer_count;
+  // timer_step_size;
+  // current_time;
 
   // This filter does not need an input port
   SetNumberOfInputPorts(0);
@@ -135,7 +138,16 @@ int Sea_surface_actor::RequestData(vtkInformation* request,
 
 void Sea_surface_actor::set_sea_surface_elevations(unsigned long time)
 {
-  // TODO
+  current_time = time;
+  // Calculate elevation for each control point
+  // For each point
+  for(int i = 0; i<sea_surface_points.size(); ++i)
+  {
+    for(int j = 0; j<sea_surface_points[i].size(); ++j)
+    {
+      sea_surface_points[i][j].z = wave_get_elevation(wave, &sea_surface_points[i][j], current_time);
+    }
+  }
 }
 
 void Sea_surface_actor::set_sea_surface_points()

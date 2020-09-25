@@ -97,7 +97,8 @@ private:
   
 private:
   unsigned long timer_count;
-  unsigned int timer_step_size;
+  unsigned long timer_step_size;
+  unsigned long current_time;
   vtkSmartPointer<vtkPoints> sea_surface_mesh_points {nullptr};
   vtkSmartPointer<vtkCellArray> sea_surface_mesh_cells {nullptr}; 
   vtkSmartPointer<vtkPolyDataMapper> sea_surface_mapper {nullptr};
