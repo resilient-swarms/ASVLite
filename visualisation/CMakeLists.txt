@@ -46,6 +46,7 @@ SET( SOURCE
 #visualisation source files
 SET( SOURCE
   source/sea_surface_actor.cpp
+  source/scene.cpp
 )
 
 
