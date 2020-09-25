@@ -2,10 +2,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0)
 
 PROJECT(visualisation)
 
-SET(CMAKE_CXX_STANDARD 14)
-SET(CMAKE_CXX_STANDARD_REQUIRED ON)
-SET(CMAKE_CXX_EXTENSIONS OFF)
-
 # FIND LIBRARIES
 # --------------
 # VTK 
@@ -45,8 +41,10 @@ SET( SOURCE
   )
 #visualisation source files
 SET( SOURCE
+  ${SOURCE}
   source/sea_surface_actor.cpp
   source/scene.cpp
+  source/main.cpp
 )
 
 

@@ -1,4 +1,5 @@
 #include "sea_surface_actor.h"
+#include "exception.h"
 #include <iostream>
 #include <iomanip>
 
@@ -9,11 +10,12 @@ Sea_surface_actor::Sea_surface_actor(struct Wave* wave):
   vtkPolyDataAlgorithm{},
   wave{wave},
   timer_count{0u},
-  timer_step_size{0u}
+  timer_step_size{0u},
+  field_length {100.0}
 {
   // TODO: 
-  // Initialise count_rows_sea_surface_points
-  // Initialise sea_surface_grid_size
+  // Initialise count_rows_sea_surface_points. Should be greater than 1.
+  // Initialise sea_surface_points
 
   // This filter does not need an input port
   SetNumberOfInputPorts(0);
@@ -136,3 +138,46 @@ void Sea_surface_actor::set_sea_surface_elevations(unsigned long time)
   // TODO
 }
 
+void Sea_surface_actor::set_sea_surface_points()
+{
+  // Clear the control points if not empty
+  if(!sea_surface_points.empty())
+  {
+    sea_surface_points.clear();
+  }
+  double patch_length = field_length / (sea_surface_grid_size - 1);
+  // Create a 2D array of control points.
+  for(unsigned int i = 0; i < sea_surface_grid_size; ++i)
+  {
+    std::vector<Dimensions> points_row;
+    for(unsigned int j = 0; j < sea_surface_grid_size; ++j)
+    {
+      double x = patch_length * j; // m
+      double y = patch_length * i; // m
+      double z = 0.0; // m
+      Dimensions point{x,y,z};
+      points_row.push_back(point);
+    }
+    sea_surface_points.push_back(points_row);
+  }
+}
+
+void Sea_surface_actor::set_field_length(double field_length)
+{
+  if( field_length <= 0.0)
+  {
+    throw asv_swarm::Exception::ValueError("Field length should be a positive value.");
+  }
+  this->field_length = field_length;
+  set_sea_surface_points();
+}
+
+void Sea_surface_actor::set_sea_surface_grid_size(unsigned int grid_size)
+{
+  if(grid_size <= 1)
+  {
+    throw asv_swarm::Exception::ValueError("Sea surface grid size should be > 1");
+  }
+  sea_surface_grid_size = grid_size;
+  set_sea_surface_points();
+}

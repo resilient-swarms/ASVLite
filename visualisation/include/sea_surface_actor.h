@@ -1,7 +1,9 @@
 #ifndef SEA_SURFACE_ACTOR_H
 #define SEA_SURFACE_ACTOR_H
 
+extern "C" {
 #include "wave.h"
+}
 #include <vector>
 #include <vtkSmartPointer.h>
 #include <vtkPoints.h>
@@ -35,16 +37,36 @@ public:
   Sea_surface_actor(struct Wave* wave);
 
   /**
-   * Increment time count.
-   */
-  void increment_time(){++timer_count;}
-
-  /**
    * Set the step size for time increment.
    */
   void set_timer_step_size(unsigned int timer_step_size){
     this->timer_step_size = timer_step_size;
   }
+
+  /**
+   * Override the default edge length of the square sea surface. Also resets the 
+   * control points on the surface.
+   * @param field_length is the edge length in meter. Value of length should be 
+   * a non-zero positive value.
+   */
+  void set_field_length(double field_length);
+
+  /**
+   * Method to set he number of points along both x and y directions
+   * of the square field. The default value for the number of points is
+   * provided by the constructor asv_swarm::Visualisation::Sea_surface_actor. 
+   * A higher number for the count will result in a more dense mesh representing the sea 
+   * surface. After updating the count the method resets all the points 
+   * as per the new count value.
+   * @param grid_size the number of points along one edge of the sea
+   * surface. The value should be greater than 1.
+   */
+  void set_sea_surface_grid_size(unsigned int grid_size);
+
+  /**
+   * Increment time count.
+   */
+  void increment_time(){++timer_count;}
 
   /**
    * Returns pointer to vtkActor object for sea surface.
@@ -67,6 +89,11 @@ private:
    * @param time in milliseconds from the start of simulation.
    */
   void set_sea_surface_elevations(unsigned long time);
+
+  /**
+   * Method to set uniformly spaced points for the sea surface.
+   */
+  void set_sea_surface_points();
   
 private:
   unsigned long timer_count;
@@ -77,8 +104,9 @@ private:
   vtkSmartPointer<vtkActor> sea_surface_actor {nullptr};
   
   struct Wave* wave;
-  std::vector<std::vector<Dimensions>> sea_surface_points;
-  unsigned int sea_surface_grid_size;
+  std::vector<std::vector<Dimensions>> sea_surface_points; // A grid of NxN points to represent the square sea surface. 
+  unsigned int sea_surface_grid_size; // sea_surface_grid_size = N. Value must be greater than 1.
+  double field_length; // Length in meter of one edge of the square sea surface.
 }; // class Sea_surface_actor
 
 } // namespace Visualisation

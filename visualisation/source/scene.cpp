@@ -9,22 +9,21 @@ using namespace asv_swarm::Visualisation;
 Scene::Scene(): vtkCommand{}
 {
   // Default frame rate = 25 fps
-  unsigned int frame_rate = 25; /* Required fps for animation */
+  unsigned int frame_rate = 25; // Required fps for animation 
   timer_step_size = static_cast<int>(1000/frame_rate); // units in milliseconds. 
 
-  /* Actors initialised to nullptr. Actors must be initialised by calling the
-   * corresponding initialise_actor method. 
-   */
+  // Actors initialised to nullptr. Actors must be initialised by calling the
+  // corresponding initialise_actor method. 
   sea_surface_actor = nullptr;
 
-  /* Create the renderer, window and interactor */
+  // Create the renderer, window and interactor 
   renderer = vtkSmartPointer<vtkRenderer>::New();
   window = vtkSmartPointer<vtkRenderWindow>::New();
   window->AddRenderer(renderer);
   interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
   interactor->SetRenderWindow(window);
 
-  /* Create an actor for displaying the coordinate axes */
+  // Create an actor for displaying the coordinate axes 
   axes_actor = vtkSmartPointer<vtkAxesActor>::New();
   axes_widget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
   double rgba[4]{0.0, 0.0, 0.0, 0.0};
@@ -65,19 +64,19 @@ void Scene::add_actor(Sea_surface_actor* sea_surface_actor)
 
 void Scene::start()
 {
-  /* Initialize must be called prior to creating timer events */
+  // Initialize must be called prior to creating timer events 
   interactor->Initialize();
-  interactor->CreateRepeatingTimer(timer_step_size);/* Repeating timer events */
+  interactor->CreateRepeatingTimer(timer_step_size);// Repeating timer events 
   interactor->AddObserver(vtkCommand::TimerEvent, this);
   
-  /* Add actors */
+  // Add actors 
   renderer->AddActor(sea_surface_actor->get_actor());
 
-  /* Inform all actors of the timer step size */
+  // Inform all actors of the timer step size 
   sea_surface_actor->set_timer_step_size(timer_step_size);
   //TODO: set_timer_step_size for asv actor.
 
-  /* Render and interact */
+  // Render and interact 
   renderer->ResetCamera();
   window->SetSize(window->GetScreenSize());
   window->Render();
