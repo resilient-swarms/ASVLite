@@ -8,9 +8,7 @@ using namespace asv_swarm::Visualisation;
 
 Scene::Scene(): vtkCommand{}
 {
-  // Default frame rate = 25 fps
-  unsigned int frame_rate = 25; // Required fps for animation 
-  timer_step_size = static_cast<int>(1.0/frame_rate); // seconds. 
+  timer_step_size = 0.04; // seconds. Default timer step size corresponding to frame rate of 25fps. 
 
   // Actors initialised to nullptr. Actors must be initialised by calling the
   // corresponding initialise_actor method. 
