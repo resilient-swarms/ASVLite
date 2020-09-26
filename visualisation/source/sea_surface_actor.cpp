@@ -142,11 +142,11 @@ void Sea_surface_actor::set_sea_surface_elevations(double time)
   this->current_time = time;
   // Calculate elevation for each control point
   // For each point
-  for(int i = 0; i<sea_surface_points.size(); ++i)
+  for(auto& points_row : sea_surface_points)
   {
-    for(int j = 0; j<sea_surface_points[i].size(); ++j)
+    for(auto& point : points_row)
     {
-      sea_surface_points[i][j].z = wave_get_elevation(wave, &sea_surface_points[i][j], current_time);
+      point.z = wave_get_elevation(wave, &point, current_time);
     }
   }
 }
