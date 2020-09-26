@@ -14,7 +14,7 @@ extern "C" {
 
 using namespace asv_swarm;
 
-extern "C" int main(int argc, char** argv)
+int main(int argc, char** argv)
 {
   if(argc != 6)
   {
@@ -52,9 +52,9 @@ extern "C" int main(int argc, char** argv)
   // Create actor for sea surface
   Visualisation::Sea_surface_actor sea_surface_actor(&asv.wave);
   // Override the default field dimension. Field length in m.
-  sea_surface_actor.set_field_length(2.0); 
+  sea_surface_actor.set_field_length(20.0); 
   // Override the default number of control points on the sea surface. 
-  sea_surface_actor.set_sea_surface_grid_size(10);
+  sea_surface_actor.set_sea_surface_grid_size(50);
 
   // Create actor for ASV 
   //Visualisation::ASV_actor asv_actor();
@@ -64,10 +64,7 @@ extern "C" int main(int argc, char** argv)
   //scene.add_actor(&asv_actor);
 
   // Start visualization 
-  // Override default frame rate for animation either by overriding frame rate
-  // value or by specifying the timer step size
-  //scene.set_frame_rate(20);
-  //scene.set_timer_step_size(100);
+  scene.set_timer_step_size(asv.dynamics.time_step_size);
   scene.start();
 
   return EXIT_SUCCESS;

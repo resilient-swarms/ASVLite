@@ -39,7 +39,7 @@ public:
   /**
    * Set the step size for time increment.
    */
-  void set_timer_step_size(unsigned int timer_step_size){
+  void set_timer_step_size(double timer_step_size){
     this->timer_step_size = timer_step_size;
   }
 
@@ -86,9 +86,9 @@ protected:
 private:
   /** 
    * Method to set the compute the sea surface elevations at the grid points.
-   * @param time in milliseconds from the start of simulation.
+   * @param time in seconds from the start of simulation.
    */
-  void set_sea_surface_elevations(unsigned long time);
+  void set_sea_surface_elevations(double time);
 
   /**
    * Method to set uniformly spaced points for the sea surface.
@@ -97,8 +97,8 @@ private:
   
 private:
   unsigned long timer_count;
-  unsigned long timer_step_size;
-  unsigned long current_time;
+  double timer_step_size; // sec
+  double current_time; // sec
   vtkSmartPointer<vtkPoints> sea_surface_mesh_points {nullptr};
   vtkSmartPointer<vtkCellArray> sea_surface_mesh_cells {nullptr}; 
   vtkSmartPointer<vtkPolyDataMapper> sea_surface_mapper {nullptr};

@@ -10,7 +10,7 @@ Scene::Scene(): vtkCommand{}
 {
   // Default frame rate = 25 fps
   unsigned int frame_rate = 25; // Required fps for animation 
-  timer_step_size = static_cast<int>(1000/frame_rate); // units in milliseconds. 
+  timer_step_size = static_cast<int>(1.0/frame_rate); // seconds. 
 
   // Actors initialised to nullptr. Actors must be initialised by calling the
   // corresponding initialise_actor method. 
@@ -38,15 +38,12 @@ Scene::Scene(): vtkCommand{}
   axes_widget->InteractiveOff();
 }
 
-void Scene::set_frame_rate(unsigned int fps)
+void Scene::set_timer_step_size(double time_step_size)
 {
-  frame_rate = fps;
-  timer_step_size = static_cast<int>(1000/frame_rate); // units in milliseconds. 
-}
-
-void Scene::set_timer_step_size(unsigned int time_step)
-{
-  timer_step_size = time_step; 
+  timer_step_size = time_step_size; 
+  // set timer step size in all actors
+  sea_surface_actor->set_timer_step_size(timer_step_size);
+  // TODO: set time for asv actor
 }
 
 
@@ -86,6 +83,7 @@ void Scene::start()
 void Scene::increment_time()
 {
   sea_surface_actor->increment_time();
+  //TODO: increment time for asv actor.
 }
 
 void Scene::Execute(vtkObject *caller, 

@@ -9,16 +9,17 @@ using namespace Visualisation;
 Sea_surface_actor::Sea_surface_actor(struct Wave* wave):
   vtkPolyDataAlgorithm{},
   wave{wave},
-  timer_count{0u},
-  timer_step_size{0u},
-  field_length {100.0}
+  timer_count{0},
+  timer_step_size{0.0},
+  field_length {100.0},
+  sea_surface_grid_size{50},
+  current_time{0}
 {
-  // TODO: 
-  // Initialise count_rows_sea_surface_points. Should be greater than 1.
   // Initialise sea_surface_points
-  // timer_count;
-  // timer_step_size;
-  // current_time;
+  set_sea_surface_points();
+
+  // Set the elivations at time step 0
+  set_sea_surface_elevations(0.0);
 
   // This filter does not need an input port
   SetNumberOfInputPorts(0);
@@ -45,7 +46,7 @@ int Sea_surface_actor::RequestData(vtkInformation* request,
   // multiply when calculating time. Maybe a good way would be the
   // callback::Execute() set the time in sea_surface_viz and then call
   // requestdata.
-  auto time = timer_count * timer_step_size; // milli-seconds
+  double time = static_cast<double>(timer_count) * timer_step_size; // seconds
 
   // Set the sea surface profile for the current time step
   set_sea_surface_elevations(time);
@@ -136,9 +137,9 @@ int Sea_surface_actor::RequestData(vtkInformation* request,
   return 1;
 }
 
-void Sea_surface_actor::set_sea_surface_elevations(unsigned long time)
+void Sea_surface_actor::set_sea_surface_elevations(double time)
 {
-  current_time = time;
+  this->current_time = time;
   // Calculate elevation for each control point
   // For each point
   for(int i = 0; i<sea_surface_points.size(); ++i)
