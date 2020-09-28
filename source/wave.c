@@ -32,14 +32,8 @@ int wave_init(struct Wave* wave,
   }
   
   // wave directions should be in the range (0, 2PI)
-  if(wave->min_spectral_wave_heading < 0.0)
-  {
-    wave->min_spectral_wave_heading += 2.0*PI; 
-  }
-  if(wave->max_spectral_wave_heading >= 2.0*PI)
-  {
-    wave->max_spectral_wave_heading -= 2.0*PI;
-  }
+  wave->min_spectral_wave_heading = fmod(wave->min_spectral_wave_heading,  2.0*PI); 
+  wave->max_spectral_wave_heading = fmod(wave->max_spectral_wave_heading , 2.0*PI);
     
   // Bretschneider spectrum
   // Ref: Proceedings of the 23rd ITTC - Vol II, Table A.2, A.3.
@@ -95,14 +89,7 @@ int wave_init(struct Wave* wave,
       double wave_heading = (COUNT_WAVE_SPECTRAL_DIRECTIONS > 1) ? 
                             mu + wave->heading : wave->heading;
       // wave directions should be in the range (0, 2PI)
-      if(wave_heading < 0.0)
-      {
-        wave_heading += 2.0*PI; 
-      }
-      if(wave_heading >= 2.0*PI)
-      {
-        wave_heading -= 2.0*PI;
-      }
+      wave_heading = fmod(wave_heading, 2.0 * PI);
       regular_wave_init(&(wave->spectrum[i][j]), 
                         amplitude, 
                         f, 
