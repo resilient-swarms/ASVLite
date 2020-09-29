@@ -27,20 +27,20 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
 	  exit(1);
   }
 
-  // Locate table [spec]
-  toml_table_t* table = toml_table_in(input, "spec");
+  // Locate table [asv]
+  toml_table_t* table = toml_table_in(input, "asv");
   if(table == 0)
   {
-    fprintf(stderr, "ERROR: missing [spec].\n");
+    fprintf(stderr, "ERROR: missing [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
-  // Extract values in table [spec]
+  // Extract values in table [asv]
   // L_wl
   raw = toml_raw_in(table, "L_wl");
   if(raw == 0)
   {
-    fprintf(stderr, "ERROR: missing 'L_wl' in [spec].\n");
+    fprintf(stderr, "ERROR: missing 'L_wl' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -54,7 +54,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   raw = toml_raw_in(table, "B_wl");
   if(raw == 0)
   {
-    fprintf(stderr, "ERROR: missing 'B_wl' in [spec].\n");
+    fprintf(stderr, "ERROR: missing 'B_wl' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -68,7 +68,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   raw = toml_raw_in(table, "D");
   if(raw == 0)
   {
-    fprintf(stderr, "ERROR: missing 'D' in [spec].\n");
+    fprintf(stderr, "ERROR: missing 'D' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -82,7 +82,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   raw = toml_raw_in(table, "T");
   if(raw == 0)
   {
-    fprintf(stderr, "ERROR: missing 'T' in [spec].\n");
+    fprintf(stderr, "ERROR: missing 'T' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -96,7 +96,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   raw = toml_raw_in(table, "displacement");
   if(raw == 0)
   {
-    fprintf(stderr, "ERROR: missing 'displacement' in [spec].\n");
+    fprintf(stderr, "ERROR: missing 'displacement' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -110,7 +110,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   raw = toml_raw_in(table, "max_speed");
   if(raw == 0)
   {
-    fprintf(stderr, "ERROR: missing 'max_speed' in [spec].\n");
+    fprintf(stderr, "ERROR: missing 'max_speed' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -121,72 +121,70 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
 	  exit(1);
   }
 
-  // Locate table [cog]
-  table = toml_table_in(input, "cog");
-  if(table == 0)
+  // cog
+  toml_table_t* array = toml_array_in(table, "cog");
+  if(array == 0)
   {
-    fprintf(stderr, "ERROR: missing [cog].\n");
+    fprintf(stderr, "ERROR: missing 'cog' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
-  // Extract values in table [cog]
-  // x
-  raw = toml_raw_in(table, "x");
+  // cog.x
+  raw = toml_raw_at(array, 0);
   if(raw == 0)
   {
-    fprintf(stderr, "ERROR: missing 'x' in [cog].\n");
+    fprintf(stderr, "ERROR: missing x coordinate for 'cog' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
   if(toml_rtod(raw, &(asv->spec.cog.x)))
   {
-    fprintf(stderr, "ERROR: bad value in 'cog.x'\n");
+    fprintf(stderr, "ERROR: bad value in 'spec.cog.x'\n");
 	  toml_free(input);
 	  exit(1);
   }
-  // y
-  raw = toml_raw_in(table, "y");
+  // cog.y
+  raw = toml_raw_at(array, 1);
   if(raw == 0)
   {
-    fprintf(stderr, "ERROR: missing 'y' in [cog].\n");
+    fprintf(stderr, "ERROR: missing y coordinate for 'cog' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
   if(toml_rtod(raw, &(asv->spec.cog.y)))
   {
-    fprintf(stderr, "ERROR: bad value in 'cog.y'\n");
+    fprintf(stderr, "ERROR: bad value in 'spec.cog.y'\n");
 	  toml_free(input);
 	  exit(1);
   }
-  // z
-  raw = toml_raw_in(table, "z");
+  // cog.z
+  raw = toml_raw_at(array, 2);
   if(raw == 0)
   {
-    fprintf(stderr, "ERROR: missing 'z' in [cog].\n");
+    fprintf(stderr, "ERROR: missing z coordinate for 'cog' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
   if(toml_rtod(raw, &(asv->spec.cog.z)))
   {
-    fprintf(stderr, "ERROR: bad value in 'cog.z'\n");
+    fprintf(stderr, "ERROR: bad value in 'spec.cog.z'\n");
 	  toml_free(input);
 	  exit(1);
   }
 
-  // Locate table [radius_of_gyration]
-  table = toml_table_in(input, "radius_of_gyration");
-  if(table == 0)
+  // radius_of_gyration
+  array = toml_array_in(table, "radius_of_gyration");
+  if(array == 0)
   {
-    fprintf(stderr, "ERROR: missing [radius_of_gyration].\n");
+    fprintf(stderr, "ERROR: missing 'radius_of_gyration' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
-  // Extract values in table [radius_of_gyration]
-  // roll
-  raw = toml_raw_in(table, "roll");
+  // radius_of_gyration.x
+  raw = toml_raw_at(array, 0);
   if(raw == 0)
   {
-    fprintf(stderr, "ERROR: missing 'roll' in [radius_of_gyration].\n");
+    fprintf(stderr, "ERROR: missing 'radius_of_gyration.roll' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -196,11 +194,11 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
 	  toml_free(input);
 	  exit(1);
   }
-  // pitch
-  raw = toml_raw_in(table, "pitch");
+  // radius_of_gyration.pitch
+  raw = toml_raw_at(array, 1);
   if(raw == 0)
   {
-    fprintf(stderr, "ERROR: missing 'pitch' in [radius_of_gyration].\n");
+    fprintf(stderr, "ERROR: missing 'radius_of_gyration.pitch' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -210,11 +208,11 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
 	  toml_free(input);
 	  exit(1);
   }
-  // yaw
-  raw = toml_raw_in(table, "yaw");
+  // radius_of_gyration.yaw
+  raw = toml_raw_at(array, 2);
   if(raw == 0)
   {
-    fprintf(stderr, "ERROR: missing 'yaw' in [radius_of_gyration].\n");
+    fprintf(stderr, "ERROR: missing 'radius_of_gyration.yaw' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -225,19 +223,19 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
 	  exit(1);
   }
 
-  // Locate array of tables [propeller]
-  toml_array_t* tables = toml_array_in(input, "propeller");
-  if(tables == 0)
+  // thrusters
+  toml_table_t* arrays = toml_array_in(table, "thrusters");
+  if(array == 0)
   {
-    fprintf(stderr, "ERROR: missing [[propeller]].\n");
+    fprintf(stderr, "ERROR: missing 'thrusters' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
-  // get number of propellers
-  asv->count_propellers = toml_array_nelem(tables);
+  // get number of thrusters
+  asv->count_propellers = toml_array_nelem(arrays);
   if(asv->count_propellers > COUNT_PROPELLERS_MAX)
   {
-    fprintf(stderr,"ERROR: number of propellers (%d) exceed max limit (%i)'\n", 
+    fprintf(stderr,"ERROR: number of thrusters (%d) exceed max limit (%i)'\n", 
             asv->count_propellers, COUNT_PROPELLERS_MAX);
 	  toml_free(input);
 	  exit(1);
@@ -245,111 +243,109 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   // Set propeller data
   for(int i = 0; i < asv->count_propellers; ++i)
   {
-    table = toml_table_at(tables, i);
-    // Extract values in table [[propeller]]
+    array = toml_array_at(arrays, i);
     // x
-    raw = toml_raw_in(table, "x");
+    raw = toml_raw_at(array, 0);
     if(raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'x' in [propeller][%d].\n", i);
+      fprintf(stderr, "ERROR: missing 'x' in thrusters[%d].\n", i);
 	    toml_free(input);
 	    exit(1);
     }
     if(toml_rtod(raw, &(asv->propellers[i].position.x)))
     {
-      fprintf(stderr, "ERROR: bad value in 'propeller.x'\n");
+      fprintf(stderr, "ERROR: bad value in 'thrustes[%d].x'\n", i);
 	    toml_free(input);
 	    exit(1);
     }
     // y
-    raw = toml_raw_in(table, "y");
+    raw = toml_raw_at(array, 1);
     if(raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'y' in [propeller][%d].\n", i);
+      fprintf(stderr, "ERROR: missing 'y' in thrusters[%d].\n", i);
 	    toml_free(input);
 	    exit(1);
     }
     if(toml_rtod(raw, &(asv->propellers[i].position.y)))
     {
-      fprintf(stderr, "ERROR: bad value in 'propeller.y'\n");
+      fprintf(stderr, "ERROR: bad value in 'thrusters[%d].y'\n", i);
 	    toml_free(input);
 	    exit(1);
     }
     // z
-    raw = toml_raw_in(table, "z");
+    raw = toml_raw_at(array, 2);
     if(raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'z' in [propeller][%d].\n", i);
+      fprintf(stderr, "ERROR: missing 'z' in thrusters[%d].\n", i);
 	    toml_free(input);
 	    exit(1);
     }
     if(toml_rtod(raw, &(asv->propellers[i].position.z)))
     {
-      fprintf(stderr, "ERROR: bad value in 'propeller.z'\n");
+      fprintf(stderr, "ERROR: bad value in 'thrusters[%d].z'\n", i);
 	    toml_free(input);
 	    exit(1);
     }
   }
 
-  // Locate table [vehicle_position]
-  table = toml_table_in(input, "vehicle_position");
-  if(table == 0)
+  // asv_position
+  array = toml_array_in(table, "asv_position");
+  if(array == 0)
   {
-    fprintf(stderr, "ERROR: missing [vehicle_position].\n");
+    fprintf(stderr, "ERROR: missing 'asv_position' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
-  // Extract values in table [vehicle_position]
-  // x
-  raw = toml_raw_in(table, "x");
+  // asv_position.x
+  raw = toml_raw_at(array, 0);
   if(raw == 0)
   {
-    fprintf(stderr, "ERROR: missing 'x' in [vehicle_position].\n");
+    fprintf(stderr, "ERROR: missing x coordinate for 'asv_position' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
   if(toml_rtod(raw, &(asv->origin_position.x)))
   {
-    fprintf(stderr, "ERROR: bad value in 'vehicle_position.x'\n");
+    fprintf(stderr, "ERROR: bad value in 'asv_position.x'\n");
 	  toml_free(input);
 	  exit(1);
   }
-  // y
-  raw = toml_raw_in(table, "y");
+  // asv_position.y
+  raw = toml_raw_at(array, 1);
   if(raw == 0)
   {
-    fprintf(stderr, "ERROR: missing 'y' in [vehicle_position].\n");
+    fprintf(stderr, "ERROR: missing y coordinate for 'asv_position' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
   if(toml_rtod(raw, &(asv->origin_position.y)))
   {
-    fprintf(stderr, "ERROR: bad value in 'vehicle_position.y'\n");
+    fprintf(stderr, "ERROR: bad value in 'asv_position.y'\n");
 	  toml_free(input);
 	  exit(1);
   }
 
-  // Locate table [vehicle_attitude]
-  table = toml_table_in(input, "vehicle_attitude");
-  if(table == 0)
+    // asv_attitude
+  array = toml_array_in(table, "asv_attitude");
+  if(array == 0)
   {
-    fprintf(stderr, "ERROR: missing [vehicle_attitude].\n");
+    fprintf(stderr, "ERROR: missing 'asv_attitude' in [asv].\n");
 	  toml_free(input);
 	  exit(1);
   }
   // Extract values in table [vehicle_attitude]
   // heel
   double heel = 0.0;
-  raw = toml_raw_in(table, "heel");
+  raw = toml_raw_at(array, 0);
   if(raw == 0)
   {
-    fprintf(stderr, "ERROR: missing 'heel' in [vehicle_attitude].\n");
+    fprintf(stderr, "ERROR: missing heel angle in [asv_attitude].\n");
 	  toml_free(input);
 	  exit(1);
   }
   if(toml_rtod(raw, &(heel)))
   {
-    fprintf(stderr, "ERROR: bad value in 'vehicle_attitude.heel'\n");
+    fprintf(stderr, "ERROR: bad value in 'asv_attitude.heel'\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -360,16 +356,16 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   }
   // trim
   double trim = 0.0;
-  raw = toml_raw_in(table, "trim");
+  raw = toml_raw_at(array, 1);
   if(raw == 0)
   {
-    fprintf(stderr, "ERROR: missing 'trim' in [vehicle_attitude].\n");
+    fprintf(stderr, "ERROR: missing trim angle in [asv_attitude].\n");
 	  toml_free(input);
 	  exit(1);
   }
   if(toml_rtod(raw, &(trim)))
   {
-    fprintf(stderr, "ERROR: bad value in 'vehicle_attitude.trim'\n");
+    fprintf(stderr, "ERROR: bad value in 'asv_attitude.trim'\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -380,16 +376,16 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   }
   // heading
   double heading = 0.0;
-  raw = toml_raw_in(table, "heading");
+  raw = toml_raw_at(array, 2);
   if(raw == 0)
   {
-    fprintf(stderr, "ERROR: missing 'heading' in [vehicle_attitude].\n");
+    fprintf(stderr, "ERROR: missing heading angle in [asv_attitude].\n");
 	  toml_free(input);
 	  exit(1);
   }
   if(toml_rtod(raw, &(heading)))
   {
-    fprintf(stderr, "ERROR: bad value in 'vehicle_attitude.heading'\n");
+    fprintf(stderr, "ERROR: bad value in 'asv_attitude.heading'\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -398,17 +394,17 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
     // convert to radians and set value
     asv->attitude.z = heading * PI/180.0;
   }
-  
-  // Locate array of tables [waypoint]
-  tables = toml_array_in(input, "waypoint");
-  if(tables == 0)
+
+  // waypoints
+  arrays = toml_array_in(table, "waypoints");
+  if(arrays == 0)
   {
-    fprintf(stderr, "ERROR: missing [[waypoint]].\n");
+    fprintf(stderr, "ERROR: missing waypoints.\n");
 	  toml_free(input);
 	  exit(1);
   }
   // get number of waypoints
-  waypoints->count = toml_array_nelem(tables);
+  waypoints->count = toml_array_nelem(arrays);
   if(waypoints->count > COUNT_WAYPOINTS_MAX)
   {
     fprintf(stderr,"ERROR: number of waypoints (%d) exceed max limit (%i)'\n", 
@@ -419,39 +415,36 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   // Set waypoint data
   for(int i = 0; i < waypoints->count; ++i)
   {
-    table = toml_table_at(tables, i);
-    // Extract values in table [[waypoint]]
+    array = toml_array_at(arrays, i);
     // x
-    raw = toml_raw_in(table, "x");
+    raw = toml_raw_at(array, 0);
     if(raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'x' in [waypoint][%d].\n", i);
+      fprintf(stderr, "ERROR: missing 'x' in waypoints[%d].\n", i);
 	    toml_free(input);
 	    exit(1);
     }
     if(toml_rtod(raw, &(waypoints->points[i].x)))
     {
-      fprintf(stderr, "ERROR: bad value in 'waypoint.x'\n");
+      fprintf(stderr, "ERROR: bad value in waypoints[%d].x'\n", i);
 	    toml_free(input);
 	    exit(1);
     }
     // y
-    raw = toml_raw_in(table, "y");
+    raw = toml_raw_at(array, 1);
     if(raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'y' in [waypoint][%d].\n", i);
+      fprintf(stderr, "ERROR: missing 'y' in waypoints[%d].\n", i);
 	    toml_free(input);
 	    exit(1);
     }
     if(toml_rtod(raw, &(waypoints->points[i].y)))
     {
-      fprintf(stderr, "ERROR: bad value in 'waypoint.y'\n");
+      fprintf(stderr, "ERROR: bad value in waypoints[%d].y'\n", i);
 	    toml_free(input);
 	    exit(1);
     }
   }
-
-  // **** Matrix *****
 
   // Locate table [clock]
   double time_step_size = 0.0;
