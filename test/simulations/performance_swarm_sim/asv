@@ -1,78 +1,19 @@
-[spec]
-L_wl = 0.3
-B_wl = 0.3
-D = 0.3
-T = 0.1
-displacement = 0.007
-max_speed = 2.0
-
-[cog]
-x = 0.15
-y = 0.00
-z = -0.2
-
-[radius_of_gyration]
-roll = 0.08
-pitch = 0.08
-yaw = 0.106
-
-[[propeller]]
-x = 0.065
-y = -0.085
-z = -0.0485
-
-[[propeller]]
-x = 0.235
-y = -0.085
-z = -0.0485
-
-[[propeller]]
-x = 0.235
-y = 0.085
-z = -0.0485
-
-[[propeller]]
-x = 0.065
-y = 0.085
-z = -0.0485
-
-[vehicle_position]
-x = 100.0
-y = 100.0
-
-[vehicle_attitude]
-heel = 0
-trim = 0
-heading = 0
-
-[[waypoint]]
-x = 100.0
-y = 150.0
-
-# Following set of inputs are optional
-# ------------------------------------
-[matrix]
-mass = [
-	[0, 0, 0, 0, 0, 0,], 
-	[0, 0, 0, 0, 0, 0,], 
-	[0, 0, 0, 0, 0, 0,], 
-	[0, 0, 0, 0, 0, 0,], 
-	[0, 0, 0, 0, 0, 0,], 
-	[0, 0, 0, 0, 0, 0,]]
-damping = [
-	[0, 0, 0, 0, 0, 0,], 
-	[0, 0, 0, 0, 0, 0,], 
-	[0, 0, 0, 0, 0, 0,], 
-	[0, 0, 0, 0, 0, 0,], 
-	[0, 0, 0, 0, 0, 0,], 
-	[0, 0, 0, 0, 0, 0,]]
-stiffness = [
-	[0, 0, 0, 0, 0, 0,], 
-	[0, 0, 0, 0, 0, 0,], 
-	[0, 0, 0, 0, 0, 0,], 
-	[0, 0, 0, 0, 0, 0,], 
-	[0, 0, 0, 0, 0, 0,], 
-	[0, 0, 0, 0, 0, 0,]]
+[asv]
+L_wl = 0.3 # m
+B_wl = 0.3 # m
+D = 0.3  # m
+T = 0.1 # m
+displacement = 0.007 # m3
+max_speed = 2.0 # m/s
+cog = [0.15, 0.0, -0.2] # [x(m), y(m), z(m)]
+radius_of_gyration = [0.08, 0.08, 0.106] # [r_roll(m), r_pitch(m), r_yaw(m)]
+thrusters = [[0.065, -0.085, -0.0485], 
+			 [0.235, -0.085, -0.0485], 
+			 [0.235, 0.085, -0.0485], 
+			 [0.065, 0.085, -0.0485]] # [[x(m), y(m), z(m)]]
+asv_position = [100.0, 100.0] # [X(m), Y(m)]
+asv_attitude = [0.0, 0.0, 0.0] #[heel(deg), trim(deg), heading(deg)]
+waypoints = [[100.0, 150.0]] # [[X(m), Y(m)]]
 
 [clock]
-time_step_size = 40
+time_step_size = 40 # milli-sec

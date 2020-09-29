@@ -46,7 +46,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   }
   if(toml_rtod(raw, &(asv->spec.L_wl)))
   {
-    fprintf(stderr, "ERROR: bad value in 'spec.L_wl'\n");
+    fprintf(stderr, "ERROR: bad value in 'asv.L_wl'\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -60,7 +60,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   }
   if(toml_rtod(raw, &(asv->spec.B_wl)))
   {
-    fprintf(stderr, "ERROR: bad value in 'spec.B_wl'\n");
+    fprintf(stderr, "ERROR: bad value in 'asv.B_wl'\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -74,7 +74,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   }
   if(toml_rtod(raw, &(asv->spec.D)))
   {
-    fprintf(stderr, "ERROR: bad value in 'spec.D'\n");
+    fprintf(stderr, "ERROR: bad value in 'asv.D'\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -88,7 +88,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   }
   if(toml_rtod(raw, &(asv->spec.T)))
   {
-    fprintf(stderr, "ERROR: bad value in 'spec.T'\n");
+    fprintf(stderr, "ERROR: bad value in 'asv.T'\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -102,7 +102,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   }
   if(toml_rtod(raw, &(asv->spec.disp)))
   {
-    fprintf(stderr, "ERROR: bad value in 'spec.displacement'\n");
+    fprintf(stderr, "ERROR: bad value in 'asv.displacement'\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -116,7 +116,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   }
   if(toml_rtod(raw, &(asv->spec.max_speed)))
   {
-    fprintf(stderr, "ERROR: bad value in 'spec.max_speed'\n");
+    fprintf(stderr, "ERROR: bad value in 'asv.max_speed'\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -139,7 +139,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   }
   if(toml_rtod(raw, &(asv->spec.cog.x)))
   {
-    fprintf(stderr, "ERROR: bad value in 'spec.cog.x'\n");
+    fprintf(stderr, "ERROR: bad value in 'asv.cog.x'\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -153,7 +153,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   }
   if(toml_rtod(raw, &(asv->spec.cog.y)))
   {
-    fprintf(stderr, "ERROR: bad value in 'spec.cog.y'\n");
+    fprintf(stderr, "ERROR: bad value in 'asv.cog.y'\n");
 	  toml_free(input);
 	  exit(1);
   }
@@ -167,7 +167,7 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
   }
   if(toml_rtod(raw, &(asv->spec.cog.z)))
   {
-    fprintf(stderr, "ERROR: bad value in 'spec.cog.z'\n");
+    fprintf(stderr, "ERROR: bad value in 'asv.cog.z'\n");
 	  toml_free(input);
 	  exit(1);
   }
