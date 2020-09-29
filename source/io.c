@@ -27,8 +27,20 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
 	  exit(1);
   }
 
-  // Locate table [asv]
-  toml_table_t* table = toml_table_in(input, "asv");
+  // Read tables [asv]
+  toml_table_t* tables = toml_array_in(input, "asv");
+  if(tables == 0)
+  {
+    fprintf(stderr, "ERROR: missing [[asv]].\n");
+	  toml_free(input);
+	  exit(1);
+  }
+  // get number of waypoints
+  int count_asvs = toml_array_nelem(tables);
+  // iterate each asv table
+  for(int n = 0; n < count_asvs; ++n)
+  {
+  toml_table_t* table = toml_table_at(tables, n);
   if(table == 0)
   {
     fprintf(stderr, "ERROR: missing [asv].\n");
@@ -445,10 +457,11 @@ void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints)
 	    exit(1);
     }
   }
+  }
 
   // Locate table [clock]
   double time_step_size = 0.0;
-  table = toml_table_in(input, "clock");
+  toml_table_t* table = toml_table_in(input, "clock");
   if(table != 0)
   {
     // Extract values in table [clock]
