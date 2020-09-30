@@ -49,9 +49,9 @@ struct Simulation_data
   pthread_t thread;
   // Inputs and outputs
   char id[32];
-  struct Asv asv;
-  struct Waypoints waypoints;
-  struct Buffer buffer[OUTPUT_BUFFER_SIZE];
+  struct Asv* asv; 
+  struct Waypoints* waypoints;
+  struct Buffer* buffer;
   // Data related to current time step in the simulation
   long current_time_index;
   int current_waypoint_index;
@@ -60,9 +60,9 @@ struct Simulation_data
   struct Simulation_data* next; // next in the linked list.
 };
 
-/** Initialise the simulation data before use.
+/** Initialise a new node for the linked list.
  */
-void simulation_data_node_init(struct Simulation_data* simulation_data);
+struct Simulation_data* simulation_data_new_node();
 
 /**
  * Function to read the input file and set the ASV's input values. 
@@ -81,11 +81,11 @@ void simulation_data_set_input(struct Simulation_data* simulation_data,
 /**
  * Function to write the simulated data to file. 
  * @param simulation_data first item of the liked list.
- * @param file is the path to the output file. 
+ * @param out is the path to the output director or file.  
  * @param simulation_time in sec.
  */
 void simulation_data_write_output(struct Simulation_data* simulation_data,
-                                  char* file, 
+                                  char* out, 
                                   double simulation_time);
 
 #endif 
