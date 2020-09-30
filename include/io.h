@@ -2,6 +2,7 @@
 #define IO_H
 
 #include "asv.h"
+//#include <pthread.h>
 
 /**
  * A simple structure to store the waypoints. 
@@ -38,27 +39,53 @@ struct Buffer
   double F_surge; // N
   double F_sway; //N
 };
-extern struct Buffer buffer[OUTPUT_BUFFER_SIZE];
+
+/**
+ * Linked list to store simulation data related to each asv.
+ */
+struct Simulation_data
+{
+  // Each simulation runs on its own thread
+  //pthread_t thread;
+  // Inputs and outputs
+  char id[32];
+  struct Asv asv;
+  struct Waypoints waypoints;
+  struct Buffer buffer[OUTPUT_BUFFER_SIZE];
+  // Linkes list pointers
+  struct Simulation_data* previous; // previous in the linked list.
+  struct Simulation_data* next; // next in the linked list.
+  // Data related to current time step in the simulation
+  long current_time_index;
+  int current_waypoint_index;
+};
+
+/** Initialise the simulation data before use.
+ */
+void simulation_data_node_init(struct Simulation_data* simulation_data);
 
 /**
  * Function to read the input file and set the ASV's input values. 
- * @param file is the path to the input toml file. 
- * @param asv is the asv object for which the input values are to be set. 
- * @param waypoints through which the vehicle has to navigate. 
+ * @param simulation_data first item of the linked list.
+ * @param file is the path to the input toml file.  
+ * @param wave_ht wave height in meter.
+ * @param wave_heading in deg.
+ * @param rand_seed seed for random number generator. 
  */
-void set_input(char* file, struct Asv* asv, struct Waypoints* waypoints);
+void simulation_data_set_input(struct Simulation_data* simulation_data,
+                               char* file,  
+                               double wave_ht, 
+                               double wave_heading, 
+                               long rand_seed);
 
 /**
  * Function to write the simulated data to file. 
+ * @param simulation_data first item of the liked list.
  * @param file is the path to the output file. 
- * @param buffer_length is the number of lines in the buffer.
+ * @param simulation_time in sec.
  */
-void write_output(char* file, 
-                  int buffer_length,
-                  double wave_ht, 
-                  double wave_heading, 
-                  long rand_seed,
-                  double task_duration,
-                  double simulation_time);
+void simulation_data_write_output(struct Simulation_data* simulation_data,
+                                  char* file, 
+                                  double simulation_time);
 
 #endif 
