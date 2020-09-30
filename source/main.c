@@ -5,8 +5,9 @@
 #include "io.h"
 #include "asv.h"
 
-void compute_dynamics_per_thread(struct Simulation_data* data)
+void compute_dynamics_per_thread(void* simulation_data)
 {
+  struct Simulation_data* data = (struct Simulation_data*)simulation_data;
   // Current time
   double current_time = data->current_time_index * data->asv.dynamics.time_step_size; //sec
 
@@ -53,7 +54,7 @@ void compute_dynamics_per_thread(struct Simulation_data* data)
   if(distance <= proximity_margin)
   {
     // Reached the current waypoint, so increament the index to the next waypoint.
-    // current_waypoint_index == waypoint.count ==> reached final waypoint.
+    // if the current_waypoint_index == waypoint.count ==> reached final waypoint.
     ++data->current_waypoint_index;
   }
 }
@@ -86,8 +87,7 @@ void simulate(struct Simulation_data* simulation_data)
         // Not yet reached the final waypoint
         has_all_reached_final_waypoint = false;
         data->current_time_index = t;
-        compute_dynamics_per_thread(data);
-        //pthread_create(&(data->thread), NULL, compute_dynamics_per_thread, data);
+        pthread_create(&(data->thread), NULL, &compute_dynamics_per_thread, (void*)data);
       }
     }
     // join threads

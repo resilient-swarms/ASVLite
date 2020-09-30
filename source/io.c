@@ -58,7 +58,7 @@ void simulation_data_set_input(struct Simulation_data* simulation_data,
     {
       previous = current;
       // Create a new entry to the linked list.
-      current = malloc(sizeof(*current));
+      current = (struct Simulation_data*)malloc(sizeof(struct Simulation_data));
       // Link it to the previous entry in the linked list.
       previous->next = current; 
     }
@@ -83,14 +83,14 @@ void simulation_data_set_input(struct Simulation_data* simulation_data,
     // Extract values in table [asv]
     // id
     raw = toml_raw_in(table, "id");
-    char id[32];
+    char* id;
     if(raw == 0)
     {
       fprintf(stderr, "ERROR: missing 'id' in [asv][%d].\n",n);
       toml_free(input);
       exit(1);
     }
-    if (toml_rtos(raw, id))
+    if (toml_rtos(raw, &id))
     {
       fprintf(stderr, "ERROR: bad value in '[asv][%d].L_wl'\n",n);
       toml_free(input);
@@ -535,6 +535,9 @@ void simulation_data_set_input(struct Simulation_data* simulation_data,
   {
     data->asv.dynamics.time_step_size = time_step_size/1000.0; // sec
   }
+
+  // Initialise the asv after setting all inputs.
+  asv_init(&(current->asv));
 
   // done reading inputs
   toml_free(input);

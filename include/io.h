@@ -2,7 +2,7 @@
 #define IO_H
 
 #include "asv.h"
-//#include <pthread.h>
+#include <pthread.h>
 
 /**
  * A simple structure to store the waypoints. 
@@ -46,18 +46,18 @@ struct Buffer
 struct Simulation_data
 {
   // Each simulation runs on its own thread
-  //pthread_t thread;
+  pthread_t thread;
   // Inputs and outputs
   char id[32];
   struct Asv asv;
   struct Waypoints waypoints;
   struct Buffer buffer[OUTPUT_BUFFER_SIZE];
-  // Linkes list pointers
-  struct Simulation_data* previous; // previous in the linked list.
-  struct Simulation_data* next; // next in the linked list.
   // Data related to current time step in the simulation
   long current_time_index;
   int current_waypoint_index;
+  // Linkes list pointers
+  struct Simulation_data* previous; // previous in the linked list.
+  struct Simulation_data* next; // next in the linked list.
 };
 
 /** Initialise the simulation data before use.

@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.1.0)
 
 PROJECT(asv_simulator C)
 
@@ -34,6 +34,8 @@ SET_PROPERTY(TARGET asv_simulator PROPERTY C_STANDARD 11)
 
 # LINK LIBRARIES 
 # --------------
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 IF(UNIX)
-  TARGET_LINK_LIBRARIES(asv_simulator m)
+  TARGET_LINK_LIBRARIES(asv_simulator m Threads::Threads)
 ENDIF()
