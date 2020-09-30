@@ -93,7 +93,10 @@ void simulate(struct Simulation_data* simulation_data)
     // join threads
     for(struct Simulation_data* data = simulation_data; data != NULL; data = data->next)
     {
-      pthread_join(data->thread, NULL);
+      if(data->current_waypoint_index < data->waypoints->count)
+      {
+        pthread_join(data->thread, NULL);
+      }
     }
 
     // stop if all reached the destination or if buffer exceeded.
