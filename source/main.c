@@ -147,5 +147,8 @@ int main(int argc, char** argv)
   // write output to file
   simulation_data_write_output(simulation_data, out_file, elapsed);
 
+  // Clean the memory
+  simulation_data_clean(simulation_data);
+
   return 0;
 }

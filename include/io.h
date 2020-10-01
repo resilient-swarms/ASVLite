@@ -64,6 +64,11 @@ struct Simulation_data
  */
 struct Simulation_data* simulation_data_new_node();
 
+/** Free the heap memory.
+ * @param node is the first node of the linked list Simulatation_data.
+ */
+void simulation_data_clean(struct Simulation_data* node);
+
 /**
  * Function to read the input file and set the ASV's input values. 
  * @param simulation_data first item of the linked list.

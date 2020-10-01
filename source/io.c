@@ -18,6 +18,19 @@ struct Simulation_data* simulation_data_new_node()
   return node;
 }
 
+void simulation_data_clean(struct Simulation_data* first_node)
+{
+  for(struct Simulation_data* current_node = first_node; current_node != NULL;)
+  {
+    struct Simulation_data* next_node = current_node->next;
+    free(current_node->buffer);
+    free(current_node->waypoints);
+    free(current_node->asv);
+    free(current_node);
+    current_node = next_node;
+  }
+}
+
 void simulation_data_set_input(struct Simulation_data* simulation_data,
                                char *file,  
                                double wave_ht, 
