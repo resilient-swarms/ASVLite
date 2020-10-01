@@ -540,6 +540,11 @@ void simulation_data_set_input(struct Simulation_data* simulation_data,
       data->asv->wave_type = irregular_wave;
       wave_init(&(data->asv->wave), wave_ht, wave_heading * PI/180.0, rand_seed); 
     }
+    else
+    {
+      data->asv->wave_type = regular_wave;
+    }
+    
     // Initialise the asv after setting all inputs.
     asv_init(data->asv);
   }

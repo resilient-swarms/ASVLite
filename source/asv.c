@@ -530,14 +530,18 @@ void asv_init(struct Asv* asv)
   set_cog(asv); // Match the position of the cog with that of origin
 
   // Set minimum and maximum encounter frequency
-  double max_speed_for_spectrum = 2.0 * asv->spec.max_speed;
-  asv->dynamics.P_unit_wave_freq_min = get_encounter_frequency(
-                                      asv->wave.min_spectral_frequency,
-                                      max_speed_for_spectrum, 0);
-  asv->dynamics.P_unit_wave_freq_max = get_encounter_frequency(
-                                      asv->wave.max_spectral_frequency,
-                                      max_speed_for_spectrum, PI);
-
+  if(asv->wave_type == irregular_wave || 
+     asv->wave_type == regular_wave)
+  {
+    double max_speed_for_spectrum = 2.0 * asv->spec.max_speed;
+    asv->dynamics.P_unit_wave_freq_min = get_encounter_frequency(
+                                        asv->wave.min_spectral_frequency,
+                                        max_speed_for_spectrum, 0);
+    asv->dynamics.P_unit_wave_freq_max = get_encounter_frequency(
+                                        asv->wave.max_spectral_frequency,
+                                        max_speed_for_spectrum, PI);
+  }
+  
   // Set the mass matrix
   set_mass(asv);
   // Set the drag coefficient matrix
@@ -545,7 +549,11 @@ void asv_init(struct Asv* asv)
   // Set the stiffness matrix
   set_stiffness(asv);
   // Set the wave force for unit waves
-  set_unit_wave_pressure(asv);
+  if(asv->wave_type == irregular_wave || 
+     asv->wave_type == regular_wave)
+  {
+    set_unit_wave_pressure(asv);
+  }
 }
 
 void asv_compute_dynamics(struct Asv* asv, double time)
