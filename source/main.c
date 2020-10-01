@@ -86,7 +86,6 @@ void simulate(struct Simulation_data* simulation_data)
         }
         has_all_reached_final_waypoint = false;
         data->current_time_index = t;
-        compute_dynamics_per_thread(data);
         pthread_create(&(data->thread), NULL, &compute_dynamics_per_thread, (void*)data);
       }
     }
@@ -135,10 +134,10 @@ int main(int argc, char** argv)
 
   // Simulate
   clock_t start, end;
-  start = clock();
+  start = time(NULL); // sec
   simulate(simulation_data);
-  end = clock();
-  double simulation_time = ((double)(end - start)) / CLOCKS_PER_SEC;
+  end = time(NULL); // sec
+  double simulation_time = (double)(end - start); // sec
 
   // write output to file
   simulation_data_write_output(simulation_data, out_file, simulation_time);
