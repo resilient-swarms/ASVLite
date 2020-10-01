@@ -65,19 +65,19 @@ struct Simulation_data
 struct Simulation_data* simulation_data_new_node();
 
 /** Free the heap memory.
- * @param node is the first node of the linked list Simulatation_data.
+ * @param node is the first node in the linked list Simulatation_data.
  */
 void simulation_data_clean(struct Simulation_data* node);
 
 /**
  * Function to read the input file and set the ASV's input values. 
- * @param simulation_data first item of the linked list.
+ * @param node is the first node in the linked list Simulatation_data.
  * @param file is the path to the input toml file.  
  * @param wave_ht wave height in meter.
  * @param wave_heading in deg.
  * @param rand_seed seed for random number generator. 
  */
-void simulation_data_set_input(struct Simulation_data* simulation_data,
+void simulation_data_set_input(struct Simulation_data* node,
                                char* file,  
                                double wave_ht, 
                                double wave_heading, 
@@ -85,11 +85,13 @@ void simulation_data_set_input(struct Simulation_data* simulation_data,
 
 /**
  * Function to write the simulated data to file. 
- * @param simulation_data first item of the liked list.
- * @param out is the path to the output director or file.  
+ * @param node is the first node in the linked list Simulatation_data.
+ * @param out is the path to the output director or file. If the linked list contain only one node
+ * then out is the name of the ouput file, else out is the name of the directory which will contain 
+ * output files corresponding to each node.
  * @param simulation_time in sec.
  */
-void simulation_data_write_output(struct Simulation_data* simulation_data,
+void simulation_data_write_output(struct Simulation_data* node,
                                   char* out, 
                                   double simulation_time);
 

@@ -31,7 +31,7 @@ void simulation_data_clean(struct Simulation_data* first_node)
   }
 }
 
-void simulation_data_set_input(struct Simulation_data* simulation_data,
+void simulation_data_set_input(struct Simulation_data* first_node,
                                char *file,  
                                double wave_ht, 
                                double wave_heading, 
@@ -70,7 +70,7 @@ void simulation_data_set_input(struct Simulation_data* simulation_data,
   // get number of asvs
   int count_asvs = toml_array_nelem(tables);
   // iterate each asv table
-  struct Simulation_data* current = simulation_data;
+  struct Simulation_data* current = first_node;
   for (int n = 0; n < count_asvs; ++n)
   {
     // Create a new entry to the linked list of simulation data.
@@ -544,35 +544,35 @@ void simulation_data_set_input(struct Simulation_data* simulation_data,
   }
 
   // Init all asvs
-  for(struct Simulation_data* data = simulation_data; data != NULL; data = data->next)
+  for(struct Simulation_data* node = first_node; node != NULL; node = node->next)
   {
-    data->asv->dynamics.time_step_size = time_step_size/1000.0; // sec
+    node->asv->dynamics.time_step_size = time_step_size/1000.0; // sec
     // Init wave for the asv
     if(wave_ht != 0.0)
     {
-      data->asv->wave_type = irregular_wave;
-      wave_init(&(data->asv->wave), wave_ht, wave_heading * PI/180.0, rand_seed); 
+      node->asv->wave_type = irregular_wave;
+      wave_init(&(node->asv->wave), wave_ht, wave_heading * PI/180.0, rand_seed); 
     }
     else
     {
-      data->asv->wave_type = regular_wave;
+      node->asv->wave_type = regular_wave;
     }
     
     // Initialise the asv after setting all inputs.
-    asv_init(data->asv);
+    asv_init(node->asv);
   }
 
   // done reading inputs
   toml_free(input);
 }
 
-void simulation_data_write_output(struct Simulation_data* data,
+void simulation_data_write_output(struct Simulation_data* first_node,
                                   char* out, 
                                   double simulation_time)
 {
   bool has_multiple_asvs = false;
   // Check if single asv or more
-  if(data->next != NULL)
+  if(first_node->next != NULL)
   {
     has_multiple_asvs = true;
   }
@@ -588,11 +588,11 @@ void simulation_data_write_output(struct Simulation_data* data,
     }
   }
 
-  for(; data != NULL; data = data->next)
+  for(struct Simulation_data* node = first_node; node != NULL; node = node->next)
   {
-    double time = data->current_time_index * data->asv->dynamics.time_step_size; //sec
+    double time = node->current_time_index * node->asv->dynamics.time_step_size; //sec
     double performance = time / simulation_time;
-    fprintf(stdout, "%s, %f sec, %f sec, %f x \n", data->id, time, simulation_time, performance);
+    fprintf(stdout, "%s, %f sec, %f sec, %f x \n", node->id, time, simulation_time, performance);
 
     FILE *fp;
     // Create the output file in the out dir if there are more than one asvs,
@@ -604,7 +604,7 @@ void simulation_data_write_output(struct Simulation_data* data,
       // More than one asv.
       strcpy(file, out);
       strcat(file, "/");
-      strcat(file, data->id);
+      strcat(file, node->id);
     }
     // Open the file
     if (!(fp = fopen(file, "a")))
@@ -636,24 +636,24 @@ void simulation_data_write_output(struct Simulation_data* data,
               "F_sway(N)");
     }
     // write buffer to file and close the file.
-    for (int i = 0; i <= data->current_time_index; ++i)
+    for (int i = 0; i <= node->current_time_index; ++i)
     {
       fprintf(fp, "\n%f %f %ld %f %f %f %f %f %f %f %f %f %f %f %f",
-              data->buffer[i].sig_wave_ht,
-              data->asv->wave.heading * 360.0 / (2.0 * PI),
-              data->asv->wave.random_number_seed,
-              data->buffer[i].time,
-              data->buffer[i].wave_elevation,
-              data->buffer[i].cog_x,
-              data->buffer[i].cog_y,
-              data->buffer[i].cog_z,
-              data->buffer[i].heel,
-              data->buffer[i].trim,
-              data->buffer[i].heading,
-              data->buffer[i].surge_velocity,
-              data->buffer[i].surge_acceleration,
-              data->buffer[i].F_surge,
-              data->buffer[i].F_sway);
+              node->buffer[i].sig_wave_ht,
+              node->asv->wave.heading * 360.0 / (2.0 * PI),
+              node->asv->wave.random_number_seed,
+              node->buffer[i].time,
+              node->buffer[i].wave_elevation,
+              node->buffer[i].cog_x,
+              node->buffer[i].cog_y,
+              node->buffer[i].cog_z,
+              node->buffer[i].heel,
+              node->buffer[i].trim,
+              node->buffer[i].heading,
+              node->buffer[i].surge_velocity,
+              node->buffer[i].surge_acceleration,
+              node->buffer[i].F_surge,
+              node->buffer[i].F_sway);
     }
     fclose(fp);
   }
