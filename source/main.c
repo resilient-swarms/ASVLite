@@ -133,14 +133,19 @@ int main(int argc, char** argv)
                             rand_seed);
 
   // Simulate
-  clock_t start, end;
-  start = time(NULL); // sec
+  struct timespec start, finish;
+  double elapsed;
+  // Ref: https://stackoverflow.com/questions/2962785/c-using-clock-to-measure-time-in-multi-threaded-programs
+  // time() provides a resolution of only 1 sec so its not good if simulation is really short. 
+  // In a unix the better option is to use clock_gettime() along with CLOCK_MONOTONIC. 
+  clock_gettime(CLOCK_MONOTONIC, &start);
   simulate(simulation_data);
-  end = time(NULL); // sec
-  double simulation_time = (double)(end - start); // sec
+  clock_gettime(CLOCK_MONOTONIC, &finish);
+  elapsed = (finish.tv_sec - start.tv_sec);
+  elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
 
   // write output to file
-  simulation_data_write_output(simulation_data, out_file, simulation_time);
+  simulation_data_write_output(simulation_data, out_file, elapsed);
 
   return 0;
 }
