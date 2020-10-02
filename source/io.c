@@ -551,6 +551,7 @@ void simulation_data_set_input(struct Simulation_data* first_node,
   // Init all asvs
   for(struct Simulation_data* node = first_node; node != NULL; node = node->next)
   {
+    // Set time step size in all asvs.
     node->asv->dynamics.time_step_size = time_step_size/1000.0; // sec
     
     // Initialise the asv after setting all inputs.

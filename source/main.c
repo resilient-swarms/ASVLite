@@ -120,9 +120,9 @@ int main(int argc, char** argv)
   char* p_end; 
   char* in_file = argv[1];
   char* out_file = argv[2]; 
-  double wave_height = strtod(argv[3], p_end);
-  double wave_heading = strtod(argv[4], p_end);
-  long rand_seed = strtol(argv[5], p_end, 10);  
+  double wave_height = strtod(argv[3], &p_end);
+  double wave_heading = strtod(argv[4], &p_end);
+  long rand_seed = strtol(argv[5], &p_end, 10);  
 
   // Set simulation inputs
   struct Simulation_data* simulation_data = simulation_data_new_node();
