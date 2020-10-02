@@ -6,7 +6,7 @@
 using namespace asv_swarm;
 using namespace asv_swarm::Visualisation;
 
-Scene::Scene(): vtkCommand{}
+Scene::Scene(struct Simulation_data* first_node): vtkCommand{}
 {
   timer_step_size = 0.04; // seconds. Default timer step size corresponding to frame rate of 25fps. 
 
@@ -34,6 +34,17 @@ Scene::Scene(): vtkCommand{}
   axes_widget->SetViewport( 0.0, 0.0, 0.3, 0.3 );
   axes_widget->SetEnabled( 1 );
   axes_widget->InteractiveOff();
+
+  // Create actor for sea surface
+  this->sea_surface_actor = new Sea_surface_actor(first_node->wave);
+
+  // Create actor for ASV 
+  //TODO: Visualisation::ASV_actor asv_actor();
+}
+
+Scene::~Scene()
+{
+  delete this->sea_surface_actor;
 }
 
 void Scene::set_timer_step_size(double time_step_size)
@@ -44,18 +55,16 @@ void Scene::set_timer_step_size(double time_step_size)
   // TODO: set time for asv actor
 }
 
-
-void Scene::add_actor(Sea_surface_actor* sea_surface_actor)
+void Scene::set_field_length(double field_length)
 {
-  if( !sea_surface_actor )
-  {
-    throw asv_swarm::Exception::ValueError("Scene::add_actor. Parameter sea_surface_actor" 
-                                           "should not be nullptr.");
-  }
-  //TODO: throw exception for null ASV actors.
-  
-  this->sea_surface_actor = sea_surface_actor;
+  sea_surface_actor->set_field_length(field_length);
 }
+
+void Scene::set_sea_surface_grid_size(unsigned int grid_size)
+{
+  sea_surface_actor->set_sea_surface_grid_size(grid_size);
+}
+
 
 void Scene::start()
 {

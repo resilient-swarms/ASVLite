@@ -24,47 +24,32 @@ int main(int argc, char** argv)
       argv[0]);
     return 1;
   }
-  double wave_ht, wave_heading;
-  long rand_seed;
-  char* in_file = argv[1];
-  char* out_file = argv[2];
-  sscanf(argv[3], "%lf", &wave_ht);
-  sscanf(argv[4], "%lf", &wave_heading);
-  sscanf(argv[5], "%ld", &rand_seed);
 
-  // Init vehicle and waypoints
-  struct Asv asv;
-  struct Waypoints waypoints;
-  // set ASV inputs from input file.
-  set_input(in_file, &asv, &waypoints);
-  // set ASV inputs that were passed in command line
-  if(wave_ht != 0.0)
-  {
-    asv.wave_type = irregular_wave;
-    wave_init(&asv.wave, wave_ht, wave_heading * PI/180.0, rand_seed);
-  }
-  // init the asv after setting all inputs.
-  asv_init(&asv);
+  char* p_end; 
+  char* in_file = argv[1];
+  char* out_file = argv[2]; 
+  double wave_height = strtod(argv[3], &p_end);
+  double wave_heading = strtod(argv[4], &p_end);
+  long rand_seed = strtol(argv[5], &p_end, 10);  
+
+  // Set simulation inputs
+  struct Simulation_data* simulation_data = simulation_data_new_node();
+  simulation_data_set_input(simulation_data,
+                            in_file, 
+                            wave_height,
+                            wave_heading,
+                            rand_seed);
 
   // Create object to coordinate visualization
-  Visualisation::Scene scene;
+  Visualisation::Scene scene(simulation_data);
 
-  // Create actor for sea surface
-  Visualisation::Sea_surface_actor sea_surface_actor(&asv.wave);
   // Override the default field dimension. Field length in m.
-  sea_surface_actor.set_field_length(20.0); 
+  scene.set_field_length(20.0); 
   // Override the default number of control points on the sea surface. 
-  sea_surface_actor.set_sea_surface_grid_size(50);
-
-  // Create actor for ASV 
-  //Visualisation::ASV_actor asv_actor();
-
-  // Add all actors to the scene 
-  scene.add_actor(&sea_surface_actor);
-  //scene.add_actor(&asv_actor);
+  scene.set_sea_surface_grid_size(50);
 
   // Start visualization 
-  scene.set_timer_step_size(asv.dynamics.time_step_size);
+  scene.set_timer_step_size(simulation_data->asv->dynamics.time_step_size);
   scene.start();
 
   return EXIT_SUCCESS;
