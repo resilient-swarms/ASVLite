@@ -23,17 +23,17 @@ void compute_dynamics_per_thread(void* first_node)
 
   // Also compute the wave elevation. 
   double wave_elevation = 0.0;
-  if(node->asv->wave_type == irregular_wave)
+  if(node->asv->wave != NULL)
   {
-    wave_elevation = wave_get_elevation(&(node->asv->wave), 
+    wave_elevation = wave_get_elevation(node->asv->wave, 
                                         &(node->asv->cog_position), 
                                         current_time);
   }
 
   // save simulated data to buffer. 
-  node->buffer[node->current_time_index].sig_wave_ht        = node->asv->wave.significant_wave_height;
-  node->buffer[node->current_time_index].wave_heading       = node->asv->wave.heading * 180.0/PI;
-  node->buffer[node->current_time_index].random_number_seed = node->asv->wave.random_number_seed;
+  node->buffer[node->current_time_index].sig_wave_ht        = node->asv->wave->significant_wave_height;
+  node->buffer[node->current_time_index].wave_heading       = node->asv->wave->heading * 180.0/PI;
+  node->buffer[node->current_time_index].random_number_seed = node->asv->wave->random_number_seed;
   node->buffer[node->current_time_index].time               = current_time;
   node->buffer[node->current_time_index].wave_elevation     = wave_elevation;
   node->buffer[node->current_time_index].cog_x              = node->asv->cog_position.x;

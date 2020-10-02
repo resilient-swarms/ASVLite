@@ -20,11 +20,6 @@ enum i_axis{x, y, z};
 enum i_attitude{heel, trim, heading}; 
 
 /**
- * Wave type used for hydrodynamics:
- */
-enum Wave_type{still_water, regular_wave, irregular_wave};
-
-/**
  * Struct to hold all the inputs for the propeller.
  */
 struct Asv_propeller
@@ -112,9 +107,8 @@ struct Asv
   struct Asv_propeller propellers[COUNT_PROPELLERS_MAX]; //!< Input variable. 
                                                          //!< ASV propeller
                                                          //!< instances. 
-  enum Wave_type wave_type; //!< Input variable. Type of wave used. 
-  struct Wave wave; //!< Input variable. Irregular wave instance. 
-  struct Regular_wave regular_wave; //!< Input variable. Regular wave instance. 
+  struct Wave* wave; //!< Input variable. Irregular wave instance. 
+  struct Regular_wave* regular_wave; //!< Input variable. Regular wave instance. 
                                     //!< Used only when wave_type is set as 
                                     //!< regular wave.
 
@@ -138,8 +132,9 @@ struct Asv
  * Function to initialise a model of ASV after setting the vehicle spec. 
  * **Note:** This function should be called only after setting all input values.
  * @param asv is the object to be initialised.
+ * @param wave for the asv. Set to NULL for still water simulation.
  */
-void asv_init(struct Asv* asv);
+void asv_init(struct Asv* asv, struct Wave* wave);
 
 /**
  * Function to set the position and attitude of the ASV for the given time step.

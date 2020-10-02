@@ -49,6 +49,7 @@ struct Simulation_data
   pthread_t thread;
   // Inputs and outputs
   char id[32];
+  struct Wave* wave;
   struct Asv* asv; 
   struct Waypoints* waypoints;
   struct Buffer* buffer;

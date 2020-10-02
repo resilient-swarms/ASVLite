@@ -3,10 +3,13 @@
 #include "io.h"
 #include <sys/stat.h> // for creating directory
 
+struct Wave wave;
+
 struct Simulation_data* simulation_data_new_node()
 {
   // Initialise memory
   struct Simulation_data* node = (struct Simulation_data*)malloc(sizeof(struct Simulation_data));
+  node->wave = &wave;
   node->asv = (struct Asv*)malloc(sizeof(struct Asv));
   node->waypoints = (struct Waypoint*)malloc(sizeof(struct Waypoints));
   node->buffer = (struct Buffer*)malloc(OUTPUT_BUFFER_SIZE * sizeof(struct Buffer));
@@ -543,23 +546,15 @@ void simulation_data_set_input(struct Simulation_data* first_node,
     }
   }
 
+  // Init the irregular wave
+  wave_init(&wave, wave_ht, wave_heading * PI/180.0, rand_seed);
   // Init all asvs
   for(struct Simulation_data* node = first_node; node != NULL; node = node->next)
   {
     node->asv->dynamics.time_step_size = time_step_size/1000.0; // sec
-    // Init wave for the asv
-    if(wave_ht != 0.0)
-    {
-      node->asv->wave_type = irregular_wave;
-      wave_init(&(node->asv->wave), wave_ht, wave_heading * PI/180.0, rand_seed); 
-    }
-    else
-    {
-      node->asv->wave_type = regular_wave;
-    }
     
     // Initialise the asv after setting all inputs.
-    asv_init(node->asv);
+    asv_init(node->asv, &wave);
   }
 
   // done reading inputs
@@ -640,8 +635,8 @@ void simulation_data_write_output(struct Simulation_data* first_node,
     {
       fprintf(fp, "\n%f %f %ld %f %f %f %f %f %f %f %f %f %f %f %f",
               node->buffer[i].sig_wave_ht,
-              node->asv->wave.heading * 360.0 / (2.0 * PI),
-              node->asv->wave.random_number_seed,
+              node->asv->wave->heading * 360.0 / (2.0 * PI),
+              node->asv->wave->random_number_seed,
               node->buffer[i].time,
               node->buffer[i].wave_elevation,
               node->buffer[i].cog_x,

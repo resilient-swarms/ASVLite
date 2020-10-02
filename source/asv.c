@@ -178,7 +178,7 @@ static void set_unit_wave_pressure(struct Asv* asv)
   double freq_step_size = (asv->dynamics.P_unit_wave_freq_max - 
                            asv->dynamics.P_unit_wave_freq_min)/
                           (COUNT_ASV_SPECTRAL_FREQUENCIES - 1); 
-  if(asv->wave_type == irregular_wave)
+  if(asv->wave != NULL)
   {
     for(int i = 0; i < COUNT_ASV_SPECTRAL_FREQUENCIES; ++i)
     {
@@ -193,14 +193,6 @@ static void set_unit_wave_pressure(struct Asv* asv)
       asv->dynamics.P_unit_wave[i][1] = 
         regular_wave_get_pressure_amp(&wave, -asv->spec.T);
     }
-  }
-  else if(asv->wave_type == regular_wave)
-  {
-    double freq = asv->regular_wave.frequency;
-    struct Regular_wave wave;
-    regular_wave_init(&wave, H_w/2.0, freq, 0.0, 0.0);
-    asv->dynamics.P_unit_regular_wave = 
-      regular_wave_get_pressure_amp(&wave, -asv->spec.T);
   }
 }
 
@@ -228,13 +220,9 @@ static void set_wave_force(struct Asv* asv)
     {
       // Regular wave
       struct Regular_wave* wave = 0;
-      if(asv->wave_type == regular_wave)
+      if(asv->wave != NULL)
       {
-        wave = &(asv->regular_wave);
-      }
-      if(asv->wave_type == irregular_wave)
-      {
-        wave = &(asv->wave.spectrum[i][j]);
+        wave = &(asv->wave->spectrum[i][j]);
       }
 
       // Compute the encounter frequency
@@ -247,7 +235,7 @@ static void set_wave_force(struct Asv* asv)
       int index = 0;
       // Compute the scaling factor to compute the wave force from unit wave
       double scale = wave->amplitude * 2.0;
-      if(asv->wave_type == irregular_wave)
+      if(asv->wave != NULL)
       {
         // Get the index for unit wave force for the encounter frequency
         double nf = COUNT_ASV_SPECTRAL_FREQUENCIES;
@@ -317,14 +305,11 @@ static void set_wave_force(struct Asv* asv)
       
       // Compute the pressure difference between fore and aft point
       double P = 0.0;
-      if(asv->wave_type == irregular_wave)
+      if(asv->wave != NULL)
       {
         P = asv->dynamics.P_unit_wave[index][1];
       }
-      else if(asv->wave_type == regular_wave)
-      {
-        P = asv->dynamics.P_unit_regular_wave;
-      }
+
       double P_diff_long = P *(cos(phase_fore) - cos(phase_aft));
       // Compute the pressure difference between SB and PS point
       double P_diff_trans = P * (cos(phase_sb) - cos(phase_ps));
@@ -337,12 +322,7 @@ static void set_wave_force(struct Asv* asv)
       asv->dynamics.F_wave[roll] += scale * P_diff_trans * (A_waterplane/2.0) * lever_trans;
       asv->dynamics.F_wave[pitch] += scale * P_diff_long * (A_waterplane/2.0) * lever_long;
       asv->dynamics.F_wave[yaw] += scale * P_diff_long * (A_profile/2.0) * lever_long * 0.0; // <-- RESTRAIN YAW MOTION.
-      
-      if(asv->wave_type == regular_wave)
-        break;
     }
-    if(asv->wave_type == regular_wave)
-      break;
   } 
 }
 
@@ -497,10 +477,13 @@ static void set_attitude(struct Asv* asv)
   asv->attitude.y    += asv->dynamics.X[pitch];
 }
 
-void asv_init(struct Asv* asv)
+void asv_init(struct Asv* asv, struct Wave* wave)
 { 
   // Initialise time record 
   asv->dynamics.time = 0.0;
+
+  // set the wave for the ASV
+  asv->wave = wave;
 
   // Initialise all the vectors matrices to zero.
   for(int j = 0; j < COUNT_ASV_SPECTRAL_FREQUENCIES; ++j)
@@ -525,20 +508,19 @@ void asv_init(struct Asv* asv)
 
   // Place the asv vertically in the correct position W.R.T wave
   asv->origin_position.z = 
-    wave_get_elevation(&asv->wave, &asv->origin_position, 0.0) - asv->spec.T; 
+    wave_get_elevation(asv->wave, &asv->origin_position, 0.0) - asv->spec.T; 
   // Reset the cog position.
   set_cog(asv); // Match the position of the cog with that of origin
 
   // Set minimum and maximum encounter frequency
-  if(asv->wave_type == irregular_wave || 
-     asv->wave_type == regular_wave)
+  if(asv->wave != NULL)
   {
     double max_speed_for_spectrum = 2.0 * asv->spec.max_speed;
     asv->dynamics.P_unit_wave_freq_min = get_encounter_frequency(
-                                        asv->wave.min_spectral_frequency,
+                                        asv->wave->min_spectral_frequency,
                                         max_speed_for_spectrum, 0);
     asv->dynamics.P_unit_wave_freq_max = get_encounter_frequency(
-                                        asv->wave.max_spectral_frequency,
+                                        asv->wave->max_spectral_frequency,
                                         max_speed_for_spectrum, PI);
   }
   
@@ -549,8 +531,7 @@ void asv_init(struct Asv* asv)
   // Set the stiffness matrix
   set_stiffness(asv);
   // Set the wave force for unit waves
-  if(asv->wave_type == irregular_wave || 
-     asv->wave_type == regular_wave)
+  if(asv->wave != NULL)
   {
     set_unit_wave_pressure(asv);
   }
@@ -561,8 +542,7 @@ void asv_compute_dynamics(struct Asv* asv, double time)
   // Update the time
   asv->dynamics.time = time;
 
-  if(asv->wave_type == irregular_wave ||
-     asv->wave_type == regular_wave)
+  if(asv->wave != NULL)
   {
     // Get the wave force for the current time step
     set_wave_force(asv);
