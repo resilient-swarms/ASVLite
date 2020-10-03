@@ -43,6 +43,7 @@ SET( SOURCE
 SET( SOURCE
   ${SOURCE}
   source/sea_surface_actor.cpp
+  source/asv_actor.cpp
   source/scene.cpp
   source/main.cpp
 )

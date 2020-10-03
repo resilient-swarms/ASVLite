@@ -39,12 +39,19 @@ Scene::Scene(struct Simulation_data* first_node): vtkCommand{}
   this->sea_surface_actor = new Sea_surface_actor(first_node->wave);
 
   // Create actor for ASV 
-  //TODO: Visualisation::ASV_actor asv_actor();
+  for(struct Simulation_data* node = first_node; node != NULL; node = node->next)
+  {
+    this->asv_actors.emplace_back(new Asv_actor(node->asv));
+  }
 }
 
 Scene::~Scene()
 {
   delete this->sea_surface_actor;
+  for(auto asv_actor : asv_actors)
+  {
+    delete asv_actor;
+  }
 }
 
 void Scene::set_timer_step_size(double time_step_size)
@@ -75,6 +82,10 @@ void Scene::start()
   
   // Add actors 
   renderer->AddActor(sea_surface_actor->get_actor());
+  for(auto asv_actor : asv_actors)
+  {
+    renderer->AddActor(asv_actor->get_actor());
+  }
 
   // Inform all actors of the timer step size 
   sea_surface_actor->set_timer_step_size(timer_step_size);
