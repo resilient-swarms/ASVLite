@@ -632,7 +632,7 @@ void simulation_data_write_output(struct Simulation_data* first_node,
               "F_sway(N)");
     }
     // write buffer to file and close the file.
-    for (int i = 0; i <= node->current_time_index; ++i)
+    for (int i = 0; i < node->current_time_index; ++i)
     {
       fprintf(fp, "\n%f %f %ld %f %f %f %f %f %f %f %f %f %f %f %f",
               node->buffer[i].sig_wave_ht,

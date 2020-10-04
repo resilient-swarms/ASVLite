@@ -2,6 +2,14 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.1.0)
 
 PROJECT(asv_simulator C)
 
+# ENABLE TIME SYNC WHILE MULTI-THREADING
+# --------------------------------------
+OPTION(ENABLE_TIME_SYNC "Enable time sync between parallel threads." OFF) # Desabled by default
+if(ENABLE_TIME_SYNC)
+  add_definitions(-DENABLE_TIME_SYNC)
+  message(STATUS "Time sycn between threads enabled.")
+endif(ENABLE_TIME_SYNC)
+
 # INCLUDE HEADER FILES DIRECTORIES
 # --------------------------------
 INCLUDE_DIRECTORIES(

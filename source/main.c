@@ -5,9 +5,10 @@
 #include "io.h"
 #include "asv.h"
 
-void compute_dynamics_per_thread_time_sync(void* first_node)
+// Computes dynamics for current node for the current time step.
+void compute_dynamics(void* current_node)
 {
-  struct Simulation_data* node = (struct Simulation_data*)first_node;
+  struct Simulation_data* node = (struct Simulation_data*)current_node;
   // Current time
   double current_time = node->current_time_index * node->asv->dynamics.time_step_size; //sec
 
@@ -59,6 +60,32 @@ void compute_dynamics_per_thread_time_sync(void* first_node)
   }
 }
 
+void compute_dynamics_per_thread_no_time_sync(void* current_node)
+{
+  struct Simulation_data* node = (struct Simulation_data*)current_node;
+  for(node->current_time_index = 0; ; ++(node->current_time_index))
+  {
+    if(node->current_waypoint_index < node->waypoints->count)
+    {
+      // Not yet reached the final waypoint, but check if buffer limit reached before further computation.
+      // Check if buffer exceeded
+      if(node->current_time_index >= OUTPUT_BUFFER_SIZE)
+      {
+        // buffer exceeded
+        fprintf(stderr, "ERROR: output buffer exceeded for asv with id '%s'.\n", node->id);
+        break;        
+      }
+      // If buffer not exceeded.
+      compute_dynamics((void*)node);
+    }
+    else
+    {
+      // Reached the final waypoint
+      break;
+    }
+  }
+}
+
 void simulate_with_time_sync(struct Simulation_data* first_node)
 {
   bool buffer_exceeded = false;
@@ -72,6 +99,9 @@ void simulate_with_time_sync(struct Simulation_data* first_node)
     // spawn threads
     for(struct Simulation_data* node = first_node; node != NULL; node = node->next)
     {
+      // Set time step for the node
+      node->current_time_index = t;
+
       // Check if asv reached the final waypoint.
       if(node->current_waypoint_index < node->waypoints->count)
       {
@@ -85,8 +115,7 @@ void simulate_with_time_sync(struct Simulation_data* first_node)
           break;        
         }
         has_all_reached_final_waypoint = false;
-        node->current_time_index = t;
-        pthread_create(&(node->thread), NULL, &compute_dynamics_per_thread_time_sync, (void*)node);
+        pthread_create(&(node->thread), NULL, &compute_dynamics, (void*)node);
       }
     }
     // join threads
@@ -102,6 +131,22 @@ void simulate_with_time_sync(struct Simulation_data* first_node)
     if(has_all_reached_final_waypoint || buffer_exceeded)
     {
       break;
+    }
+  }
+}
+
+void simulate_without_time_sync(struct Simulation_data* first_node)
+{
+  for(struct Simulation_data* node = first_node; node != NULL; node = node->next)
+  {
+    pthread_create(&(node->thread), NULL, &compute_dynamics_per_thread_no_time_sync, (void*)node);
+  }
+  // join threads
+  for(struct Simulation_data* node = first_node; node != NULL; node = node->next)
+  {
+    if(node->current_waypoint_index < node->waypoints->count)
+    {
+      pthread_join(node->thread, NULL);
     }
   }
 }
@@ -139,7 +184,11 @@ int main(int argc, char** argv)
   // time() provides a resolution of only 1 sec so its not good if simulation is really short. 
   // In a unix the better option is to use clock_gettime() along with CLOCK_MONOTONIC. 
   clock_gettime(CLOCK_MONOTONIC, &start);
+  #ifdef ENABLE_TIME_SYNC
   simulate_with_time_sync(simulation_data);
+  #else
+  simulate_without_time_sync(simulation_data);
+  #endif
   clock_gettime(CLOCK_MONOTONIC, &finish);
   elapsed = (finish.tv_sec - start.tv_sec);
   elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
