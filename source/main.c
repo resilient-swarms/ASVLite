@@ -5,7 +5,7 @@
 #include "io.h"
 #include "asv.h"
 
-void compute_dynamics_per_thread(void* first_node)
+void compute_dynamics_per_thread_time_sync(void* first_node)
 {
   struct Simulation_data* node = (struct Simulation_data*)first_node;
   // Current time
@@ -59,7 +59,7 @@ void compute_dynamics_per_thread(void* first_node)
   }
 }
 
-void simulate(struct Simulation_data* first_node)
+void simulate_with_time_sync(struct Simulation_data* first_node)
 {
   bool buffer_exceeded = false;
   for(long t = 0; ; ++t)
@@ -86,7 +86,7 @@ void simulate(struct Simulation_data* first_node)
         }
         has_all_reached_final_waypoint = false;
         node->current_time_index = t;
-        pthread_create(&(node->thread), NULL, &compute_dynamics_per_thread, (void*)node);
+        pthread_create(&(node->thread), NULL, &compute_dynamics_per_thread_time_sync, (void*)node);
       }
     }
     // join threads
@@ -139,7 +139,7 @@ int main(int argc, char** argv)
   // time() provides a resolution of only 1 sec so its not good if simulation is really short. 
   // In a unix the better option is to use clock_gettime() along with CLOCK_MONOTONIC. 
   clock_gettime(CLOCK_MONOTONIC, &start);
-  simulate(simulation_data);
+  simulate_with_time_sync(simulation_data);
   clock_gettime(CLOCK_MONOTONIC, &finish);
   elapsed = (finish.tv_sec - start.tv_sec);
   elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
