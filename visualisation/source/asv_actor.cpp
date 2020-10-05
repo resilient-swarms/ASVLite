@@ -62,7 +62,14 @@ void Asv_actor::Execute(vtkObject* caller, unsigned long eventId,
                        void* vtkNotUsed(callData))
 {
   asv_compute_dynamics(asv, current_time);
-  // Set the orientation of the vehicle.
+
+  // Set the ASV position for current time step
+  double x_centroid = asv->origin_position.x;
+  double y_centroid = asv->origin_position.y;
+  double z_centroid = asv->origin_position.z;
+  asv_actor->SetPosition(x_centroid, y_centroid, z_centroid);
+
+  // Set the ASV attitude for current time step
   double heading = asv->attitude.z * 360.0/PI;
   double roll = asv->attitude.x * 360.0/PI;
   double pitch = asv->attitude.y * 360.0/PI; 
