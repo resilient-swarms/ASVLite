@@ -8,7 +8,7 @@ using namespace asv_swarm::Visualisation;
 
 Scene::Scene(struct Simulation_data* first_node): vtkCommand{}
 {
-  timer_step_size = 0.04; // seconds. Default timer step size corresponding to frame rate of 25fps. 
+  timer_step_size = first_node->asv->dynamics.time_step_size;
 
   // Actors initialised to nullptr. Actors must be initialised by calling the
   // corresponding initialise_actor method. 
@@ -41,7 +41,17 @@ Scene::Scene(struct Simulation_data* first_node): vtkCommand{}
   // Create actor for ASV 
   for(struct Simulation_data* node = first_node; node != NULL; node = node->next)
   {
-    this->asv_actors.emplace_back(new Asv_actor(node->asv));
+    auto asv_actor = new Asv_actor(node->asv);
+    this->asv_actors.push_back(asv_actor);
+  }
+
+  // Add actors and set the time step size
+  renderer->AddActor(sea_surface_actor->get_actor());
+  sea_surface_actor->set_timer_step_size(timer_step_size);
+  for(auto asv_actor : asv_actors)
+  {
+    renderer->AddActor(asv_actor->get_actor());
+    asv_actor->set_timer_step_size(timer_step_size);
   }
 }
 
@@ -52,14 +62,6 @@ Scene::~Scene()
   {
     delete asv_actor;
   }
-}
-
-void Scene::set_timer_step_size(double time_step_size)
-{
-  timer_step_size = time_step_size; 
-  // set timer step size in all actors
-  sea_surface_actor->set_timer_step_size(timer_step_size);
-  // TODO: set time for asv actor
 }
 
 void Scene::set_field_length(double field_length)
@@ -80,17 +82,6 @@ void Scene::start()
   interactor->CreateRepeatingTimer(timer_step_size);// Repeating timer events 
   interactor->AddObserver(vtkCommand::TimerEvent, this);
   
-  // Add actors 
-  renderer->AddActor(sea_surface_actor->get_actor());
-  for(auto asv_actor : asv_actors)
-  {
-    renderer->AddActor(asv_actor->get_actor());
-  }
-
-  // Inform all actors of the timer step size 
-  sea_surface_actor->set_timer_step_size(timer_step_size);
-  //TODO: set_timer_step_size for asv actor.
-
   // Render and interact 
   renderer->ResetCamera();
   window->SetSize(window->GetScreenSize());
@@ -101,7 +92,10 @@ void Scene::start()
 void Scene::increment_time()
 {
   sea_surface_actor->increment_time();
-  //TODO: increment time for asv actor.
+  for(auto asv_actor : asv_actors)
+  {
+    asv_actor->increment_time();
+  }
 }
 
 void Scene::Execute(vtkObject *caller, 
