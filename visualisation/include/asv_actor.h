@@ -71,6 +71,9 @@ private:
   vtkSmartPointer<vtkActor> asv_actor {nullptr};
   
   struct Asv* asv;
+  double roll; // roll angle in deg for the current time step.
+  double pitch; // pitch angle in deg for the current time step.
+  double yaw; // yaw angle in deg for the current time step.
 }; // class Asv_actor
 
 } // namespace Visualisation

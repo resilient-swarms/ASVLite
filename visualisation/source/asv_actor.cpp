@@ -44,10 +44,10 @@ Asv_actor::Asv_actor(struct Asv* asv):
   // z-axis changes ASV pitch by theta deg towards aft.
 
   // Set the orientation of the vehicle.
-  double heading = asv->attitude.z * 360.0/PI;
-  double roll = asv->attitude.x * 360.0/PI;
-  double pitch = asv->attitude.y * 360.0/PI; 
-  asv_actor->RotateY(-heading);
+  yaw = asv->attitude.z * 360.0/PI;
+  roll = asv->attitude.x * 360.0/PI;
+  pitch = asv->attitude.y * 360.0/PI; 
+  asv_actor->RotateY(-yaw);
   asv_actor->RotateX(roll);
   asv_actor->RotateZ(pitch);
 }
@@ -70,10 +70,13 @@ void Asv_actor::Execute(vtkObject* caller, unsigned long eventId,
   asv_actor->SetPosition(x_centroid, y_centroid, z_centroid);
 
   // Set the ASV attitude for current time step
-  double heading = asv->attitude.z * 360.0/PI;
-  double roll = asv->attitude.x * 360.0/PI;
-  double pitch = asv->attitude.y * 360.0/PI; 
-  asv_actor->RotateY(-heading);
-  asv_actor->RotateX(roll);
-  asv_actor->RotateZ(pitch);
+  double new_yaw = asv->attitude.z * 360.0/PI;
+  double new_roll = asv->attitude.x * 360.0/PI;
+  double new_pitch = asv->attitude.y * 360.0/PI; 
+  asv_actor->RotateY(new_yaw - yaw);
+  asv_actor->RotateX(new_roll - roll);
+  asv_actor->RotateZ(new_pitch - pitch);
+  yaw = new_yaw;
+  roll = new_roll;
+  pitch = new_pitch;
 }
