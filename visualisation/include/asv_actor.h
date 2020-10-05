@@ -45,7 +45,7 @@ public:
   /**
    * Increment time count.
    */
-  void increment_time(){++timer_count;}
+  void increment_time();
 
   /**
    * This method is called by vtk pipeline and it sets the 

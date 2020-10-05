@@ -65,7 +65,7 @@ public:
   /**
    * Increment time count.
    */
-  void increment_time(){++timer_count;}
+  void increment_time();
 
   /**
    * Returns pointer to vtkActor object for sea surface.
@@ -85,9 +85,8 @@ protected:
 private:
   /** 
    * Method to set the compute the sea surface elevations at the grid points.
-   * @param time in seconds from the start of simulation.
    */
-  void set_sea_surface_elevations(double time);
+  void set_sea_surface_elevations();
 
   /**
    * Method to set uniformly spaced points for the sea surface.

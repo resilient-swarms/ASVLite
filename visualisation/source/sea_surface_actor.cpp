@@ -19,7 +19,7 @@ Sea_surface_actor::Sea_surface_actor(struct Wave* wave):
   set_sea_surface_points();
 
   // Set the elivations at time step 0
-  set_sea_surface_elevations(0.0);
+  set_sea_surface_elevations();
 
   // This filter does not need an input port
   SetNumberOfInputPorts(0);
@@ -33,6 +33,12 @@ Sea_surface_actor::Sea_surface_actor(struct Wave* wave):
   sea_surface_actor->GetProperty()->SetColor(0,0,255); // blue waves
 }
 
+void Sea_surface_actor::increment_time() 
+{
+  ++timer_count; 
+  current_time = static_cast<double>(timer_count) * timer_step_size; // sec
+}
+
 int Sea_surface_actor::RequestData(vtkInformation* request,
                                    vtkInformationVector** inputVector,
                                    vtkInformationVector* outputVector)
@@ -41,15 +47,8 @@ int Sea_surface_actor::RequestData(vtkInformation* request,
   // Get output
   vtkPolyData* output = vtkPolyData::GetData(outputVector,0);
 
-  // Get the timer count
-  // TODO: Correct the time. It should get the repeat timer interval and
-  // multiply when calculating time. Maybe a good way would be the
-  // callback::Execute() set the time in sea_surface_viz and then call
-  // requestdata.
-  double time = static_cast<double>(timer_count) * timer_step_size; // seconds
-
   // Set the sea surface profile for the current time step
-  set_sea_surface_elevations(time);
+  set_sea_surface_elevations();
 
   // Create the points, cells and mesh
   if(sea_surface_mesh_points)
@@ -137,9 +136,8 @@ int Sea_surface_actor::RequestData(vtkInformation* request,
   return 1;
 }
 
-void Sea_surface_actor::set_sea_surface_elevations(double time)
+void Sea_surface_actor::set_sea_surface_elevations()
 {
-  this->current_time = time;
   // Calculate elevation for each control point
   // For each point
   for(auto& points_row : sea_surface_points)

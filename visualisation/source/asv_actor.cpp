@@ -52,11 +52,16 @@ Asv_actor::Asv_actor(struct Asv* asv):
   asv_actor->RotateZ(pitch);
 }
 
+void Asv_actor::increment_time() 
+{
+  ++timer_count; 
+  current_time = static_cast<double>(timer_count) * timer_step_size; // sec
+}
+
 void Asv_actor::Execute(vtkObject* caller, unsigned long eventId,
                        void* vtkNotUsed(callData))
 {
-  double time = static_cast<double>(timer_count) * timer_step_size; // seconds
-  asv_compute_dynamics(asv, time);
+  asv_compute_dynamics(asv, current_time);
   // Set the orientation of the vehicle.
   double heading = asv->attitude.z * 360.0/PI;
   double roll = asv->attitude.x * 360.0/PI;
