@@ -28,10 +28,10 @@ Asv_actor::Asv_actor(struct Asv* asv):
 
   // Set the position at time step 0
   asv_compute_dynamics(asv, 0.0);
-  double x_centroid = asv->origin_position.x;
-  double y_centroid = asv->origin_position.y;
-  double z_centroid = asv->origin_position.z;
-  asv_actor->SetPosition(x_centroid, y_centroid, z_centroid);
+  double x = asv->origin_position.x;
+  double y = asv->origin_position.y;
+  double z = asv->origin_position.z + asv->spec.D/2.0; // The SetPosition() takes the coordinates of the centre of the ASV.
+  asv_actor->SetPosition(x, y, z);
   //asv_actor->GetProperty()->SetRepresentationToWireframe();
 
   // Set attitude at time step 0
@@ -64,10 +64,10 @@ void Asv_actor::Execute(vtkObject* caller, unsigned long eventId,
   asv_compute_dynamics(asv, current_time);
 
   // Set the ASV position for current time step
-  double x_centroid = asv->origin_position.x;
-  double y_centroid = asv->origin_position.y;
-  double z_centroid = asv->origin_position.z;
-  asv_actor->SetPosition(x_centroid, y_centroid, z_centroid);
+  double x = asv->origin_position.x;
+  double y = asv->origin_position.y;
+  double z = asv->origin_position.z + asv->spec.D/2.0; // The SetPosition() takes the coordinates of the centre of the ASV.
+  asv_actor->SetPosition(x, y, z);
 
   // Set the ASV attitude for current time step
   double new_yaw = asv->attitude.z * 360.0/PI;
