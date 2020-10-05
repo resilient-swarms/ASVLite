@@ -81,6 +81,10 @@ void Scene::start()
   interactor->Initialize();
   interactor->CreateRepeatingTimer(timer_step_size);// Repeating timer events 
   interactor->AddObserver(vtkCommand::TimerEvent, this);
+  for(auto asv_actor : asv_actors)
+  {
+    interactor->AddObserver(vtkCommand::TimerEvent, asv_actor);
+  }
   
   // Render and interact 
   renderer->ResetCamera();

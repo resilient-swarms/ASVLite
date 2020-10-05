@@ -10,7 +10,7 @@ Sea_surface_actor::Sea_surface_actor(struct Wave* wave):
   vtkPolyDataAlgorithm{},
   wave{wave},
   timer_count{0},
-  timer_step_size{0.04},
+  timer_step_size{0.0},
   field_length {20.0},
   sea_surface_grid_size{20},
   current_time{0}

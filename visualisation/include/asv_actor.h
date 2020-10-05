@@ -4,16 +4,16 @@
 extern "C" {
 #include "asv.h"
 }
-#include "vtkCylinderSource.h"
+#include "vtkCamera.h"
+#include <vtkActor.h>
+#include <vtkNamedColors.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
-#include <vtkActor.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkRenderer.h>
-#include <vtkPolyDataAlgorithm.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
+#include <vtkSmartPointer.h>
+#include "vtkCylinderSource.h"
 
 namespace asv_swarm
 {
@@ -22,8 +22,7 @@ namespace Visualisation
 /**
  * This class creates an actor for an ASV.
  */
-class Asv_actor : 
-  public vtkPolyDataAlgorithm
+class Asv_actor : public vtkCommand
 {
 public:
   /**
@@ -48,15 +47,12 @@ public:
    */
   void increment_time(){++timer_count;}
 
-protected:
   /**
-   * This method is called by vtk pipeline and it sets the z values for the
-   * control points in the mesh representing sea surface for the current time 
-   * step.
+   * This method is called by vtk pipeline and it sets the 
+   * position and attitude of the ASV for the current time step.
    */
-  virtual int RequestData(vtkInformation* request,
-                          vtkInformationVector** inputVector,
-                          vtkInformationVector* outputVector) override;
+  virtual void Execute(vtkObject* caller, unsigned long eventId,
+                       void* vtkNotUsed(callData));
 
 private:
   /** 
