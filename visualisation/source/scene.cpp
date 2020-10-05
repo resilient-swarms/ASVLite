@@ -79,7 +79,7 @@ void Scene::start()
 {
   // Initialize must be called prior to creating timer events 
   interactor->Initialize();
-  interactor->CreateRepeatingTimer(timer_step_size);// Repeating timer events 
+  interactor->CreateRepeatingTimer(timer_step_size * 1000.0);// Repeating timer events. Arguement in sec converted to milli-sec.
   interactor->AddObserver(vtkCommand::TimerEvent, this);
   for(auto asv_actor : asv_actors)
   {

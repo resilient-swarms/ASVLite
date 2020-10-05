@@ -66,9 +66,9 @@ private:
   double timer_step_size; // sec
   double current_time; // sec
   // ASV is represented using a cylinder geometry.
-  vtkCylinderSource* cylinder {nullptr}; 
-  vtkPolyDataMapper* cylinderMapper {nullptr};
-  vtkActor* asv_actor {nullptr};
+  vtkSmartPointer<vtkCylinderSource> cylinder {nullptr}; 
+  vtkSmartPointer<vtkPolyDataMapper> cylinderMapper {nullptr};
+  vtkSmartPointer<vtkActor> asv_actor {nullptr};
   
   struct Asv* asv;
 }; // class Asv_actor

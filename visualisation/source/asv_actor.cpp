@@ -13,16 +13,16 @@ Asv_actor::Asv_actor(struct Asv* asv):
   current_time{0.0}
 {
   // Initialise the cylinder geometry.
-  cylinder = vtkCylinderSource::New();
+  cylinder = vtkSmartPointer<vtkCylinderSource>::New();
   cylinder->SetResolution(8);
   cylinder->SetRadius(asv->spec.B_wl/2.0);
   cylinder->SetHeight(asv->spec.D);
   cylinder->Update();
 
   // Initialize the mapper and actor
-  cylinderMapper = vtkPolyDataMapper::New();
+  cylinderMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   cylinderMapper->SetInputConnection(cylinder->GetOutputPort());
-  asv_actor = vtkActor::New();
+  asv_actor = vtkSmartPointer<vtkActor>::New();
   asv_actor->SetMapper(cylinderMapper);
   asv_actor->GetProperty()->SetColor(1.0000, 0.3882, 0.2784);
 
