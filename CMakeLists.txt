@@ -21,12 +21,12 @@ INCLUDE_DIRECTORIES(
 # ------------
 SET( SOURCE
   dependency/tomlc99/toml.c
-  source/io.c
   source/regular_wave.c
   source/wave.c
   source/asv.c
+  source/simulation.c
   source/main.c
-  source/pid_controller.c
+  #source/pid_controller.c
   )
 
 # PREPROCESSOR MACROS

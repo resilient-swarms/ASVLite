@@ -1,5 +1,5 @@
-#ifndef IO_H
-#define IO_H
+#ifndef SIMULATION_H
+#define SIMULATION_H
 
 #include "asv.h"
 #include <pthread.h>
@@ -43,7 +43,7 @@ struct Buffer
 /**
  * Linked list to store simulation data related to each asv.
  */
-struct Simulation_data
+struct Simulation
 {
   // Each simulation runs on its own thread
   pthread_t thread;
@@ -57,18 +57,18 @@ struct Simulation_data
   long current_time_index;
   int current_waypoint_index;
   // Linkes list pointers
-  struct Simulation_data* previous; // previous in the linked list.
-  struct Simulation_data* next; // next in the linked list.
+  struct Simulation* previous; // previous in the linked list.
+  struct Simulation* next; // next in the linked list.
 };
 
 /** Initialise a new node for the linked list.
  */
-struct Simulation_data* simulation_data_new_node();
+struct Simulation* simulation_new();
 
 /** Free the heap memory.
  * @param node is the first node in the linked list Simulatation_data.
  */
-void simulation_data_clean(struct Simulation_data* node);
+void simulation_clean(struct Simulation* node);
 
 /**
  * Function to read the input file and set the ASV's input values. 
@@ -78,7 +78,7 @@ void simulation_data_clean(struct Simulation_data* node);
  * @param wave_heading in deg.
  * @param rand_seed seed for random number generator. 
  */
-void simulation_data_set_input(struct Simulation_data* node,
+void simulation_set_input(struct Simulation* node,
                                char* file,  
                                double wave_ht, 
                                double wave_heading, 
@@ -92,8 +92,25 @@ void simulation_data_set_input(struct Simulation_data* node,
  * output files corresponding to each node.
  * @param simulation_time in sec.
  */
-void simulation_data_write_output(struct Simulation_data* node,
+void simulation_write_output(struct Simulation* node,
                                   char* out, 
                                   double simulation_time);
 
-#endif 
+/**
+ * Simulate vehicle dynamics for each time step. This function runs 
+ * simultion of each ASV in a independent thread and does not synchronize
+ * the simulation for each time step between ASVs. This function is faster
+ * compared to the alternative simulate_with_time_sync().
+ */
+void simulation_run_without_time_sync(struct Simulation* first_node);
+
+/**
+ * Simulate vehicle dynamics for each time step. This function runs 
+ * simultion of each ASV in a independent thread and also synchronize
+ * the simulation for each time step between ASVs. This function is slower
+ * compared to the alternative simulate_without_time_sync() because the function
+ * waits and joins the threads at each time step.
+ */
+void simulation_run_with_time_sync(struct Simulation* first_node);
+
+#endif // SIMULATION_H

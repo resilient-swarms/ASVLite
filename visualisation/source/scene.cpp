@@ -103,8 +103,8 @@ void Scene::increment_time()
 }
 
 void Scene::Execute(vtkObject *caller, 
-                            unsigned long vtkNotUsed(eventId),
-                            void *vtkNotUsed(callData))
+                    unsigned long vtkNotUsed(eventId),
+                    void *vtkNotUsed(callData))
 {
   increment_time();
   sea_surface_actor->Modified();
