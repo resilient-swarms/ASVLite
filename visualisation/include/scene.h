@@ -1,7 +1,9 @@
 #ifndef SCENE_H
 #define SCENE_H
 
+extern "C" {
 #include "simulation.h"
+}
 #include "sea_surface_actor.h"
 #include "asv_actor.h"
 #include <vtkCommand.h>
@@ -76,6 +78,8 @@ protected:
                void *vtkNotUsed(callData)) override;
 
 private:
+  Simulation* first_node;
+  long timer_count; 
   double timer_step_size; // sec
   vtkSmartPointer<vtkAxesActor> axes_actor;
   vtkSmartPointer<vtkOrientationMarkerWidget> axes_widget;
@@ -84,6 +88,9 @@ private:
   vtkSmartPointer<vtkRenderer> renderer;
   vtkSmartPointer<vtkRenderWindow> window;
   vtkSmartPointer<vtkRenderWindowInteractor> interactor;
+  // Record simulation time.
+  struct timespec start_time;
+  struct timespec finish_time;
 }; //class Scene
 
 } //namespace Visualisation

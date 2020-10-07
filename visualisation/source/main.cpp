@@ -44,7 +44,7 @@ int main(int argc, char** argv)
   Visualisation::Scene scene(simulation);
 
   // Override the default field dimension. Field length in m.
-  scene.set_field_length(5.0); 
+  scene.set_field_length(20.0); 
   // Override the default number of control points on the sea surface. 
   scene.set_sea_surface_grid_size(20);
 

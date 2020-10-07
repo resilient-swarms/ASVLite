@@ -8,7 +8,9 @@ using namespace asv_swarm::Visualisation;
 
 Scene::Scene(struct Simulation* first_node): vtkCommand{}
 {
+  timer_count = 0;
   timer_step_size = first_node->asv->dynamics.time_step_size;
+  this->first_node = first_node;
 
   // Actors initialised to nullptr. Actors must be initialised by calling the
   // corresponding initialise_actor method. 
@@ -80,7 +82,14 @@ void Scene::start()
   // Initialize must be called prior to creating timer events 
   interactor->Initialize();
   interactor->CreateRepeatingTimer(timer_step_size * 1000.0);// Repeating timer events. Arguement in sec converted to milli-sec.
+  
+  // Add observers.
+  // When events are invoked, the observers are called in the order they were added.
+  // Scene should be invoked first as it increments time and updates simulation data.
+  // Call all actors after excuting scene.
+  // Add scene as an observer.
   interactor->AddObserver(vtkCommand::TimerEvent, this);
+  // Add asv actors as observer.
   for(auto asv_actor : asv_actors)
   {
     interactor->AddObserver(vtkCommand::TimerEvent, asv_actor);
@@ -95,6 +104,7 @@ void Scene::start()
 
 void Scene::increment_time()
 {
+  ++timer_count;
   sea_surface_actor->increment_time();
   for(auto asv_actor : asv_actors)
   {
@@ -107,6 +117,19 @@ void Scene::Execute(vtkObject *caller,
                     void *vtkNotUsed(callData))
 {
   increment_time();
+
+  // Compute for current time step.
+  bool buffer_exceeded = false;
+  bool has_all_reached_final_waypoint = true;
+  simulation_with_time_sync_for_time_step(first_node, timer_count, &buffer_exceeded, &has_all_reached_final_waypoint);
+  // stop if all reached the destination or if buffer exceeded.
+  if(has_all_reached_final_waypoint || buffer_exceeded)
+  {
+    // stop simulation
+    exit(0);
+  }
+
+  // Update sea surface visualisation
   sea_surface_actor->Modified();
   
   vtkRenderWindowInteractor *interactor =
