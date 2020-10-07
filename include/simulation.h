@@ -5,7 +5,7 @@
 #include <pthread.h>
 
 /**
- * A simple structure to store the waypoints. 
+ * Structure to store an array of waypoints. 
  */
 struct Waypoints
 {
@@ -14,8 +14,8 @@ struct Waypoints
 };
 
 /**
- * A simple struct to record the simulated data for each time step of 
- * simulation.
+ * Structure to record the ASV dynamics at each time step of 
+ * the simulation.
  */
 struct Buffer
 { 
@@ -41,7 +41,7 @@ struct Buffer
 };
 
 /**
- * Linked list to store simulation data related to each asv.
+ * Struct Simulation is a linked list to store simulation data related to each asv.
  */
 struct Simulation
 {
@@ -63,7 +63,7 @@ struct Simulation
 
 /** Initialise a new node for the linked list.
  */
-struct Simulation* simulation_new();
+struct Simulation* simulation_new_node();
 
 /** Free the heap memory.
  * @param node is the first node in the linked list Simulatation_data.

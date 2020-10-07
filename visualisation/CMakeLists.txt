@@ -34,7 +34,7 @@ INCLUDE_DIRECTORIES(
 # simulator source files
 SET( SOURCE
   ../dependency/tomlc99/toml.c
-  ../source/io.c
+  ../source/simulation.c
   ../source/regular_wave.c
   ../source/wave.c
   ../source/asv.c

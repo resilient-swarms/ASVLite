@@ -6,7 +6,7 @@
 using namespace asv_swarm;
 using namespace asv_swarm::Visualisation;
 
-Scene::Scene(struct Simulation_data* first_node): vtkCommand{}
+Scene::Scene(struct Simulation* first_node): vtkCommand{}
 {
   timer_step_size = first_node->asv->dynamics.time_step_size;
 
@@ -39,7 +39,7 @@ Scene::Scene(struct Simulation_data* first_node): vtkCommand{}
   this->sea_surface_actor = new Sea_surface_actor(first_node->wave);
 
   // Create actor for ASV 
-  for(struct Simulation_data* node = first_node; node != NULL; node = node->next)
+  for(struct Simulation* node = first_node; node != NULL; node = node->next)
   {
     auto asv_actor = new Asv_actor(node->asv);
     this->asv_actors.push_back(asv_actor);

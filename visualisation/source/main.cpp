@@ -1,5 +1,5 @@
 extern "C" {
-#include "io.h"
+#include "simulation.h"
 #include "asv.h"
 }
 
@@ -33,15 +33,15 @@ int main(int argc, char** argv)
   long rand_seed = strtol(argv[5], &p_end, 10);  
 
   // Set simulation inputs
-  struct Simulation_data* simulation_data = simulation_data_new_node();
-  simulation_data_set_input(simulation_data,
-                            in_file, 
-                            wave_height,
-                            wave_heading,
-                            rand_seed);
+  struct Simulation* simulation = simulation_new_node();
+  simulation_set_input(simulation,
+                       in_file, 
+                       wave_height,
+                       wave_heading,
+                       rand_seed);
 
   // Create object to coordinate visualization
-  Visualisation::Scene scene(simulation_data);
+  Visualisation::Scene scene(simulation);
 
   // Override the default field dimension. Field length in m.
   scene.set_field_length(5.0); 

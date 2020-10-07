@@ -1,7 +1,7 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include "io.h"
+#include "simulation.h"
 #include "sea_surface_actor.h"
 #include "asv_actor.h"
 #include <vtkCommand.h>
@@ -23,7 +23,7 @@ public:
    * Constructor. Also initialises the renderer, window and interactor.
    * @param node is the first node in the linked list Simulatation_data.
    */ 
-  Scene(struct Simulation_data* node);
+  Scene(struct Simulation* node);
 
   /**
    * Clean the heap.

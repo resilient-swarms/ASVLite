@@ -23,7 +23,7 @@ int main(int argc, char** argv)
   long rand_seed = strtol(argv[5], &p_end, 10);  
 
   // Set simulation inputs
-  struct Simulation* simulation = simulation_new();
+  struct Simulation* simulation = simulation_new_node();
   simulation_set_input(simulation,
                        in_file, 
                        wave_height,

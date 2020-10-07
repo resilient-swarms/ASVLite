@@ -5,7 +5,7 @@
 
 struct Wave wave;
 
-struct Simulation* simulation_new()
+struct Simulation* simulation_new_node()
 {
   // Initialise memory
   struct Simulation* node = (struct Simulation*)malloc(sizeof(struct Simulation));
@@ -81,7 +81,7 @@ void simulation_set_input(struct Simulation* first_node,
     {
       struct Simulation* previous = current;
       // Create a new entry to the linked list.
-      current = simulation_new();
+      current = simulation_new_node();
       // Link it to the previous entry in the linked list.
       previous->next = current; 
       current->previous = previous;
