@@ -3,7 +3,21 @@
 #include "simulation.h"
 #include <sys/stat.h> // for creating directory
 
+// One wave for all ASVs
 static struct Wave wave;
+// Visualisation data
+static double sea_surface_edge_length;
+static int count_mesh_cells_along_edge;
+
+double get_sea_surface_edge_length()
+{
+  return sea_surface_edge_length;
+}
+
+int get_count_mesh_cells_along_edge()
+{
+  return count_mesh_cells_along_edge;
+}
 
 struct Simulation* simulation_new_node()
 {
@@ -540,6 +554,36 @@ void simulation_set_input(struct Simulation* first_node,
       if (toml_rtod(raw, &time_step_size))
       {
         fprintf(stderr, "ERROR: bad value in 'time_step_size'\n");
+        toml_free(input);
+        exit(1);
+      }
+    }
+  }
+
+  // Locate table [visualisation]
+  table = toml_table_in(input, "visualisation");
+  if(table != 0)
+  {
+    // Extract value in table [visualisation]
+    // sea_surface_edge_length
+    raw = toml_raw_in(table, "sea_surface_edge_length");
+    if(raw != 0)
+    {
+      if (toml_rtod(raw, &sea_surface_edge_length))
+      {
+        fprintf(stderr, "ERROR: bad value in 'sea_surface_edge_length'\n");
+        toml_free(input);
+        exit(1);
+      }
+    }
+
+    // count_mesh_cells_along_edge
+    raw = toml_raw_in(table, "count_mesh_cells_along_edge");
+    if(raw != 0)
+    {
+      if (toml_rtoi(raw, &count_mesh_cells_along_edge))
+      {
+        fprintf(stderr, "ERROR: bad value in 'count_mesh_cells_along_edge'\n");
         toml_free(input);
         exit(1);
       }

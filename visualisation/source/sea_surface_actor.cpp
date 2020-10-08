@@ -29,7 +29,7 @@ Sea_surface_actor::Sea_surface_actor(struct Wave* wave):
   sea_surface_mapper->SetInputConnection(this->GetOutputPort());
   sea_surface_actor = vtkSmartPointer<vtkActor>::New();
   sea_surface_actor->SetMapper(sea_surface_mapper);
-  //sea_surface_actor->GetProperty()->SetRepresentationToWireframe();
+  sea_surface_actor->GetProperty()->SetRepresentationToWireframe();
   sea_surface_actor->GetProperty()->SetColor(0,0,255); // blue waves
 }
 
@@ -183,7 +183,7 @@ void Sea_surface_actor::set_field_length(double field_length)
   set_sea_surface_points();
 }
 
-void Sea_surface_actor::set_sea_surface_grid_size(unsigned int grid_size)
+void Sea_surface_actor::set_sea_surface_grid_count(unsigned int grid_size)
 {
   if(grid_size <= 1)
   {

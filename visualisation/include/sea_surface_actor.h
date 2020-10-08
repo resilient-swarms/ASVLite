@@ -60,7 +60,7 @@ public:
    * @param grid_size the number of points along one edge of the sea
    * surface. The value should be greater than 1.
    */
-  void set_sea_surface_grid_size(unsigned int grid_size);
+  void set_sea_surface_grid_count(unsigned int grid_size);
 
   /**
    * Increment time count.

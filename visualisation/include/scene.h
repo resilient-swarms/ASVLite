@@ -39,26 +39,6 @@ public:
   void set_timer_step_size(double time_step_size);
 
   /**
-   * Override the default edge length of the square sea surface. Also resets the 
-   * control points on the surface.
-   * @param field_length is the edge length in meter. Value of length should be 
-   * a non-zero positive value.
-   */
-  void set_field_length(double field_length);
-
-  /**
-   * Method to set he number of points along both x and y directions
-   * of the square field. The default value for the number of points is
-   * provided by the constructor asv_swarm::Visualisation::Sea_surface_actor. 
-   * A higher number for the count will result in a more dense mesh representing the sea 
-   * surface. After updating the count the method resets all the points 
-   * as per the new count value.
-   * @param grid_size the number of points along one edge of the sea
-   * surface. The value should be greater than 1.
-   */
-  void set_sea_surface_grid_size(unsigned int grid_size);
-
-  /**
    * Starts the animation. 
    */
   void start();

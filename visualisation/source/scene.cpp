@@ -55,6 +55,12 @@ Scene::Scene(struct Simulation* first_node): vtkCommand{}
     renderer->AddActor(asv_actor->get_actor());
     asv_actor->set_timer_step_size(timer_step_size);
   }
+
+  // Set the sea surface mesh 
+  double field_length = get_sea_surface_edge_length();
+  int grid_count = get_count_mesh_cells_along_edge();
+  sea_surface_actor->set_field_length(field_length);
+  sea_surface_actor->set_sea_surface_grid_count(grid_count);
 }
 
 Scene::~Scene()
@@ -65,17 +71,6 @@ Scene::~Scene()
     delete asv_actor;
   }
 }
-
-void Scene::set_field_length(double field_length)
-{
-  sea_surface_actor->set_field_length(field_length);
-}
-
-void Scene::set_sea_surface_grid_size(unsigned int grid_size)
-{
-  sea_surface_actor->set_sea_surface_grid_size(grid_size);
-}
-
 
 void Scene::start()
 {

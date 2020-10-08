@@ -118,4 +118,15 @@ void simulation_run_with_time_sync(struct Simulation* first_node);
  */
 void simulation_with_time_sync_for_time_step(struct Simulation* first_node, long timer_count, bool* buffer_exceeded, bool* has_all_reached_final_waypoint);
 
+/**
+ * Visualisation data from input file. Function to get the sea surface edge length in meter.
+ */
+double get_sea_surface_edge_length();
+
+/** 
+ * Visualisation data from input file. Function to get the number of mesh cells along 
+ * one edge of the sea surface.
+ */
+int get_count_mesh_cells_along_edge();
+
 #endif // SIMULATION_H
