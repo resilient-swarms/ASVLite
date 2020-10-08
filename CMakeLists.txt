@@ -5,18 +5,25 @@ PROJECT(asv_simulator C)
 # ENABLE MULTI-THREADING
 # --------------------------------------
 OPTION(ENABLE_MULTI_THREADING "Enable multi-threading." ON) # Enabled by default
-if(NOT ENABLE_MULTI_THREADING)
-  add_definitions(-DDISABLE_MULTI_THREADING)
-  message(STATUS "Multi-threading disabled.")
+IF(NOT ENABLE_MULTI_THREADING)
+  ADD_DEFINITIONS(-DDISABLE_MULTI_THREADING)
+  MESSAGE(STATUS "Multi-threading disabled.")
+ELSE()
+  MESSAGE(STATUS "Multi-threading enabled.")
 endif(NOT ENABLE_MULTI_THREADING)
 
 # ENABLE TIME SYNC WHILE MULTI-THREADING
 # --------------------------------------
 OPTION(ENABLE_TIME_SYNC "Enable time sync between parallel threads." OFF) # Desabled by default
-if(ENABLE_TIME_SYNC)
-  add_definitions(-DENABLE_TIME_SYNC)
-  message(STATUS "Time sycn between threads enabled.")
-endif(ENABLE_TIME_SYNC)
+IF(ENABLE_MULTI_THREADING)
+  IF(ENABLE_TIME_SYNC)
+    ADD_DEFINITIONS(-DENABLE_TIME_SYNC)
+    MESSAGE(STATUS "Time sycn between threads enabled.")
+  ELSE()
+    MESSAGE(STATUS "Time sycn between threads disabled.")
+  ENDIF(ENABLE_TIME_SYNC)
+ENDIF(ENABLE_MULTI_THREADING)
+
 
 # INCLUDE HEADER FILES DIRECTORIES
 # --------------------------------
