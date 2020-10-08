@@ -113,4 +113,9 @@ void simulation_run_without_time_sync(struct Simulation* first_node);
  */
 void simulation_run_with_time_sync(struct Simulation* first_node);
 
+/**
+ * For all nodes simulate one time step.
+ */
+void simulation_with_time_sync_for_time_step(struct Simulation* first_node, long timer_count, bool* buffer_exceeded, bool* has_all_reached_final_waypoint);
+
 #endif // SIMULATION_H
