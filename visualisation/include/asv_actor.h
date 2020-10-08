@@ -55,13 +55,6 @@ public:
                        void* vtkNotUsed(callData));
 
 private:
-  /** 
-   * Method to set the compute the sea surface elevations at the grid points.
-   * @param time in seconds from the start of simulation.
-   */
-  void set_asv_position_attitude(double time);
-
-private:
   unsigned long timer_count;
   double timer_step_size; // sec
   double current_time; // sec

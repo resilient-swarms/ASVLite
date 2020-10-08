@@ -3,7 +3,7 @@
 #include "simulation.h"
 #include <sys/stat.h> // for creating directory
 
-struct Wave wave;
+static struct Wave wave;
 
 struct Simulation* simulation_new_node()
 {

@@ -27,7 +27,6 @@ Asv_actor::Asv_actor(struct Asv* asv):
   asv_actor->GetProperty()->SetColor(1.0000, 0.3882, 0.2784);
 
   // Set the position at time step 0
-  asv_compute_dynamics(asv, 0.0);
   double x = asv->origin_position.x;
   double y = asv->origin_position.y;
   double z = asv->origin_position.z + asv->spec.D/2.0; // The SetPosition() takes the coordinates of the centre of the ASV.
@@ -61,8 +60,6 @@ void Asv_actor::increment_time()
 void Asv_actor::Execute(vtkObject* caller, unsigned long eventId,
                        void* vtkNotUsed(callData))
 {
-  asv_compute_dynamics(asv, current_time);
-
   // Set the ASV position for current time step
   double x = asv->origin_position.x;
   double y = asv->origin_position.y;
