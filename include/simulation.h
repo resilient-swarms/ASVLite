@@ -111,12 +111,12 @@ void simulation_run_without_time_sync(struct Simulation* first_node);
  * compared to the alternative simulate_without_time_sync() because the function
  * waits and joins the threads at each time step.
  */
-void simulation_run_with_time_sync(struct Simulation* first_node);
+void simulation_run(struct Simulation* first_node);
 
 /**
  * For all nodes simulate one time step.
  */
-void simulation_with_time_sync_for_time_step(struct Simulation* first_node, long timer_count, bool* buffer_exceeded, bool* has_all_reached_final_waypoint);
+void simulation_for_time_step(struct Simulation* first_node, long timer_count, bool* buffer_exceeded, bool* has_all_reached_final_waypoint);
 
 /**
  * Visualisation data from input file. Function to get the sea surface edge length in meter.

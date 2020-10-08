@@ -37,8 +37,10 @@ int main(int argc, char** argv)
   // time() provides a resolution of only 1 sec so its not good if simulation is really short. 
   // In a unix the better option is to use clock_gettime() along with CLOCK_MONOTONIC. 
   clock_gettime(CLOCK_MONOTONIC, &start);
-  #ifdef ENABLE_TIME_SYNC
-  simulation_run_with_time_sync(simulation);
+  #ifdef DISABLE_MULTI_THREADING
+  simulation_run(simulation);
+  #elif ENABLE_TIME_SYNC
+  simulation_run(simulation);
   #else
   simulation_run_without_time_sync(simulation);
   #endif

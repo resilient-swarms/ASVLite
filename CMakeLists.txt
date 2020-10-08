@@ -2,6 +2,14 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.1.0)
 
 PROJECT(asv_simulator C)
 
+# ENABLE MULTI-THREADING
+# --------------------------------------
+OPTION(ENABLE_MULTI_THREADING "Enable multi-threading." ON) # Enabled by default
+if(NOT ENABLE_MULTI_THREADING)
+  add_definitions(-DDISABLE_MULTI_THREADING)
+  message(STATUS "Multi-threading disabled.")
+endif(NOT ENABLE_MULTI_THREADING)
+
 # ENABLE TIME SYNC WHILE MULTI-THREADING
 # --------------------------------------
 OPTION(ENABLE_TIME_SYNC "Enable time sync between parallel threads." OFF) # Desabled by default

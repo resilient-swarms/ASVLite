@@ -780,7 +780,7 @@ void compute_dynamics_per_thread_no_time_sync(void* current_node)
   }
 }
 
-void simulation_with_time_sync_for_time_step(struct Simulation* first_node, long t, bool* buffer_exceeded, bool* has_all_reached_final_waypoint)
+void simulation_for_time_step(struct Simulation* first_node, long t, bool* buffer_exceeded, bool* has_all_reached_final_waypoint)
 {
   // Create threads
     // int limit_threads = get_nprocs();
@@ -803,9 +803,14 @@ void simulation_with_time_sync_for_time_step(struct Simulation* first_node, long
           break;        
         }
         *has_all_reached_final_waypoint = false;
+        #ifdef DISABLE_MULTI_THREADING
+        compute_dynamics((void*)node);
+        #else
         pthread_create(&(node->thread), NULL, &compute_dynamics, (void*)node);
+        #endif
       }
     }
+    #ifndef DISABLE_MULTI_THREADING
     // join threads
     for(struct Simulation* node = first_node; node != NULL; node = node->next)
     {
@@ -814,9 +819,10 @@ void simulation_with_time_sync_for_time_step(struct Simulation* first_node, long
         pthread_join(node->thread, NULL);
       }
     }
+    #endif
 }
 
-void simulation_run_with_time_sync(struct Simulation* first_node)
+void simulation_run(struct Simulation* first_node)
 {
   bool buffer_exceeded = false;
   for(long t = 0; ; ++t)
@@ -824,7 +830,7 @@ void simulation_run_with_time_sync(struct Simulation* first_node)
     // Variable to check if all reached the destination.
     bool has_all_reached_final_waypoint = true;
 
-    simulation_with_time_sync_for_time_step(first_node, t, &buffer_exceeded, &has_all_reached_final_waypoint);
+    simulation_for_time_step(first_node, t, &buffer_exceeded, &has_all_reached_final_waypoint);
 
     // stop if all reached the destination or if buffer exceeded.
     if(has_all_reached_final_waypoint || buffer_exceeded)

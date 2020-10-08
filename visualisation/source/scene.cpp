@@ -103,7 +103,7 @@ void Scene::Execute(vtkObject *caller,
   // Compute for current time step.
   bool buffer_exceeded = false;
   bool has_all_reached_final_waypoint = true;
-  simulation_with_time_sync_for_time_step(first_node, timer_count, &buffer_exceeded, &has_all_reached_final_waypoint);
+  simulation_for_time_step(first_node, timer_count, &buffer_exceeded, &has_all_reached_final_waypoint);
   // stop if all reached the destination or if buffer exceeded.
   if(has_all_reached_final_waypoint || buffer_exceeded)
   {
