@@ -12,10 +12,6 @@ Scene::Scene(struct Simulation* first_node): vtkCommand{}
   timer_step_size = first_node->asv->dynamics.time_step_size;
   this->first_node = first_node;
 
-  // Actors initialised to nullptr. Actors must be initialised by calling the
-  // corresponding initialise_actor method. 
-  sea_surface_actor = nullptr;
-
   // Create the renderer, window and interactor 
   renderer = vtkSmartPointer<vtkRenderer>::New();
   window = vtkSmartPointer<vtkRenderWindow>::New();
@@ -61,15 +57,6 @@ Scene::Scene(struct Simulation* first_node): vtkCommand{}
   int grid_count = get_count_mesh_cells_along_edge();
   sea_surface_actor->set_field_length(field_length);
   sea_surface_actor->set_sea_surface_grid_count(grid_count);
-}
-
-Scene::~Scene()
-{
-  delete this->sea_surface_actor;
-  for(auto asv_actor : asv_actors)
-  {
-    delete asv_actor;
-  }
 }
 
 void Scene::start()

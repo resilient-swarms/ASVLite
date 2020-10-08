@@ -28,11 +28,6 @@ public:
   Scene(struct Simulation* node);
 
   /**
-   * Clean the heap.
-   */
-  ~Scene();
-
-  /**
    * Override the default frame rate for animation.
    * @param time_step_size time step size in seconds
    */
