@@ -121,7 +121,7 @@ void Scene::Execute(vtkObject *caller,
   if(has_all_reached_final_waypoint || buffer_exceeded)
   {
     // stop simulation
-    exit(0);
+    interactor->ExitCallback();
   }
 
   // Update sea surface visualisation

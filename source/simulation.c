@@ -741,7 +741,7 @@ void compute_dynamics(void* current_node)
   node->buffer[node->current_time_index].surge_acceleration = node->asv->dynamics.A[surge];
 
   // Check if reached the waypoint
-  double proximity_margin = 10.0; // target proximity to waypoint
+  double proximity_margin = 1.0; // target proximity to waypoint
   int i = node->current_waypoint_index;
   double x = node->asv->cog_position.x - node->waypoints->points[i].x;
   double y = node->asv->cog_position.y - node->waypoints->points[i].y;
