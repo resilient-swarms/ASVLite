@@ -132,7 +132,7 @@ void Scene::Execute(vtkObject *caller,
   // Update sea surface visualisation
   sea_surface_actor->Modified();
   
-  vtkRenderWindowInteractor *interactor =
-    static_cast<vtkRenderWindowInteractor*>(caller);
+  //vtkRenderWindowInteractor *interactor =
+  //  static_cast<vtkRenderWindowInteractor*>(caller);
   interactor->Render();
 }
