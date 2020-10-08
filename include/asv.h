@@ -108,9 +108,6 @@ struct Asv
                                                          //!< ASV propeller
                                                          //!< instances. 
   struct Wave* wave; //!< Input variable. Irregular wave instance. 
-  struct Regular_wave* regular_wave; //!< Input variable. Regular wave instance. 
-                                    //!< Used only when wave_type is set as 
-                                    //!< regular wave.
 
   // Initial used for input but later contains results. 
   struct Dimensions origin_position; //!< Initially set as input but later 
