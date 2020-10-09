@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Data processing
 import numpy as np 
 import pandas as pd 
@@ -7,10 +9,70 @@ import os
 import sys
 import shutil
 
+include_string = str("""
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
+#ifdef WIN32
+#define _USE_MATH_DEFINES
+#endif
+
+#include <math.h>
+
+#define PI M_PI
+#define G 9.81 /*!< Acceleration due to gravity in m/s2 */ 
+#define SEA_WATER_DENSITY 1025 /*!< Sea water density in Kg/m3 */
+#define AIR_DENSITY 1.2 /*!< Kg/m3 */
+
+#define COUNT_WAVE_SPECTRAL_FREQUENCIES {count_freq}/*!< Number of frequency bands in the 
+                                            wave spectrum. */
+#define COUNT_WAVE_SPECTRAL_DIRECTIONS  {count_directions} /*!< Number of direction bands in the 
+                                            wave spectrum. Ideal if this is an 
+                                            odd number.*/
+
+#define COUNT_ASV_SPECTRAL_DIRECTIONS 360 /*!< Number of directions in 
+                                            the wave force spectrum. */
+#define COUNT_ASV_SPECTRAL_FREQUENCIES 100 /*!< Number of frequencies in the
+                                             wave force spectrum. */
+
+#define COUNT_DOF 6 /*!< Number of degrees of freedom for the motion of ASV. */
+#define COUNT_PROPELLERS_MAX 4 /*!< Maximum number of propellers an ASV can 
+                                 have.*/
+
+#define COUNT_WAYPOINTS_MAX 20 /*!< Maximum number of waypoints through which 
+                                 the ASV will navigate. */
+
+#define OUTPUT_BUFFER_SIZE 200000 /*!< Output buffer size. */
+
+#endif // CONSTANTS_H
+""")
+
+wave_frequencies = [5,10,15,15,15,20]
+wave_directions = [3,3,5,9,13,13]
+
+wave_count_dir = "wave_count_{count}"
+include_dir = wave_count_dir + "/include"
+
 build_dir = "{dir}/build"
 build_dir_threading_disabled = build_dir + "/threading_disabled"
 build_dir_threading_with_sync = build_dir + "/threading_with_sync"
 build_dir_threading_without_sync = build_dir + "/threading_without_sync"
+
+def create_include_dirs():
+	for i in range(len(wave_frequencies)):
+		wave_count = wave_frequencies[i] * wave_directions[i]
+		os.mkdir(wave_count_dir.format(count=wave_count))
+
+def create_include_files():
+	for i in range(len(wave_frequencies)):
+		wave_count = wave_frequencies[i] * wave_directions[i]
+		shutil.copytree("../../../include", include_dir.format(count=wave_count)) 
+		# overwite constants.h
+		file_name = include_dir + "/constants.h"
+		file = open(file_name.format(count=wave_count),"w")
+		file.write(include_string.format(count_freq=wave_frequencies[i], count_directions=wave_directions[i]))
+		# copy the cmakelist file
+		shutil.copyfile("./CMakeLists.txt", wave_count_dir.format(count=wave_count)+"/CMakeLists.txt")
 
 def create_build_dir(wave_dir):
 	os.mkdir(build_dir.format(dir=wave_dir))
@@ -22,6 +84,8 @@ def create_build_dir(wave_dir):
 # This test rely on the asv_swarm binaries created in each of the subforders.
 # Create the binaries if it does not exist by calling this function.
 def build_all():
+	create_include_dirs()
+	create_include_files()
 	project_dir = "../../"
 	subfolders = [ f.path for f in os.scandir(".") if f.is_dir() ]
 	for wave_dir in subfolders:
@@ -70,8 +134,13 @@ def clean_output():
 			shutil.rmtree(path_to_asv_out)
 
 def clean_all():
-	clean_bin()
-	clean_output()
+	# remove wave count dirs
+	subfolders = [ f.path for f in os.scandir(".") if f.is_dir() ]
+	for dir in subfolders:
+		# check if dir exist
+		if(os.path.isdir(dir)):
+			print("removing " + dir)
+			shutil.rmtree(dir)
 
 def write_summary(time_file, summary_file, build_type, wave_count):
 	data = pd.read_csv(time_file, sep=" ", header=None)
@@ -86,15 +155,14 @@ def write_summary(time_file, summary_file, build_type, wave_count):
 # Run the simulation defined in each subdirectory
 def run_all():
 	wave_ht = 1.0
-	wave_heading = 90
-	rand = 1
+	wave_heading = 180
 	# Write the simulation run times to file
 	summary_file = open("./run_time", "wb", buffering=0)
 	summary_file.write("swarm_size real_time(s) sim_time(s) real_to_sim_ratio\n".encode())
 	subfolders = [ f.path for f in os.scandir(".") if f.is_dir() ]
 	for dir in subfolders:
 		print("Run simulation in directory - " + dir)
-		ps = subprocess.Popen(["python3", "simulate.py", str(wave_ht), str(wave_heading), str(rand)], cwd=dir)
+		ps = subprocess.Popen(["../simulate.py", str(wave_ht), str(wave_heading)], cwd=dir)
 		# Run each simulation one after the other
 		ps.wait()
 		

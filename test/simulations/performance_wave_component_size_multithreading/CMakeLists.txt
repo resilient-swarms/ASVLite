@@ -28,7 +28,7 @@ ENDIF(ENABLE_MULTI_THREADING)
 # INCLUDE HEADER FILES DIRECTORIES
 # --------------------------------
 INCLUDE_DIRECTORIES(
-  ../../../../include
+  include
   ../../../../dependency/tomlc99
   )
 
