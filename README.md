@@ -1,16 +1,16 @@
-# ASV-Swarm
+# ASVLite
 
 ## Introduction
-ASV-Swarm is a simulator that provides high fidelity and computationally
+ASVLite is a simulator that provides high fidelity and computationally
 efficient model of ocean waves and dynamics of marine surface vehicles in waves.
 The simulator is ideal for applications requiring high run-time performance,
 such as with simulation of a swarm of autonomous marine vehicles, or in
 developing optimal vehicle control strategies using reinforcement learning
-techniques. ASV-Swarm also has a low computational overhead making it ideal for
+techniques. ASVLite also has a low computational overhead making it ideal for
 onboard simulation for applications such as online learning for adaptation to
 changes in the environment. 
 
-If you are using this simulator for your reasearch, then please cite: [ASV-Swarm: a high-performance simulator for the dynamics of a swarm of autonomous marine vehicles in waves](https://arxiv.org/abs/2003.04599).
+If you are using this simulator for your research, then please cite: [ASVLite: a high-performance simulator for autonomous surface vehicles](https://arxiv.org/abs/2003.04599).
 
 ## Build instruction
 ``` 
@@ -98,13 +98,13 @@ x = 100.0
 y = 150.0
 
 
-# Following set of inputs are optional
+# Following input is optional
 # Set the time step size for simulation.
 [clock]
 time_step_size = 40
 ```
 
-## Using ASV-Swarm as a software library. 
+## Using ASVLite as a software library. 
 
-For details of the programming interface provided by ASV-Swarm,
-refer the Doxygen generated documentation `doc/html/index.html`.
+For details of the programming interface provided by ASVLite,
+refer to the Doxygen generated documentation `doc/html/index.html`.
