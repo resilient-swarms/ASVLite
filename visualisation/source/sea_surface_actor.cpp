@@ -3,6 +3,11 @@
 #include <iostream>
 #include <iomanip>
 
+#include <vtkDelaunay2D.h>
+#include <vtkLookupTable.h>
+#include <vtkMath.h>
+#include <vtkPointData.h>
+
 using namespace asv_swarm;
 using namespace Visualisation;
 
@@ -29,7 +34,7 @@ Sea_surface_actor::Sea_surface_actor(struct Wave* wave):
   sea_surface_mapper->SetInputConnection(this->GetOutputPort());
   sea_surface_actor = vtkSmartPointer<vtkActor>::New();
   sea_surface_actor->SetMapper(sea_surface_mapper);
-  sea_surface_actor->GetProperty()->SetRepresentationToWireframe();
+  //sea_surface_actor->GetProperty()->SetRepresentationToWireframe();
   sea_surface_actor->GetProperty()->SetColor(0,0,255); // blue waves
 }
 
@@ -43,7 +48,6 @@ int Sea_surface_actor::RequestData(vtkInformation* request,
                                    vtkInformationVector** inputVector,
                                    vtkInformationVector* outputVector)
 {
-  
   // Get output
   vtkPolyData* output = vtkPolyData::GetData(outputVector,0);
 
@@ -128,10 +132,48 @@ int Sea_surface_actor::RequestData(vtkInformation* request,
       }
     }
   }
-  
+
   // Create the mesh
   output->SetPoints(sea_surface_mesh_points);
   output->SetPolys(sea_surface_mesh_cells);
+
+  // Create the color map
+  double bounds[6];
+  output->GetBounds(bounds);
+  // Find min and max z
+  double minz = bounds[4];
+  double maxz = bounds[5];
+  
+  vtkSmartPointer<vtkLookupTable> colorLookupTable =
+    vtkSmartPointer<vtkLookupTable>::New();
+  colorLookupTable->SetTableRange(minz, maxz);
+  colorLookupTable->Build();
+
+  // Generate the colors for each point based on the color map
+  vtkSmartPointer<vtkUnsignedCharArray> colors =
+    vtkSmartPointer<vtkUnsignedCharArray>::New();
+  colors->SetNumberOfComponents(3);
+  colors->SetName("Colors");
+  // Set colors
+  for(int i = 0; i < output->GetNumberOfPoints(); i++)
+  {
+    double p[3];
+    output->GetPoint(i,p);
+
+    double dcolor[3];
+    colorLookupTable->GetColor(p[2], dcolor);
+
+    unsigned char color[3];
+    for(unsigned int j = 0; j < 3; j++)
+    {
+      color[j] = static_cast<unsigned char>(255.0 * dcolor[j]);
+    }
+
+    colors->InsertNextTypedTuple(color);
+  }
+  output->GetPointData()->SetScalars(colors);
+
+  // Output modified
   output->Modified();
   return 1;
 }
