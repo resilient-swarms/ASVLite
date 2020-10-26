@@ -38,70 +38,70 @@ asv_simulator input_file out_file 1.2 20.0 3
 The `input_file` uses `toml` syntax and should provide the inputs required for the simulation. Given below is an example of an input file. 
 ```
 # Physical specification of the vehicle. 
-[spec]
-L_wl = 0.3
-B_wl = 0.3
-D = 0.3
-T = 0.1
-displacement = 0.007
-max_speed = 2.0
 
-# Center of gravity of the vehicle.
-[cog]
-x = 0.15
-y = 0.00
-z = -0.2
+[[asv]]
+id = "asv0"
+L_wl = 0.3 # m
+B_wl = 0.3 # m
+D = 0.3  # m
+T = 0.1 # m
+displacement = 0.007 # m3
+max_speed = 2.0 # m/s
+cog = [0.15, 0.0, -0.2] # [x(m), y(m), z(m)]
+radius_of_gyration = [0.08, 0.08, 0.106] # [r_roll(m), r_pitch(m), r_yaw(m)]
+thrusters = [[0.065, -0.085, -0.0485], 
+			 [0.235, -0.085, -0.0485], 
+			 [0.235, 0.085, -0.0485], 
+			 [0.065, 0.085, -0.0485]] # [[x(m), y(m), z(m)]]
+asv_position = [5.0, 0.0] # [X(m), Y(m)]
+asv_attitude = [0.0, 0.0, 0.0] #[heel(deg), trim(deg), heading(deg)]
+waypoints = [[5.0, 20.0]] # [[X(m), Y(m)]]
 
-# Radius of gyration of the vehicle.
-[radius_of_gyration]
-roll = 0.08
-pitch = 0.08
-yaw = 0.106
+# For simulating multiple vehicle, define multiple tables of [[asv]]
+# A second ASV
+[[asv]]
+id = "asv1"
+L_wl = 0.3 # m
+B_wl = 0.3 # m
+D = 0.3  # m
+T = 0.1 # m
+displacement = 0.007 # m3
+max_speed = 2.0 # m/s
+cog = [0.15, 0.0, -0.2] # [x(m), y(m), z(m)]
+radius_of_gyration = [0.08, 0.08, 0.106] # [r_roll(m), r_pitch(m), r_yaw(m)]
+thrusters = [[0.065, -0.085, -0.0485], 
+			 [0.235, -0.085, -0.0485], 
+			 [0.235, 0.085, -0.0485], 
+			 [0.065, 0.085, -0.0485]] # [[x(m), y(m), z(m)]]
+asv_position = [10.0, 0.0] # [X(m), Y(m)]
+asv_attitude = [0.0, 0.0, 0.0] #[heel(deg), trim(deg), heading(deg)]
+waypoints = [[10.0, 20.0]] # [[X(m), Y(m)]]
 
-# Set the position of propellers. 
-# Here we set 4 propellers for the vehicle.
-# Propeller - 1 
-[[propeller]]
-x = 0.065
-y = -0.085
-z = -0.0485
-# Propeller - 2
-[[propeller]]
-x = 0.235
-y = -0.085
-z = -0.0485
-# Propeller - 3
-[[propeller]]
-x = 0.235
-y = 0.085
-z = -0.0485
-# Propeller - 4
-[[propeller]]
-x = 0.065
-y = 0.085
-z = -0.0485
+# A third ASV
+[[asv]]
+id = "asv2"
+L_wl = 0.3 # m
+B_wl = 0.3 # m
+D = 0.3  # m
+T = 0.1 # m
+displacement = 0.007 # m3
+max_speed = 2.0 # m/s
+cog = [0.15, 0.0, -0.2] # [x(m), y(m), z(m)]
+radius_of_gyration = [0.08, 0.08, 0.106] # [r_roll(m), r_pitch(m), r_yaw(m)]
+thrusters = [[0.065, -0.085, -0.0485], 
+			 [0.235, -0.085, -0.0485], 
+			 [0.235, 0.085, -0.0485], 
+			 [0.065, 0.085, -0.0485]] # [[x(m), y(m), z(m)]]
+asv_position = [15.0, 0.0] # [X(m), Y(m)]
+asv_attitude = [0.0, 0.0, 0.0] #[heel(deg), trim(deg), heading(deg)]
+waypoints = [[15.0, 20.0]] # [[X(m), Y(m)]]
 
-# Initial position of the vehicle.
-[vehicle_position]
-x = 100.0
-y = 100.0
-
-# Initial floating attitude of the vehicle. 
-[vehicle_attitude]
-heel = 0
-trim = 0
-heading = 0
-
-# Define the waypoints for navigation. 
-[[waypoint]]
-x = 100.0
-y = 150.0
-
-
-# Following input is optional
-# Set the time step size for simulation.
 [clock]
-time_step_size = 40
+time_step_size = 40 # milli-sec
+
+[visualisation]
+sea_surface_edge_length = 20.0 #m
+count_mesh_cells_along_edge = 20 # Number of mesh cells along one edge of the sea surface. A larger number means a finer sea surface mesh.
 ```
 
 ## Using ASVLite as a software library. 
