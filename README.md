@@ -1,16 +1,13 @@
 # ASVLite
 
 ## Introduction
-ASVLite is a simulator that provides high fidelity and computationally
-efficient model of ocean waves and dynamics of marine surface vehicles in waves.
-The simulator is ideal for applications requiring high run-time performance,
-such as with simulation of a swarm of autonomous marine vehicles, or in
-developing optimal vehicle control strategies using reinforcement learning
-techniques. ASVLite also has a low computational overhead making it ideal for
-onboard simulation for applications such as online learning for adaptation to
-changes in the environment. 
+ASVLite is a simulator that provides high fidelity and computationally efficient model of ocean waves and dynamics of marine surface vehicles in waves. The simulator is ideal for applications requiring high run-time performance, such as with simulation of a swarm of autonomous marine vehicles, or in developing optimal vehicle control strategies using reinforcement learning techniques. ASVLite also has a low computational overhead making it ideal for onboard simulation for applications such as online learning for adaptation to changes in the environment. 
 
 If you are using this simulator for your research, then please cite: [ASVLite: a high-performance simulator for autonomous surface vehicles](https://arxiv.org/abs/2003.04599).
+
+The image below show visualisation of the ocean surface and three ASVs simulated by ASVLite.
+
+![visualisation](/home/toby/Dropbox/Toby/robotics/marine_robots/asv_swarm/simulator.png)
 
 ## Build instruction
 ``` 
