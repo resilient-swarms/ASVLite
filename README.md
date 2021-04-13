@@ -7,7 +7,7 @@ If you are using this simulator for your research, then please cite: [ASVLite: a
 
 The image below show visualisation of the ocean surface and three ASVs simulated by ASVLite.
 
-![visualisation](/home/toby/Dropbox/Toby/robotics/marine_robots/asv_swarm/simulator.png)
+![visualisation](./simulator.png)
 
 ## Build instruction
 ``` 
