@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['dimensions',['Dimensions',['../struct_dimensions.html',1,'']]]
+  ['buffer_70',['Buffer',['../struct_buffer.html',1,'']]]
 ];

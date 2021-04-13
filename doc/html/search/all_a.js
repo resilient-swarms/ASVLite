@@ -1,9 +1,12 @@
 var searchData=
 [
-  ['m',['M',['../struct_asv__dynamics.html#a15e5fef275322220bb92d5a2c015380d',1,'Asv_dynamics']]],
-  ['max_5fspectral_5ffrequency',['max_spectral_frequency',['../struct_wave.html#ab3951d5df9bf29bf44aeacd7b9ad7a4f',1,'Wave']]],
-  ['max_5fspectral_5fwave_5fheading',['max_spectral_wave_heading',['../struct_wave.html#ad6527ba2c902600ea4c4c28de56fe3ee',1,'Wave']]],
-  ['max_5fspeed',['max_speed',['../struct_asv__specification.html#afc63794230f4ed5c00480c299e67ba7c',1,'Asv_specification']]],
-  ['min_5fspectral_5ffrequency',['min_spectral_frequency',['../struct_wave.html#ada870b8499e08abab278845a2b7bbb80',1,'Wave']]],
-  ['min_5fspectral_5fwave_5fheading',['min_spectral_wave_heading',['../struct_wave.html#a30051ca4ed611cf7de0b3afbd50ba178',1,'Wave']]]
+  ['p_5funit_5fregular_5fwave_36',['P_unit_regular_wave',['../struct_asv__dynamics.html#a61ccee83fe2d4cc7ff0c8272568bd222',1,'Asv_dynamics']]],
+  ['p_5funit_5fwave_37',['P_unit_wave',['../struct_asv__dynamics.html#a482e201094358970a67018c10efd2209',1,'Asv_dynamics']]],
+  ['p_5funit_5fwave_5ffreq_5fmax_38',['P_unit_wave_freq_max',['../struct_asv__dynamics.html#aade0c1a551058387b4eb49997e227714',1,'Asv_dynamics']]],
+  ['p_5funit_5fwave_5ffreq_5fmin_39',['P_unit_wave_freq_min',['../struct_asv__dynamics.html#a957ac38fc536e175112892fe6cb1a4bd',1,'Asv_dynamics']]],
+  ['peak_5fspectral_5ffrequency_40',['peak_spectral_frequency',['../struct_wave.html#a1d20d246d04824229085f7a2737ca0c0',1,'Wave']]],
+  ['phase_5flag_41',['phase_lag',['../struct_regular__wave.html#ac3cb2006150ee0f537f5a962681b0f57',1,'Regular_wave']]],
+  ['pid_5fcontroller_42',['PID_controller',['../struct_p_i_d__controller.html',1,'']]],
+  ['position_43',['position',['../struct_asv__propeller.html#a94a3a1ad726701cb30d9d92c4ea13835',1,'Asv_propeller']]],
+  ['propellers_44',['propellers',['../struct_asv.html#add69cbb40d0f68a43e829c74831dcaf7',1,'Asv']]]
 ];

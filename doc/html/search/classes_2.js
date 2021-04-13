@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['regular_5fwave',['Regular_wave',['../struct_regular__wave.html',1,'']]]
+  ['dimensions_71',['Dimensions',['../struct_dimensions.html',1,'']]]
 ];

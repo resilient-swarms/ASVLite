@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['wave',['Wave',['../struct_wave.html',1,'']]]
+  ['pid_5fcontroller_72',['PID_controller',['../struct_p_i_d__controller.html',1,'']]]
 ];

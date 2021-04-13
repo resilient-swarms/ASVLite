@@ -1,5 +1,5 @@
-/*! \mainpage ASV-Swarm
- * This document describes the API of ASV-Swarm. The annotated and relatively
+/*! \mainpage ASVLite
+ * This document describes the API of ASVLite. The annotated and relatively
  * simple code below demonstrates:
  * <ul>
  * <li> creating an instance of Asv,
@@ -124,9 +124,9 @@
 #define SEA_WATER_DENSITY 1025 /*!< Sea water density in Kg/m3 */
 #define AIR_DENSITY 1.2 /*!< Kg/m3 */
 
-#define COUNT_WAVE_SPECTRAL_FREQUENCIES 15/*!< Number of frequency bands in the 
+#define COUNT_WAVE_SPECTRAL_FREQUENCIES 20/*!< Number of frequency bands in the 
                                             wave spectrum. */
-#define COUNT_WAVE_SPECTRAL_DIRECTIONS  5 /*!< Number of direction bands in the 
+#define COUNT_WAVE_SPECTRAL_DIRECTIONS  13 /*!< Number of direction bands in the 
                                             wave spectrum. Ideal if this is an 
                                             odd number.*/
 

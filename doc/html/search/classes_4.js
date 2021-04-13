@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['wave',['Wave',['../struct_wave.html',1,'']]],
-  ['waypoints',['Waypoints',['../struct_waypoints.html',1,'']]]
+  ['regular_5fwave_73',['Regular_wave',['../struct_regular__wave.html',1,'']]]
 ];
