@@ -1,7 +1,7 @@
 # ASVLite
 
 ## Introduction
-ASVLite is a simulator that provides high fidelity and computationally efficient model of ocean waves and dynamics of marine surface vehicles in waves. The simulator is ideal for applications requiring high run-time performance, such as with simulation of a swarm of autonomous marine vehicles, or in developing optimal vehicle control strategies using reinforcement learning techniques. ASVLite also has a low computational overhead making it ideal for onboard simulation for applications such as online learning for adaptation to changes in the environment. 
+ASVLite is a simulator that provides a computationally efficient model of ocean waves and dynamics of marine surface vehicles in waves. The simulator is ideal for applications requiring high run-time performance, such as simulation of a swarm of autonomous marine vehicles or developing optimal vehicle control strategies using reinforcement learning techniques. ASVLite also has a low computational overhead making it ideal for on-board simulation for applications such as online learning for adaptation to changes in the environment. When simulating a swarm of ASVs, ASVLite takes advantage of multiple CPU cores, when available, by multi-threading the computation for each ASV on parallel threads. ASVLite has been implemented with a clear and simple programming interface written in the C programming language, making it easy to integrate with any existing or future software. Refer to the section [Using ASVLite as a software library](#Using ASVLite as a software library) for details of the programming interface.
 
 If you are using this simulator for your research, then please cite: [ASVLite: a high-performance simulator for autonomous surface vehicles](https://arxiv.org/abs/2003.04599).
 
@@ -20,6 +20,7 @@ make
 ```
 
 ## Running the simulator
+
 The simulator requires the following values as command-line arguments:
 1. input file, 
 2. output file,
@@ -101,7 +102,6 @@ sea_surface_edge_length = 20.0 #m
 count_mesh_cells_along_edge = 20 # Number of mesh cells along one edge of the sea surface. A larger number means a finer sea surface mesh.
 ```
 
-## Using ASVLite as a software library. 
+## Using ASVLite as a software library
 
-For details of the programming interface provided by ASVLite,
-refer to the Doxygen generated documentation `doc/html/index.html`.
+For details of the programming interface provided by ASVLite, refer to the Doxygen generated documentation `doc/html/index.html`.
