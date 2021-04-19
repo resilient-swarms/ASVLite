@@ -7,6 +7,7 @@
 static struct Wave wave;
 // Visualisation data
 static double sea_surface_edge_length;
+static struct Dimensions sea_surface_position;
 static int count_mesh_cells_along_edge;
 
 double get_sea_surface_edge_length()
@@ -17,6 +18,11 @@ double get_sea_surface_edge_length()
 int get_count_mesh_cells_along_edge()
 {
   return count_mesh_cells_along_edge;
+}
+
+struct Dimensions get_sea_surface_position()
+{
+  return sea_surface_position;
 }
 
 struct Simulation* simulation_new_node()
@@ -576,6 +582,40 @@ void simulation_set_input(struct Simulation* first_node,
         exit(1);
       }
     }
+
+    // sea_surface_position
+    toml_table_t *array = toml_array_in(table, "sea_surface_position");
+    if(array != 0)
+    {
+      // sea_surface_position.x
+      raw = toml_raw_at(array, 0);
+      if (raw == 0)
+      {
+        fprintf(stderr, "ERROR: missing 'sea_surface_position[0]'.\n");
+        toml_free(input);
+        exit(1);
+      }
+      if (toml_rtod(raw, &(sea_surface_position.x)))
+      {
+        fprintf(stderr, "ERROR: bad value in 'sea_surface_position[0]'.\n");
+        toml_free(input);
+        exit(1);
+      }
+      // sea_surface_position.y
+      raw = toml_raw_at(array, 1);
+      if (raw == 0)
+      {
+        fprintf(stderr, "ERROR: missing 'sea_surface_position[1]'.\n");
+        toml_free(input);
+        exit(1);
+      }
+      if (toml_rtod(raw, &(sea_surface_position.y)))
+      {
+        fprintf(stderr, "ERROR: bad value in 'sea_surface_position[1]'.\n");
+        toml_free(input);
+        exit(1);
+      }
+    }     
 
     // count_mesh_cells_along_edge
     raw = toml_raw_in(table, "count_mesh_cells_along_edge");

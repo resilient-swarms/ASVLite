@@ -63,6 +63,11 @@ public:
   void set_sea_surface_grid_count(unsigned int grid_size);
 
   /**
+   * Overide the default position of the simulated sea surface.
+   */
+  void set_sea_surface_position(struct Dimensions sea_surface_position);
+
+  /**
    * Increment time count.
    */
   void increment_time();
@@ -106,6 +111,7 @@ private:
   std::vector<std::vector<Dimensions>> sea_surface_points; // A grid of NxN points to represent the square sea surface. 
   unsigned int sea_surface_grid_size; // sea_surface_grid_size = N. Value must be greater than 1.
   double field_length; // Length in meter of one edge of the square sea surface.
+  struct Dimensions sea_surface_position; // Position of the bottom left corner of the simulated sea surface.
 }; // class Sea_surface_actor
 
 } // namespace Visualisation

@@ -34,7 +34,7 @@ Sea_surface_actor::Sea_surface_actor(struct Wave* wave):
   sea_surface_mapper->SetInputConnection(this->GetOutputPort());
   sea_surface_actor = vtkSmartPointer<vtkActor>::New();
   sea_surface_actor->SetMapper(sea_surface_mapper);
-  //sea_surface_actor->GetProperty()->SetRepresentationToWireframe();
+  sea_surface_actor->GetProperty()->SetRepresentationToWireframe();
   sea_surface_actor->GetProperty()->SetColor(0,0,255); // blue waves
 }
 
@@ -136,7 +136,7 @@ int Sea_surface_actor::RequestData(vtkInformation* request,
   // Create the mesh
   output->SetPoints(sea_surface_mesh_points);
   output->SetPolys(sea_surface_mesh_cells);
-
+/*
   // Create the color map
   double bounds[6];
   output->GetBounds(bounds);
@@ -172,7 +172,7 @@ int Sea_surface_actor::RequestData(vtkInformation* request,
     colors->InsertNextTypedTuple(color);
   }
   output->GetPointData()->SetScalars(colors);
-
+*/
   // Output modified
   output->Modified();
   return 1;
@@ -205,8 +205,8 @@ void Sea_surface_actor::set_sea_surface_points()
     std::vector<Dimensions> points_row;
     for(unsigned int j = 0; j < sea_surface_grid_size; ++j)
     {
-      double x = patch_length * j; // m
-      double y = patch_length * i; // m
+      double x = this->sea_surface_position.x + patch_length * j; // m
+      double y = this->sea_surface_position.y + patch_length * i; // m
       double z = 0.0; // m
       Dimensions point{x,y,z};
       points_row.push_back(point);
@@ -232,5 +232,11 @@ void Sea_surface_actor::set_sea_surface_grid_count(unsigned int grid_size)
     throw asv_swarm::Exception::ValueError("Sea surface grid size should be > 1");
   }
   sea_surface_grid_size = grid_size;
+  set_sea_surface_points();
+}
+
+void Sea_surface_actor::set_sea_surface_position(struct Dimensions sea_surface_position)
+{
+  this->sea_surface_position = sea_surface_position;
   set_sea_surface_points();
 }

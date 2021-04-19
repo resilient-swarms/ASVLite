@@ -129,4 +129,9 @@ double get_sea_surface_edge_length();
  */
 int get_count_mesh_cells_along_edge();
 
+/**
+ * Visualisation data from input file. Function to get the bottom left corner of the simulated sea surface.
+ */
+struct Dimensions get_sea_surface_position();
+
 #endif // SIMULATION_H

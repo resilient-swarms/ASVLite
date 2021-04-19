@@ -99,6 +99,7 @@ time_step_size = 40 # milli-sec
 
 [visualisation]
 sea_surface_edge_length = 20.0 #m
+sea_surface_position = [1000.0, 1000.0] # Position of the bottom-left corner of the simulated surface.
 count_mesh_cells_along_edge = 20 # Number of mesh cells along one edge of the sea surface. A larger number means a finer sea surface mesh.
 ```
 

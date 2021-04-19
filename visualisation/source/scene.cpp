@@ -14,6 +14,7 @@ Scene::Scene(struct Simulation* first_node): vtkCommand{}
 
   // Create the renderer, window and interactor 
   renderer = vtkSmartPointer<vtkRenderer>::New();
+  renderer->SetBackground(255, 255, 255);
   window = vtkSmartPointer<vtkRenderWindow>::New();
   window->AddRenderer(renderer);
   interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
@@ -55,8 +56,10 @@ Scene::Scene(struct Simulation* first_node): vtkCommand{}
   // Set the sea surface mesh 
   double field_length = get_sea_surface_edge_length();
   int grid_count = get_count_mesh_cells_along_edge();
+  struct Dimensions sea_surface_position = get_sea_surface_position();
   sea_surface_actor->set_field_length(field_length);
   sea_surface_actor->set_sea_surface_grid_count(grid_count);
+  sea_surface_actor->set_sea_surface_position(sea_surface_position);
 }
 
 void Scene::start()
