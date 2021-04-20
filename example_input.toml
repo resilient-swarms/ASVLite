@@ -10,6 +10,8 @@ displacement = 0.007 # m3
 max_speed = 2.0 # m/s
 cog = [0.15, 0.0, -0.2] # [x(m), y(m), z(m)]
 radius_of_gyration = [0.08, 0.08, 0.106] # [r_roll(m), r_pitch(m), r_yaw(m)]
+# NOTE: If using the PID controller, then there must be exactly 4 thrusters which 
+# must be entered in the following order = [fore_PS, fore_SB, aft_PS, aft_SB].
 thrusters = [[0.235, -0.085, -0.0485],
 			 [0.235, 0.085, -0.0485],
 			 [0.065, -0.085, -0.0485],
