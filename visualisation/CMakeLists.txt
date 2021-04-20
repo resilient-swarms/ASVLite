@@ -38,6 +38,7 @@ SET( SOURCE
   ../source/regular_wave.c
   ../source/wave.c
   ../source/asv.c
+  ../source/pid_controller.c
   )
 #visualisation source files
 SET( SOURCE

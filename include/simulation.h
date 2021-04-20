@@ -2,6 +2,7 @@
 #define SIMULATION_H
 
 #include "asv.h"
+#include "pid_controller.h"
 #include <pthread.h>
 
 /**
@@ -51,6 +52,7 @@ struct Simulation
   char id[32];
   struct Wave* wave;
   struct Asv* asv; 
+  struct PID_controller* pid_controller;
   struct Waypoints* waypoints;
   struct Buffer* buffer;
   // Data related to current time step in the simulation

@@ -31,6 +31,7 @@ struct Simulation* simulation_new_node()
   struct Simulation* node = (struct Simulation*)malloc(sizeof(struct Simulation));
   node->wave = &wave;
   node->asv = (struct Asv*)malloc(sizeof(struct Asv));
+  node->pid_controller = (struct PID_controller*)malloc(sizeof(struct PID_controller));
   node->waypoints = (struct Waypoint*)malloc(sizeof(struct Waypoints));
   node->buffer = (struct Buffer*)malloc(OUTPUT_BUFFER_SIZE * sizeof(struct Buffer));
   // Initialise pointers and index
@@ -49,6 +50,7 @@ void simulation_clean(struct Simulation* first_node)
     free(current_node->buffer);
     free(current_node->waypoints);
     free(current_node->asv);
+    free(current_node->pid_controller);
     free(current_node);
     current_node = next_node;
   }
@@ -630,7 +632,7 @@ void simulation_set_input(struct Simulation* first_node,
     }
   }
 
-  // Init the irregular wave
+  // Init the irregular wave and the PID controller
   wave_init(&wave, wave_ht, wave_heading * PI/180.0, rand_seed);
   // Init all asvs
   for(struct Simulation* node = first_node; node != NULL; node = node->next)
@@ -640,6 +642,18 @@ void simulation_set_input(struct Simulation* first_node,
     
     // Initialise the asv after setting all inputs.
     asv_init(node->asv, &wave);
+
+    // Initialise the PID controller
+    pid_controller_init(node->pid_controller);
+    // PID controller set gain terms
+    double p_position = 1.0   * node->asv->dynamics.time_step_size;
+    double i_position = 0.1   * node->asv->dynamics.time_step_size;
+    double d_position = -10.0 * node->asv->dynamics.time_step_size;
+    pid_controller_set_gains_position(node->pid_controller, p_position, i_position, d_position);
+    double p_heading = 1.0   * node->asv->dynamics.time_step_size;
+    double i_heading = 0.1   * node->asv->dynamics.time_step_size;
+    double d_heading = -10.0 * node->asv->dynamics.time_step_size;
+    pid_controller_set_gains_heading(node->pid_controller, p_heading, i_heading, d_heading);
   }
 
   // done reading inputs
@@ -747,11 +761,32 @@ void compute_dynamics(void* current_node)
   double current_time = node->current_time_index * node->asv->dynamics.time_step_size; //sec
 
   // set propeller thrust and direction
+  // for(int p = 0; p < node->asv->count_propellers; ++p)
+  // {
+  //   node->asv->propellers[p].thrust = 0.25; //N
+  //   node->asv->propellers[p].orientation = (struct Dimensions){0.0, 0.0, 0.0};
+  // }
+
+  // The propeller orientation is fixed. Steering is done by differential thrust.
   for(int p = 0; p < node->asv->count_propellers; ++p)
   {
-    node->asv->propellers[p].thrust = 0.25; //N
+    // Set a fixed orientation on each propeller
     node->asv->propellers[p].orientation = (struct Dimensions){0.0, 0.0, 0.0};
   }
+  // Set differential thrust on each propeller.
+  // ------------------------------------------
+  // In controller set the way point for the current time step
+  pid_controller_set_way_point(node->pid_controller, node->waypoints->points[node->current_waypoint_index]);
+  // Inform PID controller of the current state.
+  pid_controller_set_current_state(node->pid_controller, node->asv->cog_position, node->asv->attitude);
+  // PID controller estimate thrust to be applied on each propeller.
+  pid_controller_set_thrust(node->pid_controller);
+  // Set propeller thrust on each of the 4 propellers
+  node->asv->propellers[0].thrust = node->pid_controller->thrust_fore_ps; //N
+  node->asv->propellers[1].thrust = node->pid_controller->thrust_fore_sb; //N
+  node->asv->propellers[2].thrust = node->pid_controller->thrust_aft_ps;  //N
+  node->asv->propellers[3].thrust = node->pid_controller->thrust_aft_sb;  //N 
+
 
   // Compute the dynamics of asv for the current time step
   asv_compute_dynamics(node->asv, current_time);
@@ -781,7 +816,7 @@ void compute_dynamics(void* current_node)
   node->buffer[node->current_time_index].surge_acceleration = node->asv->dynamics.A[surge];
 
   // Check if reached the waypoint
-  double proximity_margin = 5.0; // target proximity to waypoint
+  double proximity_margin = 2.0; // target proximity to waypoint
   int i = node->current_waypoint_index;
   double x = node->asv->cog_position.x - node->waypoints->points[i].x;
   double y = node->asv->cog_position.y - node->waypoints->points[i].y;

@@ -137,7 +137,7 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   }
  
   // Calculate propeller thrust.
-  double max_thrust = 5.0; // SMARTY platform thruster has a maximum 
+  double max_thrust = 1.0; // SMARTY platform thruster has a maximum 
                            // capacity of 5N. 
 
   double heading_thrust = 
