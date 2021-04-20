@@ -473,8 +473,8 @@ static void set_position(struct Asv* asv)
 static void set_attitude(struct Asv* asv)
 {
   asv->attitude.z += asv->dynamics.X[yaw];
-  asv->attitude.x    += asv->dynamics.X[roll];
-  asv->attitude.y    += asv->dynamics.X[pitch];
+  asv->attitude.x += asv->dynamics.X[roll];
+  asv->attitude.y += asv->dynamics.X[pitch];
 }
 
 void asv_init(struct Asv* asv, struct Wave* wave)

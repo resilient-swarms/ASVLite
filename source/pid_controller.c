@@ -1,6 +1,9 @@
 #include "pid_controller.h"
 #include "constants.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 void pid_controller_init(struct PID_controller* controller)
 {
   controller->error_heading          = 0.0;
@@ -137,7 +140,7 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   }
  
   // Calculate propeller thrust.
-  double max_thrust = 1.0; // SMARTY platform thruster has a maximum 
+  double max_thrust = 5.0; // SMARTY platform thruster has a maximum 
                            // capacity of 5N. 
 
   double heading_thrust = 
@@ -163,14 +166,13 @@ void pid_controller_set_thrust(struct PID_controller* controller)
   
   double thrust_ps = position_thrust + heading_thrust; // left side thrust
   double thrust_sb = position_thrust - heading_thrust; // right side thrust
-  if(fabs(thrust_ps) > max_thrust)
+  double max_value = (fabs(thrust_ps) > fabs(thrust_sb))? fabs(thrust_ps) : fabs(thrust_sb);
+  if(max_value > max_thrust)
   {
-    thrust_ps = (thrust_ps > 0.0)? max_thrust : -max_thrust;
+    double ratio = max_thrust / max_value;
+    thrust_ps = thrust_ps * ratio;
+    thrust_sb = thrust_sb * ratio;
   } 
-  if(fabs(thrust_sb) > max_thrust)
-  {
-    thrust_sb = (thrust_sb > 0.0)? max_thrust : -max_thrust;
-  }
   controller->thrust_fore_ps = controller->thrust_aft_ps  = thrust_ps;
   controller->thrust_fore_sb = controller->thrust_aft_sb  = thrust_sb;
 }
