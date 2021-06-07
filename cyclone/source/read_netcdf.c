@@ -6,9 +6,9 @@
 #define FILE_NAME "hs.nc"
 
 // Size of the data grid 
-#define NX 77 // number of longitudes
+#define NX 24 // number of time steps
 #define NY 53 // number of latitudes
-#define NZ 24 // number of time steps
+#define NZ 77 // number of longitudes 
 
 // Handle errors by printing an error message and exiting with a non-zero status.
 #define ERRCODE 2
@@ -20,7 +20,7 @@ int main()
    int nc_id, var_id;
 
    // The hc values are of datatype double.
-   double data[NX][NY][NZ];
+   float data[NX][NY][NZ];
 
    // error index
    int error_id;
@@ -30,7 +30,7 @@ int main()
       ERR(error_id);
 
    // Get the var_id of the data variable, based on its name.
-   if ((error_id = nc_inq_varid(nc_id, "latitude", &var_id)))
+   if ((error_id = nc_inq_varid(nc_id, "hs", &var_id)))
       ERR(error_id);
 
    // Read the data.
@@ -38,11 +38,11 @@ int main()
       ERR(error_id);
 
    // Print the data 
-   for(int i = 0; i < NZ; ++i)
+   for(int i = 0; i < NX; ++i)
    {
       for(int j = 0; j < NY; ++j)
       {
-         for(int k = 0; k < NX; ++k)
+         for(int k = 0; k < NZ; ++k)
          {
             fprintf(stdout, "%f ", data[i][j][k]);
          }
