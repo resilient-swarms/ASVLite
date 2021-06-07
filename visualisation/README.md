@@ -1,7 +1,7 @@
-# asv-swarm visualisation
+# ASVLite-visualisation
 
 ## Introduction
-A simple visualisation module for asv-swarm.
+A simple visualisation module for ASVLite.
 
 ## Prerequisites for compiling asv-swarm
 *VTK 9.0* for visualisation.   

@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0)
 
-PROJECT(visualisation)
+PROJECT(ASVLite-visualisation)
 
 # FIND LIBRARIES
 # --------------
@@ -40,7 +40,7 @@ SET( SOURCE
   ../source/asv.c
   ../source/pid_controller.c
   )
-#visualisation source files
+# visualisation source files
 SET( SOURCE
   ${SOURCE}
   source/sea_surface_actor.cpp
@@ -52,12 +52,12 @@ SET( SOURCE
 
 # CREATE BINARIES
 # ---------------
-ADD_EXECUTABLE(visualisation ${SOURCE})
+ADD_EXECUTABLE(ASVLite-visualisation ${SOURCE})
 
 # LINK LIBRARIES 
 # --------------
-TARGET_LINK_LIBRARIES(visualisation m ${VTK_LIBRARIES})
+TARGET_LINK_LIBRARIES(ASVLite-visualisation m ${VTK_LIBRARIES})
 vtk_module_autoinit(
-  TARGETS visualisation
+  TARGETS ASVLite-visualisation
   MODULES ${VTK_LIBRARIES}
 )
