@@ -20,6 +20,7 @@ int main()
    int nc_id, var_id;
 
    // The hc values are of datatype double.
+   int map[NY][NZ]; // Map of the grids. Value 1 implies the grid in the water.
    float data[NX][NY][NZ];
 
    // error index
@@ -28,7 +29,17 @@ int main()
    // Open the file. NC_NOWRITE tells netCDF we want read-only access to the file.
    if ((error_id = nc_open(FILE_NAME, NC_NOWRITE, &nc_id)))
       ERR(error_id);
+   
+   // Read map
+   // Get the var_id of the data variable, based on its name.
+   if ((error_id = nc_inq_varid(nc_id, "MAPSTA", &var_id)))
+      ERR(error_id);
+   
+   // Read the map.
+   if ((error_id = nc_get_var_int(nc_id, var_id, &map)))
+      ERR(error_id);
 
+   // Read hs
    // Get the var_id of the data variable, based on its name.
    if ((error_id = nc_inq_varid(nc_id, "hs", &var_id)))
       ERR(error_id);
@@ -44,7 +55,10 @@ int main()
       {
          for(int k = 0; k < NZ; ++k)
          {
-            fprintf(stdout, "%f ", data[i][j][k]);
+            // Get the value for the grid.
+            // If the grid is in water (ie. map[j][k] == 1), then the grid has a hs value, else the value can be shown as 0.0)
+            float value = (map[j][k] == 1)? data[i][j][k] : 0.0;
+            fprintf(stdout, "%f ", value);
          }
          fprintf(stdout, "\n");
       }
