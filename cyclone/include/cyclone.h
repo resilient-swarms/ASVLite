@@ -2,20 +2,35 @@
 #define CYCLONE_H
 
 /**
- * Structure to define a cyclone. 
+ * Structure to store wave height or wave heading data from the netCDF file. 
  */
-struct Cyclone
+struct Data
 {
-  // Input variables
-  // ---------------
   int count_dimensions; //!< number of dimensions in the nc file
   int count_vars;       //!< number of variables in the nc file
   int count_attrs;      //!< number of attributes in the nc file
   int unlimited_dim_id; //!< id of the unlimited dimension (-1 implies no unlimited dimension)
   int* dim_sizes; //!< array to store the size of each dimension.
-  int* map;       //!< 2D array for storing map informantion. A cell with value 1 implies that the cell is in water and therefore will have a hs and fp value.
-  float* hs;     //!< 3D array for storing significant wave heights.
-  float* fp;     //!< 3D array for storing the peak spectral frequencies
+  int* map;       //!< array for storing map informantion. A cell with value 1 implies that the cell is in water and therefore will have a hs and fp value.
+  float* data;    //!< array to store hs or dp data.
 };
+
+struct Cyclone
+{
+  // Input variables
+  // ---------------
+  struct Data hs; //!< Significant wave heights read from the netCDF file.
+  struct Data dp; //!< Wave headings read from the netCDF file.
+};
+
+/**
+ * Initialise the cyclone to simulate.
+ * @param path_to_hs_nc is the path to the netCDF file containing significant wave heights.
+ * @param path_to_dp_nc is the path to the netCDF file containing predominant wave heading.
+ * @return 0 if no error encountered. 
+ *         1 if files are not of the appropriate format.
+ *         2 hs and dp files don't match.
+ */
+int cyclone_init(char* path_to_hs_nc, char* path_to_dp_nc);
 
 #endif // CYCLONE_H

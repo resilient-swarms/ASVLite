@@ -46,8 +46,7 @@ SET( SOURCE
 # cyclone source files
 SET( SOURCE
   ${SOURCE}
-  source/read_netcdf.c
-  #source/simple_nc4_wr.c
+  source/cyclone.c
 )
 
 # CREATE BINARIES
