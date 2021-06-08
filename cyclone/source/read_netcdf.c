@@ -1,14 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <netcdf.h>
+#include "cyclone.h"
 
 // Name of the file to read.
 #define FILE_NAME "hs.nc"
-
-// Size of the data grid 
-#define NX 24 // number of time steps
-#define NY 53 // number of latitudes
-#define NZ 77 // number of longitudes 
 
 // Handle errors by printing an error message and exiting with a non-zero status.
 #define ERRCODE 2
@@ -22,35 +18,40 @@ int main()
    // NetCDF IDs for the file and variable.
    int nc_id, var_id;
 
+   // Current session to simulate a cyclone.
+   struct Cyclone cyclone;
+
    // Open the file. NC_NOWRITE tells netCDF we want read-only access to the file.
    if ((error_id = nc_open(FILE_NAME, NC_NOWRITE, &nc_id)))
       ERR(error_id);
    
    // Explore the structure of the netcdf file.
    // Get the number of dimensions, variables, attributes and the id of the unlimited dimension (-1 implies no unlimited dimension).
-   int count_dimensions, count_vars, count_attrs, unlimited_dim_id;
-   if ((error_id = nc_inq(nc_id, &count_dimensions, &count_vars, &count_attrs, &unlimited_dim_id)))
+   if ((error_id = nc_inq(nc_id, &cyclone.count_dimensions, 
+                                 &cyclone.count_vars, 
+                                 &cyclone.count_attrs, 
+                                 &cyclone.unlimited_dim_id)))
       ERR(error_id);
-   // TODO: Check if count_dimensions = 4 and 1 is longitude and 2 is latitude and 3 is time. If not then throw error message. 
+   // TODO: Check if 1 is longitude and 2 is latitude and 3 is time. If not then throw error message. 
    
-   // Get the length for dimensions - longitude, latitude and time:
-   int dim_sizes[4]; // array to store the size of each dimension.
-                     // NOTE: Here we are assuming an netcdf file of a certain structure.
-                     // The assumption is as follows:
-                     // (1) number of dimensions = 4,
-                     // (2) dimensions are (name, id) - (level, 0), (longitude, 1), (latitude, 2), (time, 3)
-   for(int i = 0; i < count_dimensions; ++i)
+   // Create dynamic array for storing dimensions.
+   cyclone.dim_sizes = (int*)malloc(sizeof(int) * cyclone.count_dimensions);
+   // Get the size for dimensions - longitude, latitude and time:
+   for(int i = 0; i < cyclone.count_dimensions; ++i)
    {
-      if ((error_id = nc_inq_dimlen(nc_id, i, (dim_sizes+i) )))
+      if ((error_id = nc_inq_dimlen(nc_id, i, (cyclone.dim_sizes+i) )))
          ERR(error_id);
-      fprintf(stdout, "size of dim[%i] = %i \n", i, dim_sizes[i]);
    }
 
-   // TODO: Create dinamic arrays for the data.
-   // The hc values are of datatype double.
-   int map[NY][NZ]; // Map of the grids. Value 1 for a cell implies that the cell is in water.
-                    // If a cell is not in water then there is not value for hs for that cell.
-   float data[NX][NY][NZ];
+   // Create dinamic arrays for the data.
+   int size_longitudes = cyclone.dim_sizes[1];
+   int size_latitudes = cyclone.dim_sizes[2];
+   int size_time = cyclone.dim_sizes[3];
+   int total_size_map = size_longitudes * size_latitudes;
+   int total_size = total_size_map * size_time;
+   cyclone.map = (int*)malloc(sizeof(int) * total_size_map);
+   cyclone.hs = (float*)malloc(sizeof(float) * total_size);
+   cyclone.fp = (float*)malloc(sizeof(float) * total_size);
    
    // Read map
    // Get the var_id of the data variable, based on its name.
@@ -58,7 +59,7 @@ int main()
       ERR(error_id);
    
    // Read the map.
-   if ((error_id = nc_get_var_int(nc_id, var_id, &map)))
+   if ((error_id = nc_get_var_int(nc_id, var_id, cyclone.map)))
       ERR(error_id);
 
    // Read hs
@@ -67,19 +68,20 @@ int main()
       ERR(error_id);
 
    // Read the data.
-   if ((error_id = nc_get_var_float(nc_id, var_id, &data)))
+   if ((error_id = nc_get_var_float(nc_id, var_id, cyclone.hs)))
       ERR(error_id);
 
    // Print the data 
-   for(int i = 0; i < NX; ++i)
+   for(int i = 0; i < size_time; ++i)
    {
-      for(int j = 0; j < NY; ++j)
+      for(int j = 0; j < size_latitudes; ++j)
       {
-         for(int k = 0; k < NZ; ++k)
+         for(int k = 0; k < size_longitudes; ++k)
          {
-            // Get the value for the grid.
-            // If the grid is in water (ie. map[j][k] == 1), then the grid has a hs value, else the value can be shown as 0.0)
-            float value = (map[j][k] == 1)? data[i][j][k] : 0.0;
+            // Get the value for the cell.
+            // If the cell is in water (ie. map[j][k] == 1), then the grid has a hs value, else the value can be shown as 0.0)
+            int map_value = cyclone.map[j*size_longitudes + k];
+            float value = (map_value == 1)? cyclone.hs[i*size_latitudes*size_longitudes + j*size_longitudes + k] : 0.0;
             fprintf(stdout, "%f ", value);
          }
          fprintf(stdout, "\n");
