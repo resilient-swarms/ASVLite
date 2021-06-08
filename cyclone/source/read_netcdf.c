@@ -16,19 +16,41 @@
 
 int main()
 {
-   // NetCDF IDs for the file and variable.
-   int nc_id, var_id;
-
-   // The hc values are of datatype double.
-   int map[NY][NZ]; // Map of the grids. Value 1 implies the grid in the water.
-   float data[NX][NY][NZ];
-
    // error index
    int error_id;
+
+   // NetCDF IDs for the file and variable.
+   int nc_id, var_id;
 
    // Open the file. NC_NOWRITE tells netCDF we want read-only access to the file.
    if ((error_id = nc_open(FILE_NAME, NC_NOWRITE, &nc_id)))
       ERR(error_id);
+   
+   // Explore the structure of the netcdf file.
+   // Get the number of dimensions, variables, attributes and the id of the unlimited dimension (-1 implies no unlimited dimension).
+   int count_dimensions, count_vars, count_attrs, unlimited_dim_id;
+   if ((error_id = nc_inq(nc_id, &count_dimensions, &count_vars, &count_attrs, &unlimited_dim_id)))
+      ERR(error_id);
+   // TODO: Check if count_dimensions = 4 and 1 is longitude and 2 is latitude and 3 is time. If not then throw error message. 
+   
+   // Get the length for dimensions - longitude, latitude and time:
+   int dim_sizes[4]; // array to store the size of each dimension.
+                     // NOTE: Here we are assuming an netcdf file of a certain structure.
+                     // The assumption is as follows:
+                     // (1) number of dimensions = 4,
+                     // (2) dimensions are (name, id) - (level, 0), (longitude, 1), (latitude, 2), (time, 3)
+   for(int i = 0; i < count_dimensions; ++i)
+   {
+      if ((error_id = nc_inq_dimlen(nc_id, i, (dim_sizes+i) )))
+         ERR(error_id);
+      fprintf(stdout, "size of dim[%i] = %i \n", i, dim_sizes[i]);
+   }
+
+   // TODO: Create dinamic arrays for the data.
+   // The hc values are of datatype double.
+   int map[NY][NZ]; // Map of the grids. Value 1 for a cell implies that the cell is in water.
+                    // If a cell is not in water then there is not value for hs for that cell.
+   float data[NX][NY][NZ];
    
    // Read map
    // Get the var_id of the data variable, based on its name.
