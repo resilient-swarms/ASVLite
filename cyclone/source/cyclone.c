@@ -92,18 +92,25 @@ static int init_data(char* path_to_nc, struct Data* data, char* var_name)
       ERR(error_id);
 }
 
-int cyclone_init(char* path_to_hs_nc, char* path_to_dp_nc)
+int cyclone_init(struct Cyclone* cyclone, char* path_to_hs_nc, char* path_to_dp_nc)
 {
-   // Current session to simulate a cyclone.
-   struct Cyclone cyclone;
-
    // Read the netCDF files and initialise significant wave height and wave heading.
-   init_data(path_to_hs_nc, &cyclone.hs, "hs");
-   init_data(path_to_dp_nc, &cyclone.dp, "dp");
+   init_data(path_to_hs_nc, &cyclone->hs, "hs");
+   init_data(path_to_dp_nc, &cyclone->dp, "dp");
 
    // TODO: Check if hs and dp files match.
 
    return 0;
+}
+
+void cyclone_clean(struct Cyclone* cyclone)
+{
+   free(cyclone->dp.dim_sizes);
+   free(cyclone->dp.map);
+   free(cyclone->dp.data);
+   free(cyclone->hs.dim_sizes);
+   free(cyclone->hs.map);
+   free(cyclone->hs.data);
 }
 
 int main()

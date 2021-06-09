@@ -25,12 +25,21 @@ struct Cyclone
 
 /**
  * Initialise the cyclone to simulate.
+ * @param cyclone instance to initialise.
  * @param path_to_hs_nc is the path to the netCDF file containing significant wave heights.
  * @param path_to_dp_nc is the path to the netCDF file containing predominant wave heading.
  * @return 0 if no error encountered. 
  *         1 if files are not of the appropriate format.
  *         2 hs and dp files don't match.
  */
-int cyclone_init(char* path_to_hs_nc, char* path_to_dp_nc);
+int cyclone_init(struct Cyclone* cyclone, char* path_to_hs_nc, char* path_to_dp_nc);
+
+/** Free the heap memory.
+ * @param cyclone instance to clean.
+ */
+void cyclone_clean(struct Cyclone* cyclone);
+
+// Function to access print the grid data and map data.
+// Function to access a cell value for a give long, lat, time value.
 
 #endif // CYCLONE_H
