@@ -39,6 +39,11 @@ int cyclone_init(struct Cyclone* cyclone, char* path_to_hs_nc, char* path_to_dp_
  */
 void cyclone_clean(struct Cyclone* cyclone);
 
+/**
+ * Print the map and data for hs and dp.
+ */
+void cyclone_print_data(struct Cyclone* cyclone);
+
 // Function to access print the grid data and map data.
 // Function to access a cell value for a give long, lat, time value.
 

@@ -59,34 +59,16 @@ static int init_data(char* path_to_nc, struct Data* data, char* var_name)
    // Read the map.
    if ((error_id = nc_get_var_int(nc_id, var_id, data->map)))
       ERR(error_id);
-
+   
    // Read the variable 
    // Get the var_id of the data variable, based on its name.
    if ((error_id = nc_inq_varid(nc_id, var_name, &var_id)))
       ERR(error_id);
-
+   
    // Read the data.
-   if ((error_id = nc_get_var_float(nc_id, var_id, data)))
+   if ((error_id = nc_get_var_float(nc_id, var_id, data->data)))
       ERR(error_id);
-
-   // // Print the data 
-   // for(int i = 0; i < size_time; ++i)
-   // {
-   //    for(int j = 0; j < size_latitudes; ++j)
-   //    {
-   //       for(int k = 0; k < size_longitudes; ++k)
-   //       {
-   //          // Get the value for the cell.
-   //          // If the cell is in water (ie. map[j][k] == 1), then the grid has a hs value, else the value can be shown as 0.0)
-   //          int map_value = cyclone->map[j*size_longitudes + k];
-   //          float value = (map_value == 1)? cyclone->hs[i*size_latitudes*size_longitudes + j*size_longitudes + k] : 0.0;
-   //          fprintf(stdout, "%f ", value);
-   //       }
-   //       fprintf(stdout, "\n");
-   //    }
-   //    fprintf(stdout, "\n");
-   // }
-
+   
    // Close the file, freeing all resources.
    if ((error_id = nc_close(nc_id)))
       ERR(error_id);
@@ -113,7 +95,54 @@ void cyclone_clean(struct Cyclone* cyclone)
    free(cyclone->hs.data);
 }
 
+void cyclone_print_data(struct Cyclone* cyclone)
+{
+   static const int data_length = 2;
+   struct Data* data[] = {&cyclone->hs, &cyclone->dp};
+   char* data_names[] = {"hs", "dp"};
+
+   int size_time, size_latitudes, size_longitudes;
+
+   for(int n = 0; n < data_length; ++n)
+   {
+      size_longitudes = data[n]->dim_sizes[1];
+      size_latitudes = data[n]->dim_sizes[2];
+      size_time = data[n]->dim_sizes[3];
+      
+      fprintf(stdout, "Printing %s map: \n", data_names[n]);
+      for(int j = 0; j < size_latitudes; ++j)
+      {
+         for(int k = 0; k < size_longitudes; ++k)
+         {
+            // Get the value for the cell.
+            int map_value = data[n]->map[j*size_longitudes + k];
+            fprintf(stdout, "%i ", map_value);
+         }
+         fprintf(stdout, "\n");
+      }
+
+      fprintf(stdout, "Printing %s data: \n", data_names[n]);
+      for(int i = 0; i < size_time; ++i)
+      {
+         for(int j = 0; j < size_latitudes; ++j)
+         {
+            for(int k = 0; k < size_longitudes; ++k)
+            {
+               // Get the value for the cell.
+               int map_value = data[n]->map[j*size_longitudes + k];
+               float value = (map_value == 1)? data[n]->data[i*size_latitudes*size_longitudes + j*size_longitudes + k] : 0.0;
+               fprintf(stdout, "%f ", value);
+            }
+            fprintf(stdout, "\n");
+         }
+         fprintf(stdout, "\n");
+      }
+   }
+}
+
 int main()
 {
-   // TODO
+   struct Cyclone cyclone;
+   cyclone_init(&cyclone, "hs.nc", "dp.nc");
+   cyclone_print_data(&cyclone);
 }
