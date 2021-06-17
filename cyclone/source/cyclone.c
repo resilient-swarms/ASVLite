@@ -238,7 +238,7 @@ static int find_index(float* array, int length, float value)
    return index;
 }
 
-static double get_value_at(struct Data* data, struct Location location, struct Time time)
+static float get_value_at(struct Data* data, struct Location location, struct Time time)
 {
    // Convert time to days since 1-Jan-1990 00:00:00.
    struct Time t_epoch  = {1990, 1, 1, 0};
