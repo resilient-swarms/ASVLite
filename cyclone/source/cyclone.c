@@ -3,6 +3,46 @@
 #include <netcdf.h>
 #include "cyclone.h"
 
+const int days_in_month[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+static int count_leap_years(struct Time t)
+{
+   int year = t.year;
+   int n = 0;
+   // Check if the current year needs to be considered for the count of leap years
+   year = (t.month <= 2) ? --year : year;
+   // Number of leap years
+   n = (year/4 - year/100 + year/400);
+   return n;   
+}
+
+static int count_days_since_epoch(struct Time t)
+{
+   // Total number of days from 00/00/0000 to t1:
+   // year
+   int n = t.year* 365;
+   // month
+   for(int i = 0; i < t.month; ++i)
+   {
+      n += days_in_month[i];
+   }
+   // day
+   n += t.day;
+
+   // Add 1 day for each leap year since epoch
+   n +=  count_leap_years(t);
+   
+   return n; 
+}
+
+static int count_days_between_dates(struct Time t1, struct Time t2)
+{
+   int n1 = count_days_since_epoch(t1);
+   int n2 = count_days_since_epoch(t2);
+   int n = abs(n1 - n2);
+   return n;
+}
+
 static void get_sizeof_dimension(int nc_id, char* name, int* size)
 {
    int index;
@@ -178,9 +218,87 @@ void cyclone_print_data(struct Cyclone* cyclone)
    }
 }
 
+static int find_index(float* array, int length, float value)
+{
+   int index = -1;
+   for(int i = 0; i < length - 1; ++i)
+   {
+      if(value >= array[i] && value < array[i+1])
+      {
+         index = i;
+      }
+      else
+      {
+         if(value == array[length - 1])
+         {
+            index = length - 1;
+         }
+      }
+   }
+   return index;
+}
+
+static double get_value_at(struct Data* data, struct Location location, struct Time time)
+{
+   // Convert time to days since 1-Jan-1990 00:00:00.
+   struct Time t_epoch  = {1990, 1, 1, 0};
+   int n = count_days_between_dates(time, t_epoch);
+   float t = n + time.hour/24.0;
+   
+   // Get index of time
+   int index_time      = find_index(data->time_steps, data->count_time_steps, t);
+   if (index_time == -1)
+   {
+      fprintf(stderr, "ERROR: Time %f is beyoud the limits [%f, %f].", t, data->time_steps[0], data->time_steps[data->count_time_steps - 1]);
+      exit(1);
+   }
+   
+   // Get index of latitude
+   int index_latitude  = find_index(data->latitudes,  data->count_latitudes,  location.latitude);
+   if (index_latitude == -1)
+   {
+      fprintf(stderr, "ERROR: Latitude %f is beyoud the limits [%f, %f].", location.latitude, data->latitudes[0], data->latitudes[data->count_latitudes - 1]);
+      exit(1);
+   }
+
+   // Get index of latitude
+   int index_longitude = find_index(data->longitudes, data->count_longitudes, location.longitude);
+   if (index_longitude == -1)
+   {
+      fprintf(stderr, "ERROR: Longitude %f is beyoud the limits [%f, %f].", location.longitude, data->longitudes[0], data->longitudes[data->count_longitudes - 1]);
+      exit(1);
+   }   
+
+   // Get the value for the cell.
+   int count_longitudes = data->count_longitudes;
+   int count_latitudes  = data->count_latitudes;
+   int count_time_steps = data->count_time_steps;
+   int map_value = data->map[index_latitude*count_longitudes + index_longitude];
+   float value = (map_value == 1)? data->data[index_time*count_latitudes*count_longitudes + index_latitude*count_longitudes + index_longitude] : 0.0;
+
+   return value;
+}
+
+float cyclone_get_wave_height(struct Cyclone* cyclone, struct Location location, struct Time time)
+{
+   float value = get_value_at(&cyclone->hs, location, time);
+   return value;
+}
+
+float cyclone_get_wave_heading(struct Cyclone* cyclone, struct Location location, struct Time time)
+{
+   float value = get_value_at(&cyclone->dp, location, time);
+   return value;
+}
+
 int main()
 {
    struct Cyclone cyclone;
    cyclone_init(&cyclone, "hs.nc", "dp.nc");
-   cyclone_print_data(&cyclone);
+   //cyclone_print_data(&cyclone);
+
+   struct Location l = {17, 262.3};
+   struct Time t = {2005, 8, 29, 1};
+   cyclone_get_wave_height(&cyclone, l, t);
+   cyclone_get_wave_heading(&cyclone, l, t);
 }

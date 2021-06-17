@@ -2,6 +2,26 @@
 #define CYCLONE_H
 
 /**
+ * Structure to represent time.
+ */
+struct Time
+{
+  int year;
+  int month;
+  int day;
+  int hour;
+};
+
+/**
+ * Structure to represent a position on earth.
+ */
+struct Location
+{
+  float latitude;
+  float longitude;
+};
+
+/**
  * Structure to store wave height or wave heading data from the netCDF file. 
  */
 struct Data
@@ -45,7 +65,18 @@ void cyclone_clean(struct Cyclone* cyclone);
  */
 void cyclone_print_data(struct Cyclone* cyclone);
 
-// Function to access print the grid data and map data.
-// Function to access a cell value for a give long, lat, time value.
+/**
+ * Get the significant wave height at a given location at a given time.
+ * @param location for which the wave height is to be obtained. 
+ * @param time for which the wave height is to be obtained.
+ */
+float cyclone_get_wave_height(struct Cyclone* cyclone, struct Location location, struct Time time);
+
+/**
+ * Get the predominant direction of wave at a given location at a given time.
+ * @param location for which the wave height is to be obtained. 
+ * @param time for which the wave height is to be obtained.
+ */
+float cyclone_get_wave_heading(struct Cyclone* cyclone, struct Location location, struct Time time);
 
 #endif // CYCLONE_H
