@@ -69,15 +69,20 @@ static int init_data(char* path_to_nc, struct Data* data, char* var_name)
    
    get_sizeof_dimension(nc_id, "longitude", &data->count_longitudes);
    get_sizeof_dimension(nc_id, "latitude", &data->count_latitudes);
-   get_sizeof_dimension(nc_id, "time", &data->count_time);
+   get_sizeof_dimension(nc_id, "time", &data->count_time_steps);
 
    int total_size_map = data->count_longitudes * data->count_latitudes;
-   int total_size = total_size_map * data->count_time;
+   int total_size = total_size_map * data->count_time_steps;
+   data->longitudes = (float*)malloc(sizeof(float) * data->count_longitudes);
+   data->latitudes  = (float*)malloc(sizeof(float) * data->count_latitudes);
+   data->time_steps = (float*)malloc(sizeof(float) * data->count_time_steps);     
    data->map = (int*)malloc(sizeof(int) * total_size_map);
    data->data = (float*)malloc(sizeof(float) * total_size);
    
-   // Read map
-   // Get the var_id of the data variable, based on its name.
+   // Read data
+   get_data(nc_id, "longitude", data->longitudes);
+   get_data(nc_id, "latitude", data->latitudes);
+   get_data(nc_id, "time", data->time_steps);
    get_data(nc_id, "MAPSTA", data->map);
    get_data(nc_id, var_name, data->data);
    
@@ -110,36 +115,60 @@ void cyclone_print_data(struct Cyclone* cyclone)
    struct Data* data[] = {&cyclone->hs, &cyclone->dp};
    char* data_names[] = {"hs", "dp"};
 
-   int size_time, size_latitudes, size_longitudes;
+   int count_time_steps, count_latitudes, count_longitudes;
 
    for(int n = 0; n < data_length; ++n)
    {
-      size_longitudes = data[n]->count_longitudes;
-      size_latitudes = data[n]->count_latitudes;
-      size_time = data[n]->count_time;
+      fprintf(stdout, "Printing data from netCDF file for %s: \n\n", data_names[n]);
+
+      count_longitudes = data[n]->count_longitudes;
+      count_latitudes = data[n]->count_latitudes;
+      count_time_steps = data[n]->count_time_steps;
+
+      fprintf(stdout, "Printing %s longitudes: \n", data_names[n]);
+      for(int i = 0; i < count_longitudes; ++i)
+      {
+         fprintf(stdout, "%f, ", data[n]->longitudes[i]);
+      }
+      fprintf(stdout, "\n\n");
+
+      fprintf(stdout, "Printing %s latitudes: \n", data_names[n]);
+      for(int i = 0; i < count_latitudes; ++i)
+      {
+         fprintf(stdout, "%f, ", data[n]->latitudes[i]);
+      }
+      fprintf(stdout, "\n\n");
+
+      fprintf(stdout, "Printing %s time steps: \n", data_names[n]);
+      for(int i = 0; i < count_latitudes; ++i)
+      {
+         fprintf(stdout, "%f, ", data[n]->time_steps[i]);
+      }
+      fprintf(stdout, "\n\n");
       
       fprintf(stdout, "Printing %s map: \n", data_names[n]);
-      for(int j = 0; j < size_latitudes; ++j)
+      for(int j = 0; j < count_latitudes; ++j)
       {
-         for(int k = 0; k < size_longitudes; ++k)
+         for(int k = 0; k < count_longitudes; ++k)
          {
             // Get the value for the cell.
-            int map_value = data[n]->map[j*size_longitudes + k];
+            int map_value = data[n]->map[j*count_longitudes + k];
             fprintf(stdout, "%i ", map_value);
          }
          fprintf(stdout, "\n");
       }
+      fprintf(stdout, "\n");
 
       fprintf(stdout, "Printing %s data: \n", data_names[n]);
-      for(int i = 0; i < size_time; ++i)
+      for(int i = 0; i < count_time_steps; ++i)
       {
-         for(int j = 0; j < size_latitudes; ++j)
+         for(int j = 0; j < count_latitudes; ++j)
          {
-            for(int k = 0; k < size_longitudes; ++k)
+            for(int k = 0; k < count_longitudes; ++k)
             {
                // Get the value for the cell.
-               int map_value = data[n]->map[j*size_longitudes + k];
-               float value = (map_value == 1)? data[n]->data[i*size_latitudes*size_longitudes + j*size_longitudes + k] : 0.0;
+               int map_value = data[n]->map[j*count_longitudes + k];
+               float value = (map_value == 1)? data[n]->data[i*count_latitudes*count_longitudes + j*count_longitudes + k] : 0.0;
                fprintf(stdout, "%f ", value);
             }
             fprintf(stdout, "\n");

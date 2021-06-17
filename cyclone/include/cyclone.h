@@ -8,9 +8,12 @@ struct Data
 {
   int count_longitudes; //!< Number of longitudes in the netCDF file. 
   int count_latitudes;  //!< Number of latitudes in the netCDF file.
-  int count_time ;      //!< Number of time steps in the netCDF file.
-  int* map;       //!< array for storing map informantion. A cell with value 1 implies that the cell is in water and therefore will have a hs and fp value.
-  float* data;    //!< array to store hs or dp data.
+  int count_time_steps; //!< Number of time steps in the netCDF file.
+  float* longitudes; //!< List of longitudes.
+  float* latitudes;  //!< List of latitudes.
+  float* time_steps; //!< List of time steps.
+  int* map;       //!< Array for storing map informantion. A cell with value 1 implies that the cell is in water and therefore will have a hs and fp value.
+  float* data;    //!< Array to store hs or dp data.
 };
 
 struct Cyclone
