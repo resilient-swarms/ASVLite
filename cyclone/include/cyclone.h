@@ -6,11 +6,9 @@
  */
 struct Data
 {
-  int count_dimensions; //!< number of dimensions in the nc file
-  int count_vars;       //!< number of variables in the nc file
-  int count_attrs;      //!< number of attributes in the nc file
-  int unlimited_dim_id; //!< id of the unlimited dimension (-1 implies no unlimited dimension)
-  int* dim_sizes; //!< array to store the size of each dimension.
+  int count_longitudes; //!< Number of longitudes in the netCDF file. 
+  int count_latitudes;  //!< Number of latitudes in the netCDF file.
+  int count_time ;      //!< Number of time steps in the netCDF file.
   int* map;       //!< array for storing map informantion. A cell with value 1 implies that the cell is in water and therefore will have a hs and fp value.
   float* data;    //!< array to store hs or dp data.
 };
