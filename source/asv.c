@@ -457,9 +457,19 @@ static void set_position(struct Asv* asv)
   double deflection_z = asv->dynamics.X[heave];
   
   // Update origin position 
+  #ifdef ENABLE_EARTH_COORDINATES
+  double latitude = asv->cog_position.x;
+  double longitude = asv->cog_position.y;
+  double new_latitude  = latitude  + (deflection_y / R) * (180.0/PI); 
+  double new_longitude = longitude + (deflection_x / R) * (180.0/PI) / cos(latitude * PI/180.0);
+  asv->cog_position.x = new_latitude;
+  asv->cog_position.y = new_longitude;
+  asv->cog_position.z += deflection_z;
+  #else
   asv->cog_position.x += deflection_x;
   asv->cog_position.y += deflection_y;
   asv->cog_position.z += deflection_z;
+  #endif
 
   // Update origin position
   double l = sqrt(pow(asv->spec.cog.x, 2.0) + pow(asv->spec.cog.y, 2.0));

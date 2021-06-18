@@ -14,7 +14,7 @@ endif(NOT ENABLE_MULTI_THREADING)
 
 # ENABLE TIME SYNC WHILE MULTI-THREADING
 # --------------------------------------
-OPTION(ENABLE_TIME_SYNC "Enable time sync between parallel threads." OFF) # Desabled by default
+OPTION(ENABLE_TIME_SYNC "Enable time sync between parallel threads." OFF) # Disabled by default
 IF(ENABLE_MULTI_THREADING)
   IF(ENABLE_TIME_SYNC)
     ADD_DEFINITIONS(-DENABLE_TIME_SYNC)
@@ -23,6 +23,16 @@ IF(ENABLE_MULTI_THREADING)
     MESSAGE(STATUS "Time sycn between threads disabled.")
   ENDIF(ENABLE_TIME_SYNC)
 ENDIF(ENABLE_MULTI_THREADING)
+
+# ENABLE EARTH-COORDINATES
+# ------------------------
+OPTION(ENABLE_EARTH_COORDINATES "Enable earth coordinates." ON) # Enabled by default
+IF(ENABLE_EARTH_COORDINATES)
+  ADD_DEFINITIONS(-DENABLE_EARTH_COORDINATES)
+  MESSAGE(STATUS "Earth coordinates enabled.")
+ELSE()
+  MESSAGE(STATUS "Earth coordinates disabled.")
+endif(NOT ENABLE_EARTH_COORDINATES)
 
 # INCLUDE HEADER FILES DIRECTORIES
 # --------------------------------
