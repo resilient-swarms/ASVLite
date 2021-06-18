@@ -130,11 +130,18 @@ static int init_data(char* path_to_nc, struct Data* data, char* var_name)
    nc_close(nc_id);
 }
 
-int cyclone_init(struct Cyclone* cyclone, char* path_to_hs_nc, char* path_to_dp_nc)
+int cyclone_init(struct Cyclone* cyclone, char** path_to_hs_nc_files, char** path_to_dp_nc_files, int count_sets)
 {
+   cyclone->count_sets = count_sets;
+   // Allocate memory 
+   cyclone->hs = (struct Data*)malloc(sizeof(struct Data) * count_sets);
+   cyclone->dp = (struct Data*)malloc(sizeof(struct Data) * count_sets);
    // Read the netCDF files and initialise significant wave height and wave heading.
-   init_data(path_to_hs_nc, &cyclone->hs, "hs");
-   init_data(path_to_dp_nc, &cyclone->dp, "dp");
+   for(int i = 0; i < count_sets; ++i)
+   {
+      init_data(path_to_hs_nc_files[i], cyclone->hs+i, "hs");
+      init_data(path_to_dp_nc_files[i], cyclone->dp+i, "dp");
+   }
 
    // TODO: Check if hs and dp files match.
 
@@ -143,77 +150,85 @@ int cyclone_init(struct Cyclone* cyclone, char* path_to_hs_nc, char* path_to_dp_
 
 void cyclone_clean(struct Cyclone* cyclone)
 {
-   free(cyclone->dp.map);
-   free(cyclone->dp.data);
-   free(cyclone->hs.map);
-   free(cyclone->hs.data);
+   for(int i = 0; i < cyclone->count_sets; ++i)
+   {
+      free(cyclone->dp[i].map);
+      free(cyclone->dp[i].data);
+      free(cyclone->hs[i].map);
+      free(cyclone->hs[i].data);
+   }
+   free(cyclone->hs);
+   free(cyclone->dp);
 }
 
 void cyclone_print_data(struct Cyclone* cyclone)
 {
-   static const int data_length = 2;
-   struct Data* data[] = {&cyclone->hs, &cyclone->dp};
-   char* data_names[] = {"hs", "dp"};
-
-   int count_time_steps, count_latitudes, count_longitudes;
-
-   for(int n = 0; n < data_length; ++n)
+   for(int set = 0; set < cyclone->count_sets; ++set)
    {
-      fprintf(stdout, "Printing data from netCDF file for %s: \n\n", data_names[n]);
+      static const int data_length = 2;
+      struct Data* data[] = {&cyclone->hs[set], &cyclone->dp[set]};
+      char* data_names[] = {"hs", "dp"};
 
-      count_longitudes = data[n]->count_longitudes;
-      count_latitudes = data[n]->count_latitudes;
-      count_time_steps = data[n]->count_time_steps;
+      int count_time_steps, count_latitudes, count_longitudes;
 
-      fprintf(stdout, "Printing %s longitudes: \n", data_names[n]);
-      for(int i = 0; i < count_longitudes; ++i)
+      for(int n = 0; n < data_length; ++n)
       {
-         fprintf(stdout, "%f, ", data[n]->longitudes[i]);
-      }
-      fprintf(stdout, "\n\n");
+         fprintf(stdout, "Printing data from netCDF file for %s: \n\n", data_names[n]);
 
-      fprintf(stdout, "Printing %s latitudes: \n", data_names[n]);
-      for(int i = 0; i < count_latitudes; ++i)
-      {
-         fprintf(stdout, "%f, ", data[n]->latitudes[i]);
-      }
-      fprintf(stdout, "\n\n");
+         count_longitudes = data[n]->count_longitudes;
+         count_latitudes = data[n]->count_latitudes;
+         count_time_steps = data[n]->count_time_steps;
 
-      fprintf(stdout, "Printing %s time steps: \n", data_names[n]);
-      for(int i = 0; i < count_latitudes; ++i)
-      {
-         fprintf(stdout, "%f, ", data[n]->time_steps[i]);
-      }
-      fprintf(stdout, "\n\n");
-      
-      fprintf(stdout, "Printing %s map: \n", data_names[n]);
-      for(int j = 0; j < count_latitudes; ++j)
-      {
-         for(int k = 0; k < count_longitudes; ++k)
+         fprintf(stdout, "Printing %s longitudes: \n", data_names[n]);
+         for(int i = 0; i < count_longitudes; ++i)
          {
-            // Get the value for the cell.
-            int map_value = data[n]->map[j*count_longitudes + k];
-            fprintf(stdout, "%i ", map_value);
+            fprintf(stdout, "%f, ", data[n]->longitudes[i]);
          }
-         fprintf(stdout, "\n");
-      }
-      fprintf(stdout, "\n");
+         fprintf(stdout, "\n\n");
 
-      fprintf(stdout, "Printing %s data: \n", data_names[n]);
-      for(int i = 0; i < count_time_steps; ++i)
-      {
+         fprintf(stdout, "Printing %s latitudes: \n", data_names[n]);
+         for(int i = 0; i < count_latitudes; ++i)
+         {
+            fprintf(stdout, "%f, ", data[n]->latitudes[i]);
+         }
+         fprintf(stdout, "\n\n");
+
+         fprintf(stdout, "Printing %s time steps: \n", data_names[n]);
+         for(int i = 0; i < count_latitudes; ++i)
+         {
+            fprintf(stdout, "%f, ", data[n]->time_steps[i]);
+         }
+         fprintf(stdout, "\n\n");
+         
+         fprintf(stdout, "Printing %s map: \n", data_names[n]);
          for(int j = 0; j < count_latitudes; ++j)
          {
             for(int k = 0; k < count_longitudes; ++k)
             {
                // Get the value for the cell.
                int map_value = data[n]->map[j*count_longitudes + k];
-               float value = (map_value == 1)? data[n]->data[i*count_latitudes*count_longitudes + j*count_longitudes + k] : 0.0;
-               fprintf(stdout, "%f ", value);
+               fprintf(stdout, "%i ", map_value);
             }
             fprintf(stdout, "\n");
          }
          fprintf(stdout, "\n");
+
+         fprintf(stdout, "Printing %s data: \n", data_names[n]);
+         for(int i = 0; i < count_time_steps; ++i)
+         {
+            for(int j = 0; j < count_latitudes; ++j)
+            {
+               for(int k = 0; k < count_longitudes; ++k)
+               {
+                  // Get the value for the cell.
+                  int map_value = data[n]->map[j*count_longitudes + k];
+                  float value = (map_value == 1)? data[n]->data[i*count_latitudes*count_longitudes + j*count_longitudes + k] : 0.0;
+                  fprintf(stdout, "%f ", value);
+               }
+               fprintf(stdout, "\n");
+            }
+            fprintf(stdout, "\n");
+         }
       }
    }
 }
@@ -238,7 +253,7 @@ static int find_index(float* array, int length, float value)
    return index;
 }
 
-static float get_value_at(struct Data* data, struct Location location, struct Time time)
+static float get_value_at(struct Data* data, int count_sets, struct Location location, struct Time time)
 {
    // Convert time to days since 1-Jan-1990 00:00:00.
    struct Time t_epoch  = {1990, 1, 1, 0};
@@ -246,59 +261,74 @@ static float get_value_at(struct Data* data, struct Location location, struct Ti
    float t = n + time.hour/24.0;
    
    // Get index of time
-   int index_time      = find_index(data->time_steps, data->count_time_steps, t);
+   int index_set;
+   int index_time;
+   for(index_set = 0; index_set < count_sets; ++index_set)
+   {
+      index_time = find_index(data[index_set].time_steps, data[index_set].count_time_steps, t);
+      if(index_time != -1)
+      {
+         // Found index
+         break;
+      } 
+   }
    if (index_time == -1)
    {
-      fprintf(stderr, "ERROR: Time %f is beyoud the limits [%f, %f].", t, data->time_steps[0], data->time_steps[data->count_time_steps - 1]);
+      fprintf(stderr, "ERROR: Time %f is beyoud the limits [%f, %f].", t, data[0].time_steps[0], data[count_sets-1].time_steps[data[count_sets-1].count_time_steps - 1]);
       exit(1);
    }
    
    // Get index of latitude
-   int index_latitude  = find_index(data->latitudes,  data->count_latitudes,  location.latitude);
+   int index_latitude = find_index(data[index_set].latitudes,  data[index_set].count_latitudes,  location.latitude);
    if (index_latitude == -1)
    {
-      fprintf(stderr, "ERROR: Latitude %f is beyoud the limits [%f, %f].", location.latitude, data->latitudes[0], data->latitudes[data->count_latitudes - 1]);
+      fprintf(stderr, "ERROR: Latitude %f is beyoud the limits [%f, %f].", location.latitude, data[0].latitudes[0], data[count_sets-1].latitudes[data[count_sets-1].count_latitudes - 1]);
       exit(1);
    }
 
    // Get index of latitude
-   int index_longitude = find_index(data->longitudes, data->count_longitudes, location.longitude);
+   int index_longitude = find_index(data[index_set].longitudes, data[index_set].count_longitudes, location.longitude);
    if (index_longitude == -1)
    {
-      fprintf(stderr, "ERROR: Longitude %f is beyoud the limits [%f, %f].", location.longitude, data->longitudes[0], data->longitudes[data->count_longitudes - 1]);
+      fprintf(stderr, "ERROR: Longitude %f is beyoud the limits [%f, %f].", location.longitude, data[0].longitudes[0], data[count_sets-1].longitudes[data[count_sets-1].count_longitudes - 1]);
       exit(1);
    }   
 
    // Get the value for the cell.
-   int count_longitudes = data->count_longitudes;
-   int count_latitudes  = data->count_latitudes;
-   int count_time_steps = data->count_time_steps;
-   int map_value = data->map[index_latitude*count_longitudes + index_longitude];
-   float value = (map_value == 1)? data->data[index_time*count_latitudes*count_longitudes + index_latitude*count_longitudes + index_longitude] : 0.0;
+   int count_longitudes = data[index_set].count_longitudes;
+   int count_latitudes  = data[index_set].count_latitudes;
+   int count_time_steps = data[index_set].count_time_steps;
+   int map_value = data[index_set].map[index_latitude*count_longitudes + index_longitude];
+   float value = (map_value == 1)? data[index_set].data[index_time*count_latitudes*count_longitudes + index_latitude*count_longitudes + index_longitude] : 0.0;
 
    return value;
 }
 
 float cyclone_get_wave_height(struct Cyclone* cyclone, struct Location location, struct Time time)
 {
-   float value = get_value_at(&cyclone->hs, location, time);
+   float value = get_value_at(cyclone->hs, cyclone->count_sets, location, time);
    return value;
 }
 
 float cyclone_get_wave_heading(struct Cyclone* cyclone, struct Location location, struct Time time)
 {
-   float value = get_value_at(&cyclone->dp, location, time);
+   float value = get_value_at(cyclone->dp, cyclone->count_sets, location, time);
    return value;
 }
 
 int main()
 {
    struct Cyclone cyclone;
-   cyclone_init(&cyclone, "hs.nc", "dp.nc");
+   char* hs_files[] = {"hs1.nc", "hs2.nc", "hs3.nc"};
+   char* dp_files[] = {"dp1.nc", "dp2.nc", "dp3.nc"};
+   // char* hs_files[] = {"hs.nc"};
+   // char* dp_files[] = {"dp.nc"};
+   int count_sets = 3;
+   cyclone_init(&cyclone, hs_files, dp_files, count_sets);
    //cyclone_print_data(&cyclone);
 
-   struct Location l = {17, 262.3};
-   struct Time t = {2005, 8, 29, 1};
+   struct Location l = {22.3, 262.3};
+   struct Time t = {2005, 8, 29, 11};
    cyclone_get_wave_height(&cyclone, l, t);
    cyclone_get_wave_heading(&cyclone, l, t);
 }

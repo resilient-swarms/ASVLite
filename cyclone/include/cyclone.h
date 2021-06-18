@@ -40,20 +40,22 @@ struct Cyclone
 {
   // Input variables
   // ---------------
-  struct Data hs; //!< Significant wave heights read from the netCDF file.
-  struct Data dp; //!< Wave headings read from the netCDF file.
+  struct Data* hs; //!< Significant wave heights read from the netCDF file.
+  struct Data* dp; //!< Wave headings read from the netCDF file.
+  int count_sets;  //!< Number of sets of hs and dp files. 
 };
 
 /**
  * Initialise the cyclone to simulate.
  * @param cyclone instance to initialise.
- * @param path_to_hs_nc is the path to the netCDF file containing significant wave heights.
- * @param path_to_dp_nc is the path to the netCDF file containing predominant wave heading.
+ * @param path_to_hs_nc_files is the list of paths to the netCDF files containing significant wave heights.
+ * @param path_to_dp_nc_files is the list of paths to the netCDF files containing predominant wave heading.
+ * @param count_sets is the number of sets of hs and dp files.
  * @return 0 if no error encountered. 
  *         1 if files are not of the appropriate format.
  *         2 hs and dp files don't match.
  */
-int cyclone_init(struct Cyclone* cyclone, char* path_to_hs_nc, char* path_to_dp_nc);
+int cyclone_init(struct Cyclone* cyclone, char** path_to_hs_nc_files, char** path_to_dp_nc_files, int count_sets);
 
 /** Free the heap memory.
  * @param cyclone instance to clean.
