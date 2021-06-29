@@ -1,7 +1,7 @@
 # ASVLite-cyclone
 
 ## Introduction
-Extend ASVLite to simulate tropical storms and vehicle dynamics in storms.
+Extend ASVLite to simulate tropical storms.
 
 ## Build instruction
 
@@ -16,6 +16,8 @@ Build
 ```
 mkdir build
 cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make 
 ```
 
 Although not a dependency for ASVLite, having the following tools will be useful to explore netCDF (.nc) files.
