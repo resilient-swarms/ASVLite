@@ -725,14 +725,12 @@ void simulation_write_output(struct Simulation* first_node,
               "trim(deg) "
               "heading(deg) "
               "surge_vel(m/s) "
-              "surge_acc(m/s2) "
-              "F_surge(N) "
-              "F_sway(N)");
+              "surge_acc(m/s2) ");
     }
     // write buffer to file and close the file.
     for (int i = 0; i < node->current_time_index; ++i)
     {
-      fprintf(fp, "\n%f %f %ld %f %f %f %f %f %f %f %f %f %f %f %f",
+      fprintf(fp, "\n%f %f %ld %f %f %f %f %f %f %f %f %f %f",
               node->buffer[i].sig_wave_ht,
               node->asv->wave->heading * 360.0 / (2.0 * PI),
               node->asv->wave->random_number_seed,
@@ -745,9 +743,7 @@ void simulation_write_output(struct Simulation* first_node,
               node->buffer[i].trim,
               node->buffer[i].heading,
               node->buffer[i].surge_velocity,
-              node->buffer[i].surge_acceleration,
-              node->buffer[i].F_surge,
-              node->buffer[i].F_sway);
+              node->buffer[i].surge_acceleration);
     }
     fclose(fp);
   }
@@ -789,7 +785,7 @@ void compute_dynamics(void* current_node)
 
 
   // Compute the dynamics of asv for the current time step
-  asv_compute_dynamics(node->asv, current_time);
+  wave_glider_compute_dynamics(node->asv, 0.0, current_time);
 
   // Also compute the wave elevation. 
   double wave_elevation = 0.0;
