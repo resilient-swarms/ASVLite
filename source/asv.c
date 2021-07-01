@@ -140,7 +140,10 @@ static void set_drag_coefficient(struct Asv* asv)
 
   // roll, pitch and yaw drag coefficient set equal to roll damping coefficient 
   // given in Handbook of Marin Craft Hydrodynamics and motion control, page 125
-  asv->dynamics.C[roll] = asv->dynamics.C[pitch] = asv->dynamics.C[yaw] = 0.075; 
+  //asv->dynamics.C[roll] = asv->dynamics.C[pitch] = asv->dynamics.C[yaw] = 0.075; 
+
+  // Set roll, pitch and yaw damping = heave damping. 
+  asv->dynamics.C[roll] = asv->dynamics.C[pitch] = asv->dynamics.C[yaw] = asv->dynamics.C[heave] ;
 }
 
 // Method to set the stiffness for the given asv object.
