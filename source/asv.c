@@ -258,8 +258,8 @@ static void set_wave_force(struct Asv* asv)
                                                 asv->dynamics.time); 
       // wave phase at the aft-CL position.
       struct Dimensions point_aft = asv->cog_position;
-      point_aft.x -= (a/2.0)*sin(asv->attitude.z);
-      point_aft.y -= (a/2.0)*cos(asv->attitude.z);
+      point_aft.x -= (a/4.0)*sin(asv->attitude.z);
+      point_aft.y -= (a/4.0)*cos(asv->attitude.z);
       point_aft.z = regular_wave_get_elevation(wave, 
                                                &point_aft, 
                                                asv->dynamics.time);
@@ -268,8 +268,8 @@ static void set_wave_force(struct Asv* asv)
                                                 asv->dynamics.time);
       // wave phase at the fore-CL position.
       struct Dimensions point_fore = asv->cog_position;
-      point_fore.x += (a/2.0)*sin(asv->attitude.z);
-      point_fore.y += (a/2.0)*cos(asv->attitude.z);
+      point_fore.x += (a/4.0)*sin(asv->attitude.z);
+      point_fore.y += (a/4.0)*cos(asv->attitude.z);
       point_fore.z = regular_wave_get_elevation(wave, 
                                                &point_fore, 
                                                asv->dynamics.time);
@@ -278,8 +278,8 @@ static void set_wave_force(struct Asv* asv)
                                                  asv->dynamics.time);
       // wave phase at the mid-PS position.
       struct Dimensions point_ps = asv->cog_position;
-      point_ps.x -= (b/2.0)*cos(asv->attitude.z);
-      point_ps.y += (b/2.0)*sin(asv->attitude.z);
+      point_ps.x -= (b/4.0)*cos(asv->attitude.z);
+      point_ps.y += (b/4.0)*sin(asv->attitude.z);
       point_ps.z = regular_wave_get_elevation(wave, 
                                                &point_ps, 
                                                asv->dynamics.time);
@@ -288,8 +288,8 @@ static void set_wave_force(struct Asv* asv)
                                                asv->dynamics.time);
       // wave phase at the mid-SB position.
       struct Dimensions point_sb = asv->cog_position;
-      point_sb.x += (b/2.0)*cos(asv->attitude.z);
-      point_sb.y -= (b/2.0)*sin(asv->attitude.z);
+      point_sb.x += (b/4.0)*cos(asv->attitude.z);
+      point_sb.y -= (b/4.0)*sin(asv->attitude.z);
       point_sb.z = regular_wave_get_elevation(wave, 
                                                &point_sb, 
                                                asv->dynamics.time);
@@ -298,9 +298,9 @@ static void set_wave_force(struct Asv* asv)
                                                asv->dynamics.time);
 
       // Compute the difference between the points
-      double lever_trans = b / 2.0;
+      double lever_trans = b / 4.0;
       //double lever_vertical_trans = z - asv->cog_position.z;
-      double lever_long = a / 2.0;
+      double lever_long = a / 4.0;
       //double lever_vertical_long = z - asv->cog_position.z;
       
       // Compute the pressure difference between fore and aft point
