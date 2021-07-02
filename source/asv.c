@@ -417,7 +417,7 @@ static void set_wave_glider_thrust(struct Asv* asv, double rudder_angle)
   double C_L = (1.8 * PI * lambda * alpha_k) / (cos(chi) * sqrt(lambda*lambda/pow(chi, 4) + 4) + 1.8) + (C_DC * alpha_k * alpha_k/ lambda);
   double V = asv->dynamics.V[heave];
   double F_L = 0.5 * SEA_WATER_DENSITY * C_L * A * V * V;
-  double angle_F_L = 30 * PI/180.0; // Assuming the lift force is always at an angle of 30 deg to the surge direction. 
+  double angle_F_L = 45 * PI/180.0; // Assuming the lift force is always at an angle of 45 deg to the surge direction. 
   double thrust_per_hydrofoil = F_L * cos(angle_F_L);
   double thrust = count_hydrofoils * thrust_per_hydrofoil;
   asv->dynamics.F_propeller[surge] = thrust;
