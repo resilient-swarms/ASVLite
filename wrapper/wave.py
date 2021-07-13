@@ -63,61 +63,37 @@ class Wave:
     def random_number_seed(self, value):
         self.__c_object.random_number_seed = value 
 
-    # Getter and setter for spectrum    
+    # Getter for spectrum    
     @property
     def spectrum(self):
         return self.__c_object.spectrum
-    
-    @spectrum.setter
-    def spectrum(self, value):
-        self.__c_object.spectrum = value 
     
     # Getter for spectrum array shape    
     @property
     def spectrum_shape(self):
         return (constants.COUNT_WAVE_SPECTRAL_DIRECTIONS, constants.COUNT_WAVE_SPECTRAL_FREQUENCIES)
     
-    # Getter and setter for min_spectral_frequency    
+    # Getter for min_spectral_frequency    
     @property
     def min_spectral_frequency(self):
         return self.__c_object.min_spectral_frequency
-    
-    @min_spectral_frequency.setter
-    def min_spectral_frequency(self, value):
-        self.__c_object.min_spectral_frequency = value 
 
-    # Getter and setter for max_spectral_frequency    
+    # Getter for max_spectral_frequency    
     @property
     def max_spectral_frequency(self):
         return self.__c_object.max_spectral_frequency
-    
-    @max_spectral_frequency.setter
-    def max_spectral_frequency(self, value):
-        self.__c_object.max_spectral_frequency = value 
 
-     # Getter and setter for peak_spectral_frequency    
+     # Getter for peak_spectral_frequency    
     @property
     def peak_spectral_frequency(self):
-        return self.__c_object.peak_spectral_frequency
-    
-    @peak_spectral_frequency.setter
-    def peak_spectral_frequency(self, value):
-        self.__c_object.peak_spectral_frequency = value   
+        return self.__c_object.peak_spectral_frequency 
 
-     # Getter and setter for min_spectral_wave_heading    
+     # Getter for min_spectral_wave_heading    
     @property
     def min_spectral_wave_heading(self):
         return self.__c_object.min_spectral_wave_heading
-    
-    @min_spectral_wave_heading.setter
-    def min_spectral_wave_heading(self, value):
-        self.__c_object.min_spectral_wave_heading = value  
 
-     # Getter and setter for max_spectral_wave_heading    
+     # Getter for max_spectral_wave_heading    
     @property
     def max_spectral_wave_heading(self):
-        return self.__c_object.max_spectral_wave_heading
-    
-    @max_spectral_wave_heading.setter
-    def max_spectral_wave_heading(self, value):
-        self.__c_object.max_spectral_wave_heading = value   
+        return self.__c_object.max_spectral_wave_heading 

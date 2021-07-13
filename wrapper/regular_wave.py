@@ -84,29 +84,17 @@ class Regular_wave:
     def direction(self, value):
         self.__c_object.direction = value 
     
-    # Getter and setter for time_period
+    # Getter for time_period
     @property
     def time_period(self):
         return self.__c_object.time_period
     
-    @time_period.setter
-    def time_period(self, value):
-        self.__c_object.time_period = value 
-    
-    # Getter and setter for wave_length 
+    # Getter for wave_length 
     @property
     def wave_length(self):
         return self.__c_object.wave_length
-    
-    @wave_length.setter
-    def wave_length(self, value):
-        self.__c_object.wave_length = value 
 
-    # Getter and setter for wave_number
+    # Getter for wave_number
     @property
     def wave_number(self):
         return self.__c_object.wave_number
-    
-    @wave_number.setter
-    def wave_number(self, value):
-        self.__c_object.wave_number = value 
