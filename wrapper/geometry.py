@@ -1,18 +1,16 @@
 import ctypes
+import dll
 
-_dll = ctypes.cdll.LoadLibrary("./lib/libASVLite-python.so")
-
-class C_Dimensions(ctypes.Structure):
+class _Dimensions(ctypes.Structure):
     _fields_ = [("x", ctypes.c_double),
                 ("y", ctypes.c_double),
                 ("z", ctypes.c_double)]
 
 class Dimensions:
     def __init__(self, x, y, z):
-        global _dll
-        self.__c_object = C_Dimensions(ctypes.c_double(x),
-                                   ctypes.c_double(y),
-                                   ctypes.c_double(z))
+        self.__c_object = _Dimensions(ctypes.c_double(x),
+                                      ctypes.c_double(y),
+                                      ctypes.c_double(z))
     
     # Getter for c_object
     @property
@@ -22,26 +20,26 @@ class Dimensions:
     # Getter and setter for x   
     @property
     def x(self):
-        return self.c_dimension.x
+        return self.__c_object.x
     
     @x.setter
     def x(self, value):
-        self.c_dimension.x = value 
+        self.__c_object.x = value 
 
     # Getter and setter for y 
     @property
     def y(self):
-        return self.c_dimension.y
+        return self.__c_object.y
     
     @y.setter
     def y(self, value):
-        self.c_dimension.y = value 
+        self.__c_object.y = value 
 
     # Getter and setter for z 
     @property
     def z(self):
-        return self.c_dimension.z
+        return self.__c_object.z
     
     @z.setter
     def z(self, value):
-        self.c_dimension.z = value 
+        self.__c_object.z = value 
