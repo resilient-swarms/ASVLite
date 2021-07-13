@@ -20,11 +20,6 @@ class Regular_wave:
                                   ctypes.c_double(phase_lag), 
                                   ctypes.c_double(direction))
 
-     # Getter for c_object
-    @property
-    def c_object(self):
-        return self.__c_object
-
     def get_phase(self, location, time):
         regular_wave_get_phase = dll.dll.regular_wave_get_phase
         regular_wave_get_phase.restype = ctypes.c_double
@@ -47,6 +42,11 @@ class Regular_wave:
         result = dll.dll.regular_wave_get_pressure_amp(ctypes.pointer(self.__c_object), 
                                                        ctypes.c_double(z))
         return result
+
+    # Getter for c_object
+    @property
+    def c_object(self):
+        return self.__c_object
 
     # Getter and setter for amplitude    
     @property
