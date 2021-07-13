@@ -1,5 +1,6 @@
 import ctypes
 import dll
+import constants
 import geometry
 import regular_wave
 
@@ -70,6 +71,11 @@ class Wave:
     @spectrum.setter
     def spectrum(self, value):
         self.__c_object.spectrum = value 
+    
+    # Getter for spectrum array shape    
+    @property
+    def spectrum_shape(self):
+        return (constants.COUNT_WAVE_SPECTRAL_DIRECTIONS, constants.COUNT_WAVE_SPECTRAL_FREQUENCIES)
     
     # Getter and setter for min_spectral_frequency    
     @property
