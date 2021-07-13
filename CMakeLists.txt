@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1.0)
 
-PROJECT(asv_simulator C)
+PROJECT(ASVLite C)
 
 # ENABLE MULTI-THREADING
 # --------------------------------------
