@@ -27,5 +27,12 @@ build
 # ----------------------------
 .ipynb_checkpoints
 
+# Python cache
+# ------------
+*/__pycache__
+
+# Wrapper binaries
+wrapper/lib
+
 test
 to_delete_later
