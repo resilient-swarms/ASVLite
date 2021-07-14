@@ -46,13 +46,16 @@ class Simulation:
             self.time_step_size = 40 # millisec
         for key, value in self.asvs.items():
             asv, waypoints = value
+            # Set the clock
             asv.dynamics.time_step_size = self.time_step_size/1000.0 # sec
             asv.dynamics.time = 0.0 
+            # Initialise the ASV
+            asv.init(self.wave)
     
     def run(self):
         # Initialise time to 0.0 sec
         time = 0.0
-        while time < 3:
+        while time < 10000:
             for key, value in self.asvs.items():
                 asv, waypoints = value
                 time += self.time_step_size/1000.0 # sec
