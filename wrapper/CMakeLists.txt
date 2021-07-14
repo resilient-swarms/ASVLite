@@ -48,6 +48,7 @@ SET( INCLUDE
   ../include/regular_wave.h  
   ../include/wave.h 
   ../include/asv.h 
+  ../include/pid_controller.h
 )
 
 # SOURCE FILES
@@ -58,6 +59,7 @@ SET( SOURCE
   ../source/regular_wave.c
   ../source/wave.c
   ../source/asv.c
+  ../source/pid_controller.c
   )
 
 # CREATE BINARIES
