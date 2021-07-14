@@ -1,6 +1,4 @@
-from array import array
 import ctypes
-from typing import cast
 import dll
 import constants
 import geometry
