@@ -51,7 +51,7 @@ class Asv(ctypes.Structure):
                 ("dynamics",        Asv_dynamics),
                 ("cog_position",    geometry.Dimensions)]
     
-    def __init__(self, wave):
+    def init(self, wave):
         dll.dll.asv_init(ctypes.pointer(self), 
                          ctypes.pointer(wave))
 
