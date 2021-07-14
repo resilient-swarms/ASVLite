@@ -20,6 +20,9 @@ asv_position = [1000.0, 1000.0] # [X(m), Y(m)] or [X(latitude), Y(longitude)] if
 asv_attitude = [0.0, 0.0, 0.0] #[heel(deg), trim(deg), heading(deg)]
 waypoints = [[1000.0, 1100.0], [1100.0, 1100.0]] # [[X(m), Y(m)]] or [X(latitude), Y(longitude)] if EARTH_COORDINATES is enabled at build time.
 
+[clock]
+time_step_size = 40 # milli-sec
+
 [visualisation]
 sea_surface_edge_length = 10.0 #m
 sea_surface_position = [1000.0, 1000.0] # Position of the bottom-left corner of the simulated surface.
