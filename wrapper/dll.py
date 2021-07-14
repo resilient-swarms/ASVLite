@@ -1,2 +1,4 @@
 import ctypes
-dll = ctypes.cdll.LoadLibrary("./lib/libASVLite-python.so")
+import pathlib
+path = pathlib.Path(__file__).parent.resolve()
+dll = ctypes.cdll.LoadLibrary(str(path) + "/lib/libASVLite-python.so")
