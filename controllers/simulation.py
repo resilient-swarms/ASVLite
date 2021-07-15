@@ -54,16 +54,18 @@ class Simulation:
     
     def run(self):
         # Initialise time to 0.0 sec
-        time = 0.0
-        while time < 10000:
+        time = 0.0 # sec
+        while time < 200:
             for key, value in self.asvs.items():
                 asv, waypoints = value
-                time += self.time_step_size/1000.0 # sec
                 # Set rudder angle
-                rudder_angle = 0.0
+                rudder_angle = 20.0
                 # Compute the dynamics for the current time step
                 asv.compute_dynamics(rudder_angle, time)
-                print(asv.cog_position.x)
+                # TODO: save values to a numpy array
+                #print(asv.origin_position.x, asv.origin_position.y)
+                # Increment time
+                time += self.time_step_size/1000.0
 
 
 
