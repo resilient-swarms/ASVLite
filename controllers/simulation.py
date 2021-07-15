@@ -1,9 +1,22 @@
 import sys
 import toml
+import collections
+import math
+from dataclasses import dataclass
 sys.path.insert(0, "../wrapper")
 from wave import Wave
 from asv import Asv_propeller, Asv_specification, Asv_dynamics, Asv
 from geometry import Dimensions
+
+#_Simulation_object = collections.namedtuple("Simulation_object", ["id", "asv", "waypoints", "current_waypoint_index"])
+
+
+@dataclass
+class _Simulation_object:
+    id: int
+    asv: Asv
+    waypoints: list
+    current_waypoint_index: int
 
 class Simulation:
     def __init__(self, command_line_args):
@@ -15,7 +28,7 @@ class Simulation:
         # Create wave
         self.wave = Wave(significant_wave_ht, wave_heading, rand_seed)
         # Create ASVs 
-        self.asvs = {} # collection of asvs --> id:(Asv, waypoints)
+        self.asvs = [] # collection of simulation objects, ie asvs
         toml_data = toml.load(toml_file)
         if not "asv" in toml_data:
             raise ValueError("Table [[asv]] missing in input file.")
@@ -38,34 +51,46 @@ class Simulation:
             for i in range(len(thrusters)):
                 asv.propellers[i] = Asv_propeller()
                 asv.propellers[i].position = Dimensions(*thrusters[i])  
-            waypoints = item["waypoints"]
-            self.asvs[id] = (asv, waypoints)
+            _waypoints = item["waypoints"]
+            waypoints = []
+            for waypoint in _waypoints:
+                waypoints.append(Dimensions(*waypoint))
+            self.asvs.append(_Simulation_object(id, asv, waypoints, 0))
         if "clock" in toml_data:
             self.time_step_size = toml_data["clock"]["time_step_size"] # millisec
         else:
             self.time_step_size = 40 # millisec
-        for key, value in self.asvs.items():
-            asv, waypoints = value
+        for item in self.asvs:
             # Set the clock
-            asv.dynamics.time_step_size = self.time_step_size/1000.0 # sec
-            asv.dynamics.time = 0.0 
+            item.asv.dynamics.time_step_size = self.time_step_size/1000.0 # sec
+            item.asv.dynamics.time = 0.0 
             # Initialise the ASV
-            asv.init(self.wave)
+            item.asv.init(self.wave)
     
     def run(self):
         # Initialise time to 0.0 sec
         time = 0.0 # sec
-        while time < 200:
-            for key, value in self.asvs.items():
-                asv, waypoints = value
-                # Set rudder angle
-                rudder_angle = 20.0
-                # Compute the dynamics for the current time step
-                asv.compute_dynamics(rudder_angle, time)
-                # TODO: save values to a numpy array
-                #print(asv.origin_position.x, asv.origin_position.y)
-                # Increment time
-                time += self.time_step_size/1000.0
+        # loop till all asvs reach destination
+        while all([item.current_waypoint_index < len(item.waypoints) for item in self.asvs]):
+            for item in self.asvs:
+                # Current waypoint index
+                i = item.current_waypoint_index
+                if i < len(item.waypoints):
+                    # Set rudder angle
+                    rudder_angle = 0.0
+                    # Compute the dynamics for the current time step
+                    item.asv.compute_dynamics(rudder_angle, time)
+                    # TODO: save values to a numpy array
+                    #print(item.asv.cog_position.x, item.asv.cog_position.y)
+                    # Increment time
+                    time += self.time_step_size/1000.0
+                    # Check if reached the waypoint
+                    proximity_margin = 2.0
+                    x = item.asv.cog_position.x - item.waypoints[i].x
+                    y = item.asv.cog_position.y - item.waypoints[i].y
+                    distance = math.sqrt(x**2 + y**2)
+                    if distance <= proximity_margin:
+                        item.current_waypoint_index += 1
 
 
 
