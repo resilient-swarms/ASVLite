@@ -8,17 +8,21 @@ from wave import Wave
 from asv import Asv_propeller, Asv_specification, Asv_dynamics, Asv
 from geometry import Dimensions
 
-#_Simulation_object = collections.namedtuple("Simulation_object", ["id", "asv", "waypoints", "current_waypoint_index"])
-
-
 @dataclass
 class _Simulation_object:
+    '''
+    A class to hold the simulation data related to a single ASV.
+    '''
     id: int
     asv: Asv
     waypoints: list
     current_waypoint_index: int
+    simulation_data : list # Hold the following simulation data - [cog_x, cog_y, cog_z, asv_heading, v_surge].
 
 class Simulation:
+    '''
+    Class to perform the simulation of vehicle and waves.
+    '''
     def __init__(self, command_line_args):
         toml_file = command_line_args[0]
         output_name = command_line_args[1]
@@ -55,7 +59,7 @@ class Simulation:
             waypoints = []
             for waypoint in _waypoints:
                 waypoints.append(Dimensions(*waypoint))
-            self.asvs.append(_Simulation_object(id, asv, waypoints, 0))
+            self.asvs.append(_Simulation_object(id, asv, waypoints, 0, []))
         if "clock" in toml_data:
             self.time_step_size = toml_data["clock"]["time_step_size"] # millisec
         else:
@@ -65,7 +69,7 @@ class Simulation:
             item.asv.dynamics.time_step_size = self.time_step_size/1000.0 # sec
             item.asv.dynamics.time = 0.0 
             # Initialise the ASV
-            item.asv.init(self.wave)
+            item.asv.init(self.wave)        
     
     def run(self):
         # Initialise time to 0.0 sec
@@ -77,11 +81,16 @@ class Simulation:
                 i = item.current_waypoint_index
                 if i < len(item.waypoints):
                     # Set rudder angle
+                    # TODO: rudder_angle = controller.get_rudder_angle(time, )
                     rudder_angle = 0.0
                     # Compute the dynamics for the current time step
                     item.asv.compute_dynamics(rudder_angle, time)
-                    # TODO: save values to a numpy array
-                    #print(item.asv.cog_position.x, item.asv.cog_position.y)
+                    # Save simulation data
+                    item.simulation_data.append([item.asv.cog_position.x, 
+                                                 item.asv.cog_position.y, 
+                                                 item.asv.cog_position.z, 
+                                                 item.asv.attitude.z, 
+                                                 item.asv.dynamics.V[0]])
                     # Increment time
                     time += self.time_step_size/1000.0
                     # Check if reached the waypoint
@@ -91,8 +100,6 @@ class Simulation:
                     distance = math.sqrt(x**2 + y**2)
                     if distance <= proximity_margin:
                         item.current_waypoint_index += 1
-
-
 
 if __name__ == '__main__':    
     simulation = Simulation(sys.argv[1:])
