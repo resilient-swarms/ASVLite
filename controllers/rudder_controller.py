@@ -33,9 +33,9 @@ class Rudder_controller:
     def _gradient_descent(self):
         alpha = 0.01 # learning rate
         for i in range(100):
-            cost = self._cost()
+            d, cost = self._cost()
             self.W = self.W - alpha * cost 
-            print(cost)
+            print(d)
     
     def _cost(self):
         '''
@@ -55,6 +55,7 @@ class Rudder_controller:
         # Simulate path and compute the cost:
         time_step_size = 100 # milli-sec
         cumulative_error = np.array([0.0, 0.0, 0.0, 0.0])
+        cumulative_d = 0.0
         n = 0
         for significant_wave_ht in significant_wave_hts:
             for asv_heading in asv_headings:
@@ -94,10 +95,11 @@ class Rudder_controller:
                         # Compute the error in the vehicle's path
                         # Error is computed as the square of diveations from the path.
                         cumulative_error += np.array([d*1, d*required_heading, d*d, d*surge_velocity])
+                        cumulative_d += d
                         n += 1
                         # # Print the output
                         # print(asv.cog_position.x, asv.cog_position.y)
-        return cumulative_error/n
+        return cumulative_d/n, cumulative_error/n
              
     def get_rudder_angle(self, required_heading, shortest_distance, surge_velocity):
         X = np.array([1.0, required_heading, shortest_distance, surge_velocity])
