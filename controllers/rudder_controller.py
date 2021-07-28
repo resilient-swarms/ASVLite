@@ -31,17 +31,11 @@ class Rudder_controller:
         self._gradient_descent()
     
     def _gradient_descent(self):
-        alpha = 0.1 # learning rate
-        d_1, cost = self._cost()
-        while True:
+        alpha = 0.01 # learning rate
+        for i in range(100):
+            d, cost = self._cost()
             self.W = self.W - alpha * cost 
-            d_2, cost = self._cost()
-            delta_d = abs((d_1 - d_2)/d_1)
-            print(d_1, delta_d)
-            if delta_d < 0.01: 
-                break # stop when the % change in error is < 1%
-            else:
-                d_1 = d_2        
+            print(d)
     
     def _cost(self):
         '''
