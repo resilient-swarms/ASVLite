@@ -7,6 +7,7 @@ sys.path.insert(0, "../wrapper")
 from wave import Wave
 from asv import Asv_propeller, Asv_specification, Asv_dynamics, Asv
 from geometry import Dimensions
+from rudder_controller import Rudder_controller
 
 @dataclass
 class _Simulation_object:
@@ -18,6 +19,7 @@ class _Simulation_object:
     waypoints: list
     current_waypoint_index: int
     simulation_data : list # Hold the following simulation data - [cog_x, cog_y, cog_z, asv_heading, v_surge].
+    controller : Rudder_controller
 
 class Simulation:
     '''
@@ -59,7 +61,7 @@ class Simulation:
             waypoints = []
             for waypoint in _waypoints:
                 waypoints.append(Dimensions(*waypoint))
-            self.asvs.append(_Simulation_object(id, asv, waypoints, 0, []))
+            self.asvs.append(_Simulation_object(id, asv, waypoints, 0, [], Rudder_controller(asv.spec)))
         if "clock" in toml_data:
             self.time_step_size = toml_data["clock"]["time_step_size"] # millisec
         else:
