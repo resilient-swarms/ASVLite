@@ -534,6 +534,12 @@ static void set_position(struct Asv* asv)
 static void set_attitude(struct Asv* asv)
 {
   asv->attitude.z += asv->dynamics.X[yaw];
+  // Normalise yaw between (0, 2PI)
+  while(asv->attitude.z < 0)
+  {
+    asv->attitude.z += 2.0*PI;
+  }
+  asv->attitude.z = fmod(asv->attitude.z, 2.0*PI);
   asv->attitude.x += asv->dynamics.X[roll];
   asv->attitude.y += asv->dynamics.X[pitch];
 }
