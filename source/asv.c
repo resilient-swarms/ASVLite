@@ -231,6 +231,10 @@ static void set_wave_force(struct Asv* asv)
       // Compute the encounter frequency
       double angle = wave->direction - asv->attitude.z;
       // Better to keep angle +ve
+      while(angle < 0.0)
+      {
+        angle += 2*PI;
+      }
       angle = fmod(angle, 2.0*PI);
       // Get encounter frequency
       double freq = get_encounter_frequency(wave->frequency,
