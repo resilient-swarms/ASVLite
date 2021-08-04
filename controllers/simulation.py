@@ -7,7 +7,7 @@ sys.path.insert(0, "../wrapper")
 from wave import Wave
 from asv import Asv_propeller, Asv_specification, Asv_dynamics, Asv
 from geometry import Dimensions
-from rudder_controller import Rudder_controller
+from rudder_controller_exhaustive_search import Rudder_controller
 
 @dataclass
 class _Simulation_object:
@@ -52,7 +52,7 @@ class Simulation:
             asv.spec.r_yaw   = item["radius_of_gyration"][2]
             asv.spec.cog = Dimensions(*item["cog"])
             asv.origin_position = Dimensions(*item["asv_position"])
-            asv.attitude = Dimensions(*item["asv_attitude"])
+            asv.attitude = Dimensions(*[angle * math.pi/180.0 for angle in item["asv_attitude"]])
             thrusters = item["thrusters"]
             for i in range(len(thrusters)):
                 asv.propellers[i] = Asv_propeller()
@@ -81,27 +81,30 @@ class Simulation:
             for item in self.asvs:
                 # Current waypoint index
                 i = item.current_waypoint_index
-                if i < len(item.waypoints):
-                    # Set rudder angle
-                    # TODO: rudder_angle = controller.get_rudder_angle(time, )
-                    rudder_angle = 0.0
-                    # Compute the dynamics for the current time step
-                    item.asv.compute_dynamics(rudder_angle, time)
-                    # Save simulation data
-                    item.simulation_data.append([item.asv.cog_position.x, 
-                                                 item.asv.cog_position.y, 
-                                                 item.asv.cog_position.z, 
-                                                 item.asv.attitude.z, 
-                                                 item.asv.dynamics.V[0]])
-                    # Increment time
-                    time += self.time_step_size/1000.0
-                    # Check if reached the waypoint
-                    proximity_margin = 2.0
-                    x = item.asv.cog_position.x - item.waypoints[i].x
-                    y = item.asv.cog_position.y - item.waypoints[i].y
-                    distance = math.sqrt(x**2 + y**2)
-                    if distance <= proximity_margin:
-                        item.current_waypoint_index += 1
+                # Increment time
+                time += self.time_step_size/1000.0
+                # Check if reached the waypoint
+                proximity_margin = 5.0
+                x = item.asv.cog_position.x - item.waypoints[i].x
+                y = item.asv.cog_position.y - item.waypoints[i].y
+                distance = math.sqrt(x**2 + y**2)
+                if distance <= proximity_margin:
+                    # Reached waypoint
+                    item.current_waypoint_index += 1
+                else:
+                    if i < len(item.waypoints):
+                        # Set rudder angle
+                        rudder_angle = item.controller.get_rudder_angle(item.waypoints[i])
+                        # Compute the dynamics for the current time step
+                        #print(rudder_angle)
+                        item.asv.compute_dynamics(rudder_angle, time)
+                        # Save simulation data
+                        item.simulation_data.append([item.asv.cog_position.x, 
+                                                    item.asv.cog_position.y, 
+                                                    item.asv.cog_position.z, 
+                                                    item.asv.attitude.z, 
+                                                    item.asv.dynamics.V[0]])
+                        #print("{} {}".format(item.asv.cog_position.x, item.asv.cog_position.y))
 
 if __name__ == '__main__':    
     simulation = Simulation(sys.argv[1:])
