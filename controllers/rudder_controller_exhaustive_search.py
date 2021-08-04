@@ -91,14 +91,19 @@ class Rudder_controller:
         asv.dynamics.time = 0.0
         while time < max_time: 
             # Compute the relative angle between the vehicle heading and the path.
-            delta_y = waypoint.y - asv.cog_position.y
-            delta_x = waypoint.x - asv.cog_position.x
-            theta_waypoint = math.atan2(delta_y, delta_x) # radians
-            theta = theta_waypoint - asv.attitude.z # radians
+            p1 = asv.origin_position
+            p2 = asv.cog_position
+            p3 = waypoint
+            # Angle between two lines with slope m1, m2 = atan((m1-m2)/(1 + m1*m2))
+            m1 = math.atan2((p2.y-p1.y), (p2.x-p1.x))
+            m2 = math.atan2((p3.y-p1.y), (p3.x-p1.x))
+            theta = math.atan((m1-m2)/(1 + m1*m2)) # radians
             # Get the rudder angle
             v = asv.dynamics.V[0] / 10.0 # Normalize velocity
             phi = self._get_rudder_angle(theta, v, W) # rudder angle in deg
             # Compute the distance of the vehicle from the waypoint
+            delta_y = waypoint.y - asv.origin_position.y
+            delta_x = waypoint.x - asv.origin_position.x
             distance = math.sqrt(delta_x**2 + delta_y**2)
             proximity_margin = 2.0
             # Compute the dynamics for the current time step
