@@ -5,7 +5,7 @@ from wave import Wave
 from asv import Asv_propeller, Asv_specification, Asv_dynamics, Asv
 from geometry import Dimensions
 import multiprocessing as mp
-from tqdm import tqdm
+from tqdm import tqdm # to show a progress bar
 
 class Rudder_controller:
     '''
@@ -31,7 +31,8 @@ class Rudder_controller:
     
     def _exhaustive_search(self):
         Ws = []
-        pool = mp.Pool(mp.cpu_count())
+        # There is a lot of simulations to run, therefore run it as multiple processes to save time.
+        pool = mp.Pool(mp.cpu_count()) # Create a pool of processes. 
         # for w_0 in np.arange(-2.0, 2.0, 0.1):
         #     for w_1 in np.arange(-2.0, 2.0, 0.1):
         #         for w_2 in np.arange(-2.0, 2.0, 0.1):
@@ -41,16 +42,16 @@ class Rudder_controller:
                 for w_2 in np.arange(-100.0, 100.0, 5.0):
                     for w_3 in np.arange(-100.0, 100.0, 5.0):
                         Ws.append([w_0, w_1, w_2, w_3])
-        # This is going to taka very long time - a progress bar is useful.
+        # This is going to take very long time therefore show a progress bar to see the progress and remaining time for completion.
         results = [] 
         for result in tqdm(pool.imap_unordered(self._simulations, Ws), total=len(Ws)): # tqdm adds and manages the progress bar.
             results.append(result) # append the return for each call to self._simulations to the list.
         #time_logs = pool.map(self._simulations, Ws) # If I was not using a progress bar, then just this line was sufficient for multiprocessing all simulations. 
         # Write time log to file
-        # time_logs = results
-        # f = open("./time_log.txt", "w")
-        # f.write("{}".format(time_logs))
-        # f.close()
+        time_logs = results
+        f = open("./time_log.txt", "w")
+        f.write("{}".format(time_logs))
+        f.close()
     
     def _simulations(self, W):
         # Log time for all simulations
@@ -64,6 +65,7 @@ class Rudder_controller:
         avg_time = np.average(np.array(time_log)) # Average of simulation time for the current set of parameters
         #print(W, avg_time)
         if avg_time < 50:
+            # The vehicle reached waypoint before max_time. This set of parameters may be the solution, therefore save them on a file.
             f = open("./solution.txt", "a")
             f.write("{}, {}\n".format(W, avg_time))
             f.close()
@@ -119,5 +121,5 @@ class Rudder_controller:
         W = np.array(W)
         X = np.array([1.0, math.sin(theta), math.cos(theta), v])
         angle = math.tanh(np.dot(np.transpose(W), X)) # This will give a value between -1 and 1
-        angle = angle * self.max_rudder_angle
+        angle = angle * self.max_rudder_angle 
         return angle
