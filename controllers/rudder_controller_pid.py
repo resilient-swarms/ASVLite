@@ -4,6 +4,7 @@ from asv import Asv_propeller, Asv_specification, Asv_dynamics, Asv
 from geometry import Dimensions
 import multiprocessing as mp
 import numpy as np
+from collections import deque
 
 class Rudder_controller:
     def __init__(self, asv): 
@@ -11,9 +12,9 @@ class Rudder_controller:
         self.asv = asv
         self.error = 0.0 # error in each time step
         self.previous_error  = 0.0 # error in the previous time step
-        self.cumulative_error = 0.0 # integral of errors
+        self.cumulative_error = deque(maxlen=25) # integral of errors
         self.delta_error = 0.0 # differential of error
-        self.K = np.array([5, 0.5, 1]) # P,I,D gain terms
+        self.K = np.array([4, 2, 3]) # P,I,D gain terms
              
     def get_rudder_angle(self, waypoint):
         # Compute the relative angle between the vehicle heading and the waypoint.
@@ -29,15 +30,12 @@ class Rudder_controller:
         self.previous_error = self.error
         self.error = theta
         #print(self.error)
-        self.cumulative_error += self.error
-        if self.cumulative_error > 30.0:
-            self.cumulative_error = 30.0
-        elif self.cumulative_error < -30.0:
-            self.cumulative_error = -30.0
+        self.cumulative_error.append(self.error)
+        cumulative_error = np.array(self.cumulative_error).sum(axis=0)
         self.delta_error = self.error - self.previous_error
         # Compute the rudder angle
-        X = np.array([self.error, self.cumulative_error, self.delta_error]) # P, I, D errors.
-        phi = np.dot(np.transpose(self.K), X) # deg because error is in deg.
+        E = np.array([self.error, cumulative_error, self.delta_error]) # P, I, D errors.
+        phi = np.dot(np.transpose(self.K), E) # deg because error is in deg.
         # Limit the rudder angle within the range (-30, 30)
         if phi > 30.0:
             phi = 30.0
