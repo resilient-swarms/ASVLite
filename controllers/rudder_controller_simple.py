@@ -3,11 +3,17 @@ from wave import Wave
 from asv import Asv_propeller, Asv_specification, Asv_dynamics, Asv
 from geometry import Dimensions
 import multiprocessing as mp
+import numpy as np
 
 class Rudder_controller:
     def __init__(self, asv): 
         self.max_rudder_angle = 30 #deg
         self.asv = asv
+        self.error = 0.0 # error in each time step
+        self.previous_error  = 0.0 # error in the previous time step
+        self.cumulative_error = 0.0 # integral of errors
+        self.delta_error = 0.0 # differential of error
+        self.K = np.array([5, 0.5, 1]) # P,I,D gain terms
              
     def get_rudder_angle(self, waypoint):
         # Compute the relative angle between the vehicle heading and the waypoint.
@@ -18,12 +24,23 @@ class Rudder_controller:
         m1 = math.atan2((p2.y-p1.y), (p2.x-p1.x))
         m2 = math.atan2((p3.y-p1.y), (p3.x-p1.x))
         theta = math.atan((m1-m2)/(1 + m1*m2)) # radians
-        # Set the rudder angle as equal to the angle between the vehicle heading and the waypoint.
         theta = theta * 180.0 / math.pi # deg
+        # Set error as the difference of the current heading and the desired heading.
+        self.previous_error = self.error
+        self.error = theta
+        #print(self.error)
+        self.cumulative_error += self.error
+        if self.cumulative_error > 30.0:
+            self.cumulative_error = 30.0
+        elif self.cumulative_error < -30.0:
+            self.cumulative_error = -30.0
+        self.delta_error = self.error - self.previous_error
+        # Compute the rudder angle
+        X = np.array([self.error, self.cumulative_error, self.delta_error]) # P, I, D errors.
+        phi = np.dot(np.transpose(self.K), X) # deg because error is in deg.
         # Limit the rudder angle within the range (-30, 30)
-        if theta < -30.0:
-            return -30.
-        elif theta > 30.0:
-            return 30.0
-        else:
-            return theta
+        if phi > 30.0:
+            phi = 30.0
+        elif phi < -30.0:
+            phi = -30.0
+        return phi
