@@ -18,7 +18,7 @@ class Rudder_controller:
         self.delta_error = 0.0 # differential of error
         # P,I,D gain terms
         if K == None:
-            self.K = np.array([3.0, 3.0, 3.0]) # Set an initial value and then tune the parameters. 
+            self.K = np.array([4.0, 2.0, 3.0]) # Set an initial value and then tune the parameters. 
             self._tune_controller()
         else:
             self.K = np.array(K)        
