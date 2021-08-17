@@ -61,7 +61,7 @@ class Simulation:
             waypoints = []
             for waypoint in _waypoints:
                 waypoints.append(Dimensions(*waypoint))
-            self.asvs.append(_Simulation_object(id, asv, waypoints, 0, [], Rudder_controller(asv)))
+            self.asvs.append(_Simulation_object(id, asv, waypoints, 0, [], Rudder_controller(asv.spec)))
         if "clock" in toml_data:
             self.time_step_size = toml_data["clock"]["time_step_size"] # millisec
         else:
@@ -74,6 +74,7 @@ class Simulation:
             item.asv.init(self.wave)        
     
     def run(self):
+        f = open("./path.txt", "w")  
         # Initialise time to 0.0 sec
         time = 0.0 # sec
         # loop till all asvs reach destination
@@ -94,7 +95,7 @@ class Simulation:
                 else:
                     if i < len(item.waypoints):
                         # Set rudder angle
-                        rudder_angle = item.controller.get_rudder_angle(item.waypoints[i])
+                        rudder_angle = item.controller.get_rudder_angle(item.asv, item.waypoints[i])
                         # Compute the dynamics for the current time step
                         #print(rudder_angle)
                         item.asv.compute_dynamics(rudder_angle, time)
@@ -104,7 +105,8 @@ class Simulation:
                                                     item.asv.cog_position.z, 
                                                     item.asv.attitude.z, 
                                                     item.asv.dynamics.V[0]])
-                        #print("{} {}".format(item.asv.cog_position.x, item.asv.cog_position.y))
+                        f.write("{} {} \n".format(item.asv.cog_position.x, item.asv.cog_position.y))
+        f.close()
 
 if __name__ == '__main__':    
     simulation = Simulation(sys.argv[1:])
