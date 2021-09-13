@@ -608,51 +608,89 @@ void asv_init(struct Asv* asv, struct Wave* wave)
   }
 }
 
-static void compute_dynamics(struct Asv* asv, bool is_wave_glider, double rudder_angle, double time)
-{
-  // Update the time
-  asv->dynamics.time = time;
+void asv_set_sea_state(struct Asv* asv, struct Wave* wave)
+{ 
+  // set the wave for the ASV
+  asv->wave = wave;
 
+  // Initialise all the vectors matrices to zero.
+  for(int j = 0; j < COUNT_ASV_SPECTRAL_FREQUENCIES; ++j)
+  {
+    asv->dynamics.P_unit_wave[j][0] = 0.0;
+    asv->dynamics.P_unit_wave[j][1] = 0.0;
+  }
+
+  // Set minimum and maximum encounter frequency
   if(asv->wave != NULL)
   {
-    // Get the wave force for the current time step
-    set_wave_force(asv);
+    double max_speed_for_spectrum = 2.0 * asv->spec.max_speed;
+    asv->dynamics.P_unit_wave_freq_min = get_encounter_frequency(
+                                        asv->wave->min_spectral_frequency,
+                                        max_speed_for_spectrum, 0);
+    asv->dynamics.P_unit_wave_freq_max = get_encounter_frequency(
+                                        asv->wave->max_spectral_frequency,
+                                        max_speed_for_spectrum, PI);
   }
   
-  // Get the propeller force for the current time step
-  if(is_wave_glider)
+  // Set the wave force for unit waves
+  if(asv->wave != NULL)
   {
-    set_wave_glider_thrust(asv, rudder_angle);
+    set_unit_wave_pressure(asv);
   }
-  else
-  {
-    set_propeller_force(asv);
-  }
-  
-  // Compute the drag force for the current time step based on velocity reading
-  set_drag_force(asv);
-  
-  // Compute the restoring force for the current time step based on the position
-  // reading
-  set_restoring_force(asv);
+}
 
-  // Compute the net force for the current time step
-  set_net_force(asv);
-  
-  // Compute the acceleration for the current time step
-  set_acceleration(asv);
-  
-  // Compute the velocity for the current time step
-  set_velocity(asv);
-  
-  // Compute the deflection for the current time step in body-fixed frame
-  set_deflection(asv);
-   
-  // Compute the new attitude
-  set_attitude(asv);
-  
-  // Translate the deflection to global frame and compute the new position.
-  set_position(asv);
+static void compute_dynamics(struct Asv* asv, bool is_wave_glider, double rudder_angle, double time)
+{
+  // We assume time goes forward, but check it.
+  // Check if time >= asv->dynamics.time. 
+  // If time == asv->dynamics.time, then there is nothing to update.
+  // Also, we assume time to only increment and not be less than the previous value. 
+  if(time > asv->dynamics.time)
+  {
+    // Update the time
+    asv->dynamics.time = time;
+
+    if(asv->wave != NULL)
+    {
+      // Get the wave force for the current time step
+      set_wave_force(asv);
+    }
+    
+    // Get the propeller force for the current time step
+    if(is_wave_glider)
+    {
+      set_wave_glider_thrust(asv, rudder_angle);
+    }
+    else
+    {
+      set_propeller_force(asv);
+    }
+    
+    // Compute the drag force for the current time step based on velocity reading
+    set_drag_force(asv);
+    
+    // Compute the restoring force for the current time step based on the position
+    // reading
+    set_restoring_force(asv);
+
+    // Compute the net force for the current time step
+    set_net_force(asv);
+    
+    // Compute the acceleration for the current time step
+    set_acceleration(asv);
+    
+    // Compute the velocity for the current time step
+    set_velocity(asv);
+    
+    // Compute the deflection for the current time step in body-fixed frame
+    set_deflection(asv);
+    
+    // Compute the new attitude
+    set_attitude(asv);
+    
+    // Translate the deflection to global frame and compute the new position.
+    set_position(asv);
+  }
 }
 
 void asv_compute_dynamics(struct Asv* asv, double time)

@@ -137,9 +137,16 @@ void asv_init(struct Asv* asv, struct Wave* wave);
  * Function to set the position and attitude of the ASV for the given time step.
  * @param asv is the pointer to the asv object for which the position is to be
  * computed. 
- * @param time is the time for which the position is to be computed.
+ * @param time is the time for which the position is to be computed. 
  */
 void asv_compute_dynamics(struct Asv* asv, double time);
+
+/**
+ * Function to initialise a new sea state.
+ * @param asv is the object to be initialised.
+ * @param wave for the asv. Set to NULL for still water simulation.
+ */
+void asv_set_sea_state(struct Asv* asv, struct Wave* wave);
 
 /**
  * Similar to function asv_compute_dynamics but should be used only for a wave glider. 
