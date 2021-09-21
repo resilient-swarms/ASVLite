@@ -15,22 +15,25 @@ class Data(ctypes.Structure):
     _fields_ = [("count_longitudes", ctypes.c_int),
                 ("count_latitudes",  ctypes.c_int),
                 ("count_time_steps", ctypes.c_int),
-                ("longitudes", ctypes.POINTER(float)),
-                ("latitudes",  ctypes.POINTER(float)),
-                ("time_steps",  ctypes.POINTER(float)),
-                ("map",  ctypes.POINTER(int)),
-                ("data",  ctypes.POINTER(float))]
+                ("longitudes", ctypes.POINTER(ctypes.c_float)),
+                ("latitudes",  ctypes.POINTER(ctypes.c_float)),
+                ("time_steps", ctypes.POINTER(ctypes.c_float)),
+                ("map",  ctypes.POINTER(ctypes.c_int)),
+                ("data",  ctypes.POINTER(ctypes.c_float))]
 
 class Cyclone(ctypes.Structure):
     _fields_ = [("hs", ctypes.POINTER(Data)),
                 ("dp", ctypes.POINTER(Data)),
                 ("count_sets", ctypes.c_int)]
     
-    def init(self, path_to_hs_nc_files, path_to_dp_nc_files, count_sets):
-        dll.dll.cyclone_init(ctypes.pointer(self), 
-                            ctypes.pointer(ctypes.c_char_p(path_to_hs_nc_files)),
-                            ctypes.pointer(ctypes.c_char_p(path_to_dp_nc_files)),
-                            ctypes.c_int(count_sets))
+    def init(self, path_to_hs_nc_files, path_to_dp_nc_files):
+        cyclone_init = dll.dll.cyclone_init
+        cyclone_init.argtypes = [ctypes.POINTER(Cyclone), ctypes.c_char_p * len(path_to_hs_nc_files), ctypes.c_char_p * len(path_to_dp_nc_files), ctypes.c_int]
+        path_to_hs_nc_files = [ctypes.c_char_p(file.encode('utf-8')) for file in path_to_hs_nc_files]
+        path_to_dp_nc_files = [ctypes.c_char_p(file.encode('utf-8')) for file in path_to_dp_nc_files]
+        path_to_hs_nc_files = (ctypes.c_char_p * len(path_to_hs_nc_files))(*path_to_hs_nc_files)
+        path_to_dp_nc_files = (ctypes.c_char_p * len(path_to_dp_nc_files))(*path_to_dp_nc_files)
+        cyclone_init(self, path_to_hs_nc_files, path_to_dp_nc_files, len(path_to_dp_nc_files))
     
     def __del__(self):
         dll.dll.cyclone_clean(ctypes.pointer(self))
@@ -40,13 +43,24 @@ class Cyclone(ctypes.Structure):
 
     def get_wave_height(self, location, time):
         cyclone_get_wave_height = dll.dll.cyclone_get_wave_height
+        cyclone_get_wave_height.argtypes = [ctypes.POINTER(Cyclone), Location, Location]
         cyclone_get_wave_height.restype = ctypes.c_float
-        result = cyclone_get_wave_height(ctypes.pointer(self), Location(location), Time(time))
+        result = cyclone_get_wave_height(self, location, time)
         return result
     
     def cyclone_get_wave_heading(self, location, time):
         cyclone_get_wave_heading = dll.dll.cyclone_get_wave_heading
+        cyclone_get_wave_heading.argtypes = [ctypes.POINTER(Cyclone), Location, Location]
         cyclone_get_wave_heading.restype = ctypes.c_float
-        result = cyclone_get_wave_heading(ctypes.pointer(self), Location(location), Time(time))
+        result = cyclone_get_wave_heading(self, location, time)
         return result
     
+
+
+# cyclone = Cyclone()
+# hs_file = ["../cyclone/sample_files/hs1.nc", "../cyclone/sample_files/hs2.nc", "../cyclone/sample_files/hs3.nc"]
+# dp_file = ["../cyclone/sample_files/dp1.nc", "../cyclone/sample_files/dp2.nc", "../cyclone/sample_files/dp3.nc"]
+# cyclone.init(hs_file, dp_file)
+# cyclone.print_data()
+#https://stackoverflow.com/questions/27127413/converting-python-string-object-to-c-char-using-ctypes
+#https://stackoverflow.com/questions/4145775/how-do-i-convert-a-python-list-into-a-c-array-by-using-ctypes
