@@ -37,6 +37,7 @@ wrapper/lib
 # Python env
 # ----------
 .env
+env
 
 test
 to_delete_later
