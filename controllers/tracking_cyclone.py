@@ -67,19 +67,18 @@ class Simulation:
             waypoints = []
             for waypoint in _waypoints:
                 waypoints.append(Dimensions(*waypoint))
-            self.asvs.append(_Simulation_object(id, asv, waypoints, 0, [], Rudder_controller(asv.spec, [25,1,9])))
+            #Create wave
+            start_time = self.cyclone_start_time  # hrs
+            start_location = Location(asv.cog_position.x, asv.cog_position.y)
+            wave_hs = self.cyclone.get_wave_height_using_days(start_location, start_time)
+            wave_dp = self.cyclone.get_wave_heading_using_days(start_location, start_time)
+            rand_seed = 1
+            wave = Wave(wave_hs, wave_dp, rand_seed)
+            self.asvs.append(_Simulation_object(id, wave, asv, waypoints, 0, [], Rudder_controller(asv.spec, [25,1,9])))
         if "clock" in toml_data:
             self.time_step_size = toml_data["clock"]["time_step_size"] # millisec
         else:
             self.time_step_size = 40 # millisec
-        for item in self.asvs:
-            #Create wave
-            start_time = self.cyclone_start_time  # hrs
-            start_location = Location(item.asv.cog_position.x, item.asv.cog_position.y)
-            wave_hs = self.cyclone.get_wave_height_using_days(start_location, start_time)
-            wave_dp = self.cyclone.get_wave_heading_using_days(start_location, start_time)
-            rand_seed = 1
-            item.wave = Wave(wave_hs, wave_dp, rand_seed)
         for item in self.asvs:
             # Set the clock
             item.asv.dynamics.time_step_size = self.time_step_size/1000.0 # sec
