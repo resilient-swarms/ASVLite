@@ -253,7 +253,17 @@ static void set_wave_force(struct Asv* asv)
                            freq_step_size);
         if(index >= COUNT_ASV_SPECTRAL_FREQUENCIES || index < 0)
         {
-          fprintf(stderr, "FATAL ERROR! Array index out of bounds. \n");
+          fprintf(stderr, "FATAL ERROR! Array index out of bounds.\n");
+          fprintf(stderr, "array index = %i \n", index);
+          fprintf(stderr, "V[surge] = %f \n", asv->dynamics.V[surge]);
+          fprintf(stderr, "F_propeller[surge] = %f \n", asv->dynamics.F_propeller[surge]);
+          fprintf(stderr, "encounter freq = %f \n", freq);
+          fprintf(stderr, "freq_step_size = %f \n", freq_step_size);
+          fprintf(stderr, "P_unit_wave_freq_min = %f \n", asv->dynamics.P_unit_wave_freq_min);
+          fprintf(stderr, "wave->frequency = %f \n", wave->frequency);
+          fprintf(stderr, "angle = %f \n", angle);
+          fprintf(stderr, "wave->direction = %f \n", wave->direction);
+          fprintf(stderr, "asv->attitude.z = %f \n", asv->attitude.z);
           exit(1);
         }
       }
