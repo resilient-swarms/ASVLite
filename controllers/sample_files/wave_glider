@@ -13,7 +13,7 @@ radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
 thrusters = [] # [[x(m), y(m), z(m)]]
 asv_position = [22.75, 263.0] # [latitude, longitude]
 asv_attitude = [0.0, 0.0, 90.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[23.75, 280.0]]] # [[latitude, longitude]]
+waypoints = [[23.75, 280.0]] # [[latitude, longitude]]
 
 [clock]
 time_step_size = 40 # milli-sec
