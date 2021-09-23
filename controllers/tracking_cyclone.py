@@ -37,14 +37,7 @@ class Simulation:
         count_time_steps_in_last_file = self.cyclone.hs[count_files - 1].count_time_steps
         self.cyclone_start_time = self.cyclone.hs[0].time_steps[0] # hrs
         self.cyclone_end_time = self.cyclone.hs[count_files-1].time_steps[count_time_steps_in_last_file-1] # hrs
-        # TODO: set the start position of the wave glider
         # TODO: set the current centre of the storm
-        # Create wave
-        # TODO: change the initial sea state to the first sea state at the start position.
-        significant_wave_ht = 1.1
-        wave_heading        = 30
-        rand_seed           = 1
-        self.wave = Wave(significant_wave_ht, wave_heading, rand_seed)
         # Create ASVs 
         self.asvs = [] # collection of simulation objects, ie asvs
         toml_data = toml.load(toml_file)
@@ -63,6 +56,7 @@ class Simulation:
             asv.spec.r_pitch = item["radius_of_gyration"][1]
             asv.spec.r_yaw   = item["radius_of_gyration"][2]
             asv.spec.cog = Dimensions(*item["cog"])
+            # TODO: set correct start position in toml file using earth coordinate system
             asv.origin_position = Dimensions(*item["asv_position"])
             asv.attitude = Dimensions(*[angle * math.pi/180.0 for angle in item["asv_attitude"]])
             thrusters = item["thrusters"]
@@ -79,11 +73,19 @@ class Simulation:
         else:
             self.time_step_size = 40 # millisec
         for item in self.asvs:
+            #Create wave
+            start_time = self.cyclone_start_time  # hrs
+            start_location = Location(item.asv.cog_position.x, item.asv.cog_position.y)
+            wave_hs = self.cyclone.get_wave_height_using_days(start_location, start_time)
+            wave_dp = self.cyclone.get_wave_heading_using_days(start_location, start_time)
+            rand_seed = 1
+            item.wave = Wave(wave_hs, wave_dp, rand_seed)
+        for item in self.asvs:
             # Set the clock
             item.asv.dynamics.time_step_size = self.time_step_size/1000.0 # sec
             item.asv.dynamics.time = 0.0 
             # Initialise the ASV
-            item.asv.init(self.wave)        
+            item.asv.init(item.wave)      
     
     def run(self):
         f = open("./path.txt", "w")  
@@ -120,6 +122,7 @@ class Simulation:
                             rand_seed = 1
                             item.wave = Wave(wave_hs, wave_dp, rand_seed)
                             item.asv.set_wave(item.wave)
+                        # TODO: find the position of the storm and update waypoint if required
                         # Set rudder angle
                         rudder_angle = item.controller.get_rudder_angle(item.asv, item.waypoints[i])
                         # Compute the dynamics for the current time step
