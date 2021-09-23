@@ -253,13 +253,8 @@ static int find_index(float* array, int length, float value)
    return index;
 }
 
-static float get_value_at(struct Data* data, int count_sets, struct Location location, struct Time time)
+static float get_value_at_using_days(struct Data* data, int count_sets, struct Location location, float t)
 {
-   // Convert time to days since 1-Jan-1990 00:00:00.
-   struct Time t_epoch  = {1990, 1, 1, 0};
-   int n = count_days_between_dates(time, t_epoch);
-   float t = n + time.hour/24.0;
-   
    // Get index of time
    int index_set;
    int index_time;
@@ -304,15 +299,37 @@ static float get_value_at(struct Data* data, int count_sets, struct Location loc
    return value;
 }
 
-float cyclone_get_wave_height(struct Cyclone* cyclone, struct Location location, struct Time time)
+static float get_value_at(struct Data* data, int count_sets, struct Location location, struct Time time)
+{
+   // Convert time to days since 1-Jan-1990 00:00:00.
+   struct Time t_epoch  = {1990, 1, 1, 0};
+   int n = count_days_between_dates(time, t_epoch);
+   float t = n + time.hour/24.0;
+   float value = get_value_at_using_days(data, count_sets, location, t);
+   return value;
+}
+
+float cyclone_get_wave_height_using_time(struct Cyclone* cyclone, struct Location location, struct Time time)
 {
    float value = get_value_at(cyclone->hs, cyclone->count_sets, location, time);
    return value;
 }
 
-float cyclone_get_wave_heading(struct Cyclone* cyclone, struct Location location, struct Time time)
+float cyclone_get_wave_height_using_days(struct Cyclone* cyclone, struct Location location, float time)
+{
+   float value = get_value_at_using_days(cyclone->hs, cyclone->count_sets, location, time);
+   return value;
+}
+
+float cyclone_get_wave_heading_using_time(struct Cyclone* cyclone, struct Location location, struct Time time)
 {
    float value = get_value_at(cyclone->dp, cyclone->count_sets, location, time);
+   return value;
+}
+
+float cyclone_get_wave_heading_using_days(struct Cyclone* cyclone, struct Location location, float time)
+{
+   float value = get_value_at_using_days(cyclone->dp, cyclone->count_sets, location, time);
    return value;
 }
 
@@ -329,6 +346,6 @@ int main()
 
    struct Location l = {22.3, 262.3};
    struct Time t = {2005, 8, 29, 11};
-   cyclone_get_wave_height(&cyclone, l, t);
-   cyclone_get_wave_heading(&cyclone, l, t);
+   cyclone_get_wave_height_using_time(&cyclone, l, t);
+   cyclone_get_wave_heading_using_time(&cyclone, l, t);
 }

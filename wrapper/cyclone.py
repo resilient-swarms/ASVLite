@@ -41,18 +41,32 @@ class Cyclone(ctypes.Structure):
     def print_data(self):
         dll.dll.cyclone_print_data(ctypes.pointer(self))
 
-    def get_wave_height(self, location, time):
-        cyclone_get_wave_height = dll.dll.cyclone_get_wave_height
-        cyclone_get_wave_height.argtypes = [ctypes.POINTER(Cyclone), Location, Location]
-        cyclone_get_wave_height.restype = ctypes.c_float
-        result = cyclone_get_wave_height(self, location, time)
+    def get_wave_height_using_time(self, location, time):
+        cyclone_get_wave_height_using_time = dll.dll.cyclone_get_wave_height_using_time
+        cyclone_get_wave_height_using_time.argtypes = [ctypes.POINTER(Cyclone), Location, Time]
+        cyclone_get_wave_height_using_time.restype = ctypes.c_float
+        result = cyclone_get_wave_height_using_time(self, location, time)
+        return result
+
+    def get_wave_height_using_days(self, location, time):
+        cyclone_get_wave_height_using_days = dll.dll.cyclone_get_wave_height_using_days
+        cyclone_get_wave_height_using_days.argtypes = [ctypes.POINTER(Cyclone), Location, ctypes.c_float]
+        cyclone_get_wave_height_using_days.restype = ctypes.c_float
+        result = cyclone_get_wave_height_using_days(self, location, time)
         return result
     
-    def cyclone_get_wave_heading(self, location, time):
-        cyclone_get_wave_heading = dll.dll.cyclone_get_wave_heading
-        cyclone_get_wave_heading.argtypes = [ctypes.POINTER(Cyclone), Location, Location]
-        cyclone_get_wave_heading.restype = ctypes.c_float
-        result = cyclone_get_wave_heading(self, location, time)
+    def get_wave_heading_using_time(self, location, time):
+        cyclone_get_wave_heading_using_time = dll.dll.cyclone_get_wave_heading_using_time
+        cyclone_get_wave_heading_using_time.argtypes = [ctypes.POINTER(Cyclone), Location, Time]
+        cyclone_get_wave_heading_using_time.restype = ctypes.c_float
+        result = cyclone_get_wave_heading_using_time(self, location, time)
+        return result
+    
+    def get_wave_heading_using_days(self, location, time):
+        cyclone_get_wave_heading_using_days = dll.dll.cyclone_get_wave_heading_using_days
+        cyclone_get_wave_heading_using_days.argtypes = [ctypes.POINTER(Cyclone), Location, ctypes.c_float]
+        cyclone_get_wave_heading_using_days.restype = ctypes.c_float
+        result = cyclone_get_wave_heading_using_days(self, location, time)
         return result
     
 

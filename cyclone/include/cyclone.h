@@ -72,13 +72,15 @@ void cyclone_print_data(struct Cyclone* cyclone);
  * @param location for which the wave height is to be obtained. 
  * @param time for which the wave height is to be obtained.
  */
-float cyclone_get_wave_height(struct Cyclone* cyclone, struct Location location, struct Time time);
+float cyclone_get_wave_height_using_time(struct Cyclone* cyclone, struct Location location, struct Time time);
+float cyclone_get_wave_height_using_days(struct Cyclone* cyclone, struct Location location, float time);
 
 /**
  * Get the predominant direction of wave at a given location at a given time.
  * @param location for which the wave height is to be obtained. 
  * @param time for which the wave height is to be obtained.
  */
-float cyclone_get_wave_heading(struct Cyclone* cyclone, struct Location location, struct Time time);
+float cyclone_get_wave_heading_using_time(struct Cyclone* cyclone, struct Location location, struct Time time);
+float cyclone_get_wave_heading_using_days(struct Cyclone* cyclone, struct Location location, float time);
 
 #endif // CYCLONE_H
