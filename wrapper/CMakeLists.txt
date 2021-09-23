@@ -26,7 +26,7 @@ ENDIF(ENABLE_MULTI_THREADING)
 
 # ENABLE EARTH-COORDINATES
 # ------------------------
-OPTION(ENABLE_EARTH_COORDINATES "Enable earth coordinates." OFF) # Enabled by default
+OPTION(ENABLE_EARTH_COORDINATES "Enable earth coordinates." ON) # Enabled by default
 IF(ENABLE_EARTH_COORDINATES)
   ADD_DEFINITIONS(-DENABLE_EARTH_COORDINATES)
   MESSAGE(STATUS "Earth coordinates enabled.")
