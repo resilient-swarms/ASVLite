@@ -69,7 +69,7 @@ class Simulation:
                 waypoints.append(Dimensions(*waypoint))
             #Create wave
             start_time = self.cyclone_start_time  # hrs
-            start_location = Location(asv.cog_position.x, asv.cog_position.y)
+            start_location = Location(asv.origin_position.x, asv.origin_position.y)
             wave_hs = self.cyclone.get_wave_height_using_days(start_location, start_time)
             wave_dp = self.cyclone.get_wave_heading_using_days(start_location, start_time)
             rand_seed = 1
@@ -90,50 +90,36 @@ class Simulation:
         f = open("./path.txt", "w")  
         # Initialise time to 0.0 sec
         time = 0.0 # sec
-        # loop till all asvs reach destination
-        while all([item.current_waypoint_index < len(item.waypoints) for item in self.asvs]):
+        while self.cyclone_start_time+time/(60.0*60) < self.cyclone_end_time:
             for item in self.asvs:
-                # Current waypoint index
-                i = item.current_waypoint_index
                 # Increment time
                 time += self.time_step_size/1000.0
-                # Check if reached the waypoint
-                proximity_margin = 25.0
-                x = item.asv.cog_position.x - item.waypoints[i].x
-                y = item.asv.cog_position.y - item.waypoints[i].y
-                distance = math.sqrt(x**2 + y**2)
-                if distance <= proximity_margin:
-                    # Reached waypoint
-                    item.current_waypoint_index += 1
-                else:
-                    if i < len(item.waypoints):
-                        # Get the sea state
-                        current_time = self.cyclone_start_time + time/(60.0*60) # hrs
-                        current_location = Location(item.asv.cog_position.x, item.asv.cog_position.y)
-                        wave_hs = self.cyclone.get_wave_height_using_days(current_location, current_time)
-                        wave_dp = self.cyclone.get_wave_heading_using_days(current_location, current_time)
-                        # Compare the sea state with the current sea state
-                        current_hs = item.wave.significant_wave_height
-                        current_dp = item.wave.heading
-                        is_sea_state_same = (float(wave_hs) == float(current_hs) and float(wave_dp == current_dp))
-                        # If the sea state has changed then, set the new sea state in the asv object
-                        if not is_sea_state_same:
-                            rand_seed = 1
-                            item.wave = Wave(wave_hs, wave_dp, rand_seed)
-                            item.asv.set_wave(item.wave)
-                        # TODO: find the position of the storm and update waypoint if required
-                        # Set rudder angle
-                        rudder_angle = item.controller.get_rudder_angle(item.asv, item.waypoints[i])
-                        # Compute the dynamics for the current time step
-                        #print(rudder_angle)
-                        item.asv.compute_dynamics(rudder_angle, time)
-                        # Save simulation data
-                        item.simulation_data.append([item.asv.cog_position.x, 
-                                                    item.asv.cog_position.y, 
-                                                    item.asv.cog_position.z, 
-                                                    item.asv.attitude.z, 
-                                                    item.asv.dynamics.V[0]])
-                        f.write("{} {} \n".format(item.asv.cog_position.x, item.asv.cog_position.y))
+                # Get the sea state
+                current_time = self.cyclone_start_time + time/(60.0*60) # hrs
+                current_location = Location(item.asv.cog_position.x, item.asv.cog_position.y)
+                wave_hs = self.cyclone.get_wave_height_using_days(current_location, current_time)
+                wave_dp = self.cyclone.get_wave_heading_using_days(current_location, current_time)
+                # Compare the sea state with the current sea state
+                current_hs = item.wave.significant_wave_height
+                current_dp = item.wave.heading
+                is_sea_state_same = (float(wave_hs) == float(current_hs) and float(wave_dp == current_dp))
+                # If the sea state has changed then, set the new sea state in the asv object
+                if not is_sea_state_same:
+                    rand_seed = 1
+                    item.wave = Wave(wave_hs, wave_dp, rand_seed)
+                    item.asv.set_sea_state(item.wave)
+                # TODO: find the position of the storm and update waypoint if required
+                # Set rudder angle
+                rudder_angle = item.controller.get_rudder_angle(item.asv, item.waypoints[0])
+                # Compute the dynamics for the current time step
+                item.asv.compute_dynamics(rudder_angle, time)
+                # Save simulation data
+                item.simulation_data.append([item.asv.cog_position.x, 
+                                            item.asv.cog_position.y, 
+                                            item.asv.cog_position.z, 
+                                            item.asv.attitude.z, 
+                                            item.asv.dynamics.V[0]])
+                f.write("{} {} \n".format(item.asv.cog_position.x, item.asv.cog_position.y))
         f.close()
 
 if __name__ == '__main__':   
