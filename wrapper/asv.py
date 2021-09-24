@@ -56,7 +56,7 @@ class Asv(ctypes.Structure):
                          ctypes.pointer(wave))
     
     def set_sea_state(self, wave):
-        asv_set_sea_state = dll.dll.set_sea_state
+        asv_set_sea_state = dll.dll.asv_set_sea_state
         asv_set_sea_state.restype = None
         result = asv_set_sea_state(ctypes.pointer(self), 
                                     ctypes.pointer(wave))
