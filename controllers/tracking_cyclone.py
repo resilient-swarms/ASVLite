@@ -95,7 +95,7 @@ class Simulation:
                 # Increment time
                 time += self.time_step_size/1000.0
                 # Get the sea state
-                current_time = self.cyclone_start_time + time/(60.0*60) # hrs
+                current_time = self.cyclone_start_time + time/(60.0*60.0) # hrs
                 current_location = Location(item.asv.cog_position.x, item.asv.cog_position.y)
                 wave_hs = self.cyclone.get_wave_height_using_days(current_location, current_time)
                 wave_dp = self.cyclone.get_wave_heading_using_days(current_location, current_time)
@@ -110,7 +110,8 @@ class Simulation:
                     item.asv.set_sea_state(item.wave)
                 # TODO: find the position of the storm and update waypoint if required
                 # Set rudder angle
-                rudder_angle = item.controller.get_rudder_angle(item.asv, item.waypoints[0])
+                using_earth_coordinate_system = True
+                rudder_angle = item.controller.get_rudder_angle(item.asv, item.waypoints[0], using_earth_coordinate_system)
                 # Compute the dynamics for the current time step
                 item.asv.compute_dynamics(rudder_angle, time)
                 # Save simulation data
@@ -124,7 +125,7 @@ class Simulation:
 
 if __name__ == '__main__':   
     asv_input_file = "./sample_files/wave_glider"
-    hs_files = ["./sample_files/hs1.nc", "./sample_files/hs2.nc", "./sample_files/hs3.nc"]
-    dp_files = ["./sample_files/dp1.nc", "./sample_files/dp2.nc", "./sample_files/dp3.nc"] 
+    hs_files = ["./sample_files/hs2.nc",]
+    dp_files = ["./sample_files/dp2.nc",] 
     simulation = Simulation(asv_input_file, hs_files, dp_files)
     simulation.run()

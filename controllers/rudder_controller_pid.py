@@ -18,20 +18,40 @@ class Rudder_controller:
         self.delta_error = 0.0 # differential of error
         # P,I,D gain terms
         if K == None:
-            self.K = np.array([4.0, 2.0, 3.0]) # Set an initial value and then tune the parameters. 
-            self._tune_controller()
+            for self.i in tqdm(range(10), leave=False):
+                P = randrange(10)
+                I = randrange(10)
+                D = randrange(10)
+                self.K = np.array([P,I,D])
+                #self.K = np.array([6.0, 2.0, 3.0]) # Set an initial value and then tune the parameters. 
+                self._tune_controller()
         else:
             self.K = np.array(K)        
              
-    def get_rudder_angle(self, asv, waypoint):
+    def get_rudder_angle(self, asv, waypoint, using_earth_coordinate_system):
         # Compute the relative angle between the vehicle heading and the waypoint.
+        theta = None
         p1 = asv.origin_position
         p2 = asv.cog_position
         p3 = waypoint
-        # Angle between two lines with slope m1, m2 = atan((m1-m2)/(1 + m1*m2))
-        m1 = math.atan2((p2.y-p1.y), (p2.x-p1.x))
-        m2 = math.atan2((p3.y-p1.y), (p3.x-p1.x))
-        theta = math.atan((m1-m2)/(1 + m1*m2)) # radians
+        if using_earth_coordinate_system == True:
+            # Ref: https://www.movable-type.co.uk/scripts/latlong.html
+            lat1 = p1.x * math.pi/180.0
+            lat3 = p3.x * math.pi/180.0
+            long1 = p1.y * math.pi/180.0
+            long3 = p3.y * math.pi/180.0
+            theta1 = asv.attitude.z if asv.attitude.z < math.pi else asv.attitude.z - 2.0*math.pi 
+            y2 = math.sin(long3-long1) * math.cos(lat3)
+            x2 = math.cos(lat1)*math.sin(lat3) - math.sin(lat1)*math.cos(lat3)*math.cos(long3-long1)
+            theta2 = math.atan2(y2, x2)
+            theta = theta2 - theta1 # radians
+            #print("{} {} {}".format(theta1 * 180/math.pi, theta2 * 180/math.pi, theta*180/math.pi))
+        else:
+            # Angle between two lines with slope m1, m2 = atan((m1-m2)/(1 + m1*m2))
+            m1 = math.atan2((p2.y-p1.y), (p2.x-p1.x))
+            m2 = math.atan2((p3.y-p1.y), (p3.x-p1.x))
+            theta = math.atan((m1-m2)/(1 + m1*m2)) # radians
+        # Convert theta to deg
         theta = theta * 180.0 / math.pi # deg
         # Set error as the difference of the current heading and the desired heading.
         self.previous_error = self.error
@@ -77,6 +97,7 @@ class Rudder_controller:
             rudder_angle = controller.get_rudder_angle(asv, waypoint)
             asv.compute_dynamics(rudder_angle, time)
         # Compute the performance
+        # TODO: Correct distance computation when using earth coordinate system.
         p1 = asv.origin_position
         p3 = waypoint
         starting_distance = 1000.0 # m
@@ -84,9 +105,9 @@ class Rudder_controller:
         return (starting_distance - final_distance)/starting_distance
     
     def _tune_controller(self):  
-        f = open("./performance.txt", "w")   
+        f = open("./experiments/{}_{}_{}.txt".format(self.K[0], self.K[1], self.K[2]), "w")   
         pool = mp.Pool(mp.cpu_count()) # Create a pool of processes to run in parallel. 
-        delta = 1.0
+        delta = 0.25
         P_current, I_current, D_current = list(self.K)     
         # Policy Gradient Reinforcement Learning
         iterations = tqdm(range(25), leave=False) # This is going to take some time, therefore show a progress bar.
@@ -172,6 +193,7 @@ class Rudder_controller:
             K_current = np.array([P_current, I_current, D_current])
             K_current = K_current + A*delta
             P_current, I_current, D_current = list(K_current)
+            self.K = K_current
         f.close()
 
 # p "performance.txt" u 4 w l, "performance.txt" u ($0):4:5 with yerrorbars
