@@ -155,7 +155,7 @@ void asv_set_sea_state(struct Asv* asv, struct Wave* wave);
  * @param asv is the pointer to the asv object for which the position is to be
  * computed. 
  * @param rudder_angle is the angle of the rudder with respect to X axis of the ASV. 
- * Rudder angle must within (-90, 90), and is positive when aft end of the rudder points to starboard side. 
+ * Rudder angle must within (-90, 90), and is positive when the vehicle has to turn to right (ie. aft end of the rudder points to starboard side). 
  * @param time is the time for which the position is to be computed.
  */
 void wave_glider_compute_dynamics(struct Asv* asv, double rudder_angle, double time);

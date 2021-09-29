@@ -521,25 +521,30 @@ static void set_position(struct Asv* asv)
                         
   double deflection_z = asv->dynamics.X[heave];
   
-  // Update origin position 
+  // Update cog position 
   #ifdef ENABLE_EARTH_COORDINATES
+  // Ref: https://stackoverflow.com/questions/7477003/calculating-new-longitude-latitude-from-old-n-meters
   double latitude = asv->cog_position.x;
   double longitude = asv->cog_position.y;
   double new_latitude  = latitude  + (deflection_y / R_EARTH) * (180.0/PI); 
   double new_longitude = longitude + (deflection_x / R_EARTH) * (180.0/PI) / cos(latitude * PI/180.0);
   asv->cog_position.x = new_latitude;
   asv->cog_position.y = new_longitude;
-  asv->cog_position.z += deflection_z;
   #else
   asv->cog_position.x += deflection_x;
   asv->cog_position.y += deflection_y;
-  asv->cog_position.z += deflection_z;
   #endif
+  asv->cog_position.z += deflection_z;
 
   // Update origin position
   double l = sqrt(pow(asv->spec.cog.x, 2.0) + pow(asv->spec.cog.y, 2.0));
+  #ifdef ENABLE_EARTH_COORDINATES
+  asv->origin_position.x = asv->cog_position.x - (l / R_EARTH) * (180.0/PI); 
+  asv->origin_position.y = asv->cog_position.y - (l / R_EARTH) * (180.0/PI) / cos(asv->origin_position.x * PI/180.0);
+  #else
   asv->origin_position.x = asv->cog_position.x - l * sin(asv->attitude.z);
   asv->origin_position.y = asv->cog_position.y - l * cos(asv->attitude.z);
+   #endif
   asv->origin_position.z = asv->cog_position.z - asv->spec.cog.z;
   
 }
