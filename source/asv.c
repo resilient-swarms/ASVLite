@@ -539,8 +539,8 @@ static void set_position(struct Asv* asv)
   // Update origin position
   double l = sqrt(pow(asv->spec.cog.x, 2.0) + pow(asv->spec.cog.y, 2.0));
   #ifdef ENABLE_EARTH_COORDINATES
-  asv->origin_position.x = asv->cog_position.x - (l / R_EARTH) * (180.0/PI); 
-  asv->origin_position.y = asv->cog_position.y - (l / R_EARTH) * (180.0/PI) / cos(asv->origin_position.x * PI/180.0);
+  asv->origin_position.x = asv->cog_position.x - (l * sin(asv->attitude.z) / R_EARTH) * (180.0/PI); 
+  asv->origin_position.y = asv->cog_position.y - (l * cos(asv->attitude.z) / R_EARTH) * (180.0/PI) / cos(asv->origin_position.x * PI/180.0);
   #else
   asv->origin_position.x = asv->cog_position.x - l * sin(asv->attitude.z);
   asv->origin_position.y = asv->cog_position.y - l * cos(asv->attitude.z);
