@@ -90,12 +90,13 @@ class Simulation:
         f = open("./path.txt", "w")  
         # Initialise time to 0.0 sec
         time = 0.0 # sec
-        while self.cyclone_start_time+time/(60.0*60) < self.cyclone_end_time:
+        print("{} {}".format(self.cyclone_start_time, self.cyclone_end_time))
+        while self.cyclone_start_time + time/(24.0*60.0*60.0) < self.cyclone_end_time:
             for item in self.asvs:
                 # Increment time
-                time += self.time_step_size/1000.0
+                time += self.time_step_size/1000.0 # sec
                 # Get the sea state
-                current_time = self.cyclone_start_time + time/(60.0*60.0) # hrs
+                current_time = self.cyclone_start_time + time/(24*60.0*60.0) # days
                 current_location = Location(item.asv.cog_position.x, item.asv.cog_position.y)
                 wave_hs = self.cyclone.get_wave_height_using_days(current_location, current_time)
                 wave_dp = self.cyclone.get_wave_heading_using_days(current_location, current_time)
@@ -106,6 +107,7 @@ class Simulation:
                 # If the sea state has changed then, set the new sea state in the asv object
                 if not is_sea_state_same:
                     rand_seed = 1
+                    print(wave_hs)
                     item.wave = Wave(wave_hs, wave_dp, rand_seed)
                     item.asv.set_sea_state(item.wave)
                 # TODO: find the position of the storm and update waypoint if required
@@ -120,7 +122,7 @@ class Simulation:
                                             item.asv.cog_position.z, 
                                             item.asv.attitude.z, 
                                             item.asv.dynamics.V[0]])
-                f.write("{} {} \n".format(item.asv.cog_position.x, item.asv.cog_position.y))
+                f.write("{} {} {} {} \n".format(time, current_time, item.asv.cog_position.x, item.asv.cog_position.y))
         f.close()
 
 if __name__ == '__main__':   
