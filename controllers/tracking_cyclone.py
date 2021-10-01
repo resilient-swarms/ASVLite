@@ -9,7 +9,7 @@ from asv import Asv_propeller, Asv_specification, Asv_dynamics, Asv
 from geometry import Dimensions
 from rudder_controller_pid import Rudder_controller
 from cyclone import Cyclone, Time, Location, Data
-
+from temp import eye_of_storm
 @dataclass
 class _Simulation_object:
     '''
@@ -92,9 +92,11 @@ class Simulation:
         time = 0.0 # sec
         print("{} {}".format(self.cyclone_start_time, self.cyclone_end_time))
         while self.cyclone_start_time + time/(24.0*60.0*60.0) < self.cyclone_end_time:
+            # Increment time
+            time += self.time_step_size/1000.0 # sec
+            # TODO:Find the position of the storm for the current time
+            cyclone_eye = eye_of_storm[int(time//(60.0*60.0))]
             for item in self.asvs:
-                # Increment time
-                time += self.time_step_size/1000.0 # sec
                 # Get the sea state
                 current_time = self.cyclone_start_time + time/(24*60.0*60.0) # days
                 current_location = Location(item.asv.cog_position.x, item.asv.cog_position.y)
@@ -110,7 +112,8 @@ class Simulation:
                     print(wave_hs)
                     item.wave = Wave(wave_hs, wave_dp, rand_seed)
                     item.asv.set_sea_state(item.wave)
-                # TODO: find the position of the storm and update waypoint if required
+                # TODO: Update waypoint if required
+                item.waypoints[0] = Dimensions(*cyclone_eye)
                 # Set rudder angle
                 using_earth_coordinate_system = True
                 rudder_angle = item.controller.get_rudder_angle(item.asv, item.waypoints[0], using_earth_coordinate_system)
