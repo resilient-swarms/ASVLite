@@ -435,7 +435,6 @@ static void set_wave_glider_thrust(struct Asv* asv, double rudder_angle)
   double chi = 7.0 * PI/180.0; // radian
   double C_L = (1.8 * PI * lambda * alpha_k) / (cos(chi) * sqrt(lambda*lambda/pow(chi, 4) + 4) + 1.8) + (C_DC * alpha_k * alpha_k/ lambda);
   double V = asv->dynamics.V[heave];
-  fprintf(stdout, "%f \n", V);
   double F_L = 0.5 * SEA_WATER_DENSITY * C_L * A * V * V;
   double angle_F_L = 45 * PI/180.0; // Assuming the lift force is always at an angle of 45 deg to the surge direction. 
   double thrust_per_hydrofoil = F_L * cos(angle_F_L);
@@ -633,8 +632,6 @@ void asv_set_sea_state(struct Asv* asv, struct Wave* wave)
 { 
   // set the wave for the ASV
   asv->wave = wave;
-
-  fprintf(stdout, "sea state = %f\n", asv->wave->significant_wave_height);
 
   // Initialise all the vectors matrices to zero.
   for(int j = 0; j < COUNT_ASV_SPECTRAL_FREQUENCIES; ++j)
