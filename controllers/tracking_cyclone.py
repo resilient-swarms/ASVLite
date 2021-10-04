@@ -87,16 +87,25 @@ class Simulation:
             item.asv.init(item.wave)      
     
     def run(self):
-        f = open("./path.txt", "w")  
+        f = open("./path_06.txt", "w")  
+        f2 = open("./distance_06.txt", "w")
         # Initialise time to 0.0 sec
         time = 0.0 # sec
-        print("{} {}".format(self.cyclone_start_time, self.cyclone_end_time))
         while self.cyclone_start_time + time/(24.0*60.0*60.0) < self.cyclone_end_time:
             # Increment time
             time += self.time_step_size/1000.0 # sec
             # TODO:Find the position of the storm for the current time
             cyclone_eye = eye_of_storm[int(time//(60.0*60.0))]
             for item in self.asvs:
+                # Get the distance to the centre of the storm
+                # Ref: https://www.movable-type.co.uk/scripts/latlong.html
+                d_lat = (item.waypoints[0].x - item.asv.cog_position.x) * math.pi/180.0
+                d_long = (item.waypoints[0].y - item.asv.cog_position.y) * math.pi/180.0
+                a = (math.sin(d_lat/2.0))**2 + math.cos(item.waypoints[0].x)*math.cos(item.asv.cog_position.x)*(math.sin(d_long/2.0))**2
+                c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+                R = 6378000.0
+                distance = R*c / 1000.0 # Km
+                f2.write("{} \n".format(distance))
                 # Get the sea state
                 current_time = self.cyclone_start_time + time/(24*60.0*60.0) # days
                 current_location = Location(item.asv.cog_position.x, item.asv.cog_position.y)
@@ -108,8 +117,8 @@ class Simulation:
                 is_sea_state_same = (float(wave_hs) == float(current_hs) and float(wave_dp == current_dp))
                 # If the sea state has changed then, set the new sea state in the asv object
                 if not is_sea_state_same:
-                    rand_seed = 1
-                    print(wave_hs)
+                    rand_seed = 5
+                    #print(wave_hs)
                     item.wave = Wave(wave_hs, wave_dp, rand_seed)
                     item.asv.set_sea_state(item.wave)
                 # TODO: Update waypoint if required
@@ -125,8 +134,9 @@ class Simulation:
                                             item.asv.cog_position.z, 
                                             item.asv.attitude.z, 
                                             item.asv.dynamics.V[0]])
-                f.write("{} {} {} {} \n".format(time, current_time, item.asv.cog_position.x, item.asv.cog_position.y))
+                f.write("{} {} {} {} \n".format(time, current_time, item.asv.cog_position.x, item.asv.cog_position.y - 360.0))
         f.close()
+        f2.close()
 
 if __name__ == '__main__':   
     asv_input_file = "./sample_files/wave_glider"
