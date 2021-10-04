@@ -99,9 +99,13 @@ class Simulation:
             for item in self.asvs:
                 # Get the distance to the centre of the storm
                 # Ref: https://www.movable-type.co.uk/scripts/latlong.html
-                d_lat = (item.waypoints[0].x - item.asv.cog_position.x) * math.pi/180.0
-                d_long = (item.waypoints[0].y - item.asv.cog_position.y) * math.pi/180.0
-                a = (math.sin(d_lat/2.0))**2 + math.cos(item.waypoints[0].x)*math.cos(item.asv.cog_position.x)*(math.sin(d_long/2.0))**2
+                lat1  = item.asv.cog_position.x * math.pi/180.0
+                long1 = item.asv.cog_position.y * math.pi/180.0
+                lat2  = item.waypoints[0].x * math.pi/180.0
+                long2 = item.waypoints[0].y * math.pi/180.0
+                d_lat = (lat2 - lat1)
+                d_long = (long2 - long1) 
+                a = (math.sin(d_lat/2.0))**2 + math.cos(lat2)*math.cos(lat1)*(math.sin(d_long/2.0))**2
                 c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1-a))
                 R = 6378000.0
                 distance = R*c / 1000.0 # Km
@@ -117,7 +121,7 @@ class Simulation:
                 is_sea_state_same = (float(wave_hs) == float(current_hs) and float(wave_dp == current_dp))
                 # If the sea state has changed then, set the new sea state in the asv object
                 if not is_sea_state_same:
-                    rand_seed = 5
+                    rand_seed = 1
                     #print(wave_hs)
                     item.wave = Wave(wave_hs, wave_dp, rand_seed)
                     item.asv.set_sea_state(item.wave)
