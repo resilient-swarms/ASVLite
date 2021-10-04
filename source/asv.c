@@ -18,8 +18,13 @@ static void set_cog(struct Asv* asv)
 {
   // Match the position of the COG with that of the position of the origin.
   double l = sqrt(pow(asv->spec.cog.x, 2.0) + pow(asv->spec.cog.y, 2.0));
+  #ifdef ENABLE_EARTH_COORDINATES
+  asv->cog_position.x = asv->origin_position.x + (l * sin(asv->attitude.z) / R_EARTH) * (180.0/PI); 
+  asv->cog_position.y = asv->origin_position.y + (l * cos(asv->attitude.z) / R_EARTH) * (180.0/PI) / cos(asv->origin_position.x * PI/180.0);
+  #else
   asv->cog_position.x = asv->origin_position.x + l * sin(asv->attitude.z);
   asv->cog_position.y = asv->origin_position.y + l * cos(asv->attitude.z);
+   #endif
   asv->cog_position.z = asv->origin_position.z + asv->spec.cog.z;
 }
 
@@ -430,6 +435,7 @@ static void set_wave_glider_thrust(struct Asv* asv, double rudder_angle)
   double chi = 7.0 * PI/180.0; // radian
   double C_L = (1.8 * PI * lambda * alpha_k) / (cos(chi) * sqrt(lambda*lambda/pow(chi, 4) + 4) + 1.8) + (C_DC * alpha_k * alpha_k/ lambda);
   double V = asv->dynamics.V[heave];
+  fprintf(stdout, "%f \n", V);
   double F_L = 0.5 * SEA_WATER_DENSITY * C_L * A * V * V;
   double angle_F_L = 45 * PI/180.0; // Assuming the lift force is always at an angle of 45 deg to the surge direction. 
   double thrust_per_hydrofoil = F_L * cos(angle_F_L);
@@ -540,7 +546,7 @@ static void set_position(struct Asv* asv)
   double l = sqrt(pow(asv->spec.cog.x, 2.0) + pow(asv->spec.cog.y, 2.0));
   #ifdef ENABLE_EARTH_COORDINATES
   asv->origin_position.x = asv->cog_position.x - (l * sin(asv->attitude.z) / R_EARTH) * (180.0/PI); 
-  asv->origin_position.y = asv->cog_position.y - (l * cos(asv->attitude.z) / R_EARTH) * (180.0/PI) / cos(asv->origin_position.x * PI/180.0);
+  asv->origin_position.y = asv->cog_position.y - (l * cos(asv->attitude.z) / R_EARTH) * (180.0/PI) / cos(asv->cog_position.x * PI/180.0);
   #else
   asv->origin_position.x = asv->cog_position.x - l * sin(asv->attitude.z);
   asv->origin_position.y = asv->cog_position.y - l * cos(asv->attitude.z);
@@ -628,12 +634,20 @@ void asv_set_sea_state(struct Asv* asv, struct Wave* wave)
   // set the wave for the ASV
   asv->wave = wave;
 
+  fprintf(stdout, "sea state = %f\n", asv->wave->significant_wave_height);
+
   // Initialise all the vectors matrices to zero.
   for(int j = 0; j < COUNT_ASV_SPECTRAL_FREQUENCIES; ++j)
   {
     asv->dynamics.P_unit_wave[j][0] = 0.0;
     asv->dynamics.P_unit_wave[j][1] = 0.0;
   }
+
+  // Place the asv vertically in the correct position W.R.T wave
+  asv->origin_position.z = 
+    wave_get_elevation(asv->wave, &asv->origin_position, asv->dynamics.time) - asv->spec.T; 
+  // Reset the cog position.
+  set_cog(asv); // Match the position of the cog with that of origin
 
   // Set minimum and maximum encounter frequency
   if(asv->wave != NULL)
