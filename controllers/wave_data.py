@@ -36,16 +36,3 @@ class Wave_data:
         hs = self.hs[index_time][index_latitude][index_longitude]
         dp = self.dp[index_time][index_latitude][index_longitude]
         return (hs,dp)
-
-        
-
-
-# temp = Wavedata("./sample_files/katrina.nc")
-# print(temp.get_wave_data_at(24.4, -81.2, datetime(2005, 8, 27, 7)))
-
-
-
-# sudo apt install python3-netcdf4
-
-# from https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=form
-# download dataset - (1) Significant height of combined wind waves and swell (2) Mean wave direction

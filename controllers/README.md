@@ -21,3 +21,5 @@ Useful commands:
 `ncdump` - view information and data in the `nc` file.
 `ncview` - visualisation of data in the `nc` file. 
 
+## Simulation data
+To simulate the storm, `wave_data.py` requires data downloaded from [Climate Data Store](https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview). The data should be downloaded as a netCDF file and should contain the variables - `Significant height of combined wind waves and swell` and `Mean wave direction`.
