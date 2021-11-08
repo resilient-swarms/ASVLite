@@ -1,6 +1,6 @@
 import sys
 import toml
-import collections
+from collections import namedtuple
 import math
 import csv
 from dataclasses import dataclass
@@ -12,7 +12,11 @@ from rudder_controller_pid import Rudder_controller
 from wave_data import Wave_data
 from storm_track import Storm_track
 from datetime import datetime, timedelta
+import cartopy.crs as ccrs
+import matplotlib.pyplot as plt
 from tqdm import tqdm
+
+Simulation_data = namedtuple("Simulation_data", ["time", "cog_x", "cog_y", "cog_z", "asv_heading", "v_surg", "hs", "distance_to_storm"])
 
 @dataclass
 class _Simulation_object:
@@ -24,7 +28,7 @@ class _Simulation_object:
     asv: Asv
     waypoints: list
     current_waypoint_index: int
-    simulation_data : list # Hold the following simulation data - [cog_x, cog_y, cog_z, asv_heading, v_surge].
+    simulation_data : list # Hold simulation data
     controller : Rudder_controller
 
 class Simulation:
@@ -84,7 +88,7 @@ class Simulation:
             item.asv.dynamics.time_step_size = self.time_step_size/1000.0 # sec
             item.asv.dynamics.time = 0.0 
             # Initialise the ASV
-            item.asv.init(item.wave)      
+            item.asv.init(item.wave) 
     
     def run(self):
         record_asv_path = [] # To record the asv path to a text file
@@ -112,8 +116,7 @@ class Simulation:
                 a = (math.sin(d_lat/2.0))**2 + math.cos(lat2)*math.cos(lat1)*(math.sin(d_long/2.0))**2
                 c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1-a))
                 R = 6378000.0
-                distance = R*c / 1000.0 # Km
-                record_distance_to_storm.append([distance])
+                distance_to_storm = R*c / 1000.0 # Km
                 # Get the sea state
                 current_latitude = item.asv.cog_position.x
                 current_longitude = item.asv.cog_position.y
@@ -121,7 +124,6 @@ class Simulation:
                 # Compare the sea state with the current sea state
                 current_hs = item.wave.significant_wave_height
                 current_dp = item.wave.heading
-                record_hs.append([current_hs])
                 is_sea_state_same = (float(new_hs) == float(current_hs) and float(new_dp == current_dp))
                 # If the sea state has changed then, set the new sea state in the asv object
                 if not is_sea_state_same:
@@ -138,19 +140,53 @@ class Simulation:
                 seconds = (current_time - self.simulation_start_time).total_seconds()
                 item.asv.compute_dynamics(rudder_angle, seconds)
                 # Save simulation data
-                item.simulation_data.append([item.asv.cog_position.x, 
-                                            item.asv.cog_position.y, 
-                                            item.asv.cog_position.z, 
-                                            item.asv.attitude.z, 
-                                            item.asv.dynamics.V[0]])
+                item.simulation_data.append(Simulation_data(current_time,
+                                                            item.asv.cog_position.x, 
+                                                            item.asv.cog_position.y, 
+                                                            item.asv.cog_position.z, 
+                                                            item.asv.attitude.z, 
+                                                            item.asv.dynamics.V[0],
+                                                            current_hs,
+                                                            distance_to_storm))
                 record_asv_path.append([seconds, current_time, item.asv.cog_position.x, item.asv.cog_position.y])
-        # Write the data to the corresponding files
-        records = {"./path.txt": record_asv_path, "./distance.txt":record_distance_to_storm, "./hs.txt":record_hs}
-        for file, record in records.items():
-            f = open(file, "w")  
-            writer = csv.writer(f, delimiter=" ")
-            writer.writerows(record)
+        
+    def write_simulation_data(self, dir_path):
+        for asv in self.asvs:
+            file_path = dir_path + "/" + asv.id
+            f = open(file_path, "w")  
+            for data in asv.simulation_data:
+                f.write("{} {} {} {} {} {} {} {} \n".format(data.time, data.cog_x, data.cog_y, data.cog_z, data.asv_heading, data.v_surg, data.hs, data.distance_to_storm))
             f.close()
+
+    def plot_path(self):
+        ax = plt.axes(projection=ccrs.PlateCarree())
+        # ax.stock_img()
+        ax.coastlines()
+        # Set the extent of the plot
+        longitude_min = min(self.wave_data.longitudes[0], self.wave_data.longitudes[-1])
+        longitude_max = max(self.wave_data.longitudes[0], self.wave_data.longitudes[-1])
+        latitude_min = min(self.wave_data.latitudes[0], self.wave_data.latitudes[-1])
+        latitude_max = max(self.wave_data.latitudes[0], self.wave_data.latitudes[-1])
+        ax.set_xlim(longitude_min, longitude_max)
+        ax.set_ylim(latitude_min, latitude_max)
+        # Plot map
+        plt.plot(color='blue', linewidth=2, marker='o',
+                transform=ccrs.Geodetic())
+        # Plot storm track
+        times      = [data[0] for data in self.storm_track.track]
+        latitudes  = [data[1] for data in self.storm_track.track]
+        longitudes = [data[2] for data in self.storm_track.track]
+        plt.plot(longitudes, latitudes, color='red', linestyle='--', transform=ccrs.Geodetic())
+        # Set storm markers
+        # ax.scatter(longitudes, latitudes, s=80, marker=".", color='red',)
+        # Plot vehicle path
+        # Plot ASV path
+        for asv in self.asvs:
+            times = [data[0] for data in asv.simulation_data]
+            latitudes = [data[1] for data in asv.simulation_data]
+            longitudes = [data[2] for data in asv.simulation_data]
+            plt.plot(longitudes, latitudes, linestyle='-', transform=ccrs.Geodetic())
+        plt.show()
 
 if __name__ == '__main__':   
     asv_input_file = "./sample_files/katrina/wave_glider"
@@ -160,6 +196,8 @@ if __name__ == '__main__':
     simulation_end_time = datetime(2005, 8, 29, 20)
     simulation = Simulation(asv_input_file, nc_file_path, storm_track, simulation_start_time, simulation_end_time)
     simulation.run()
+    simulation.write_simulation_data(".")
+    simulation.plot_path()
 
 # p "../sample_files/cyclone_path.txt" u 2:1 w l, "../sample_files/world_10m.txt" u 1:2 w l, "path_01.txt" u 4:3 w l, "path_02.txt" u 4:3 w l, "path_03.txt" u 4:3 w l, "path_04.txt" u 4:3 w l, "path_05.txt" u 4:3 w l, "path_06.txt" u 4:3 w l, "path_07.txt" u 4:3 w l
 # p "distance_01.txt" w l, "distance_02.txt" w l, "distance_03.txt" w l, "distance_04.txt" w l, "distance_05.txt" w l, "distance_06.txt" w l, "distance_07.txt" w l

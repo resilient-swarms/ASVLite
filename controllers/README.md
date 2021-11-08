@@ -8,7 +8,7 @@ Provides an implementation for ASV controllers and extends ASVLite to simulate a
 Install dependency - [netCDF](https://github.com/Unidata/netcdf-c).
 
 ```
-sudo apt install python3-netcdf4
+sudo apt install python3-netcdf4 python3-cartopy
 ```
 
 Although not a dependency for ASVLite, having the following tools will be useful to explore netCDF (.nc) files.
