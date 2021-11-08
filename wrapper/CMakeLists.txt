@@ -50,7 +50,6 @@ SET( INCLUDE
   ../include/wave.h 
   ../include/asv.h 
   ../include/pid_controller.h
-  ../cyclone/include/cyclone.h
 )
 
 # SOURCE FILES
@@ -62,7 +61,6 @@ SET( SOURCE
   ../source/wave.c
   ../source/asv.c
   ../source/pid_controller.c
-  ../cyclone/source/cyclone.c
   )
 
 # CREATE BINARIES
