@@ -157,7 +157,7 @@ if __name__ == '__main__':
     nc_file_path = "./sample_files/katrina/wave_data.nc"
     storm_track = "./sample_files/katrina/track.csv"
     simulation_start_time = datetime(2005, 8, 26, 9)
-    simulation_end_time = datetime(2005, 8, 30, 1)
+    simulation_end_time = datetime(2005, 8, 29, 20)
     simulation = Simulation(asv_input_file, nc_file_path, storm_track, simulation_start_time, simulation_end_time)
     simulation.run()
 
