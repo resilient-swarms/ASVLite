@@ -1,0 +1,27 @@
+# Physical specification of the vehicle. 
+
+[[asv]]
+id = "asv0"
+L_wl = 2.1 # m
+B_wl = 0.6 # m
+D = 0.25  # m
+T = 0.09 # m
+displacement = 0.090 # m3
+max_speed = 4.0 # m/s
+cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
+radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
+thrusters = [] # [[x(m), y(m), z(m)]]
+asv_position = [29.75, -87.25] # [latitude, longitude]
+asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
+waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
+
+[clock]
+time_step_size = 40 # milli-sec
+
+# [28.75, 271.0]
+# [27.0, 267.5]
+# [23.75, 272.0]
+# [25.75, 275.0]
+# [28.5, 275.25]
+# [30.25, 272.25]
+# [29.75, 272.75]
