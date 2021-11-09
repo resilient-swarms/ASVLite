@@ -185,7 +185,7 @@ class Simulation:
                 f.write("{} {} {} {} {} {} {} {} \n".format(data.time, data.cog_x, data.cog_y, data.cog_z, data.asv_heading, data.v_surg, data.hs, data.distance_to_storm))
             f.close()
 
-    def plot_path(self):
+    def plot_path(self, dir_path):
         ax = plt.axes(projection=ccrs.PlateCarree())
         # ax.stock_img()
         ax.coastlines()
@@ -213,7 +213,7 @@ class Simulation:
             latitudes = [data[1] for data in simulation_object.simulation_data]
             longitudes = [data[2] for data in simulation_object.simulation_data]
             plt.plot(longitudes, latitudes, linestyle='-', transform=ccrs.Geodetic())
-        plt.show()
+        plt.savefig(dir_path + "/plot.png", bbox_inches='tight')
 
 if __name__ == '__main__':   
     asv_input_file = "./sample_files/katrina/wave_glider"
@@ -224,7 +224,7 @@ if __name__ == '__main__':
     simulation = Simulation(asv_input_file, nc_file_path, storm_track, simulation_start_time, simulation_end_time)
     simulation.run()
     simulation.write_simulation_data("./temp")
-    simulation.plot_path()
+    simulation.plot_path("./temp")
 
 # p "../sample_files/cyclone_path.txt" u 2:1 w l, "../sample_files/world_10m.txt" u 1:2 w l, "path_01.txt" u 4:3 w l, "path_02.txt" u 4:3 w l, "path_03.txt" u 4:3 w l, "path_04.txt" u 4:3 w l, "path_05.txt" u 4:3 w l, "path_06.txt" u 4:3 w l, "path_07.txt" u 4:3 w l
 # p "distance_01.txt" w l, "distance_02.txt" w l, "distance_03.txt" w l, "distance_04.txt" w l, "distance_05.txt" w l, "distance_06.txt" w l, "distance_07.txt" w l
