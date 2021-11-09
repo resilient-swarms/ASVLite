@@ -24,7 +24,7 @@ class _Simulation_object:
     '''
     A class to hold the simulation data related to a single ASV.
     '''
-    id: int
+    id: str
     wave: Wave
     asv: Asv
     waypoints: list
@@ -91,7 +91,7 @@ class Simulation:
             # Initialise the ASV
             simulation_object.asv.init(simulation_object.wave) 
     
-    def __simulate_asv(self, simulation_object, pipe):
+    def __simulate_asv(self, simulation_object, pipe, tqdm_progress_bar):
         """
         This method simulates the dynamics of a single ASV and sends the simulation data via pipe to the parent process.
         """
@@ -102,7 +102,10 @@ class Simulation:
         while time <= self.simulation_end_time:
             times.append(time)           
             time = time + timedelta(seconds=time_step_size)
-        for current_time in tqdm(times):
+        tqdm_progress_bar.iterable = times
+        tqdm_progress_bar.total = len(times)
+        tqdm_progress_bar.set_description(simulation_object.id)
+        for current_time in tqdm_progress_bar:
             # Find the position of the storm for the current time
             current_time = current_time + timedelta(seconds=time_step_size)
             cyclone_eye = self.storm_track.get_eye_location(current_time)
@@ -154,13 +157,17 @@ class Simulation:
 
     def run(self):
         multithread_data = [] # To store the data per process/simulation_object
+        # tqdm 
+        progress_bars = [tqdm(leave=False) for item in self.simulation_objects]
+        index = 0
         # Create the processes
         for simulation_object in self.simulation_objects:
             parent, child = mp.Pipe()
-            process = mp.Process(target=self.__simulate_asv, args=(simulation_object, child))
+            process = mp.Process(target=self.__simulate_asv, args=(simulation_object, child, progress_bars[index]))
             multithread_data.append({"simulation_object":simulation_object, "process": process, "pipe":{"parent": parent, "child": child}})
+            index += 1
         # Start the simulations
-        for item in multithread_data:
+        for item in tqdm(multithread_data, desc="Simulation ASVs"):
             item["process"].start()
         # When simulation is complete, fetch the simulation data sent from the child process
         for item in multithread_data:
@@ -171,7 +178,7 @@ class Simulation:
             item["process"].join()
     
     def write_simulation_data(self, dir_path):
-        for simulation_object in self.simulation_objects:
+        for simulation_object in tqdm(self.simulation_objects, desc = "Writing data to file"):
             file_path = dir_path + "/" + simulation_object.id
             f = open(file_path, "w")  
             for data in simulation_object.simulation_data:
@@ -201,7 +208,7 @@ class Simulation:
         # ax.scatter(longitudes, latitudes, s=80, marker=".", color='red',)
         # Plot vehicle path
         # Plot ASV path
-        for simulation_object in self.simulation_objects:
+        for simulation_object in tqdm(self.simulation_objects, desc="Ploting data"):
             times = [data[0] for data in simulation_object.simulation_data]
             latitudes = [data[1] for data in simulation_object.simulation_data]
             longitudes = [data[2] for data in simulation_object.simulation_data]
@@ -213,7 +220,6 @@ if __name__ == '__main__':
     nc_file_path = "./sample_files/katrina/wave_data.nc"
     storm_track = "./sample_files/katrina/track.csv"
     simulation_start_time = datetime(2005, 8, 26, 9)
-    # simulation_end_time = datetime(2005, 8, 26, 9, 10)
     simulation_end_time = datetime(2005, 8, 29, 20)
     simulation = Simulation(asv_input_file, nc_file_path, storm_track, simulation_start_time, simulation_end_time)
     simulation.run()
