@@ -1,21 +1,6 @@
 # Physical specification of the vehicle. 
 
 [[asv]]
-id = "asv0"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [28.0, -90.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
 id = "asv1"
 L_wl = 2.1 # m
 B_wl = 0.6 # m
@@ -26,7 +11,7 @@ max_speed = 4.0 # m/s
 cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
 radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
 thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [28.0, -89.0] # [latitude, longitude]
+asv_position = [28.0, -87.5] # [latitude, longitude]
 asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
 waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
 
@@ -41,7 +26,7 @@ max_speed = 4.0 # m/s
 cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
 radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
 thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [28.0, -88.0] # [latitude, longitude]
+asv_position = [26.0, -90.0] # [latitude, longitude]
 asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
 waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
 
@@ -56,7 +41,7 @@ max_speed = 4.0 # m/s
 cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
 radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
 thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [28.0, -87.0] # [latitude, longitude]
+asv_position = [26.0, -87.5] # [latitude, longitude]
 asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
 waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
 
@@ -71,7 +56,7 @@ max_speed = 4.0 # m/s
 cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
 radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
 thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [28.0, -86.0] # [latitude, longitude]
+asv_position = [26.0, -85.0] # [latitude, longitude]
 asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
 waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
 
@@ -86,396 +71,11 @@ max_speed = 4.0 # m/s
 cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
 radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
 thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [28.0, -85.0] # [latitude, longitude]
+asv_position = [24.0, -87.5] # [latitude, longitude]
 asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
 waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
 
 
-
-
-
-
-[[asv]]
-id = "asv6"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [27.0, -90.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv7"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [27.0, -89.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv8"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [27.0, -88.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv9"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [27.0, -87.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv10"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [27.0, -86.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv11"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [27.0, -85.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-
-
-
-
-
-
-
-[[asv]]
-id = "asv12"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [26.0, -90.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv13"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [26.0, -89.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv14"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [26.0, -88.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv15"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [26.0, -87.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv16"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [26.0, -86.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv17"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [26.0, -85.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-
-
-
-
-[[asv]]
-id = "asv18"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [25.0, -90.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv19"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [25.0, -89.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv20"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [25.0, -88.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv21"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [25.0, -87.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv22"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [25.0, -86.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv23"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [25.0, -85.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-
-
-
-[[asv]]
-id = "asv24"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [24.0, -90.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv25"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [24.0, -89.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv26"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [24.0, -88.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv27"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [24.0, -87.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv28"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [24.0, -86.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
-
-[[asv]]
-id = "asv29"
-L_wl = 2.1 # m
-B_wl = 0.6 # m
-D = 0.25  # m
-T = 0.09 # m
-displacement = 0.090 # m3
-max_speed = 4.0 # m/s
-cog = [1.05, 0.0, -3.0] # [x(m), y(m), z(m)]
-radius_of_gyration = [0.2, 0.6, 0.6] # [r_roll(m), r_pitch(m), r_yaw(m)]
-thrusters = [] # [[x(m), y(m), z(m)]]
-asv_position = [24.0, -85.0] # [latitude, longitude]
-asv_attitude = [0.0, 0.0, 180.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[27.5, -88.5]] # [[latitude, longitude]]
 
 [clock]
 time_step_size = 40 # milli-sec
-
-# [28.75, 271.0]
-# [27.0, 267.5]
-# [23.75, 272.0]
-# [25.75, 275.0]
-# [28.5, 275.25]
-# [30.25, 272.25]
-# [29.75, 272.75]
