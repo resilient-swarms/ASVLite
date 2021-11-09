@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+import multiprocessing as mp
 
 Simulation_data = namedtuple("Simulation_data", ["time", "cog_x", "cog_y", "cog_z", "asv_heading", "v_surg", "hs", "distance_to_storm"])
 
@@ -90,10 +91,11 @@ class Simulation:
             # Initialise the ASV
             simulation_object.asv.init(simulation_object.wave) 
     
-    def run(self):
-        record_asv_path = [] # To record the asv path to a text file
-        record_distance_to_storm = [] # To record the distance between asv and storm to a text file
-        record_hs = [] # To record the significant wave height experianced by the asv to a text file
+    def __simulate_asv(self, simulation_object, pipe):
+        """
+        This method simulates the dynamics of a single ASV and sends the simulation data via pipe to the parent process.
+        """
+        simulation_data = []
         time = self.simulation_start_time
         time_step_size = self.time_step_size/1000.0 # sec
         times = [] # List of time steps to simulate
@@ -104,57 +106,75 @@ class Simulation:
             # Find the position of the storm for the current time
             current_time = current_time + timedelta(seconds=time_step_size)
             cyclone_eye = self.storm_track.get_eye_location(current_time)
-            for simulation_object in self.simulation_objects:
-                # Get the distance to the centre of the storm
-                # Ref: https://www.movable-type.co.uk/scripts/latlong.html
-                lat1  = simulation_object.asv.cog_position.x * math.pi/180.0         
-                long1 = simulation_object.asv.cog_position.y * math.pi/180.0
-                lat2  = simulation_object.waypoints[0].x * math.pi/180.0
-                long2 = simulation_object.waypoints[0].y * math.pi/180.0
-                d_lat = (lat2 - lat1)
-                d_long = (long2 - long1) 
-                a = (math.sin(d_lat/2.0))**2 + math.cos(lat2)*math.cos(lat1)*(math.sin(d_long/2.0))**2
-                c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-                R = 6378000.0
-                distance_to_storm = R*c / 1000.0 # Km
-                # Get the sea state
-                current_latitude = simulation_object.asv.cog_position.x
-                current_longitude = simulation_object.asv.cog_position.y
-                new_hs, new_dp = self.wave_data.get_wave_data_at(current_latitude, current_longitude, current_time)
-                # Compare the sea state with the current sea state
-                current_hs = simulation_object.wave.significant_wave_height
-                current_dp = simulation_object.wave.heading
-                is_sea_state_same = (float(new_hs) == float(current_hs) and float(new_dp == current_dp))
-                # If the sea state has changed then, set the new sea state in the asv object
-                if not is_sea_state_same:
-                    rand_seed = 1
-                    #print(wave_hs)
-                    simulation_object.wave = Wave(new_hs, new_dp, rand_seed)
-                    simulation_object.asv.set_sea_state(simulation_object.wave)
-                # TODO: Update waypoint if required
-                simulation_object.waypoints[0] = Dimensions(*cyclone_eye)
-                # Set rudder angle
-                using_earth_coordinate_system = True
-                rudder_angle = simulation_object.controller.get_rudder_angle(simulation_object.asv, simulation_object.waypoints[0], using_earth_coordinate_system)
-                # Compute the dynamics for the current time step
-                seconds = (current_time - self.simulation_start_time).total_seconds()
-                simulation_object.asv.compute_dynamics(rudder_angle, seconds)
-                # Save simulation data
-                simulation_object.simulation_data.append(Simulation_data(current_time,
-                                                            simulation_object.asv.cog_position.x, 
-                                                            simulation_object.asv.cog_position.y, 
-                                                            simulation_object.asv.cog_position.z, 
-                                                            simulation_object.asv.attitude.z, 
-                                                            simulation_object.asv.dynamics.V[0],
-                                                            current_hs,
-                                                            distance_to_storm))
-                record_asv_path.append([seconds, current_time, simulation_object.asv.cog_position.x, simulation_object.asv.cog_position.y])
-        
+            # Get the distance to the centre of the storm
+            # Ref: https://www.movable-type.co.uk/scripts/latlong.html
+            lat1  = simulation_object.asv.cog_position.x * math.pi/180.0         
+            long1 = simulation_object.asv.cog_position.y * math.pi/180.0
+            lat2  = simulation_object.waypoints[0].x * math.pi/180.0
+            long2 = simulation_object.waypoints[0].y * math.pi/180.0
+            d_lat = (lat2 - lat1)
+            d_long = (long2 - long1) 
+            a = (math.sin(d_lat/2.0))**2 + math.cos(lat2)*math.cos(lat1)*(math.sin(d_long/2.0))**2
+            c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+            R = 6378000.0
+            distance_to_storm = R*c / 1000.0 # Km
+            # Get the sea state
+            current_latitude = simulation_object.asv.cog_position.x
+            current_longitude = simulation_object.asv.cog_position.y
+            new_hs, new_dp = self.wave_data.get_wave_data_at(current_latitude, current_longitude, current_time)
+            # Compare the sea state with the current sea state
+            current_hs = simulation_object.wave.significant_wave_height
+            current_dp = simulation_object.wave.heading
+            is_sea_state_same = (float(new_hs) == float(current_hs) and float(new_dp == current_dp))
+            # If the sea state has changed then, set the new sea state in the asv object
+            if not is_sea_state_same:
+                rand_seed = 1
+                #print(wave_hs)
+                simulation_object.wave = Wave(new_hs, new_dp, rand_seed)
+                simulation_object.asv.set_sea_state(simulation_object.wave)
+            # TODO: Update waypoint if required
+            simulation_object.waypoints[0] = Dimensions(*cyclone_eye)
+            # Set rudder angle
+            using_earth_coordinate_system = True
+            rudder_angle = simulation_object.controller.get_rudder_angle(simulation_object.asv, simulation_object.waypoints[0], using_earth_coordinate_system)
+            # Compute the dynamics for the current time step
+            seconds = (current_time - self.simulation_start_time).total_seconds()
+            simulation_object.asv.compute_dynamics(rudder_angle, seconds)
+            # Save simulation data
+            simulation_data.append(Simulation_data( current_time,
+                                                    simulation_object.asv.cog_position.x, 
+                                                    simulation_object.asv.cog_position.y, 
+                                                    simulation_object.asv.cog_position.z, 
+                                                    simulation_object.asv.attitude.z, 
+                                                    simulation_object.asv.dynamics.V[0],
+                                                    current_hs,
+                                                    distance_to_storm))
+        # Send the simulation data via pipe to the parent process
+        pipe.send(simulation_data)
+
+    def run(self):
+        multithread_data = [] # To store the data per process/simulation_object
+        # Create the processes
+        for simulation_object in self.simulation_objects:
+            parent, child = mp.Pipe()
+            process = mp.Process(target=self.__simulate_asv, args=(simulation_object, child))
+            multithread_data.append({"simulation_object":simulation_object, "process": process, "pipe":{"parent": parent, "child": child}})
+        # Start the simulations
+        for item in multithread_data:
+            item["process"].start()
+        # When simulation is complete, fetch the simulation data sent from the child process
+        for item in multithread_data:
+            simulation_data = item["pipe"]["parent"].recv()
+            item["simulation_object"].simulation_data = simulation_data
+        # Close processes
+        for item in multithread_data:
+            item["process"].join()
+    
     def write_simulation_data(self, dir_path):
-        for asv in self.simulation_objects:
-            file_path = dir_path + "/" + asv.id
+        for simulation_object in self.simulation_objects:
+            file_path = dir_path + "/" + simulation_object.id
             f = open(file_path, "w")  
-            for data in asv.simulation_data:
+            for data in simulation_object.simulation_data:
                 f.write("{} {} {} {} {} {} {} {} \n".format(data.time, data.cog_x, data.cog_y, data.cog_z, data.asv_heading, data.v_surg, data.hs, data.distance_to_storm))
             f.close()
 
@@ -181,10 +201,10 @@ class Simulation:
         # ax.scatter(longitudes, latitudes, s=80, marker=".", color='red',)
         # Plot vehicle path
         # Plot ASV path
-        for asv in self.simulation_objects:
-            times = [data[0] for data in asv.simulation_data]
-            latitudes = [data[1] for data in asv.simulation_data]
-            longitudes = [data[2] for data in asv.simulation_data]
+        for simulation_object in self.simulation_objects:
+            times = [data[0] for data in simulation_object.simulation_data]
+            latitudes = [data[1] for data in simulation_object.simulation_data]
+            longitudes = [data[2] for data in simulation_object.simulation_data]
             plt.plot(longitudes, latitudes, linestyle='-', transform=ccrs.Geodetic())
         plt.show()
 
@@ -193,8 +213,8 @@ if __name__ == '__main__':
     nc_file_path = "./sample_files/katrina/wave_data.nc"
     storm_track = "./sample_files/katrina/track.csv"
     simulation_start_time = datetime(2005, 8, 26, 9)
-    simulation_end_time = datetime(2005, 8, 26, 9, 10)
-    # simulation_end_time = datetime(2005, 8, 29, 20)
+    # simulation_end_time = datetime(2005, 8, 26, 9, 10)
+    simulation_end_time = datetime(2005, 8, 29, 20)
     simulation = Simulation(asv_input_file, nc_file_path, storm_track, simulation_start_time, simulation_end_time)
     simulation.run()
     simulation.write_simulation_data("./temp")
