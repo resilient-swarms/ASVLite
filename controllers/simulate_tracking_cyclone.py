@@ -29,7 +29,6 @@ class _Simulation_object:
     asv: Asv
     waypoints: list
     current_waypoint_index: int
-    simulation_data : list # Hold simulation data
     controller : Rudder_controller
 
 class Simulation:
@@ -79,7 +78,7 @@ class Simulation:
             wave_hs, wave_dp = self.wave_data.get_wave_data_at(start_latitude, start_longitude, self.simulation_start_time)
             rand_seed = 1
             wave = Wave(wave_hs, wave_dp, rand_seed)
-            self.simulation_objects.append(_Simulation_object(id, wave, asv, waypoints, 0, [], Rudder_controller(asv.spec, [25,1,9])))
+            self.simulation_objects.append(_Simulation_object(id, wave, asv, waypoints, 0, Rudder_controller(asv.spec, [25,1,9])))
         if "clock" in toml_data:
             self.time_step_size = toml_data["clock"]["time_step_size"] # millisec
         else:
@@ -91,11 +90,9 @@ class Simulation:
             # Initialise the ASV
             simulation_object.asv.init(simulation_object.wave) 
     
-    def __simulate_asv(self, simulation_object, pipe, tqdm_progress_bar):
-        """
-        This method simulates the dynamics of a single ASV and sends the simulation data via pipe to the parent process.
-        """
-        simulation_data = []
+    def __simulate_asv(self, simulation_object, tqdm_progress_bar, dir_path):
+        file_path = dir_path + "/" + simulation_object.id
+        f = open(file_path, "w")  
         time = self.simulation_start_time
         time_step_size = self.time_step_size/1000.0 # sec
         times = [] # List of time steps to simulate
@@ -144,47 +141,33 @@ class Simulation:
             seconds = (current_time - self.simulation_start_time).total_seconds()
             simulation_object.asv.compute_dynamics(rudder_angle, seconds)
             # Save simulation data
-            simulation_data.append(Simulation_data( current_time,
-                                                    simulation_object.asv.cog_position.x, 
-                                                    simulation_object.asv.cog_position.y, 
-                                                    simulation_object.asv.cog_position.z, 
-                                                    simulation_object.asv.attitude.z, 
-                                                    simulation_object.asv.dynamics.V[0],
-                                                    current_hs,
-                                                    distance_to_storm))
-        # Send the simulation data via pipe to the parent process
-        pipe.send(simulation_data)
+            f.write("{date} {x} {y} {z} {heading} {v} {hs} {dist} \n".format( 
+                                                    date=current_time,
+                                                    x=simulation_object.asv.cog_position.x, 
+                                                    y=simulation_object.asv.cog_position.y, 
+                                                    z=simulation_object.asv.cog_position.z, 
+                                                    heading=simulation_object.asv.attitude.z, 
+                                                    v=simulation_object.asv.dynamics.V[0],
+                                                    hs=current_hs,
+                                                    dist=distance_to_storm))
 
-    def run(self):
-        multithread_data = [] # To store the data per process/simulation_object
+    def run(self, dir_path):
+        processes = [] # To store the data per process/simulation_object
         # tqdm 
         progress_bars = [tqdm(leave=False) for item in self.simulation_objects]
         index = 0
         # Create the processes
         for simulation_object in self.simulation_objects:
-            parent, child = mp.Pipe()
-            process = mp.Process(target=self.__simulate_asv, args=(simulation_object, child, progress_bars[index]))
-            multithread_data.append({"simulation_object":simulation_object, "process": process, "pipe":{"parent": parent, "child": child}})
+            process = mp.Process(target=self.__simulate_asv, args=(simulation_object, progress_bars[index], dir_path))
+            processes.append(process)
             index += 1
         # Start the simulations
-        for item in tqdm(multithread_data, desc="Simulation ASVs"):
-            item["process"].start()
-        # When simulation is complete, fetch the simulation data sent from the child process
-        for item in multithread_data:
-            simulation_data = item["pipe"]["parent"].recv()
-            item["simulation_object"].simulation_data = simulation_data
+        for process in tqdm(processes, desc="Simulation ASVs"):
+            process.start()
         # Close processes
-        for item in multithread_data:
-            item["process"].join()
+        for process in processes:
+            process.join()
     
-    def write_simulation_data(self, dir_path):
-        for simulation_object in tqdm(self.simulation_objects, desc = "Writing data to file"):
-            file_path = dir_path + "/" + simulation_object.id
-            f = open(file_path, "w")  
-            for data in simulation_object.simulation_data:
-                f.write("{} {} {} {} {} {} {} {} \n".format(data.time, data.cog_x, data.cog_y, data.cog_z, data.asv_heading, data.v_surg, data.hs, data.distance_to_storm))
-            f.close()
-
     def plot_path(self, dir_path):
         ax = plt.axes(projection=ccrs.PlateCarree())
         # ax.stock_img()
@@ -209,9 +192,12 @@ class Simulation:
         # Plot vehicle path
         # Plot ASV path
         for simulation_object in tqdm(self.simulation_objects, desc="Ploting data"):
-            times = [data[0] for data in simulation_object.simulation_data]
-            latitudes = [data[1] for data in simulation_object.simulation_data]
-            longitudes = [data[2] for data in simulation_object.simulation_data]
+            file_path = dir_path + "/" + simulation_object.id
+            f = open(file_path, "r") 
+            simulation_data = [line.strip().split(" ") for line in f.readlines()] 
+            times = [row[0] + "/" + row[1] for row in simulation_data]
+            latitudes = [float(row[2]) for row in simulation_data]
+            longitudes = [float(row[3]) for row in simulation_data]
             plt.plot(longitudes, latitudes, linestyle='-', transform=ccrs.Geodetic())
         plt.savefig(dir_path + "/plot.png", bbox_inches='tight')
 
@@ -222,8 +208,7 @@ if __name__ == '__main__':
     simulation_start_time = datetime(2005, 8, 26, 9)
     simulation_end_time = datetime(2005, 8, 29, 20)
     simulation = Simulation(asv_input_file, nc_file_path, storm_track, simulation_start_time, simulation_end_time)
-    simulation.run()
-    simulation.write_simulation_data("./temp")
+    simulation.run("./temp")
     simulation.plot_path("./temp")
 
 # p "../sample_files/cyclone_path.txt" u 2:1 w l, "../sample_files/world_10m.txt" u 1:2 w l, "path_01.txt" u 4:3 w l, "path_02.txt" u 4:3 w l, "path_03.txt" u 4:3 w l, "path_04.txt" u 4:3 w l, "path_05.txt" u 4:3 w l, "path_06.txt" u 4:3 w l, "path_07.txt" u 4:3 w l
