@@ -193,7 +193,7 @@ class Simulation:
         marker_longitudes = longitudes[::5]
         marker_latitudes = latitudes[::5]
         for i in range(len(marker_latitudes)):
-            plt.text(marker_longitudes[i], marker_latitudes[i], str(i), color="red")
+            plt.text(marker_longitudes[i], marker_latitudes[i], str(i), color="red", fontsize=8, label=markers[i])
         # Plot ASV path
         for simulation_object in tqdm(self.simulation_objects, desc="Ploting data"):
             file_path = dir_path + "/" + simulation_object.id
@@ -205,17 +205,18 @@ class Simulation:
             times = [datetime.strptime(row[0] + " " + row[1], "%Y-%m-%d %H:%M:%S.%f") for row in simulation_data]
             latitudes = [float(row[2]) for row in simulation_data]
             longitudes = [float(row[3]) for row in simulation_data]
-            plt.plot(longitudes, latitudes, linestyle='-', transform=ccrs.Geodetic())
+            asv_path_plot = plt.plot(longitudes, latitudes, linestyle='-', transform=ccrs.Geodetic())
             # Create markers for ASV path
+            color = asv_path_plot[0].get_color()
             indices = []
             for time in markers:
                 index = min(range(len(times)), key=lambda i: abs((times[i]-time).total_seconds()))
                 indices.append(index)
-            print(indices)
             for i in range(len(indices)):
                 if indices[i] != 0:
-                    plt.text(longitudes[indices[i]], latitudes[indices[i]], str(i), fontsize=8)
-        plt.savefig(dir_path + "/plot.png", bbox_inches='tight')
+                    plt.text(longitudes[indices[i]], latitudes[indices[i]], str(i), fontsize=8, color=color)
+        # Add legend
+        plt.savefig(dir_path + "/plot.png", bbox_inches='tight', dpi=300)
 
 if __name__ == '__main__':   
     asv_input_file = "./sample_files/katrina/wave_glider"
