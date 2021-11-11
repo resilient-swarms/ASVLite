@@ -142,7 +142,7 @@ class Simulation:
             simulation_object.asv.compute_dynamics(rudder_angle, seconds)
             # Save simulation data
             f.write("{date} {x} {y} {z} {heading} {v} {hs} {dist} \n".format( 
-                                                    date=current_time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3],
+                                                    date=current_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
                                                     x=simulation_object.asv.cog_position.x, 
                                                     y=simulation_object.asv.cog_position.y, 
                                                     z=simulation_object.asv.cog_position.z, 
@@ -189,11 +189,14 @@ class Simulation:
         plt.plot(longitudes, latitudes, color='red', linestyle='--', transform=ccrs.Geodetic())
         # Create markers
         markers = times[::5]
+        legend = [ str(i)+" | "+markers[i].strftime("%d-%b-%y %H:%M") for i in range(len(markers))]
+        legend = "\n".join(legend)
+        plt.figtext(0.5, 0.01, legend, ha="center", fontsize=6,)
         # Create markers for storm track
         marker_longitudes = longitudes[::5]
         marker_latitudes = latitudes[::5]
         for i in range(len(marker_latitudes)):
-            plt.text(marker_longitudes[i], marker_latitudes[i], str(i), color="red", fontsize=8, label=markers[i])
+            plt.text(marker_longitudes[i], marker_latitudes[i], str(i), color="red", fontsize=6, label=markers[i])
         # Plot ASV path
         for simulation_object in tqdm(self.simulation_objects, desc="Ploting data"):
             file_path = dir_path + "/" + simulation_object.id
@@ -214,7 +217,7 @@ class Simulation:
                 indices.append(index)
             for i in range(len(indices)):
                 if indices[i] != 0:
-                    plt.text(longitudes[indices[i]], latitudes[indices[i]], str(i), fontsize=8, color=color)
+                    plt.text(longitudes[indices[i]], latitudes[indices[i]], str(i), fontsize=6, color=color)
         # Add legend
         plt.savefig(dir_path + "/plot.png", bbox_inches='tight', dpi=300)
 
@@ -225,7 +228,7 @@ if __name__ == '__main__':
     simulation_start_time = datetime(2005, 8, 26, 9)
     simulation_end_time = datetime(2005, 8, 29, 20)
     simulation = Simulation(asv_input_file, nc_file_path, storm_track, simulation_start_time, simulation_end_time)
-    simulation.run("./temp")
+    #simulation.run("./temp")
     simulation.plot_path("./temp")
 
 # p "../sample_files/cyclone_path.txt" u 2:1 w l, "../sample_files/world_10m.txt" u 1:2 w l, "path_01.txt" u 4:3 w l, "path_02.txt" u 4:3 w l, "path_03.txt" u 4:3 w l, "path_04.txt" u 4:3 w l, "path_05.txt" u 4:3 w l, "path_06.txt" u 4:3 w l, "path_07.txt" u 4:3 w l
