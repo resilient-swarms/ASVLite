@@ -101,7 +101,7 @@ class Simulation:
             time = time + timedelta(seconds=time_step_size)
         tqdm_progress_bar.iterable = times
         tqdm_progress_bar.total = len(times)
-        tqdm_progress_bar.set_description(simulation_object.id)
+        tqdm_progress_bar.set_description("Simulating " + str(simulation_object.id))
         for current_time in tqdm_progress_bar:
             # Find the position of the storm for the current time
             current_time = current_time + timedelta(seconds=time_step_size)
@@ -142,7 +142,7 @@ class Simulation:
             simulation_object.asv.compute_dynamics(rudder_angle, seconds)
             # Save simulation data
             f.write("{date} {x} {y} {z} {heading} {v} {hs} {dist} \n".format( 
-                                                    date=current_time,
+                                                    date=current_time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3],
                                                     x=simulation_object.asv.cog_position.x, 
                                                     y=simulation_object.asv.cog_position.y, 
                                                     z=simulation_object.asv.cog_position.z, 
@@ -162,7 +162,7 @@ class Simulation:
             processes.append(process)
             index += 1
         # Start the simulations
-        for process in tqdm(processes, desc="Simulation ASVs"):
+        for process in processes:
             process.start()
         # Close processes
         for process in processes:
@@ -187,9 +187,13 @@ class Simulation:
         latitudes  = [data[1] for data in self.storm_track.track]
         longitudes = [data[2] for data in self.storm_track.track]
         plt.plot(longitudes, latitudes, color='red', linestyle='--', transform=ccrs.Geodetic())
-        # Set storm markers
-        # ax.scatter(longitudes, latitudes, s=80, marker=".", color='red',)
-        # Plot vehicle path
+        # Create markers
+        markers = times[::5]
+        # Create markers for storm track
+        marker_longitudes = longitudes[::5]
+        marker_latitudes = latitudes[::5]
+        for i in range(len(marker_latitudes)):
+            plt.text(marker_longitudes[i], marker_latitudes[i], str(i), color="red")
         # Plot ASV path
         for simulation_object in tqdm(self.simulation_objects, desc="Ploting data"):
             file_path = dir_path + "/" + simulation_object.id
@@ -198,10 +202,19 @@ class Simulation:
             # of the vehicle for each min instead of each simulation time step
             n = int(1000/self.time_step_size * 60)
             simulation_data = [line.strip().split(" ") for line in f.readlines()[::n]] 
-            times = [row[0] + "/" + row[1] for row in simulation_data]
+            times = [datetime.strptime(row[0] + " " + row[1], "%Y-%m-%d %H:%M:%S.%f") for row in simulation_data]
             latitudes = [float(row[2]) for row in simulation_data]
             longitudes = [float(row[3]) for row in simulation_data]
             plt.plot(longitudes, latitudes, linestyle='-', transform=ccrs.Geodetic())
+            # Create markers for ASV path
+            indices = []
+            for time in markers:
+                index = min(range(len(times)), key=lambda i: abs((times[i]-time).total_seconds()))
+                indices.append(index)
+            print(indices)
+            for i in range(len(indices)):
+                if indices[i] != 0:
+                    plt.text(longitudes[indices[i]], latitudes[indices[i]], str(i), fontsize=8)
         plt.savefig(dir_path + "/plot.png", bbox_inches='tight')
 
 if __name__ == '__main__':   
