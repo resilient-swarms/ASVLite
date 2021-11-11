@@ -228,7 +228,7 @@ if __name__ == '__main__':
     simulation_start_time = datetime(2005, 8, 26, 9)
     simulation_end_time = datetime(2005, 8, 29, 20)
     simulation = Simulation(asv_input_file, nc_file_path, storm_track, simulation_start_time, simulation_end_time)
-    #simulation.run("./temp")
+    simulation.run("./temp")
     simulation.plot_path("./temp")
 
 # p "../sample_files/cyclone_path.txt" u 2:1 w l, "../sample_files/world_10m.txt" u 1:2 w l, "path_01.txt" u 4:3 w l, "path_02.txt" u 4:3 w l, "path_03.txt" u 4:3 w l, "path_04.txt" u 4:3 w l, "path_05.txt" u 4:3 w l, "path_06.txt" u 4:3 w l, "path_07.txt" u 4:3 w l
