@@ -194,7 +194,10 @@ class Simulation:
         for simulation_object in tqdm(self.simulation_objects, desc="Ploting data"):
             file_path = dir_path + "/" + simulation_object.id
             f = open(file_path, "r") 
-            simulation_data = [line.strip().split(" ") for line in f.readlines()] 
+            # Ploting all the points from the file can be too much,therefor plot the position 
+            # of the vehicle for each min instead of each simulation time step
+            n = int(1000/self.time_step_size * 60)
+            simulation_data = [line.strip().split(" ") for line in f.readlines()[::n]] 
             times = [row[0] + "/" + row[1] for row in simulation_data]
             latitudes = [float(row[2]) for row in simulation_data]
             longitudes = [float(row[3]) for row in simulation_data]
