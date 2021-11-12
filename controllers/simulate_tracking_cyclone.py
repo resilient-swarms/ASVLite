@@ -187,16 +187,16 @@ class Simulation:
         latitudes  = [data[1] for data in self.storm_track.track]
         longitudes = [data[2] for data in self.storm_track.track]
         plt.plot(longitudes, latitudes, color='red', linestyle='--', transform=ccrs.Geodetic())
-        # Create markers
-        markers = times[::5]
-        legend = [ str(i)+" | "+markers[i].strftime("%d-%b-%y %H:%M") for i in range(len(markers))]
+        # Create marker times
+        marker_times = times[::5]
+        legend = [ str(i)+" | "+marker_times[i].strftime("%d-%b-%y %H:%M") for i in range(len(marker_times))]
         legend = "\n".join(legend)
         plt.figtext(0.5, 0.01, legend, ha="center", fontsize=6,)
         # Create markers for storm track
         marker_longitudes = longitudes[::5]
         marker_latitudes = latitudes[::5]
         for i in range(len(marker_latitudes)):
-            plt.text(marker_longitudes[i], marker_latitudes[i], str(i), color="red", fontsize=6, label=markers[i])
+            plt.text(marker_longitudes[i], marker_latitudes[i], str(i), color="red", fontsize=6, label=marker_times[i])
         # Plot ASV path
         for simulation_object in tqdm(self.simulation_objects, desc="Ploting data"):
             file_path = dir_path + "/" + simulation_object.id
@@ -212,7 +212,7 @@ class Simulation:
             # Create markers for ASV path
             color = asv_path_plot[0].get_color()
             indices = []
-            for time in markers:
+            for time in marker_times:
                 index = min(range(len(times)), key=lambda i: abs((times[i]-time).total_seconds()))
                 indices.append(index)
             for i in range(len(indices)):
