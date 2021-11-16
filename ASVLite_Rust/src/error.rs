@@ -1,8 +1,8 @@
 use std::fmt;
 
 /// Defining ValueError type. 
-#[derive(Debug, Clone)]
-struct ValueError {
+#[derive(Debug, Clone, PartialEq)]
+pub struct ValueError {
     message: String,
 }
 
@@ -21,7 +21,7 @@ impl fmt::Display for ValueError {
 }
 
 #[test]
-fn value_error() {
+fn value_error_new() {
     let error_message = "Unit test for error creation.";
     let test_error = ValueError::new(error_message);
     assert_eq!(format!("{}", test_error), error_message);
