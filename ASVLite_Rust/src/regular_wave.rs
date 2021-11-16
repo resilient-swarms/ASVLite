@@ -1,6 +1,6 @@
 use super::error::ValueError;
 use super::geometry::Dimension;
-use super::constants::*;
+use super::constants::{PI, G, SEA_WATER_DENSITY};
 
 /// Structure to define a regular wave. The members of the struct is initialised by
 /// the associated function new(), and it is the only function that should write value 
