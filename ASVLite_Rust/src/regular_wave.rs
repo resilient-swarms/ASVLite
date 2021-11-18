@@ -10,7 +10,7 @@ use super::constants::{PI, G, SEA_WATER_DENSITY};
 /// the struct and create a new instance with the desired values. Recommend assigning 
 /// the return of new() to an immutable variable. The members are public and hence can 
 /// be directly accessed for reading. 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct RegularWave {
     /// Wave amplitude in meter.
     pub amplitude: f64,
