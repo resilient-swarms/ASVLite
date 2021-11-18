@@ -39,5 +39,10 @@ wrapper/lib
 .env
 env
 
+# Rust build dir
+# -------------
+Cargo.lock
+target
+
 test
 to_delete_later
