@@ -1,5 +1,5 @@
 [package]
-name = "ASVLite-Rust"
+name = "ASVLite_Rust"
 version = "0.1.0"
 edition = "2021"
 authors = ["Toby Thomas <toby@tobythomas.tech>", "Danesh Tarapore <D.S.Tarapore@soton.ac.uk>"]
@@ -7,3 +7,4 @@ authors = ["Toby Thomas <toby@tobythomas.tech>", "Danesh Tarapore <D.S.Tarapore@
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+libc = "0.2"
