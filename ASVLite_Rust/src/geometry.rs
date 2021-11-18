@@ -1,3 +1,4 @@
+//! Definition of geometric components used in ASVLite-Rust.
 
 /// A structure to represent a 3D quantity.
 #[derive(Debug, Copy, Clone, PartialEq)]

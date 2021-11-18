@@ -1,3 +1,5 @@
+//! Implementation of a regular wave.
+
 use super::error::ValueError;
 use super::geometry::Dimension;
 use super::constants::{PI, G, SEA_WATER_DENSITY};

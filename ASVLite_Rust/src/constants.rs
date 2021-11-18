@@ -1,3 +1,4 @@
+//! Definition of constants used in ASVLite-Rust.
 
 /// Math constant PI.
 pub const PI: f64 = std::f64::consts::PI;

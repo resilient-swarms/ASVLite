@@ -1,3 +1,5 @@
+//! Definition of custom error type thrown by ASVLite-Rust.
+
 use std::fmt;
 
 /// Defining ValueError type. 
