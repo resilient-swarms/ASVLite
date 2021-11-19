@@ -57,13 +57,13 @@ int wave_init(struct Wave* wave,
   wave->max_spectral_frequency = 5.946 * f_p;
 
   // Create regular waves
+  srand(wave->random_number_seed); // Random number generator seed for setting phase lag of the wave.
   // For each heading angle
   double wave_heading_step_size = (COUNT_WAVE_SPECTRAL_DIRECTIONS > 1) ?
                                   PI/(COUNT_WAVE_SPECTRAL_DIRECTIONS - 1) : 0.0;
-  double mu = -PI/2.0;
   for(int i = 0; i < COUNT_WAVE_SPECTRAL_DIRECTIONS; ++i)
   {
-    mu += wave_heading_step_size;
+    double mu = -PI/2.0 + i * wave_heading_step_size;
 
     double frequency_step_size = (wave->max_spectral_frequency - 
                                   wave->min_spectral_frequency) /
@@ -84,7 +84,6 @@ int wave_init(struct Wave* wave,
       // Create a wave
       double amplitude = sqrt(2.0 * S * G_spectrum); 
       wave->random_number_seed = rand_seed;
-      srand(wave->random_number_seed);
       double phase = rand(); 
       double wave_heading = (COUNT_WAVE_SPECTRAL_DIRECTIONS > 1) ? 
                             mu + wave->heading : wave->heading;
