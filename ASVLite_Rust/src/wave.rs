@@ -52,10 +52,10 @@ impl Wave {
                 let mut min_spectral_wave_heading = heading - PI/2.0;
                 let mut max_spectral_wave_heading = heading + PI/2.0;
                 // wave directions should be in the range (0, 2PI)
-                if min_spectral_wave_heading < 0.0 {
+                while min_spectral_wave_heading < 0.0 {
                     min_spectral_wave_heading += 2.0*PI; 
                 }
-                if max_spectral_wave_heading >= 2.0*PI {
+                while max_spectral_wave_heading >= 2.0*PI {
                     max_spectral_wave_heading -= 2.0*PI;
                 }
 
@@ -78,14 +78,14 @@ impl Wave {
                 let max_spectral_frequency = 5.946 * f_p;
 
                 // Create the regular waves
+                unsafe{ srand(random_number_seed) }; // Random number generator seed for setting phase lag of the wave.
                 let wave_0 = RegularWave::new(1.0, 1.0, 0.0, 0.0).unwrap(); // A temp wave to initialise the spectrum.
                 let mut spectrum = vec![vec![wave_0; count_spectral_frequencies]; count_spectral_directions];
                 let wave_heading_step_size = PI/((count_spectral_directions as f64) - 1.0);
                 let frequency_step_size = (max_spectral_frequency - min_spectral_frequency) /
-                                          ((count_spectral_frequencies as f64) - 1.0);
-                let mut mu = -PI/2.0;
+                                          ((count_spectral_frequencies as f64) - 1.0);                
                 for i in 0 .. count_spectral_directions {
-                    mu += wave_heading_step_size;
+                    let mu = -PI/2.0 + (i as f64) * wave_heading_step_size;
                     for j in 0 .. count_spectral_frequencies {
                         let f = min_spectral_frequency + (j as f64) * frequency_step_size;
                         let s = (a/f.powf(5.0)) * (-b/f.powf(4.0)).exp() * frequency_step_size;
@@ -96,7 +96,6 @@ impl Wave {
 
                         // Create a wave
                         let amplitude = (2.0 * s * g_spectrum).sqrt(); 
-                        unsafe{ srand(random_number_seed) };
                         let phase = unsafe{ rand() } as f64;
                         let mut wave_heading = mu + heading;
                         // wave directions should be in the range (0, 2PI)
@@ -144,4 +143,48 @@ impl Wave {
             },
         }
     }
+}
+
+#[test]
+fn new() {
+    // inputs
+    let significant_wave_height = 1.2; // m
+    let heading = PI/2.0; 
+    let random_number_seed = 1; 
+    unsafe{ srand(random_number_seed) };
+    let count_spectral_directions = 3;
+    let count_spectral_frequencies = 3;
+    // Spectrum
+    let alpha = 0.0081;
+    let a = alpha * G*G * (2.0 * PI).powf(-4.0);
+    let h_s = significant_wave_height;
+    let b = 4.0*alpha*G*G / ((2.0*PI).powf(4.0) * h_s*h_s);
+    let f_p = 0.946 * b.powf(0.25);
+    let min_spectral_frequency = 0.652 * f_p;
+    let max_spectral_frequency = 5.946 * f_p;
+    let mid_spectral_frequency = (min_spectral_frequency + max_spectral_frequency)/2.0;
+    let frequency_step_size = mid_spectral_frequency - min_spectral_frequency;
+    let min_heading = heading - PI/2.0;
+    let max_heading = heading + PI/2.0;
+    let wave_heading_step_size = heading - min_heading;
+    let wave_headings = vec![min_heading, heading, max_heading];
+    let frequencies = vec![min_spectral_frequency, mid_spectral_frequency, max_spectral_frequency];
+    let mut test_spectrum = Vec::new();
+    for i in 0..count_spectral_directions { 
+        let mut temp = Vec::new();
+        for j in 0..count_spectral_frequencies {
+            let f = frequencies[j];
+            let s = (a/f.powf(5.0)) * (-b/f.powf(4.0)).exp() * frequency_step_size;
+            let mut wave_heading = wave_headings[i];
+            let mu = wave_heading - heading;
+            let g_spectrum = (2.0/PI) * mu.cos()*mu.cos() * wave_heading_step_size;
+            let amplitude = (2.0 * s * g_spectrum).sqrt(); 
+            let phase = unsafe{ rand() } as f64;
+            temp.push(RegularWave::new(amplitude, f, phase, wave_heading).unwrap());
+        }
+        test_spectrum.push(temp);
+    }
+    // Compare results
+    let actual_spectrum = Wave::new(significant_wave_height, PI/2.0, random_number_seed, count_spectral_directions, count_spectral_frequencies).unwrap().spectrum;
+    assert_eq!(test_spectrum, actual_spectrum);
 }
