@@ -103,9 +103,7 @@ class Simulation:
         tqdm_progress_bar.total = len(times)
         tqdm_progress_bar.set_description("Simulating " + str(simulation_object.id))
         for current_time in tqdm_progress_bar:
-            # Find the position of the storm for the current time
             current_time = current_time + timedelta(seconds=time_step_size)
-            cyclone_eye = self.storm_track.get_eye_location(current_time)
             # Get the distance to the centre of the storm
             # Ref: https://www.movable-type.co.uk/scripts/latlong.html
             lat1  = simulation_object.asv.cog_position.x * math.pi/180.0         
@@ -132,8 +130,12 @@ class Simulation:
                 #print(wave_hs)
                 simulation_object.wave = Wave(new_hs, new_dp, rand_seed)
                 simulation_object.asv.set_sea_state(simulation_object.wave)
-            # TODO: Update waypoint if required
-            simulation_object.waypoints[0] = Dimensions(*cyclone_eye)
+            # Update waypoint if required
+            # cyclone_eye = self.storm_track.get_eye_location(current_time) # Find the position of the storm for the current time
+            # simulation_object.waypoints[0] = Dimensions(*cyclone_eye)
+            current_position = (current_latitude, current_longitude)
+            waypoint = self.storm_track.get_projected_point_on_extrapolated_track(current_position, current_time)
+            simulation_object.waypoints[0] = Dimensions(*waypoint)
             # Set rudder angle
             using_earth_coordinate_system = True
             rudder_angle = simulation_object.controller.get_rudder_angle(simulation_object.asv, simulation_object.waypoints[0], using_earth_coordinate_system)
@@ -183,9 +185,9 @@ class Simulation:
         plt.plot(color='blue', linewidth=2, marker='o',
                 transform=ccrs.Geodetic())
         # Plot storm track
-        times      = [data[0] for data in self.storm_track.track]
-        latitudes  = [data[1] for data in self.storm_track.track]
-        longitudes = [data[2] for data in self.storm_track.track]
+        times      = [data[0] for data in self.storm_track.actual_track]
+        latitudes  = [data[1][0] for data in self.storm_track.actual_track]
+        longitudes = [data[1][1] for data in self.storm_track.actual_track]
         plt.plot(longitudes, latitudes, color='red', linestyle='--', transform=ccrs.Geodetic())
         # Create marker times
         marker_times = times[::5]
@@ -222,7 +224,7 @@ class Simulation:
         plt.savefig(dir_path + "/plot.png", bbox_inches='tight', dpi=300)
 
 if __name__ == '__main__':   
-    asv_input_file = "./sample_files/katrina/wave_glider"
+    asv_input_file = "./sample_files/katrina/wave_glider_2"
     nc_file_path = "./sample_files/katrina/wave_data.nc"
     storm_track = "./sample_files/katrina/track.csv"
     simulation_start_time = datetime(2005, 8, 26, 9)
