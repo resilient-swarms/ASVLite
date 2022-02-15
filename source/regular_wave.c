@@ -27,7 +27,7 @@ struct Regular_wave
 
 
 static void set_error_msg(struct Regular_wave* regular_wave, 
-                          char* msg)
+                          const char* msg)
 {
   regular_wave->error_msg = (char*)malloc(sizeof(char) * strlen(msg));
   strcpy(regular_wave->error_msg, msg);
@@ -59,10 +59,6 @@ const struct Regular_wave* regular_wave_new(const double amplitude,
     regular_wave->wave_number = (2.0 * PI)/regular_wave->wave_length;
     regular_wave->error_msg = NULL;
   }
-  else
-  {
-    set_error_msg(regular_wave, "Amplitude and frequency should be non-zero and positive.");
-  }
   
   return regular_wave;  
 }
@@ -74,7 +70,7 @@ void regular_wave_delete(const struct Regular_wave* regular_wave)
   free((struct Regular_wave*)regular_wave);
 }
 
-const char* regular_wave_error_msg(const struct Regular_wave* regular_wave)
+const char* regular_wave_get_error_msg(const struct Regular_wave* regular_wave)
 {
   return regular_wave->error_msg;
 }
@@ -109,7 +105,7 @@ double regular_wave_get_phase(const struct Regular_wave* const regular_wave,
   }
   else
   {
-    set_error_msg((struct Regular_wave*)regular_wave, "regular_wave should not be NULL and time should be non-negative.");
+    set_error_msg((struct Regular_wave*)regular_wave, "regular_wave should not be NULL and time >= 0.0.");
   }
 
   return phase;

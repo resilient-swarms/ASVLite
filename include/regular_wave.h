@@ -31,7 +31,7 @@ void regular_wave_delete(const struct Regular_wave* wave);
 /**
  * Returns error message related to the last function called for a regular wave object.
  */
-const char* regular_wave_error_msg(const struct Regular_wave* regular_wave);
+const char* regular_wave_get_error_msg(const struct Regular_wave* regular_wave);
 
 /**
  * Get the phase of the wave at a given point for a given time.
