@@ -2,6 +2,7 @@
 #include <malloc.h>
 #include <string.h>
 #include <stdlib.h> 
+#include <stdbool.h>
 #include <math.h>
 #include "constants.h"
 #include "geometry.h"
@@ -53,8 +54,11 @@ const struct Wave* wave_new(const double sig_wave_ht,
      count_wave_spectral_directions > 1 && 
      count_wave_spectral_frequencies > 1)
   {
+    // Initialise the pointers...
     wave = (struct Wave*)malloc(sizeof(struct Wave));
     wave->spectrum = (const struct Regular_wave**)malloc(sizeof(struct Regular_wave*) * count_wave_spectral_directions * count_wave_spectral_frequencies); 
+    wave->error_msg = NULL;
+    // ... and then the other member variables.
     wave->heading = wave_heading;
     wave->min_spectral_wave_heading = wave->heading - PI/2.0;
     wave->max_spectral_wave_heading = wave->heading + PI/2.0;
@@ -85,6 +89,7 @@ const struct Wave* wave_new(const double sig_wave_ht,
     wave->max_spectral_frequency = 5.946 * f_p;
 
     // Create regular waves
+    bool has_NULL_in_spectrum = false; // A flag that will be set to true if any of the created component wave turns out to be NULL.
     // For each heading angle
     double wave_heading_step_size = PI/(count_wave_spectral_frequencies - 1);
     double mu = -PI/2.0;
@@ -118,10 +123,22 @@ const struct Wave* wave_new(const double sig_wave_ht,
         }
         else 
         {
-          set_error_msg(wave, "Error in creating regular waves for wave spectrum.");
-          return NULL;
+          // Error encountered when creating a regular waves for the wave spectrum.
+          has_NULL_in_spectrum = true;
         }
       }
+    }
+    // Check if spectrum is valid
+    if(has_NULL_in_spectrum)
+    {
+      // One or more of the regular wave is NULL. 
+      // This is an invalid spectrum.
+      wave_delete(wave);
+      wave = NULL;
+    }
+    else
+    {
+      // Spectrum is OK. Proceed. Nothing to do here.
     }
   }
   
@@ -133,7 +150,10 @@ void wave_delete(const struct Wave* wave)
   for(int i = 0; i < (wave->count_wave_spectral_directions * wave->count_wave_spectral_frequencies); ++i)
   {
     const struct Regular_wave* regular_wave = *(wave->spectrum+i);
-    regular_wave_delete(regular_wave);
+    if(regular_wave)
+    {
+      regular_wave_delete(regular_wave);
+    }
   }
   
   free(wave->spectrum);
@@ -156,6 +176,13 @@ double wave_get_elevation(const struct Wave* wave,
       for(int j = 0; j < wave->count_wave_spectral_frequencies; ++j)
       {
         const struct Regular_wave* regular_wave = *(wave->spectrum + (i*wave->count_wave_spectral_directions + j));
+        // We do not expect a NULL regular_wave, but still check.
+        if(!regular_wave)
+        {
+          // Something really wrong happened. 
+          set_error_msg("NULL encountered in spectrum.");
+          return 0.0;
+        }
         double regular_wave_elevation = regular_wave_get_elevation(regular_wave, location, time);
         const char* error_msg = regular_wave_get_error_msg(regular_wave);
         if(!error_msg)
@@ -164,6 +191,7 @@ double wave_get_elevation(const struct Wave* wave,
         }
         else
         {
+          // Something went wrong when getting wave elevation for the regular_wave.
           set_error_msg((struct Wave*)wave, error_msg);
           return 0.0;
         }

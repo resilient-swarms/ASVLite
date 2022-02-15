@@ -49,7 +49,10 @@ const struct Regular_wave* regular_wave_new(const double amplitude,
   // Check if both amplitude and frequency are non-zero positive values. 
   if(amplitude > 0.0 && frequency > 0.0)
   {
+    // Initialise the pointers ...
     regular_wave = (struct Regular_wave*)malloc(sizeof(struct Regular_wave));
+    regular_wave->error_msg = NULL;
+    // ... and then the other member variables.
     regular_wave->amplitude = amplitude; 
     regular_wave->frequency = frequency;
     regular_wave->phase_lag = phase_lag;
@@ -57,7 +60,6 @@ const struct Regular_wave* regular_wave_new(const double amplitude,
     regular_wave->time_period = (1.0/frequency);
     regular_wave->wave_length = (G * regular_wave->time_period * regular_wave->time_period)/(2.0 * PI);
     regular_wave->wave_number = (2.0 * PI)/regular_wave->wave_length;
-    regular_wave->error_msg = NULL;
   }
   
   return regular_wave;  
@@ -122,8 +124,18 @@ double regular_wave_get_elevation(const struct Regular_wave* const regular_wave,
   if(regular_wave && time >= 0.0)
   {
     double wave_phase = regular_wave_get_phase(regular_wave, location, time); 
-    double amplitude = regular_wave->amplitude;
-    elevation = amplitude * cos(wave_phase);
+    const char* error_msg = regular_wave_get_error_msg(regular_wave);
+    if(error_msg)
+    {
+      // Something went wrong when getting wave phase.
+      set_error_msg(regular_wave, error_msg);
+      return 0.0;
+    }
+    else
+    {
+      double amplitude = regular_wave->amplitude;
+      elevation = amplitude * cos(wave_phase);
+    }
   }
   else
   {
