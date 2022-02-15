@@ -74,6 +74,10 @@ void regular_wave_delete(const struct Regular_wave* regular_wave)
   free((struct Regular_wave*)regular_wave);
 }
 
+const char* regular_wave_error_msg(const struct Regular_wave* regular_wave)
+{
+  return regular_wave->error_msg;
+}
 
 double regular_wave_get_phase(const struct Regular_wave* const regular_wave, 
                               const struct Cartesian_coordinate_3D location, 
