@@ -128,7 +128,7 @@ double regular_wave_get_elevation(const struct Regular_wave* const regular_wave,
     if(error_msg)
     {
       // Something went wrong when getting wave phase.
-      set_error_msg(regular_wave, error_msg);
+      set_error_msg((struct Regular_wave*)regular_wave, error_msg);
       return 0.0;
     }
     else
