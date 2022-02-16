@@ -46,4 +46,22 @@ double wave_get_elevation(const struct Wave* wave,
                           struct Cartesian_coordinate_3D location, 
                           double time);
 
+/**
+ * Function to get the number of direction bands in the wave spectrum.
+ */ 
+int wave_get_count_wave_spectral_directions(const struct Wave* wave);
+
+/** 
+ * Function to get the number of frequency bands in the wave spectrum.
+ */
+int wave_get_count_wave_spectral_frequencies(const struct Wave* wave);
+
+/**
+ * Function to get the regular wave at spectrum[d][f].
+ * @param d is the index for direction and should be in the range [0, count_wave_spectral_directions)
+ * @param f is the index for frequency and should be in the range [0, count_wave_spectral_frequencies)
+ * @return pointer to the regular wave if found else NULL.
+ */
+const struct Regular_wave* wave_get_regular_wave_at(const struct Wave* wave, int d, int f); 
+
 #endif // WAVE_H

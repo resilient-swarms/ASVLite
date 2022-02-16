@@ -119,13 +119,18 @@ const struct Wave* wave_new(const double sig_wave_ht,
         const struct Regular_wave* regular_wave = regular_wave_new(amplitude, f, phase, wave_heading);
         if(regular_wave)
         {
-          *(wave->spectrum + (i*count_wave_spectral_directions + j)) = regular_wave;
+          wave->spectrum[i*count_wave_spectral_directions + j] = regular_wave;
         }
         else 
         {
           // Error encountered when creating a regular waves for the wave spectrum.
           has_NULL_in_spectrum = true;
+          break;
         }
+      }
+      if(has_NULL_in_spectrum)
+      {
+        break;
       }
     }
     // Check if spectrum is valid
@@ -149,7 +154,7 @@ void wave_delete(const struct Wave* wave)
 {
   for(int i = 0; i < (wave->count_wave_spectral_directions * wave->count_wave_spectral_frequencies); ++i)
   {
-    const struct Regular_wave* regular_wave = *(wave->spectrum+i);
+    const struct Regular_wave* regular_wave = wave->spectrum[i];
     if(regular_wave)
     {
       regular_wave_delete(regular_wave);
@@ -175,12 +180,12 @@ double wave_get_elevation(const struct Wave* wave,
     {
       for(int j = 0; j < wave->count_wave_spectral_frequencies; ++j)
       {
-        const struct Regular_wave* regular_wave = *(wave->spectrum + (i*wave->count_wave_spectral_directions + j));
+        const struct Regular_wave* regular_wave = wave->spectrum[i*wave->count_wave_spectral_directions + j];
         // We do not expect a NULL regular_wave, but still check.
         if(!regular_wave)
         {
           // Something really wrong happened. 
-          set_error_msg("NULL encountered in spectrum.");
+          set_error_msg((struct Wave*)wave, "NULL encountered in spectrum.");
           return 0.0;
         }
         double regular_wave_elevation = regular_wave_get_elevation(regular_wave, location, time);
@@ -205,3 +210,29 @@ double wave_get_elevation(const struct Wave* wave,
   return elevation;
 }
 
+int wave_get_count_wave_spectral_directions(const struct Wave* wave)
+{
+  return wave->count_wave_spectral_directions;
+}
+
+int wave_get_count_wave_spectral_frequencies(const struct Wave* wave)
+{
+  return wave->count_wave_spectral_frequencies;
+}
+
+const struct Regular_wave* wave_get_regular_wave_at(const struct Wave* wave, int d, int f)
+{
+  const struct Regular_wave* regular_wave = NULL;
+  if(d >= 0 && d < wave->count_wave_spectral_directions &&
+     f >= 0 && f < wave->count_wave_spectral_frequencies)
+  {
+    regular_wave = wave->spectrum[d*wave->count_wave_spectral_directions + f];
+  }
+  else
+  {
+    // Incorrect index
+    set_error_msg((struct Wave*)wave, "Index invalid for the wave spectrum.");
+  }
+
+  return regular_wave;
+}
