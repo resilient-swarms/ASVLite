@@ -26,12 +26,27 @@ const struct Regular_wave* regular_wave_new(double amplitude,
 /**
  * Free memory allocated for the regular wave. 
  */
-void regular_wave_delete(const struct Regular_wave* wave);
+void regular_wave_delete(const struct Regular_wave* regular_wave);
 
 /**
  * Returns error message related to the last function called for a regular wave object.
  */
 const char* regular_wave_get_error_msg(const struct Regular_wave* regular_wave);
+
+/**
+ * Get the amplitude.
+ */ 
+double regular_wave_get_amplitude(const struct Regular_wave* regular_wave);
+
+/**
+ * Get frequency. 
+ */ 
+double regular_wave_get_frequency(const struct Regular_wave* regular_wave);
+
+/** 
+ * Get direction.
+ */ 
+double regular_wave_get_direction(const struct Regular_wave* regular_wave);
 
 /**
  * Get the phase of the wave at a given point for a given time.
@@ -40,7 +55,7 @@ const char* regular_wave_get_error_msg(const struct Regular_wave* regular_wave);
  * @param time for which the phase is to be calculated.
  * @return wave phase in radian.
  */
-double regular_wave_get_phase(const struct Regular_wave* wave, 
+double regular_wave_get_phase(const struct Regular_wave* regular_wave, 
                               struct Cartesian_coordinate_3D location, 
                               double time);
 /**
@@ -51,7 +66,7 @@ double regular_wave_get_phase(const struct Regular_wave* wave,
  * seconds from the start of simulation.
  * @return wave elevation in meter. 
  */
-double regular_wave_get_elevation(const struct Regular_wave* wave, 
+double regular_wave_get_elevation(const struct Regular_wave* regular_wave, 
                                   struct Cartesian_coordinate_3D location, 
                                   double time);
 
@@ -61,7 +76,6 @@ double regular_wave_get_elevation(const struct Regular_wave* wave,
  * @z is the depth at which the pressure amplitude is to be computed. 
  * @return pressure amplitude in N/m2.
  */
-double regular_wave_get_pressure_amp(const struct Regular_wave* wave, 
+double regular_wave_get_pressure_amp(const struct Regular_wave* regular_wave, 
                                      double z);
-
 #endif // REGULAR_WAVE_H

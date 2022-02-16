@@ -72,10 +72,30 @@ void regular_wave_delete(const struct Regular_wave* regular_wave)
   free((struct Regular_wave*)regular_wave);
 }
 
+
 const char* regular_wave_get_error_msg(const struct Regular_wave* regular_wave)
 {
   return regular_wave->error_msg;
 }
+
+
+double regular_wave_get_amplitude(const struct Regular_wave* regular_wave)
+{
+  return regular_wave->amplitude;
+}
+
+
+double regular_wave_get_frequency(const struct Regular_wave* regular_wave)
+{
+  return regular_wave->frequency;
+}
+
+
+double regular_wave_get_direction(const struct Regular_wave* regular_wave)
+{
+  return regular_wave->direction;
+}
+
 
 double regular_wave_get_phase(const struct Regular_wave* const regular_wave, 
                               const struct Cartesian_coordinate_3D location, 
@@ -113,6 +133,7 @@ double regular_wave_get_phase(const struct Regular_wave* const regular_wave,
   return phase;
 }
 
+
 double regular_wave_get_elevation(const struct Regular_wave* const regular_wave,
                                   const struct Cartesian_coordinate_3D location,
                                   const double time)
@@ -144,6 +165,7 @@ double regular_wave_get_elevation(const struct Regular_wave* const regular_wave,
   
   return elevation;
 } 
+
 
 double regular_wave_get_pressure_amp(const struct Regular_wave* regular_wave, double z)
 {
