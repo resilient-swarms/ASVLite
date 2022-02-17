@@ -212,16 +212,19 @@ double wave_get_elevation(const struct Wave* wave,
 
 int wave_get_count_wave_spectral_directions(const struct Wave* wave)
 {
+  clear_msg((struct Wave*)wave);
   return wave->count_wave_spectral_directions;
 }
 
 int wave_get_count_wave_spectral_frequencies(const struct Wave* wave)
 {
+  clear_msg((struct Wave*)wave);
   return wave->count_wave_spectral_frequencies;
 }
 
 const struct Regular_wave* wave_get_regular_wave_at(const struct Wave* wave, int d, int f)
 {
+  clear_msg((struct Wave*)wave);
   const struct Regular_wave* regular_wave = NULL;
   if(d >= 0 && d < wave->count_wave_spectral_directions &&
      f >= 0 && f < wave->count_wave_spectral_frequencies)
