@@ -30,8 +30,7 @@ struct Wave
   char* error_msg;                  //!< Output variable. Error message, if any.
 };
 
-static void set_error_msg(struct Wave* wave, 
-                          const char* msg)
+static void set_error_msg(struct Wave* wave, const char* msg)
 {
   wave->error_msg = (char*)malloc(sizeof(char) * strlen(msg));
   strcpy(wave->error_msg, msg);
@@ -167,7 +166,7 @@ void wave_delete(const struct Wave* wave)
 }
 
 double wave_get_elevation(const struct Wave* wave, 
-                          struct Cartesian_coordinate_3D location,
+                          const union Coordinates_3D location,
                           double time)
 {
   clear_msg((struct Wave*)wave);

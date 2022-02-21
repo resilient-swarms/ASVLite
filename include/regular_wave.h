@@ -56,7 +56,7 @@ double regular_wave_get_direction(const struct Regular_wave* regular_wave);
  * @return wave phase in radian.
  */
 double regular_wave_get_phase(const struct Regular_wave* regular_wave, 
-                              struct Cartesian_coordinate_3D location, 
+                              union Coordinates_3D location, 
                               double time);
 /**
  * Get elevation of the wave at a given point for a given time.
@@ -67,7 +67,7 @@ double regular_wave_get_phase(const struct Regular_wave* regular_wave,
  * @return wave elevation in meter. 
  */
 double regular_wave_get_elevation(const struct Regular_wave* regular_wave, 
-                                  struct Cartesian_coordinate_3D location, 
+                                  union Coordinates_3D location, 
                                   double time);
 
 /**

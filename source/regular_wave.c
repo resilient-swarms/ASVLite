@@ -26,8 +26,7 @@ struct Regular_wave
 }; 
 
 
-static void set_error_msg(struct Regular_wave* regular_wave, 
-                          const char* msg)
+static void set_error_msg(struct Regular_wave* regular_wave, const char* msg)
 {
   regular_wave->error_msg = (char*)malloc(sizeof(char) * strlen(msg));
   strcpy(regular_wave->error_msg, msg);
@@ -98,7 +97,7 @@ double regular_wave_get_direction(const struct Regular_wave* regular_wave)
 
 
 double regular_wave_get_phase(const struct Regular_wave* const regular_wave, 
-                              const struct Cartesian_coordinate_3D location, 
+                              const union Coordinates_3D location, 
                               const double time)
 {
   clear_msg((struct Regular_wave*)regular_wave);
@@ -121,7 +120,7 @@ double regular_wave_get_phase(const struct Regular_wave* const regular_wave,
     double direction   = regular_wave->direction;
     double frequency   = regular_wave->frequency;
     double phase_lag   = regular_wave->phase_lag;
-    double A = wave_number * (location.x * sin(direction) + location.y * cos(direction));
+    double A = wave_number * (location.keys.x * sin(direction) + location.keys.y * cos(direction));
     double B = 2.0 * PI * frequency * time;
     phase = (A - B + phase_lag);
   }
@@ -135,7 +134,7 @@ double regular_wave_get_phase(const struct Regular_wave* const regular_wave,
 
 
 double regular_wave_get_elevation(const struct Regular_wave* const regular_wave,
-                                  const struct Cartesian_coordinate_3D location,
+                                  const union Coordinates_3D location,
                                   const double time)
 {
   clear_msg((struct Regular_wave*)regular_wave);

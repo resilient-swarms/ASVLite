@@ -43,7 +43,7 @@ const char* wave_get_error_msg(const struct Wave* wave);
  * @return wave elevation in meter. 
  */
 double wave_get_elevation(const struct Wave* wave, 
-                          struct Cartesian_coordinate_3D location, 
+                          union Coordinates_3D location, 
                           double time);
 
 /**
