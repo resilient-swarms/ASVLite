@@ -5,6 +5,9 @@
 #include "regular_wave.h"
 #include "constants.h"
 
+const char* error_msg_null_regular_wave = "Argument regular wave cannot be a null pointer.";
+const char* error_msg_negative_time     = "Argument time cannot be negative.";
+
 struct Regular_wave
 {
   // Input variables
@@ -34,7 +37,14 @@ static void set_error_msg(struct Regular_wave* regular_wave, const char* msg)
 
 static void clear_msg(struct Regular_wave* regular_wave)
 {
-  free(regular_wave->error_msg);
+  if(regular_wave)
+  {
+    if(regular_wave->error_msg)
+    {
+      free(regular_wave->error_msg);
+      regular_wave->error_msg = NULL;
+    }
+  }
 }
 
 
@@ -42,57 +52,85 @@ const struct Regular_wave* regular_wave_new(const double amplitude,
                                             const double frequency, 
                                             const double phase_lag, 
                                             const double direction)
-{
-  struct Regular_wave* regular_wave = NULL;
-  
+{  
   // Check if both amplitude and frequency are non-zero positive values. 
   if(amplitude > 0.0 && frequency > 0.0)
   {
+    struct Regular_wave* regular_wave = NULL;
     // Initialise the pointers ...
-    regular_wave = (struct Regular_wave*)malloc(sizeof(struct Regular_wave));
-    regular_wave->error_msg = NULL;
-    // ... and then the other member variables.
-    regular_wave->amplitude = amplitude; 
-    regular_wave->frequency = frequency;
-    regular_wave->phase_lag = phase_lag;
-    regular_wave->direction = direction;
-    regular_wave->time_period = (1.0/frequency);
-    regular_wave->wave_length = (G * regular_wave->time_period * regular_wave->time_period)/(2.0 * PI);
-    regular_wave->wave_number = (2.0 * PI)/regular_wave->wave_length;
+    if(regular_wave = (struct Regular_wave*)malloc(sizeof(struct Regular_wave)));
+    {
+      regular_wave->error_msg = NULL;
+      // ... and then the other member variables.
+      regular_wave->amplitude = amplitude; 
+      regular_wave->frequency = frequency;
+      regular_wave->phase_lag = phase_lag;
+      regular_wave->direction = direction;
+      regular_wave->time_period = (1.0/frequency);
+      regular_wave->wave_length = (G * regular_wave->time_period * regular_wave->time_period)/(2.0 * PI);
+      regular_wave->wave_number = (2.0 * PI)/regular_wave->wave_length;
+      return regular_wave;
+    }
   }
   
-  return regular_wave;  
+  return NULL;  
 }
 
 
 void regular_wave_delete(const struct Regular_wave* regular_wave)
 {
-  free(regular_wave->error_msg);
-  free((struct Regular_wave*)regular_wave);
+  if(regular_wave)
+  {
+    free(regular_wave->error_msg);
+    free((struct Regular_wave*)regular_wave);
+    regular_wave = NULL;
+  }
 }
 
 
 const char* regular_wave_get_error_msg(const struct Regular_wave* regular_wave)
 {
-  return regular_wave->error_msg;
+  if(regular_wave)
+  {
+    return regular_wave->error_msg;
+  }
+  return NULL;
 }
 
 
 double regular_wave_get_amplitude(const struct Regular_wave* regular_wave)
 {
-  return regular_wave->amplitude;
+  if(regular_wave)
+  {
+    clear_msg((struct Regular_wave*)regular_wave);
+    return regular_wave->amplitude;
+  }
+  set_error_msg((struct Regular_wave*)regular_wave, error_msg_null_regular_wave);
+  return 0.0;
 }
 
 
 double regular_wave_get_frequency(const struct Regular_wave* regular_wave)
 {
-  return regular_wave->frequency;
+  if(regular_wave)
+  {
+    clear_msg((struct Regular_wave*)regular_wave);
+    return regular_wave->frequency;
+  }
+  set_error_msg((struct Regular_wave*)regular_wave, error_msg_null_regular_wave);
+  return 0.0;
 }
 
 
 double regular_wave_get_direction(const struct Regular_wave* regular_wave)
 {
-  return regular_wave->direction;
+  if(regular_wave)
+  {
+    clear_msg((struct Regular_wave*)regular_wave);
+    return regular_wave->direction;
+  }
+  set_error_msg((struct Regular_wave*)regular_wave, error_msg_null_regular_wave);
+  return 0.0;
 }
 
 
@@ -100,36 +138,39 @@ double regular_wave_get_phase(const struct Regular_wave* const regular_wave,
                               const union Coordinates_3D location, 
                               const double time)
 {
-  clear_msg((struct Regular_wave*)regular_wave);
-  double phase = 0.0;
-
-  // Check if regular_wave is nullptr or time is -ve.
-  if(regular_wave && time >= 0.0)
+  if(regular_wave)
   {
-    // elevation = amplitude * cos(A - B + phase)
-    // where:
-    // A = wave_number * (x * cos(direction) + y * sin(direction))
-    // B = 2 * PI * frequency * time
-    //
-    // NOTE:
-    // In the coordinate system that we use here, angular measurements are made 
-    // with respect to north which is represented by y-axis and not x-axis.
-    // Therefore the above formula needs to be modified as:
-    // A = wave_number * (x * sin(direction) + y * cos(direction))  
-    double wave_number = regular_wave->wave_number;
-    double direction   = regular_wave->direction;
-    double frequency   = regular_wave->frequency;
-    double phase_lag   = regular_wave->phase_lag;
-    double A = wave_number * (location.keys.x * sin(direction) + location.keys.y * cos(direction));
-    double B = 2.0 * PI * frequency * time;
-    phase = (A - B + phase_lag);
-  }
-  else
-  {
-    set_error_msg((struct Regular_wave*)regular_wave, "regular_wave should not be NULL and time >= 0.0.");
-  }
+    clear_msg((struct Regular_wave*)regular_wave);
 
-  return phase;
+    // Check if time is -ve.
+    if(time >= 0.0)
+    {
+      // elevation = amplitude * cos(A - B + phase)
+      // where:
+      // A = wave_number * (x * cos(direction) + y * sin(direction))
+      // B = 2 * PI * frequency * time
+      //
+      // NOTE:
+      // In the coordinate system that we use here, angular measurements are made 
+      // with respect to north which is represented by y-axis and not x-axis.
+      // Therefore the above formula needs to be modified as:
+      // A = wave_number * (x * sin(direction) + y * cos(direction))  
+      double wave_number = regular_wave->wave_number;
+      double direction   = regular_wave->direction;
+      double frequency   = regular_wave->frequency;
+      double phase_lag   = regular_wave->phase_lag;
+      double A = wave_number * (location.keys.x * sin(direction) + location.keys.y * cos(direction));
+      double B = 2.0 * PI * frequency * time;
+      return (A - B + phase_lag);
+    }
+    else
+    {
+      set_error_msg((struct Regular_wave*)regular_wave, error_msg_negative_time);
+      return 0.0;
+    }
+  }
+  set_error_msg((struct Regular_wave*)regular_wave, error_msg_null_regular_wave);
+  return 0.0;
 }
 
 
@@ -137,51 +178,48 @@ double regular_wave_get_elevation(const struct Regular_wave* const regular_wave,
                                   const union Coordinates_3D location,
                                   const double time)
 {
-  clear_msg((struct Regular_wave*)regular_wave);
-  double elevation = 0.0;
-  
-  // Check if wave is nullptr or if time is -ve. 
-  if(regular_wave && time >= 0.0)
+  if(regular_wave)
   {
-    double wave_phase = regular_wave_get_phase(regular_wave, location, time); 
-    const char* error_msg = regular_wave_get_error_msg(regular_wave);
-    if(error_msg)
+    clear_msg((struct Regular_wave*)regular_wave);
+    
+    // Check if time is -ve. 
+    if(time >= 0.0)
     {
-      // Something went wrong when getting wave phase.
-      set_error_msg((struct Regular_wave*)regular_wave, error_msg);
-      return 0.0;
+      double wave_phase = regular_wave_get_phase(regular_wave, location, time); 
+      const char* error_msg = regular_wave_get_error_msg(regular_wave);
+      if(error_msg)
+      {
+        // Something went wrong when getting wave phase.
+        set_error_msg((struct Regular_wave*)regular_wave, error_msg);
+        return 0.0;
+      }
+      else
+      {
+        double amplitude = regular_wave->amplitude;
+        return (amplitude * cos(wave_phase));
+      }
     }
     else
     {
-      double amplitude = regular_wave->amplitude;
-      elevation = amplitude * cos(wave_phase);
+      set_error_msg((struct Regular_wave*)regular_wave, error_msg_negative_time);
+      return 0.0;
     }
   }
-  else
-  {
-    set_error_msg((struct Regular_wave*)regular_wave, "regular_wave should not be NULL.");
-  }
-  
-  return elevation;
+  set_error_msg((struct Regular_wave*)regular_wave, error_msg_null_regular_wave);
+  return 0.0;
 } 
 
 
 double regular_wave_get_pressure_amp(const struct Regular_wave* regular_wave, double z)
 {
-  clear_msg((struct Regular_wave*)regular_wave);
-  double P = 0.0;
-  
-  // Check if wave is nullptr.
   if(regular_wave)
   {
+    clear_msg((struct Regular_wave*)regular_wave);
+    
     double amplitude = regular_wave->amplitude;
     double wave_number = regular_wave->wave_number;
-    P = SEA_WATER_DENSITY* G* amplitude* exp(wave_number* z);
+    return (SEA_WATER_DENSITY* G* amplitude* exp(wave_number* z));
   }
-  else
-  {
-    set_error_msg((struct Regular_wave*)regular_wave, "regular_wave should not be NULL.");
-  }
-
-  return P;
+  set_error_msg((struct Regular_wave*)regular_wave, error_msg_null_regular_wave);
+  return 0.0;
 }
