@@ -27,16 +27,16 @@ struct Regular_wave;
  * the geographic east is at PI/2 radians to the north.
  * @return pointer to initialised object if the operation was successful, else, returns a null pointer. 
  */
-const struct Regular_wave* regular_wave_new(double amplitude, 
-                                            double frequency, 
-                                            double phase_lag, 
-                                            double direction);
+struct Regular_wave* regular_wave_new(double amplitude, 
+                                      double frequency, 
+                                      double phase_lag, 
+                                      double direction);
 
 /**
  * Free memory allocated for the regular wave. 
  * @param wave is a non-null pointer to an instance of Regular_wave to be deallocated.
  */
-void regular_wave_delete(const struct Regular_wave* regular_wave);
+void regular_wave_delete(struct Regular_wave* regular_wave);
 
 /**
  * Returns error message related to the last function called for the instance of Regular_wave.

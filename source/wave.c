@@ -45,11 +45,11 @@ static void clear_msg(struct Wave* wave)
   free(wave->error_msg);
 }
 
-const struct Wave* wave_new(const double sig_wave_ht,
-                            const double wave_heading, 
-                            const long rand_seed,
-                            const int count_wave_spectral_directions,
-                            const int count_wave_spectral_frequencies)
+struct Wave* wave_new(const double sig_wave_ht,
+                      const double wave_heading, 
+                      const long rand_seed,
+                      const int count_wave_spectral_directions,
+                      const int count_wave_spectral_frequencies)
 {
   if(sig_wave_ht > 0.0 && 
      count_wave_spectral_directions > 1 && 
@@ -162,7 +162,7 @@ const struct Wave* wave_new(const double sig_wave_ht,
   return NULL;
 }
 
-void wave_delete(const struct Wave* wave)
+void wave_delete(struct Wave* wave)
 {
   if(wave)
   {
@@ -176,7 +176,7 @@ void wave_delete(const struct Wave* wave)
     
     free(wave->spectrum);
     free(wave->error_msg);
-    free((struct Wave*)wave);
+    free(wave);
     wave = NULL;
   }
 }

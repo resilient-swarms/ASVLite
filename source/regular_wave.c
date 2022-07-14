@@ -48,10 +48,10 @@ static void clear_msg(struct Regular_wave* regular_wave)
 }
 
 
-const struct Regular_wave* regular_wave_new(const double amplitude, 
-                                            const double frequency, 
-                                            const double phase_lag, 
-                                            const double direction)
+struct Regular_wave* regular_wave_new(const double amplitude, 
+                                      const double frequency, 
+                                      const double phase_lag, 
+                                      const double direction)
 {  
   // Check if both amplitude and frequency are non-zero positive values. 
   if(amplitude > 0.0 && frequency > 0.0)
@@ -77,12 +77,12 @@ const struct Regular_wave* regular_wave_new(const double amplitude,
 }
 
 
-void regular_wave_delete(const struct Regular_wave* regular_wave)
+void regular_wave_delete(struct Regular_wave* regular_wave)
 {
   if(regular_wave)
   {
     free(regular_wave->error_msg);
-    free((struct Regular_wave*)regular_wave);
+    free(regular_wave);
     regular_wave = NULL;
   }
 }

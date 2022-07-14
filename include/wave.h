@@ -28,16 +28,16 @@ struct Wave;
  * @param count_wave_spectral_frequencies is the number of discrete frequency bands in the wave spectrum. Value should be greater than 1.
  * @return pointer to the initialised object if the operation was successful; else, returns a null pointer.
  */
-const struct Wave* wave_new(double sig_wave_ht,
-                            double wave_heading, 
-                            long rand_seed,
-                            int count_wave_spectral_directions,
-                            int count_wave_spectral_frequencies);
+struct Wave* wave_new(double sig_wave_ht,
+                      double wave_heading, 
+                      long rand_seed,
+                      int count_wave_spectral_directions,
+                      int count_wave_spectral_frequencies);
 /**
  * Free memory allocated for the wave.
  * @param wave is a non-null pointer to an instance of Wave to be deallocated.
  */
-void wave_delete(const struct Wave* wave);
+void wave_delete(struct Wave* wave);
 
 /**
  * Returns error message related to the last function called for the instance of Wave.
