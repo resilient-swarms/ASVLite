@@ -7,37 +7,9 @@
 #include "wave.h"
 
 /**
- * Index for DoF for asv dynamics.
- */
-enum i_dof{surge, sway, heave, roll, pitch, yaw}; 
-/**
- * Index for axis for linear motion:
- */
-enum i_axis{x, y, z};
-/** 
- * Index for floating attitude of ASV:
- */
-enum i_attitude{heel, trim, heading}; 
-
-/**
- * Struct to hold all the inputs for the propeller.
- */
-struct Asv_propeller
-{
-  struct Dimensions position; //!< Input variable. Position of propeller force 
-                              //!< vector in ASV's body-fixed frame.
-  struct Dimensions orientation; //!< Input variable. Orientation of the force 
-                                 //!< vector of the propeller in body-fixed 
-                                 //!< frame.
-  double thrust; //!< Magnitude of propeller force in Newton.
-};
-
-/**
- * Struct to hold some of the input value of the vehicle. All 
- * variables in this struct are inputs and should be set before calling 
- * asv_init().
+ * Struct to hold specification of the vehicle. 
  * Coordinate system: Body-centric frame. The origin of the frame is on the
- * waterline at the aft end centre line.
+ * waterplane at the aft-centre.
  */
 struct Asv_specification
 {
@@ -51,112 +23,107 @@ struct Asv_specification
   double r_roll; //!< Input variable. roll radius of gyration.
   double r_pitch;//!< Input variable. pitch radius of gyration.
   double r_yaw;  //!< Input variable. yaw radius of gyration.
-  struct Dimensions cog; //!< Input variable. Centre of gravity in body-fixed 
-                         //!< frame.
+  union Coordinates_3D cog; //!< Input variable. Centre of gravity in body-fixed 
+                            //!< frame.
 };
 
 /**
- * Struct to contain both inputs and outputs of ASV dynamics. All input
- * variables must be set before calling asv_compute_dynamics().
+ * A propeller for an asv. 
  */
-struct Asv_dynamics
-{
-  // Input
-  double time_step_size; //!< Input variable. Time step size in seconds.
-  double time; //!< Input variable. Time since start of simulation in seconds.
-  
-  // Future work: Set these as over writeable inputs
-  double M[COUNT_DOF]; //!< Output variable. Mass + added mass in Kg.
-  double C[COUNT_DOF]; //!< Output variable. Drag force coefficients.
-  double K[COUNT_DOF]; //!< Output variable. Stiffness.
-  
-  // Output
-  double X[COUNT_DOF]; //!< Output variable. Deflection in body-fixed frame.
-  double V[COUNT_DOF]; //!< Output variable. Velocity of ASV in body-fixed frame.
-  double A[COUNT_DOF]; //!< Output variable. Acceleration of ASV in body-fixed 
-                       //!< frame.
-  
-  double F[COUNT_DOF]; //!< Output variable. Net force.
-  double F_wave[COUNT_DOF]; //!< Output variable. Wave force.
-  double F_propeller[COUNT_DOF]; //!< Output variable. Propeller force.
-  double F_drag[COUNT_DOF]; //!< Output variable. Quadratic force force.
-  double F_restoring[COUNT_DOF]; //!< Output variable. Hydrostatic restoring 
-                                 //!< force.
-
-  double P_unit_wave[COUNT_ASV_SPECTRAL_FREQUENCIES][2]; //!< Output variable. 
-    //!< 2D array with wave pressure amplitude. Index 0 is wave freq and index 
-    //!< 1 gives the corresponding wave pressure amplitude. 
-  double P_unit_regular_wave; //!< Output variable. Pressure amplitude when 
-                              //!< wave_type is set as regular_wave.
-  double P_unit_wave_freq_min;//!< Output variable. Minimum wave frequency 
-                              //!< considered in array P_unit_wave.
-  double P_unit_wave_freq_max;//!< Output variable. Maximum wave frequency 
-                              //!< considered in array P_unit_wave.
-};
+struct Propeller;
 
 /**
- * Stuct to contain both input and output of ASV motion in waves. 
+ * An ASV.
+ * An instance of Asv should only be created by calling 
+ * the method asv_new(). This function allocates and 
+ * initialises a block of memory on the stack, and therefore 
+ * all calls to asv_new() should be paired with a call to 
+ * asv_delete() to avoid memory leaks. All function calls 
+ * may not result in a successful operation due to error. 
+ * To find the status of an operation, call the function 
+ * asv_get_error_msg(), which returns a null pointer if 
+ * the operation was successful; else returns an error message. 
  */
-struct Asv
-{
-  // Input
-  struct Asv_specification spec; //!< Input variable. ASV specification.
-  int count_propellers; //!< Input variable. Number of propellers attached to 
-                        //!< ASV. Should not be greater than
-                        //!< COUNT_PROPELLERS_MAX defined in file constants.h.
-  struct Asv_propeller propellers[COUNT_PROPELLERS_MAX]; //!< Input variable. 
-                                                         //!< ASV propeller
-                                                         //!< instances. 
-  struct Wave* wave; //!< Input variable. Irregular wave instance. 
-
-  // Initial used for input but later contains results. 
-  struct Dimensions origin_position; //!< Initially set as input but later 
-                                     //!< contains output. Position of the 
-                                     //!< body-fixed frame in the global frame 
-                                     //!< for the current time step.
-  struct Dimensions attitude; //!< Initially set as input but later contains 
-                              //!< output. The heel and trim are in body-fixed 
-                              //!< frame and the heading is in global frame.
-  
-  // Output
-  struct Asv_dynamics dynamics; //!< Output variable. ASV dynamics variables. 
-  struct Dimensions cog_position; //!< Output variable. Position of the centre 
-                             //!< of gravity of the ASV in the global frame for 
-                             //!< the current time step.
-};
+struct Asv;
 
 /**
- * Function to initialise a model of ASV after setting the vehicle spec. 
- * **Note:** This function should be called only after setting all input values.
- * @param asv is the object to be initialised.
- * @param wave for the asv. Set to NULL for still water simulation.
+ * Create and initialise a Propeller.
+ * @param position of the propeller in ASV's body-fixed frame.
+ * @return pointer to the initialised object if the operation was successful; else, returns a null pointer.
  */
-void asv_init(struct Asv* asv, struct Wave* wave);
+struct Propeller* propeller_new(const union Coordinates_3D position);
+
+/**
+ * Free memory allocated for the propeller.
+ * @param propeller is a non-null pointer to an instance of Propeller to be deallocated.
+ */
+void propeller_delete(struct Propeller* propeller);
+
+/**
+ * Returns error message related to the last function called for the instance of Propeller.
+ * @param wave is a non-null pointer to an instance of Propeller for which the error message is to be fetched.
+ */
+const char* propeller_get_error_msg(const struct Propeller* propeller);
+
+/**
+ * Set the orientation and magnitude of propeller thrust. 
+ * @param propeller is a non-null pointer to an instance of Propeller for which the thrust is to be set.
+ * @param orientation of the thrust vector in body-fixed frame.
+ * @param magnitude of the thrust.
+ */
+void propeller_set_thrust(struct Propeller* propeller, const union Coordinates_3D orientation, double magnitude); 
+
+/**
+ * Create and initialise an asv.
+ * @param specification of the ASV. 
+ * @param wave is the irregular sea surface for the asv. 
+ * @return pointer to the initialised object if the operation was successful; else, returns a null pointer.
+ */
+struct Asv* asv_new(const struct Asv_specification specification, const struct Wave* wave);
+
+/**
+ * Free memory allocated for the asv.
+ * @param asv is a non-null pointer to an instance of Asv to be deallocated.
+ */
+void asv_delete(struct Asv* asv);
+
+/**
+ * Returns error message related to the last function called for the instance of Asv.
+ * @param wave is a non-null pointer to an instance of Asv for which the error message is to be fetched.
+ */
+const char* asv_get_error_msg(const struct Asv* asv);
+
+/**
+ * Set the propellers for the asv.
+ * @param asv is a non-null pointer to an instance of Asv for which the propellers are to be set.
+ * @param propellers is the array of propellers for the asv.
+ * @param cout_propellers is the size of propellers array.
+ */
+void asv_set_propellers(struct Asv* asv, struct Propeller* propellers, int cout_propellers);
+
+/**
+ * Function to modify the current sea state to a new sea state.
+ * @param asv is a non-null pointer to an instance of Asv for which a new irregular wave is to be set.
+ * @param wave is a non-null pointer for the new instance of irregular wave. 
+ * If memory is to  be cleaned, call wave_delete() on the pointer to the old irregular wave instance.   
+ */
+void asv_set_sea_state(struct Asv* asv, const struct Wave* wave);
 
 /**
  * Function to set the position and attitude of the ASV for the given time step.
- * @param asv is the pointer to the asv object for which the position is to be
- * computed. 
- * @param time is the time for which the position is to be computed. 
+ * @param asv is a non-null pointer to an instance of Asv for which the dynamics is to be computed.
+ * @param time for which the dynamics is to be computed. Time is measured in seconds from start of simulation.
  */
 void asv_compute_dynamics(struct Asv* asv, double time);
 
 /**
- * Function to initialise a new sea state.
- * @param asv is the object to be initialised.
- * @param wave for the asv. Set to NULL for still water simulation.
- */
-void asv_set_sea_state(struct Asv* asv, struct Wave* wave);
-
-/**
  * Similar to function asv_compute_dynamics but should be used only for a wave glider. 
- * This function to set the position and attitude of the ASV for the given time step, 
+ * The function sets the position and attitude of the wave glider for the given time step, 
  * and also computes the wave thrust force generated by the underwater glider.
- * @param asv is the pointer to the asv object for which the position is to be
- * computed. 
+ * @param asv is a non-null pointer to an instance of Asv for which the dynamics is to be computed.
  * @param rudder_angle is the angle of the rudder with respect to X axis of the ASV. 
- * Rudder angle must within (-90, 90), and is positive when the vehicle has to turn to right (ie. aft end of the rudder points to starboard side). 
- * @param time is the time for which the position is to be computed.
+ * Rudder angle must within (-PI/2, PI/2). Angle is positive when the vehicle has to turn to right (ie. aft end of the rudder points to starboard side). 
+ * @param time for which the dynamics is to be computed. Time is measured in seconds from start of simulation.
  */
 void wave_glider_compute_dynamics(struct Asv* asv, double rudder_angle, double time);
 
