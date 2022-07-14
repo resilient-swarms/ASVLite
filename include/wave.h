@@ -79,4 +79,18 @@ int wave_get_count_wave_spectral_frequencies(const struct Wave* wave);
  */
 const struct Regular_wave* wave_get_regular_wave_at(const struct Wave* wave, int d, int f); 
 
+/**
+ * Function to get the minimum spectral frequency for the wave spectrum.
+ * @param wave is a non-null pointer to an instance of Wave for which the 
+ * minimum spectral frequency is to be fetched.
+ */ 
+double wave_get_min_spectral_frequency(const struct Wave* wave);
+
+/**
+ * Function to get the maximum spectral frequency for the wave spectrum.
+ * @param wave is a non-null pointer to an instance of Wave for which the 
+ * maximum spectral frequency is to be fetched.
+ */ 
+double wave_get_max_spectral_frequency(const struct Wave* wave);
+
 #endif // WAVE_H
