@@ -34,35 +34,37 @@ const struct Regular_wave* regular_wave_new(double amplitude,
 
 /**
  * Free memory allocated for the regular wave. 
+ * @param wave is a non-null pointer to an instance of Regular_wave to be deallocated.
  */
 void regular_wave_delete(const struct Regular_wave* regular_wave);
 
 /**
- * Returns error message related to the last function called for a regular wave object.
+ * Returns error message related to the last function called for the instance of Regular_wave.
+ * @param wave is a non-null pointer to an instance of Regular_wave for which the error message is to be fetched.
  */
 const char* regular_wave_get_error_msg(const struct Regular_wave* regular_wave);
 
 /**
  * Get wave amplitude.
- * @param wave should not be a null pointer.
+ * @param wave is a non-null pointer to an instance of Regular_wave for which the amplitude is to be fetched.
  */ 
 double regular_wave_get_amplitude(const struct Regular_wave* regular_wave);
 
 /**
  * Get wave frequency. 
- * @param wave should not be a null pointer.
+ * @param wave is a non-null pointer to an instance of Regular_wave for which the frequency is to be fetched.
  */ 
 double regular_wave_get_frequency(const struct Regular_wave* regular_wave);
 
 /** 
  * Get wave direction.
- * @param wave should not be a null pointer.
+ * @param wave is a non-null pointer to an instance of Regular_wave for which the wave direction is to be fetched.
  */ 
 double regular_wave_get_direction(const struct Regular_wave* regular_wave);
 
 /**
  * Get the phase of the wave at a given point for a given time.
- * @param wave for which the phase is to be calculated; wave should not be a null pointer. 
+ * @param wave is a non-null pointer to an instance of Regular_wave for which the phase is to be calculated. 
  * @param location at which the phase is to be calculated.
  * @param time for which the phase is to be calculated. Time is measured in 
  * seconds from the start of simulation. Time should be non-negative.
@@ -73,7 +75,7 @@ double regular_wave_get_phase(const struct Regular_wave* regular_wave,
                               double time);
 /**
  * Get elevation of the wave at a given point for a given time.
- * @param wave for which the elevation is to be calculated; wave should not be a null pointer.
+ * @param wave is a non-null pointer to an instance of Regular_wave for which the elevation is to be calculated.
  * @param location at which the elevation is to be computed.
  * @param time for which elevation is to be computed. Time is measured in 
  * seconds from the start of simulation. Time should be non-negative.
@@ -85,7 +87,7 @@ double regular_wave_get_elevation(const struct Regular_wave* regular_wave,
 
 /**
  * Get wave pressure amplitude at a given depth.
- * @param wave for which the pressure amplitude is to be computed; wave should not be a null pointer. 
+ * @param wave is a non-null pointer to an instance of Regular_wave for which the pressure amplitude is to be computed. 
  * @z is the depth at which the pressure amplitude is to be computed. 
  * @return pressure amplitude in N/m2.
  */
