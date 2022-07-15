@@ -5,72 +5,19 @@
 #include "pid_controller.h"
 #include <pthread.h>
 
-/**
- * Structure to store an array of waypoints. 
- */
-struct Waypoints
-{
-  int count;
-  struct Dimensions points[COUNT_WAYPOINTS_MAX];
-};
+struct Buffer;
+struct Simulation;
 
-/**
- * Structure to record the ASV dynamics at each time step of 
- * the simulation.
- */
-struct Buffer
-{ 
-  double sig_wave_ht; // m
-  double wave_heading; // deg
-  long random_number_seed;
-  double time; // sec.
-  double wave_elevation; // Wave elevation at the position of the vehicle, m.
-  double cog_x;   // m.
-  double cog_y;   // m.
-  double cog_z;   // m.
-  double heel;    // deg.
-  double trim;    // deg. 
-  double heading; // deg.
-  double thrust_fore_ps; // N.
-  double thrust_fore_sb; // N.
-  double thrust_aft_ps;  // N.
-  double thrust_aft_sb;  // N.
-  double surge_velocity; // m/s.
-  double surge_acceleration; // m/s2. 
-  double F_surge; // N
-  double F_sway; //N
-};
-
-/**
- * Struct Simulation is a linked list to store simulation data related to each asv.
- */
-struct Simulation
-{
-  // Each simulation runs on its own thread
-  pthread_t thread;
-  // Inputs and outputs
-  char id[32];
-  struct Wave* wave;
-  struct Asv* asv; 
-  struct PID_controller* pid_controller;
-  struct Waypoints* waypoints;
-  struct Buffer* buffer;
-  // Data related to current time step in the simulation
-  long current_time_index;
-  int current_waypoint_index;
-  // Linkes list pointers
-  struct Simulation* previous; // previous in the linked list.
-  struct Simulation* next; // next in the linked list.
-};
-
-/** Initialise a new node for the linked list.
+/** 
+ * Initialise a new node for the linked list.
  */
 struct Simulation* simulation_new_node();
 
-/** Free the heap memory.
+/** 
+ * Free the heap memory.
  * @param node is the first node in the linked list Simulatation_data.
  */
-void simulation_clean(struct Simulation* node);
+void simulation_delete(struct Simulation* node);
 
 /**
  * Function to read the input file and set the ASV's input values. 
@@ -134,6 +81,6 @@ int get_count_mesh_cells_along_edge();
 /**
  * Visualisation data from input file. Function to get the bottom left corner of the simulated sea surface.
  */
-struct Dimensions get_sea_surface_position();
+union Coordinates_3D get_sea_surface_position();
 
 #endif // SIMULATION_H

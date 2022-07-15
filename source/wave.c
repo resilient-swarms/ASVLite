@@ -293,3 +293,25 @@ double wave_get_max_spectral_frequency(const struct Wave* wave)
   set_error_msg(wave->error_msg, error_null_pointer);
   return 0.0;
 }
+
+double wave_get_significant_height(const struct Wave* wave)
+{
+  clear_error_msg(wave->error_msg);
+  if(wave)
+  {
+    return wave->significant_wave_height;
+  }
+  set_error_msg(wave->error_msg, error_null_pointer);
+  return 0.0;
+}
+
+double wave_get_wave_heading(const struct Wave* wave)
+{
+  clear_error_msg(wave->error_msg);
+  if(wave)
+  {
+    return wave->heading;
+  }
+  set_error_msg(wave->error_msg, error_null_pointer);
+  return 0.0;
+}

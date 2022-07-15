@@ -77,9 +77,11 @@ void propeller_set_thrust(struct Propeller* propeller, const union Coordinates_3
  * Create and initialise an asv.
  * @param specification of the ASV. 
  * @param wave is the irregular sea surface for the asv. 
+ * @param position of the asv on the sea surface. 
+ * @param attitude of the asv.
  * @return pointer to the initialised object if the operation was successful; else, returns a null pointer.
  */
-struct Asv* asv_new(const struct Asv_specification specification, const struct Wave* wave);
+struct Asv* asv_new(const struct Asv_specification specification, const struct Wave* wave, union Coordinates_3D position, union Coordinates_3D attitude);
 
 /**
  * Free memory allocated for the asv.
@@ -99,7 +101,21 @@ const char* asv_get_error_msg(const struct Asv* asv);
  * @param propellers is the array of propellers for the asv.
  * @param cout_propellers is the size of propellers array.
  */
-void asv_set_propellers(struct Asv* asv, struct Propeller* propellers, int cout_propellers);
+void asv_set_propellers(struct Asv* asv, struct Propeller** propellers, int cout_propellers);
+
+/**
+ * Get the array of pointers to the propellers.
+ * @param asv is a non-null pointer to an instance of Asv for which the array of propellers is to be fetched.
+ * @return array of pointers to propellers.
+ */
+struct Propeller** asv_get_propellers(struct Asv* asv);
+
+/**
+ * Get the number of propeller for the asv. 
+ * @param asv is a non-null pointer to an instance of Asv for which the count of propellers is to be fetched.
+ * @return number of propellers attached to the asv.
+ */
+int asv_get_count_propellers(struct Asv* asv);
 
 /**
  * Function to modify the current sea state to a new sea state.
@@ -112,9 +128,9 @@ void asv_set_sea_state(struct Asv* asv, const struct Wave* wave);
 /**
  * Function to set the position and attitude of the ASV for the given time step.
  * @param asv is a non-null pointer to an instance of Asv for which the dynamics is to be computed.
- * @param time for which the dynamics is to be computed. Time is measured in seconds from start of simulation.
+ * @param time_step_size in milliseconds to increment the current time.
  */
-void asv_compute_dynamics(struct Asv* asv, double time);
+void asv_compute_dynamics(struct Asv* asv, double time_step_size);
 
 /**
  * Similar to function asv_compute_dynamics but should be used only for a wave glider. 
@@ -126,5 +142,46 @@ void asv_compute_dynamics(struct Asv* asv, double time);
  * @param time for which the dynamics is to be computed. Time is measured in seconds from start of simulation.
  */
 void wave_glider_compute_dynamics(struct Asv* asv, double rudder_angle, double time);
+
+/**
+ * Get the position of the asv using the COG of the vehicle. 
+ * @param asv is a non-null pointer to an instance of Asv for which the position is to be fetched.
+ * @return position of the asv.
+ */
+union Coordinates_3D asv_get_position_cog(struct Asv* asv);
+
+/**
+ * Get the position of the asv using the origin of the body reference frame of the vehicle. 
+ * @param asv is a non-null pointer to an instance of Asv for which the position is to be fetched.
+ * @return position of the asv.
+ */
+union Coordinates_3D asv_get_position_origin(struct Asv* asv);
+
+/**
+ * Get the floating attitude of the asv. 
+ * @param asv is a non-null pointer to an instance of Asv for which the attitude is to be fetched.
+ * @return attitude of the asv.
+ */
+union Coordinates_3D asv_get_attitude(struct Asv* asv);
+
+/**
+ * Get force. 
+ */
+union Rigid_body_DOF asv_get_F(struct Asv* asv);
+
+/**
+ * Get acceleration. 
+ */
+union Rigid_body_DOF asv_get_A(struct Asv* asv);
+
+/**
+ * Get velocity. 
+ */
+union Rigid_body_DOF asv_get_V(struct Asv* asv);
+
+/**
+ * Get asv specification.
+ */
+struct Asv_specification asv_get_spec(struct Asv* asv);
 
 #endif // ASV_H

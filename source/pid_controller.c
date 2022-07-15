@@ -4,14 +4,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void pid_controller_init(struct PID_controller* controller)
+struct PID_controller* pid_controller_new()
 {
-  controller->error_heading          = 0.0;
-  controller->error_int_heading      = 0.0;
-  controller->error_diff_heading     = 0.0;
-  controller->error_position         = 0.0;
-  controller->error_int_position     = 0.0;
-  controller->error_diff_position    = 0.0;
+  struct PID_controller* controller = (struct PID_controller*)malloc(sizeof(struct PID_controller));
+  if(controller)
+  {
+    controller->error_heading          = 0.0;
+    controller->error_int_heading      = 0.0;
+    controller->error_diff_heading     = 0.0;
+    controller->error_position         = 0.0;
+    controller->error_int_position     = 0.0;
+    controller->error_diff_position    = 0.0;
+  }
+  return NULL;
+}
+
+void pid_controller_delete(struct PID_controller* controller)
+{
+  free(controller);
+  controller = NULL;
 }
 
 void pid_controller_set_gains_position(struct PID_controller* controller, 

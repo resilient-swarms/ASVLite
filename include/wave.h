@@ -93,4 +93,14 @@ double wave_get_min_spectral_frequency(const struct Wave* wave);
  */ 
 double wave_get_max_spectral_frequency(const struct Wave* wave);
 
+/**
+ * Function to get the significant wave height, in meter, for the sea state.
+ */ 
+double wave_get_significant_height(const struct Wave* wave);
+
+/**
+ * Function to get the predominant wave heading, in radians, for the sea state.
+ */ 
+double wave_get_predominant_heading(const struct Wave* wave);
+
 #endif // WAVE_H

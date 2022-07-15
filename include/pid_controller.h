@@ -40,8 +40,15 @@ struct PID_controller
 /**
  * Function to initialise the member variables of struct controller.
  * @param controller to be initialised.
+ * @return pointer to the initialised object if the operation was successful; else, returns a null pointer.
  */
-void pid_controller_init(struct PID_controller* controller);
+struct PID_controller* pid_controller_new();
+
+/**
+ * Free memory allocated for the asv.
+ * @param controller is a non-null pointer to an instance of PID_controller to be deallocated.
+ */
+void pid_controller_delete(struct PID_controller* controller);
 
 /**
  * Function to set the gain terms for position.

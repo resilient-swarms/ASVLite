@@ -26,7 +26,7 @@ struct Propeller
 struct Asv_dynamics
 {
   // Input
-  double time_step_size; //!< Time step size in seconds.
+  double time_step_size; //!< Time step size in milliseconds.
   double time; //!< Time since start of simulation in seconds.
   union Rigid_body_DOF M; //!< Mass + added mass in Kg. 
   union Rigid_body_DOF C; //!< Drag force coefficients. 
@@ -59,7 +59,7 @@ struct Asv
   // Input
   struct Asv_specification spec; //!< ASV specification.
   int count_propellers;         //!< Number of propellers attached to the ASV.
-  struct Propeller* propellers; //!< Array of propellers.
+  struct Propeller** propellers; //!< Array of propellers.
   const struct Wave* wave;            //!< Irregular wave instance. 
   
   // Initial used for input but later contains results. 
@@ -416,35 +416,35 @@ static void set_propeller_force(struct Asv* asv)
   // Calculate force from each propeller.
   for(int i = 0; i < asv->count_propellers; ++i)
   {
-    double thrust = asv->propellers[i].thrust;
-    double trim = asv->propellers[i].orientation.keys.y;
-    double prop_angle = asv->propellers[i].orientation.keys.z;
+    double thrust = asv->propellers[i]->thrust;
+    double trim = asv->propellers[i]->orientation.keys.y;
+    double prop_angle = asv->propellers[i]->orientation.keys.z;
     double prop_cog_angle = atan(
-        (asv->propellers[i].position.keys.y - asv->spec.cog.keys.y)/
-        (asv->spec.cog.keys.x - asv->propellers[i].position.keys.x));
+        (asv->propellers[i]->position.keys.y - asv->spec.cog.keys.y)/
+        (asv->spec.cog.keys.x - asv->propellers[i]->position.keys.x));
     double thrust_cog_angle = prop_cog_angle + prop_angle;
     
     double F_prop_to_cog = thrust * cos(thrust_cog_angle);
-    double F_x =  F_prop_to_cog*cos(asv->propellers[i].orientation.keys.y) * cos(prop_cog_angle);
-    double F_y = -F_prop_to_cog*cos(asv->propellers[i].orientation.keys.y) * sin(prop_cog_angle);
-    double F_z =  F_prop_to_cog*sin(asv->propellers[i].orientation.keys.y);
+    double F_x =  F_prop_to_cog*cos(asv->propellers[i]->orientation.keys.y) * cos(prop_cog_angle);
+    double F_y = -F_prop_to_cog*cos(asv->propellers[i]->orientation.keys.y) * sin(prop_cog_angle);
+    double F_z =  F_prop_to_cog*sin(asv->propellers[i]->orientation.keys.y);
     
-    double x = asv->spec.cog.keys.x - asv->propellers[i].position.keys.x;
-    double y = asv->spec.cog.keys.y - asv->propellers[i].position.keys.y;
-    double z = asv->propellers[i].position.keys.z - asv->spec.cog.keys.z;
+    double x = asv->spec.cog.keys.x - asv->propellers[i]->position.keys.x;
+    double y = asv->spec.cog.keys.y - asv->propellers[i]->position.keys.y;
+    double z = asv->propellers[i]->position.keys.z - asv->spec.cog.keys.z;
  
     double F_perp_to_cog = thrust * sin(thrust_cog_angle);
     double M_x = F_perp_to_cog * 
-                 cos(asv->propellers[i].orientation.keys.y) * 
+                 cos(asv->propellers[i]->orientation.keys.y) * 
                  cos(prop_cog_angle) * z + 
-                 F_perp_to_cog * sin(asv->propellers[i].orientation.keys.y) * y;
+                 F_perp_to_cog * sin(asv->propellers[i]->orientation.keys.y) * y;
     double M_y = F_perp_to_cog * 
-                 cos(asv->propellers[i].orientation.keys.y) *
+                 cos(asv->propellers[i]->orientation.keys.y) *
                  sin(prop_cog_angle) * z + 
-                 F_perp_to_cog * sin(asv->propellers[i].orientation.keys.y) * x; 
+                 F_perp_to_cog * sin(asv->propellers[i]->orientation.keys.y) * x; 
     double M_z = F_perp_to_cog * sqrt(x*x + y*y);
-    if(asv->propellers[i].position.keys.x < asv->spec.cog.keys.x &&
-       asv->propellers[i].orientation.keys.z < PI)
+    if(asv->propellers[i]->position.keys.x < asv->spec.cog.keys.x &&
+       asv->propellers[i]->orientation.keys.z < PI)
     {
       M_z = -M_z;
     }
@@ -555,7 +555,7 @@ static void set_velocity(struct Asv* asv)
   // compute the velocity at the end of the time step
   for(int i = 0; i < COUNT_DOF; ++i)
   {
-    asv->dynamics.V.array[i] += asv->dynamics.A.array[i] * asv->dynamics.time_step_size; 
+    asv->dynamics.V.array[i] += asv->dynamics.A.array[i] * asv->dynamics.time_step_size/1000.0; 
   }
 }
 
@@ -564,7 +564,7 @@ static void set_deflection(struct Asv* asv)
   // compute the deflection at the end of the time step
   for(int i = 0; i < COUNT_DOF; ++i)
   {
-    asv->dynamics.X.array[i] = asv->dynamics.V.array[i] * asv->dynamics.time_step_size; 
+    asv->dynamics.X.array[i] = asv->dynamics.V.array[i] * asv->dynamics.time_step_size/1000.0; 
   }
 }
 
@@ -654,7 +654,7 @@ void propeller_set_thrust(struct Propeller* propeller, const union Coordinates_3
   set_error_msg(propeller->error_msg, error_null_pointer);
 } 
 
-struct Asv* asv_new(const struct Asv_specification specification, const struct Wave* wave)
+struct Asv* asv_new(const struct Asv_specification specification, const struct Wave* wave, union Coordinates_3D position, union Coordinates_3D attitude)
 {
   if(wave)
   {
@@ -705,6 +705,8 @@ struct Asv* asv_new(const struct Asv_specification specification, const struct W
       }
 
       // Place the asv vertically in the correct position W.R.T wave
+      asv->origin_position = position;
+      asv->attitude = attitude;
       asv->origin_position.keys.z = wave_get_elevation(asv->wave, asv->origin_position, 0.0) - asv->spec.T; 
       const char* error_msg = wave_get_error_msg(asv->wave);
       if(error_msg)
@@ -769,12 +771,12 @@ const char* asv_get_error_msg(const struct Asv* asv)
   return NULL;
 }
 
-void asv_set_propellers(struct Asv* asv, struct Propeller* propellers, int count_propellers)
+void asv_set_propellers(struct Asv* asv, struct Propeller** propellers, int count_propellers)
 {
   clear_error_msg(asv->error_msg);
   if(asv && propellers)
   {
-    if(asv->propellers = (struct Propeller*)malloc(sizeof(struct Propeller) * count_propellers))
+    if(asv->propellers = (struct Propeller**)malloc(sizeof(struct Propeller*) * count_propellers))
     {
       asv->count_propellers = count_propellers;
       return;
@@ -784,6 +786,113 @@ void asv_set_propellers(struct Asv* asv, struct Propeller* propellers, int count
       set_error_msg(asv->error_msg, error_malloc_failed);
       return;
     }
+  }
+
+  set_error_msg(asv->error_msg, error_null_pointer);
+}
+
+struct Propeller** asv_get_propellers(struct Asv* asv)
+{
+  clear_error_msg(asv->error_msg);
+  if(asv)
+  {
+    return asv->propellers;
+  }
+
+  set_error_msg(asv->error_msg, error_null_pointer);
+  return NULL;
+}
+
+int asv_get_count_propellers(struct Asv* asv)
+{
+  clear_error_msg(asv->error_msg);
+  if(asv)
+  {
+    return asv->count_propellers;
+  }
+
+  set_error_msg(asv->error_msg, error_null_pointer);
+  return 0;
+}
+
+union Coordinates_3D asv_get_position_cog(struct Asv* asv)
+{
+  clear_error_msg(asv->error_msg);
+  if(asv)
+  {
+    return asv->cog_position;
+  }
+
+  set_error_msg(asv->error_msg, error_null_pointer);
+  return (union Coordinates_3D){0.0, 0.0, 0.0};
+}
+
+union Coordinates_3D asv_get_position_origin(struct Asv* asv)
+{
+  clear_error_msg(asv->error_msg);
+  if(asv)
+  {
+    return asv->origin_position;
+  }
+
+  set_error_msg(asv->error_msg, error_null_pointer);
+  return (union Coordinates_3D){0.0, 0.0, 0.0};
+}
+
+union Coordinates_3D asv_get_attitude(struct Asv* asv)
+{
+  clear_error_msg(asv->error_msg);
+  if(asv)
+  {
+    return asv->attitude;
+  }
+
+  set_error_msg(asv->error_msg, error_null_pointer);
+  return (union Coordinates_3D){0.0, 0.0, 0.0};
+}
+
+union Rigid_body_DOF asv_get_F(struct Asv* asv)
+{
+  clear_error_msg(asv->error_msg);
+  if(asv)
+  {
+    return asv->dynamics.F;
+  }
+
+  set_error_msg(asv->error_msg, error_null_pointer);
+  return (union Rigid_body_DOF){0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+}
+
+union Rigid_body_DOF asv_get_A(struct Asv* asv)
+{
+  clear_error_msg(asv->error_msg);
+  if(asv)
+  {
+    return asv->dynamics.A;
+  }
+
+  set_error_msg(asv->error_msg, error_null_pointer);
+  return (union Rigid_body_DOF){0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+}
+
+union Rigid_body_DOF asv_get_V(struct Asv* asv)
+{
+  clear_error_msg(asv->error_msg);
+  if(asv)
+  {
+    return asv->dynamics.V;
+  }
+
+  set_error_msg(asv->error_msg, error_null_pointer);
+  return (union Rigid_body_DOF){0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+}
+
+struct Asv_specification asv_get_spec(struct Asv* asv)
+{
+  clear_error_msg(asv->error_msg);
+  if(asv)
+  {
+    return asv->spec;
   }
 
   set_error_msg(asv->error_msg, error_null_pointer);
@@ -838,65 +947,54 @@ void asv_set_sea_state(struct Asv* asv, const struct Wave* wave)
   set_error_msg(asv->error_msg, error_null_pointer);
 }
 
-static void compute_dynamics(struct Asv* asv, bool is_wave_glider, double rudder_angle, double time)
+static void compute_dynamics(struct Asv* asv, bool is_wave_glider, double rudder_angle, double time_step_size)
 {
   clear_error_msg(asv->error_msg);
   if(asv)
   {
-    // We assume time goes forward, but check it.
-    // Check if time >= asv->dynamics.time. 
-    // If time == asv->dynamics.time, then there is nothing to update.
-    // Also, we assume time to only incremented and should not be less than the previous value. 
-    if(time > asv->dynamics.time)
+    // Update the time
+    asv->dynamics.time_step_size = time_step_size; // milliseconds
+    asv->dynamics.time += time_step_size/1000.0; // seconds
+
+    // Get the wave force for the current time step
+    set_wave_force(asv);
+    
+    // Get the propeller force for the current time step
+    if(is_wave_glider)
     {
-      // Update the time
-      asv->dynamics.time = time;
-
-      // Get the wave force for the current time step
-      set_wave_force(asv);
-      
-      // Get the propeller force for the current time step
-      if(is_wave_glider)
-      {
-        set_wave_glider_thrust(asv, rudder_angle);
-      }
-      else
-      {
-        set_propeller_force(asv);
-      }
-      
-      // Compute the drag force for the current time step based on velocity reading
-      set_drag_force(asv);
-      
-      // Compute the restoring force for the current time step based on the position
-      // reading
-      set_restoring_force(asv);
-
-      // Compute the net force for the current time step
-      set_net_force(asv);
-      
-      // Compute the acceleration for the current time step
-      set_acceleration(asv);
-      
-      // Compute the velocity for the current time step
-      set_velocity(asv);
-      
-      // Compute the deflection for the current time step in body-fixed frame
-      set_deflection(asv);
-      
-      // Compute the new attitude
-      set_attitude(asv);
-      
-      // Translate the deflection to global frame and compute the new position.
-      set_position(asv);
-      
-      return;
+      set_wave_glider_thrust(asv, rudder_angle);
     }
     else
     {
-      set_error_msg(asv->error_msg, error_time_not_incremented);
-      return;
+      set_propeller_force(asv);
     }
+    
+    // Compute the drag force for the current time step based on velocity reading
+    set_drag_force(asv);
+    
+    // Compute the restoring force for the current time step based on the position
+    // reading
+    set_restoring_force(asv);
+
+    // Compute the net force for the current time step
+    set_net_force(asv);
+    
+    // Compute the acceleration for the current time step
+    set_acceleration(asv);
+    
+    // Compute the velocity for the current time step
+    set_velocity(asv);
+    
+    // Compute the deflection for the current time step in body-fixed frame
+    set_deflection(asv);
+    
+    // Compute the new attitude
+    set_attitude(asv);
+    
+    // Translate the deflection to global frame and compute the new position.
+    set_position(asv);
+    
+    return;
   }
 
   set_error_msg(asv->error_msg, error_null_pointer);
