@@ -31,32 +31,32 @@ void pid_controller_set_gains_heading(struct PID_controller* controller,
 }
 
 void pid_controller_set_current_state(struct PID_controller* controller,
-                                      struct Dimensions position,
-                                      struct Dimensions attitude)
+                                      union Coordinates_3D position,
+                                      union Coordinates_3D attitude)
 {
-  controller->asv_position.x = position.x;
-  controller->asv_position.y = position.y;
-  controller->asv_position.z = position.z;
-  controller->asv_attitude.x = attitude.x;
-  controller->asv_attitude.y = attitude.y;
-  controller->asv_attitude.z = attitude.z;  
+  controller->asv_position.keys.x = position.keys.x;
+  controller->asv_position.keys.y = position.keys.y;
+  controller->asv_position.keys.z = position.keys.z;
+  controller->asv_attitude.keys.x = attitude.keys.x;
+  controller->asv_attitude.keys.y = attitude.keys.y;
+  controller->asv_attitude.keys.z = attitude.keys.z;  
 }
 
 void pid_controller_set_way_point(struct PID_controller* controller,
-                                  struct Dimensions way_point)
+                                  union Coordinates_3D way_point)
 {
-  controller->way_point.x = way_point.x;
-  controller->way_point.y = way_point.y;
-  controller->way_point.z = way_point.z;
+  controller->way_point.keys.x = way_point.keys.x;
+  controller->way_point.keys.y = way_point.keys.y;
+  controller->way_point.keys.z = way_point.keys.z;
 }
 
 void pid_controller_set_thrust(struct PID_controller* controller)
 {
   // Calculate the heading required in radian.
-  double x1 = controller->asv_position.x;
-  double y1 = controller->asv_position.y;
-  double x2 = controller->way_point.x;
-  double y2 = controller->way_point.y;
+  double x1 = controller->asv_position.keys.x;
+  double y1 = controller->asv_position.keys.y;
+  double x2 = controller->way_point.keys.x;
+  double y2 = controller->way_point.keys.y;
  
   // Calculate position error - distance to way-point from current position.
   double max_error_position = 500.0; // Set the max position error to so that
@@ -109,7 +109,7 @@ void pid_controller_set_thrust(struct PID_controller* controller)
     heading_required += PI;
   }
   
-  double error_heading = heading_required - controller->asv_attitude.z;
+  double error_heading = heading_required - controller->asv_attitude.keys.z;
   // Clamp the heading error
   double max_error_heading = PI/6.0; // Set the max heading error.
    if(fabs(error_heading) > max_error_heading)
