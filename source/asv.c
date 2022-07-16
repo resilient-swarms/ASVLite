@@ -208,10 +208,10 @@ static void set_drag_coefficient(struct Asv* asv)
 
   // roll, pitch and yaw drag coefficient set equal to roll damping coefficient 
   // given in Handbook of Marin Craft Hydrodynamics and motion control, page 125
-  //asv->dynamics.C[roll] = asv->dynamics.C[pitch] = asv->dynamics.C[yaw] = 0.075; 
+  asv->dynamics.C.keys.roll = asv->dynamics.C.keys.pitch = asv->dynamics.C.keys.yaw = 0.075; 
 
   // Set roll, pitch and yaw damping = heave damping. 
-  asv->dynamics.C.keys.roll = asv->dynamics.C.keys.pitch = asv->dynamics.C.keys.yaw = asv->dynamics.C.keys.heave;
+  // asv->dynamics.C.keys.roll = asv->dynamics.C.keys.pitch = asv->dynamics.C.keys.yaw = asv->dynamics.C.keys.heave;
 }
 
 // Method to set the stiffness for the given asv object.
@@ -419,35 +419,18 @@ static void set_propeller_force(struct Asv* asv)
     double thrust = asv->propellers[i]->thrust;
     double trim = asv->propellers[i]->orientation.keys.y;
     double prop_angle = asv->propellers[i]->orientation.keys.z;
-    double prop_cog_angle = atan(
-        (asv->propellers[i]->position.keys.y - asv->spec.cog.keys.y)/
-        (asv->spec.cog.keys.x - asv->propellers[i]->position.keys.x));
-    double thrust_cog_angle = prop_cog_angle + prop_angle;
     
-    double F_prop_to_cog = thrust * cos(thrust_cog_angle);
-    double F_x =  F_prop_to_cog*cos(asv->propellers[i]->orientation.keys.y) * cos(prop_cog_angle);
-    double F_y = -F_prop_to_cog*cos(asv->propellers[i]->orientation.keys.y) * sin(prop_cog_angle);
-    double F_z =  F_prop_to_cog*sin(asv->propellers[i]->orientation.keys.y);
+    double F_x =  thrust * cos(asv->propellers[i]->orientation.keys.z);
+    double F_y =  thrust * sin(asv->propellers[i]->orientation.keys.z);
+    double F_z =  thrust * sin(asv->propellers[i]->orientation.keys.y);
     
     double x = asv->spec.cog.keys.x - asv->propellers[i]->position.keys.x;
     double y = asv->spec.cog.keys.y - asv->propellers[i]->position.keys.y;
     double z = asv->propellers[i]->position.keys.z - asv->spec.cog.keys.z;
  
-    double F_perp_to_cog = thrust * sin(thrust_cog_angle);
-    double M_x = F_perp_to_cog * 
-                 cos(asv->propellers[i]->orientation.keys.y) * 
-                 cos(prop_cog_angle) * z + 
-                 F_perp_to_cog * sin(asv->propellers[i]->orientation.keys.y) * y;
-    double M_y = F_perp_to_cog * 
-                 cos(asv->propellers[i]->orientation.keys.y) *
-                 sin(prop_cog_angle) * z + 
-                 F_perp_to_cog * sin(asv->propellers[i]->orientation.keys.y) * x; 
-    double M_z = F_perp_to_cog * sqrt(x*x + y*y);
-    if(asv->propellers[i]->position.keys.x < asv->spec.cog.keys.x &&
-       asv->propellers[i]->orientation.keys.z < PI)
-    {
-      M_z = -M_z;
-    }
+    double M_x = F_y * z + F_z * y;
+    double M_y = F_x * z + F_z * x; 
+    double M_z = F_x * y + F_y * x;
 
     asv->dynamics.F_propeller.keys.surge  += F_x;
     asv->dynamics.F_propeller.keys.sway   += F_y;
