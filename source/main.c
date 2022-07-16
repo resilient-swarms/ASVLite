@@ -52,7 +52,7 @@ int main(int argc, char** argv)
   simulation_write_output(simulation, out_file, elapsed);
 
   // Clean the memory
-  simulation_clean(simulation);
+  simulation_delete(simulation);
 
   return 0;
 }

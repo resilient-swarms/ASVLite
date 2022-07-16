@@ -16,7 +16,7 @@ struct PID_controller* pid_controller_new()
     controller->error_int_position     = 0.0;
     controller->error_diff_position    = 0.0;
   }
-  return NULL;
+  return controller;
 }
 
 void pid_controller_delete(struct PID_controller* controller)

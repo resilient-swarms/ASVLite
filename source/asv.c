@@ -778,6 +778,10 @@ void asv_set_propellers(struct Asv* asv, struct Propeller** propellers, int coun
   {
     if(asv->propellers = (struct Propeller**)malloc(sizeof(struct Propeller*) * count_propellers))
     {
+      for(int i = 0; i<count_propellers; ++i)
+      {
+        asv->propellers[i] = propellers[i];
+      }
       asv->count_propellers = count_propellers;
       return;
     }
@@ -1000,17 +1004,17 @@ static void compute_dynamics(struct Asv* asv, bool is_wave_glider, double rudder
   set_error_msg(asv->error_msg, error_null_pointer);
 }
 
-void asv_compute_dynamics(struct Asv* asv, double time)
+void asv_compute_dynamics(struct Asv* asv, double time_step_size)
 {
-  compute_dynamics(asv, false, 0.0, time);
+  compute_dynamics(asv, false, 0.0, time_step_size);
 }
 
-void wave_glider_compute_dynamics(struct Asv* asv, double rudder_angle, double time)
+void wave_glider_compute_dynamics(struct Asv* asv, double rudder_angle, double time_step_size)
 {
   clear_error_msg(asv->error_msg);
   if(rudder_angle >= PI/2.0 && rudder_angle <= PI/2.0)
   {
-    compute_dynamics(asv, true, rudder_angle, time);
+    compute_dynamics(asv, true, rudder_angle, time_step_size);
   }
   set_error_msg(asv->error_msg, error_incorrect_rudder_angle);
 }

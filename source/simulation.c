@@ -163,7 +163,7 @@ void simulation_set_input(struct Simulation* first_node,
     } 
     
     // Get toml table to set the input data
-    toml_array_t *table = toml_array_at(tables, n);
+    toml_table_t *table = toml_table_at(tables, n);
     if (table == 0)
     {
       fprintf(stderr, "ERROR: missing table [asv][%d].\n", n);
@@ -552,26 +552,7 @@ void simulation_set_input(struct Simulation* first_node,
     }
     // Set the thrusters on the ASV
     asv_set_propellers(current->asv, propellers, count_propellers);
-    delete(propellers);
-
-    // Locate table [clock]
-    current->time_step_size = 40.0; // default value for time step size
-    table = toml_table_in(input, "clock");
-    if (table != 0)
-    {
-      // Extract values in table [clock]
-      // time_step_size
-      raw = toml_raw_in(table, "time_step_size");
-      if (raw != 0)
-      {
-        if (toml_rtod(raw, &current->time_step_size))
-        {
-          fprintf(stderr, "ERROR: bad value in 'time_step_size'\n");
-          toml_free(input);
-          exit(1);
-        }
-      }
-    }
+    free(propellers);
 
     // PID controller
     current->pid_controller = pid_controller_new();
@@ -631,8 +612,27 @@ void simulation_set_input(struct Simulation* first_node,
     }
   }
 
+  // Locate table [clock]
+  current->time_step_size = 40.0; // default value for time step size
+  toml_table_t* table = toml_table_in(input, "clock");
+  if (table != 0)
+  {
+    // Extract values in table [clock]
+    // time_step_size
+    raw = toml_raw_in(table, "time_step_size");
+    if (raw != 0)
+    {
+      if (toml_rtod(raw, &current->time_step_size))
+      {
+        fprintf(stderr, "ERROR: bad value in 'time_step_size'\n");
+        toml_free(input);
+        exit(1);
+      }
+    }
+  }
+
   // Locate table [visualisation]
-  toml_table_t* table = toml_table_in(input, "visualisation");
+  table = toml_table_in(input, "visualisation");
   if(table != 0)
   {
     // Extract value in table [visualisation]
@@ -769,10 +769,10 @@ void simulation_write_output(struct Simulation* first_node,
     // write buffer to file and close the file.
     for (int i = 0; i < node->current_time_index; ++i)
     {
-      fprintf(fp, "\n%ld %f %f %f %f %f %f %f %f %f %f %f %f",
+      fprintf(fp, "\n%f %f %f %f %f %f %f %f %f %f %f %f %f",
               node->buffer[i].time,
               node->buffer[i].sig_wave_ht,
-              node->buffer[i].wave_heading * 360.0 / (2.0 * PI),
+              node->buffer[i].wave_heading,
               node->buffer[i].wave_elevation,
               node->buffer[i].F_surge,
               node->buffer[i].surge_acceleration,
@@ -793,7 +793,7 @@ void compute_dynamics(void* current_node)
 {
   struct Simulation* node = (struct Simulation*)current_node;
   // Current time
-  double current_time = node->current_time_index * node->time_step_size/1000.0; //sec
+  double current_time = (node->current_time_index+1) * node->time_step_size/1000.0; //sec
 
   // Set differential thrust on each propeller.
   // ------------------------------------------
@@ -814,7 +814,7 @@ void compute_dynamics(void* current_node)
   propeller_set_thrust(propellers[3], orientation, node->pid_controller->thrust_aft_sb);
 
   // Compute the dynamics of asv for the current time step
-  wave_glider_compute_dynamics(node->asv, 0.0, current_time);
+  asv_compute_dynamics(node->asv, node->time_step_size);
   struct Asv_specification spec = asv_get_spec(node->asv);
 
   // save simulated data to buffer. 
@@ -822,7 +822,7 @@ void compute_dynamics(void* current_node)
   node->buffer[node->current_time_index].sig_wave_ht        = wave_get_significant_height(node->wave);
   node->buffer[node->current_time_index].wave_heading       = wave_get_predominant_heading(node->wave) * 180.0/PI;
   node->buffer[node->current_time_index].wave_elevation     = wave_get_elevation(node->wave, cog_position, current_time);
-  node->buffer[node->current_time_index].F_surge            = asv_get_F(node->asv).keys.surge;
+  node->buffer[node->current_time_index].F_surge            = asv_get_F(node->asv).keys.pitch;
   node->buffer[node->current_time_index].surge_acceleration = asv_get_A(node->asv).keys.surge;
   node->buffer[node->current_time_index].surge_velocity     = asv_get_V(node->asv).keys.surge;
   node->buffer[node->current_time_index].cog_x              = cog_position.keys.x;

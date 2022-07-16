@@ -139,9 +139,9 @@ void asv_compute_dynamics(struct Asv* asv, double time_step_size);
  * @param asv is a non-null pointer to an instance of Asv for which the dynamics is to be computed.
  * @param rudder_angle is the angle of the rudder with respect to X axis of the ASV. 
  * Rudder angle must within (-PI/2, PI/2). Angle is positive when the vehicle has to turn to right (ie. aft end of the rudder points to starboard side). 
- * @param time for which the dynamics is to be computed. Time is measured in seconds from start of simulation.
+ * @param time_step_size in milliseconds to increment the current time.
  */
-void wave_glider_compute_dynamics(struct Asv* asv, double rudder_angle, double time);
+void wave_glider_compute_dynamics(struct Asv* asv, double rudder_angle, double time_step_size);
 
 /**
  * Get the position of the asv using the COG of the vehicle. 

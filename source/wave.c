@@ -63,6 +63,8 @@ struct Wave* wave_new(const double sig_wave_ht,
         wave->random_number_seed = rand_seed;
         srand(wave->random_number_seed);
         wave->heading = wave_heading;
+        wave->count_wave_spectral_directions = count_wave_spectral_directions;
+        wave->count_wave_spectral_frequencies = count_wave_spectral_frequencies;
         wave->min_spectral_wave_heading = wave->heading - PI/2.0;
         wave->max_spectral_wave_heading = wave->heading + PI/2.0;
       
@@ -305,7 +307,7 @@ double wave_get_significant_height(const struct Wave* wave)
   return 0.0;
 }
 
-double wave_get_wave_heading(const struct Wave* wave)
+double wave_get_predominant_heading(const struct Wave* wave)
 {
   clear_error_msg(wave->error_msg);
   if(wave)
