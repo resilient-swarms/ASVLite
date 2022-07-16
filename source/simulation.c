@@ -555,7 +555,7 @@ void simulation_set_input(struct Simulation* first_node,
     free(propellers);
 
     // PID controller
-    current->pid_controller = pid_controller_new();
+    current->pid_controller = pid_controller_new(current->asv);
     // PID controller set gain terms
     double p_position = 1.0   * current->time_step_size/1000.0;
     double i_position = 0.1   * current->time_step_size/1000.0;
@@ -797,25 +797,14 @@ void compute_dynamics(void* current_node)
 
   // Set differential thrust on each propeller.
   // ------------------------------------------
-  // In controller set the way point for the current time step
-  pid_controller_set_way_point(node->pid_controller, node->waypoints[node->current_waypoint_index]);
-  // Inform PID controller of the current state.
-  union Coordinates_3D cog_position = asv_get_position_cog(node->asv);
-  union Coordinates_3D attitude = asv_get_attitude(node->asv);
-  pid_controller_set_current_state(node->pid_controller, cog_position, attitude);
   // PID controller estimate thrust to be applied on each propeller.
-  pid_controller_set_thrust(node->pid_controller);
-  // Set propeller thrust on each of the 4 propellers
-  union Coordinates_3D orientation = {0.0, 0.0, 0.0};
-  struct Propellers** propellers = asv_get_propellers(node->asv);
-  propeller_set_thrust(propellers[0], orientation, node->pid_controller->thrust_fore_ps);
-  propeller_set_thrust(propellers[1], orientation, node->pid_controller->thrust_fore_sb);
-  propeller_set_thrust(propellers[2], orientation, node->pid_controller->thrust_aft_ps);
-  propeller_set_thrust(propellers[3], orientation, node->pid_controller->thrust_aft_sb);
+  pid_controller_set_thrust(node->pid_controller, node->waypoints[node->current_waypoint_index]);
 
   // Compute the dynamics of asv for the current time step
   asv_compute_dynamics(node->asv, node->time_step_size);
   struct Asv_specification spec = asv_get_spec(node->asv);
+  union Coordinates_3D cog_position = asv_get_position_cog(node->asv);
+  union Coordinates_3D attitude = asv_get_attitude(node->asv);
 
   // save simulated data to buffer. 
   node->buffer[node->current_time_index].time               = current_time;
