@@ -52,13 +52,13 @@ ENDIF()
 
 # CREATE BINARIES
 # ---------------
-ADD_EXECUTABLE(asv_simulator ${SOURCE})
-SET_PROPERTY(TARGET asv_simulator PROPERTY C_STANDARD 11)
+ADD_EXECUTABLE(asvlite ${SOURCE})
+SET_PROPERTY(TARGET asvlite PROPERTY C_STANDARD 11)
 
 # LINK LIBRARIES 
 # --------------
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 IF(UNIX)
-  TARGET_LINK_LIBRARIES(asv_simulator m Threads::Threads)
+  TARGET_LINK_LIBRARIES(asvlite m Threads::Threads)
 ENDIF()
