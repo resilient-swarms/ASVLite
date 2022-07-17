@@ -1,0 +1,18 @@
+NAME
+  VTK::FiltersVerdict
+LIBRARY_NAME
+  vtkFiltersVerdict
+KIT
+  VTK::Filters
+GROUPS
+  StandAlone
+DEPENDS
+  VTK::CommonExecutionModel
+  VTK::verdict
+PRIVATE_DEPENDS
+  VTK::CommonCore
+  VTK::CommonDataModel
+TEST_DEPENDS
+  VTK::FiltersSources
+  VTK::IOLegacy
+  VTK::TestingCore

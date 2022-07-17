@@ -1,0 +1,25 @@
+NAME
+  VTK::CommonCore
+LIBRARY_NAME
+  vtkCommonCore
+DESCRIPTION
+  The base VTK library
+KIT
+  VTK::Common
+GROUPS
+  StandAlone
+DEPENDS
+  VTK::kwiml
+  VTK::vtksys
+PRIVATE_DEPENDS
+  VTK::utf8
+OPTIONAL_DEPENDS
+  VTK::loguru
+TEST_DEPENDS
+  VTK::cli11
+  VTK::CommonDataModel
+  VTK::CommonSystem
+  VTK::CommonTransforms
+  VTK::TestingCore
+  VTK::vtksys
+  VTK::fmt

@@ -1,0 +1,31 @@
+NAME
+  VTK::FiltersAMR
+LIBRARY_NAME
+  vtkFiltersAMR
+DESCRIPTION
+  Adaptive mesh refinement filters and algorithms
+KIT
+  VTK::Parallel
+GROUPS
+  StandAlone
+DEPENDS
+  VTK::CommonDataModel
+  VTK::CommonExecutionModel
+PRIVATE_DEPENDS
+  VTK::CommonCore
+  VTK::CommonMath
+  VTK::CommonSystem
+  VTK::FiltersCore
+  VTK::IOXML
+  VTK::ParallelCore
+TEST_DEPENDS
+  VTK::CommonColor
+  VTK::FiltersCore
+  VTK::FiltersGeometry
+  VTK::IOAMR
+  VTK::ImagingCore
+  VTK::InteractionStyle
+  VTK::TestingCore
+  VTK::TestingRendering
+  VTK::RenderingCore
+  VTK::RenderingOpenGL2

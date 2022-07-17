@@ -1,0 +1,32 @@
+NAME
+  VTK::FiltersExtraction
+LIBRARY_NAME
+  vtkFiltersExtraction
+DESCRIPTION
+  Filters for selecting subsets data
+KIT
+  VTK::Parallel
+GROUPS
+  StandAlone
+DEPENDS
+  VTK::CommonCore
+  VTK::CommonExecutionModel
+  VTK::FiltersGeneral
+PRIVATE_DEPENDS
+  VTK::CommonDataModel
+  VTK::FiltersCore
+  VTK::FiltersStatistics
+  VTK::ParallelDIY
+OPTIONAL_DEPENDS
+  VTK::ParallelMPI
+TEST_DEPENDS
+  VTK::FiltersGeneral
+  VTK::FiltersSources
+  VTK::IOExodus
+  VTK::IOLegacy
+  VTK::IOXML
+  VTK::InteractionStyle
+  VTK::RenderingOpenGL2
+  VTK::TestingRendering
+TEST_OPTIONAL_DEPENDS
+  VTK::IOIOSS

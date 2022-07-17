@@ -1,0 +1,75 @@
+set(classes
+  vtkAlgorithm
+  vtkAlgorithmOutput
+  vtkAnnotationLayersAlgorithm
+  vtkArrayDataAlgorithm
+  vtkCachedStreamingDemandDrivenPipeline
+  vtkCastToConcrete
+  vtkCompositeDataPipeline
+  vtkCompositeDataSetAlgorithm
+  vtkDataObjectAlgorithm
+  vtkDataSetAlgorithm
+  vtkDemandDrivenPipeline
+  vtkDirectedGraphAlgorithm
+  vtkEnsembleSource
+  vtkExecutive
+  vtkExplicitStructuredGridAlgorithm
+  vtkExtentRCBPartitioner
+  vtkExtentSplitter
+  vtkExtentTranslator
+  vtkFilteringInformationKeyManager
+  vtkGraphAlgorithm
+  vtkHierarchicalBoxDataSetAlgorithm
+  vtkHyperTreeGridAlgorithm
+  vtkImageAlgorithm
+  vtkImageInPlaceFilter
+  vtkImageProgressIterator
+  vtkImageToStructuredGrid
+  vtkImageToStructuredPoints
+  vtkInformationDataObjectMetaDataKey
+  vtkInformationExecutivePortKey
+  vtkInformationExecutivePortVectorKey
+  vtkInformationIntegerRequestKey
+  vtkMoleculeAlgorithm
+  vtkMultiBlockDataSetAlgorithm
+  vtkMultiTimeStepAlgorithm
+  vtkParallelReader
+  vtkPartitionedDataSetAlgorithm
+  vtkPartitionedDataSetCollectionAlgorithm
+  vtkPassInputTypeAlgorithm
+  vtkPiecewiseFunctionAlgorithm
+  vtkPiecewiseFunctionShiftScale
+  vtkPointSetAlgorithm
+  vtkPolyDataAlgorithm
+  vtkProgressObserver
+  vtkReaderAlgorithm
+  vtkReaderExecutive
+  vtkRectilinearGridAlgorithm
+  vtkSMPProgressObserver
+  vtkScalarTree
+  vtkSelectionAlgorithm
+  vtkSimpleImageToImageFilter
+  vtkSimpleReader
+  vtkSimpleScalarTree
+  vtkSpanSpace
+  vtkSphereTree
+  vtkStreamingDemandDrivenPipeline
+  vtkStructuredGridAlgorithm
+  vtkTableAlgorithm
+  vtkThreadedCompositeDataPipeline
+  vtkThreadedImageAlgorithm
+  vtkTreeAlgorithm
+  vtkTrivialConsumer
+  vtkTrivialProducer
+  vtkUndirectedGraphAlgorithm
+  vtkUniformGridPartitioner
+  vtkUnstructuredGridAlgorithm
+  vtkUnstructuredGridBaseAlgorithm
+
+  # New AMR classes
+  vtkNonOverlappingAMRAlgorithm
+  vtkOverlappingAMRAlgorithm
+  vtkUniformGridAMRAlgorithm)
+
+vtk_module_add_module(VTK::CommonExecutionModel
+  CLASSES ${classes})

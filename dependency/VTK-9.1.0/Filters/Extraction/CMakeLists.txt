@@ -1,0 +1,41 @@
+set(classes
+  vtkBlockSelector
+  vtkConvertSelection
+  vtkExpandMarkedElements
+  vtkExtractBlock
+  vtkExtractBlockUsingDataAssembly
+  vtkExtractCells
+  vtkExtractCellsByType
+  vtkExtractDataArraysOverTime
+  vtkExtractDataOverTime
+  vtkExtractDataSets
+  vtkExtractEdges
+  vtkExtractExodusGlobalTemporalVariables
+  vtkExtractGeometry
+  vtkExtractGrid
+  vtkExtractLevel
+  vtkExtractPolyDataGeometry
+  vtkExtractRectilinearGrid
+  vtkExtractSelectedArraysOverTime
+  vtkExtractSelectedBlock
+  vtkExtractSelectedIds
+  vtkExtractSelectedLocations
+  vtkExtractSelectedPolyDataIds
+  vtkExtractSelectedRows
+  vtkExtractSelectedThresholds
+  vtkExtractSelection
+  vtkExtractTemporalFieldData
+  vtkExtractTensorComponents
+  vtkExtractTimeSteps
+  vtkExtractUnstructuredGrid
+  vtkExtractVectorComponents
+  vtkFrustumSelector
+  vtkHierarchicalDataExtractDataSets
+  vtkHierarchicalDataExtractLevel
+  vtkLocationSelector
+  vtkProbeSelectedLocations
+  vtkSelector
+  vtkValueSelector)
+
+vtk_module_add_module(VTK::FiltersExtraction
+  CLASSES ${classes})
