@@ -738,6 +738,7 @@ void asv_delete(struct Asv* asv)
 {
   if(asv)
   {
+    free(asv->error_msg);
     free(asv->dynamics.P_unit_wave);
     free(asv->propellers);
     free(asv);
@@ -945,6 +946,12 @@ static void compute_dynamics(struct Asv* asv, bool is_wave_glider, double rudder
 
     // Get the wave force for the current time step
     set_wave_force(asv);
+    const char* error_msg = asv_get_error_msg(asv);
+    if(error_msg)
+    {
+      set_error_msg(asv->error_msg, error_msg);
+      return;
+    }
     
     // Get the propeller force for the current time step
     if(is_wave_glider)
@@ -990,6 +997,12 @@ static void compute_dynamics(struct Asv* asv, bool is_wave_glider, double rudder
 void asv_compute_dynamics(struct Asv* asv, double time_step_size)
 {
   compute_dynamics(asv, false, 0.0, time_step_size);
+  const char* error_msg = asv_get_error_msg(asv);
+  if(error_msg)
+  {
+    set_error_msg(asv->error_msg, error_msg);
+    return;
+  }
 }
 
 void wave_glider_compute_dynamics(struct Asv* asv, double rudder_angle, double time_step_size)
@@ -998,6 +1011,13 @@ void wave_glider_compute_dynamics(struct Asv* asv, double rudder_angle, double t
   if(rudder_angle >= PI/2.0 && rudder_angle <= PI/2.0)
   {
     compute_dynamics(asv, true, rudder_angle, time_step_size);
+    const char* error_msg = asv_get_error_msg(asv);
+    if(error_msg)
+    {
+      set_error_msg(asv->error_msg, error_msg);
+      return;
+    }
+    return;
   }
   set_error_msg(asv->error_msg, error_incorrect_rudder_angle);
 }

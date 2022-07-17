@@ -94,13 +94,14 @@ void simulation_delete(struct Simulation* first_node)
 {
   for(struct Simulation* current_node = first_node; current_node != NULL;)
   {
-    struct Simulation* next_node = current_node->next;
     wave_delete(current_node->wave);
     asv_delete(current_node->asv);
     pid_controller_delete(current_node->pid_controller);
     free(current_node->buffer);
     free(current_node->waypoints);
     free(current_node);
+    struct Simulation* next_node = current_node->next;
+    current_node->next = NULL;
     current_node = next_node;
   }
 }
