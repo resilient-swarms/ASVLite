@@ -24,16 +24,6 @@ IF(ENABLE_MULTI_THREADING)
   ENDIF(ENABLE_TIME_SYNC)
 ENDIF(ENABLE_MULTI_THREADING)
 
-# ENABLE EARTH-COORDINATES
-# ------------------------
-OPTION(ENABLE_EARTH_COORDINATES "Enable earth coordinates." OFF) # Disabled by default
-IF(ENABLE_EARTH_COORDINATES)
-  ADD_DEFINITIONS(-DENABLE_EARTH_COORDINATES)
-  MESSAGE(STATUS "Earth coordinates enabled.")
-ELSE()
-  MESSAGE(STATUS "Earth coordinates disabled.")
-endif(NOT ENABLE_EARTH_COORDINATES)
-
 # INCLUDE HEADER FILES DIRECTORIES
 # --------------------------------
 INCLUDE_DIRECTORIES(
@@ -45,6 +35,7 @@ INCLUDE_DIRECTORIES(
 # ------------
 SET( SOURCE
   dependency/tomlc99/toml.c
+  source/errors.c
   source/regular_wave.c
   source/wave.c
   source/asv.c
