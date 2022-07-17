@@ -4,12 +4,40 @@
 #include "constants.h"
 #include "asv.h"
 
+struct PID_controller
+{
+  // Inputs
+  // ------
+  struct Asv* asv;
+  double kp_heading;
+  double ki_heading;
+  double kd_heading;
+  double kp_position;
+  double ki_position;
+  double kd_position;
+   
+  // Intermediate calculation variables
+  // ----------------------------------
+  double error_heading;
+  double error_int_heading;
+  double error_diff_heading;
+  double error_position;
+  double error_int_position;
+  double error_diff_position;
+};
+
 struct PID_controller* pid_controller_new(struct Asv* asv)
 {
   struct PID_controller* controller = (struct PID_controller*)malloc(sizeof(struct PID_controller));
   if(controller)
   {
     controller->asv                 = asv;
+    controller->kp_heading          = 0.0;
+    controller->ki_heading          = 0.0;
+    controller->kd_heading          = 0.0;
+    controller->kp_position         = 0.0;
+    controller->ki_position         = 0.0;
+    controller->kd_position         = 0.0;
     controller->error_heading       = 0.0;
     controller->error_int_heading   = 0.0;
     controller->error_diff_heading  = 0.0;
@@ -29,17 +57,17 @@ void pid_controller_delete(struct PID_controller* controller)
 void pid_controller_set_gains_position(struct PID_controller* controller, 
                                       double p, double i, double d)
 {
-  controller->kp_position = 1;
-  controller->ki_position = 1;
-  controller->kd_position = 1;
+  controller->kp_position = p;
+  controller->ki_position = i;
+  controller->kd_position = d;
 }
 
 void pid_controller_set_gains_heading(struct PID_controller* controller, 
                                       double p, double i, double d)
 {
-  controller->kp_heading = 1;
-  controller->ki_heading = 0;
-  controller->kd_heading = 0;
+  controller->kp_heading = p;
+  controller->ki_heading = i;
+  controller->kd_heading = d;
 }
 
 void pid_controller_set_thrust(struct PID_controller* controller, union Coordinates_3D way_point)
@@ -48,13 +76,16 @@ void pid_controller_set_thrust(struct PID_controller* controller, union Coordina
   union Coordinates_3D p1 = asv_get_position_origin(controller->asv);
   union Coordinates_3D p2 = asv_get_position_cog(controller->asv);
   union Coordinates_3D p3 = way_point;
+
+  const double limit_error_magnitude = PI; 
  
   double error_position = sqrt(pow(p3.keys.x - p1.keys.x, 2.0) + pow(p3.keys.y - p1.keys.y, 2.0));
-  error_position = (error_position > PI)? PI : error_position; // The heading error is always in the range (-PI, PI).
-                                                               // But the position error has no limits. It could be 
-                                                               // in the range (-Inf, Inf) depending on the position of
-                                                               // the w.r.t vehicle. Clamp the position error so that 
-                                                               // it is in similar magnitude to that of heading error.
+  error_position = (error_position > limit_error_magnitude)? limit_error_magnitude : error_position; 
+                                          // The heading error is always in the range (-PI, PI).
+                                          // But the position error has no limits. It could be 
+                                          // in the range (-Inf, Inf) depending on the position of
+                                          // the w.r.t vehicle. Clamp the position error so that 
+                                          // it is in similar magnitude to that of heading error.
  
   // Calculate the integral error for position.
   controller->error_int_position = error_position + 0.9 * controller->error_int_position;
@@ -68,25 +99,42 @@ void pid_controller_set_thrust(struct PID_controller* controller, union Coordina
   double m1 = (p2.keys.y == p1.keys.y)? __DBL_MAX__ : (p2.keys.x - p1.keys.x)/(p2.keys.y - p1.keys.y);
   double m2 = (p3.keys.y == p1.keys.y)? __DBL_MAX__ : (p3.keys.x - p1.keys.x)/(p3.keys.y - p1.keys.y);
   double error_heading = atan((m2-m1)/(1+ m1*m2));
+  // Correction for angles in 3rd and 4th quadrants.
   if(p3.keys.x<p1.keys.x && p3.keys.y<p1.keys.y)
   {
-    error_heading = -PI/2.0 - error_heading;
+    error_heading = -PI + error_heading;
   }
-  if(p3.keys.x>p1.keys.x && p3.keys.y<p1.keys.y)
+  if(p3.keys.x>=p1.keys.x && p3.keys.y<p1.keys.y)
   {
-    error_heading = PI/2.0 - error_heading;
+    error_heading = PI + error_heading;
   }
+  // *****
+  // Uncomment below code if using a limit_error_magnitude < PI
+  // *****
+  // Limit heading errors.
+  // if(error_heading > limit_error_magnitude)
+  // {
+  //   error_heading = limit_error_magnitude;
+  // }
+  // if(error_heading < limit_error_magnitude)
+  // {
+  //   error_heading = -limit_error_magnitude;
+  // }
   
   // Calculate the integral heading error.
-  controller->error_int_heading = error_heading + 0.9 * controller->error_int_heading;
+  double past_retention_rate = 0.5; // Should be in the range (0,1).
+                                    // Value = 1, implies the past error is never forgotten.
+                                    // Value = 0, implies the past error is always ignored. 
+                                    // Value between 0 and 1 implies the past errors gradually decreases. 
+                                    // Value > 0 implies past errors are magnified.  
+  controller->error_int_heading = error_heading + past_retention_rate * controller->error_int_heading;
   
   // Calculate the differential heading error.
   controller->error_diff_heading = error_heading - controller->error_heading;
   controller->error_heading = error_heading; 
  
   // Calculate propeller thrust.
-  double max_thrust = 2.0; // SMARTY platform thruster has a maximum 
-                           // capacity of 5N. 
+  double max_thrust = 5.0; // SMARTY platform thruster has a maximum capacity of 5N. 
 
   double heading_thrust = 
     controller->kp_heading * controller->error_heading      + 
@@ -102,11 +150,11 @@ void pid_controller_set_thrust(struct PID_controller* controller, union Coordina
   
   double thrust_ps = 0.0; // left side thrust
   double thrust_sb = 0.0; // right side thrust
-  if(fabs(error_heading) > PI/3.0)
+  if(fabs(error_heading) > PI/2.0)
   {
     // A large turn. Focus on turning instead of moving forward.
-    thrust_ps = -heading_thrust;
-    thrust_sb = +heading_thrust;
+    thrust_ps = +heading_thrust;
+    thrust_sb = -heading_thrust;
   }
   else
   {
@@ -121,14 +169,55 @@ void pid_controller_set_thrust(struct PID_controller* controller, union Coordina
     thrust_ps = thrust_ps * ratio;
     thrust_sb = thrust_sb * ratio;
   } 
-  controller->thrust_fore_ps = controller->thrust_aft_ps  = thrust_ps;
-  controller->thrust_fore_sb = controller->thrust_aft_sb  = thrust_sb;
 
-  // Set propeller thrust on each of the 4 propellers
-  union Coordinates_3D orientation = {0.0, 0.0, 0.0};
+  // Set propeller thrust on each of the 4 propellers.
+  union Coordinates_3D orientation_fore_thrusters = {0.0, PI, 0.0};
+  union Coordinates_3D orientation_aft_thrusters  = {0.0, 0.0, 0.0};
   struct Propellers** propellers = asv_get_propellers(controller->asv);
-  propeller_set_thrust(propellers[0], orientation, controller->thrust_fore_ps);
-  propeller_set_thrust(propellers[1], orientation, controller->thrust_fore_sb);
-  propeller_set_thrust(propellers[2], orientation, controller->thrust_aft_ps);
-  propeller_set_thrust(propellers[3], orientation, controller->thrust_aft_sb);
+  // Propeller configuration
+  //
+  // Thust direction is towards aft
+  //  |              |
+  //  v              v
+  //
+  // Fore PS        Fore SB
+  // [0] -----------[1] 
+  //  +              +
+  //  |              |
+  //  |              |
+  //  +              +
+  // [2] -----------[3] 
+  // Aft PS         Aft SB
+  // 
+  //  ^              ^
+  //  |              |
+  // Thrust direction is towards fore.     
+  //    
+  if(thrust_ps >= 0.0)
+  {
+    propeller_set_thrust(propellers[2], orientation_aft_thrusters, thrust_ps);
+    propeller_set_thrust(propellers[0], orientation_fore_thrusters, 0.0);
+  }
+  else
+  {
+    propeller_set_thrust(propellers[2], orientation_aft_thrusters, 0.0);
+    propeller_set_thrust(propellers[0], orientation_fore_thrusters, thrust_ps);
+  }
+  if(thrust_sb >= 0.0)
+  {
+    propeller_set_thrust(propellers[3], orientation_aft_thrusters, thrust_sb);
+    propeller_set_thrust(propellers[1], orientation_fore_thrusters, 0.0);
+  }
+  else
+  {
+    propeller_set_thrust(propellers[3], orientation_aft_thrusters, 0.0);
+    propeller_set_thrust(propellers[1], orientation_fore_thrusters, thrust_sb);
+  }
 }
+
+// TODO:
+// Tune the PID controllers. 
+// The two controllers should be tuned separately. 
+// The heading controller should be tuned with a scenario where is turns on the spot and correct heading. 
+// The heading controller should also learn to stop turning after reaching the desired heading. 
+// The position controller should be tuned with a scenario where is moves head on to a waypoint and stop on reaching the waypoint. 

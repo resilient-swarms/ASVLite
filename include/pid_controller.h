@@ -4,35 +4,7 @@
 #include "geometry.h"
 
 struct Asv;
-
-struct PID_controller
-{
-  // Inputs
-  // ------
-  struct Asv* asv;
-  double kp_heading;
-  double ki_heading;
-  double kd_heading;
-  double kp_position;
-  double ki_position;
-  double kd_position;
-  
-  // Outputs
-  // -------
-  double thrust_fore_ps; // Thrust to be applied on the fore left propeller.
-  double thrust_fore_sb; // Thrust to be applied on the fore right propeller.
-  double thrust_aft_ps;  // Thrust to be applied on the aft left propeller.
-  double thrust_aft_sb;  // Thrust to be applied on the aft right propeller.
-  
-  // Intermediate calculation variables
-  // ----------------------------------
-  double error_heading;
-  double error_int_heading;
-  double error_diff_heading;
-  double error_position;
-  double error_int_position;
-  double error_diff_position;
-};
+struct PID_controller;
 
 /**
  * Function to initialise the member variables of struct controller.
