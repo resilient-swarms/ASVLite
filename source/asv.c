@@ -5,7 +5,7 @@
 #include "errors.h"
 #include "regular_wave.h"
 
-#define COUNT_ASV_SPECTRAL_DIRECTIONS 360 /*!< Number of directions in the wave force spectrum. */
+#define COUNT_ASV_SPECTRAL_DIRECTIONS 360  /*!< Number of directions in the wave force spectrum. */
 #define COUNT_ASV_SPECTRAL_FREQUENCIES 100 /*!< Number of frequencies in the wave force spectrum. */
 
 /**

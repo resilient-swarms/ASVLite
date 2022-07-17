@@ -4,6 +4,8 @@
 #include "simulation.h"
 #include <sys/stat.h> // for creating directory
 
+#define OUTPUT_BUFFER_SIZE 200000 /*!< Output buffer size. */
+
 /**
  * Structure to record the sea state and vehicle dynamics for a time step of the simulation.
  */

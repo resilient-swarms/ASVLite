@@ -125,7 +125,4 @@
 #define SEA_WATER_DENSITY 1025 /*!< Sea water density in Kg/m3 */
 #define AIR_DENSITY 1.2 /*!< Kg/m3 */
 
-
-#define OUTPUT_BUFFER_SIZE 20000 /*!< Output buffer size. */
-
 #endif // CONSTANTS_H
