@@ -11,8 +11,8 @@ The image below show visualisation of the ocean surface and three ASVs simulated
 
 ## Build instruction
 ``` 
-git clone --recurse-submodules https://github.com/resilient-swarms/asv-swarm.git
-cd asv-swarm
+git clone --recurse-submodules https://github.com/resilient-swarms/ASVLite.git
+cd ASVLite
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -30,7 +30,7 @@ The simulator requires the following values as command-line arguments:
 
 Example for simulating vehicle dynamics in a sea with a significant wave height of 1.2 m, wave heading of 20<sup>o</sup>North and with a random number seed of 3:
 ```
-asv_simulator input_file out_file 1.2 20.0 3
+ASVLite input_file out_file 1.2 20.0 3
 ```
 
 The `input_file` uses `toml` syntax and should provide the inputs required for the simulation. Given below is an example of an input file. 
