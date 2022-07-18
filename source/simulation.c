@@ -914,7 +914,7 @@ void simulation_write_output(struct Simulation* first_node,
   {
     double time = node->current_time_index * node->time_step_size/1000.0; //sec
     double performance = time / simulation_time;
-    fprintf(stdout, "%s, %f sec, %f sec, %f x \n", node->id, time, simulation_time, performance);
+    fprintf(stdout, "ASV id = %s\nReal time = %f sec\nSimulation time = %f sec\nPerformance = %f x\n", node->id, time, simulation_time, performance);
 
     FILE *fp;
     // Create the output file in the out dir if there are more than one asvs,
@@ -984,7 +984,7 @@ void simulation_run(struct Simulation* first_node)
   // Check for any errors during simulation and print it. 
   for(struct Simulation* node = first_node; node != NULL; node = node->next)
   {
-    if(node->current_waypoint_index < node->count_waypoints)
+    if(node->error_msg)
     {
       fprintf(stderr, "ERROR: ASV id = %s. %s\n", node->id, node->error_msg);
     }
