@@ -50,12 +50,168 @@ struct Simulation
   // Link pointers
   struct Simulation* previous; // previous in the linked list.
   struct Simulation* next; // next in the linked list.
+  void (*simulation_run)(struct Simulation*); // Pointer to function for executing the simulation. 
 };
 
 // Visualisation data
 static double sea_surface_edge_length;
 static union Coordinates_3D sea_surface_position;
 static int count_mesh_cells_along_edge;
+
+// Computes dynamics for current node for the current time step.
+static void compute_dynamics(void* current_node)
+{
+  struct Simulation* node = (struct Simulation*)current_node;
+  // Current time
+  double current_time = (node->current_time_index+1) * node->time_step_size/1000.0; //sec
+
+  // Set differential thrust on each propeller.
+  // ------------------------------------------
+  // PID controller estimate thrust to be applied on each propeller.
+  pid_controller_set_thrust(node->pid_controller, node->waypoints[node->current_waypoint_index]);
+
+  // Compute the dynamics of asv for the current time step
+  asv_compute_dynamics(node->asv, node->time_step_size);
+  struct Asv_specification spec = asv_get_spec(node->asv);
+  union Coordinates_3D cog_position = asv_get_position_cog(node->asv);
+  union Coordinates_3D attitude = asv_get_attitude(node->asv);
+
+  // save simulated data to buffer. 
+  node->buffer[node->current_time_index].time               = current_time;
+  node->buffer[node->current_time_index].sig_wave_ht        = wave_get_significant_height(node->wave);
+  node->buffer[node->current_time_index].wave_heading       = wave_get_predominant_heading(node->wave) * 180.0/PI;
+  node->buffer[node->current_time_index].wave_elevation     = wave_get_elevation(node->wave, cog_position, current_time);
+  node->buffer[node->current_time_index].F_surge            = asv_get_F(node->asv).keys.pitch;
+  node->buffer[node->current_time_index].surge_acceleration = asv_get_A(node->asv).keys.surge;
+  node->buffer[node->current_time_index].surge_velocity     = asv_get_V(node->asv).keys.surge;
+  node->buffer[node->current_time_index].cog_x              = cog_position.keys.x;
+  node->buffer[node->current_time_index].cog_y              = cog_position.keys.y;
+  node->buffer[node->current_time_index].cog_z              = cog_position.keys.z - (spec.cog.keys.z - spec.T);
+  node->buffer[node->current_time_index].heel               = attitude.keys.x * 180.0/PI;
+  node->buffer[node->current_time_index].trim               = attitude.keys.y * 180.0/PI;
+  node->buffer[node->current_time_index].heading            = attitude.keys.z * 180.0/PI;
+
+  // Check if reached the waypoint
+  double proximity_margin = 2.0; // target proximity to waypoint
+  int i = node->current_waypoint_index;
+  double x = cog_position.keys.x - node->waypoints[i].keys.x;
+  double y = cog_position.keys.y - node->waypoints[i].keys.y;
+  double distance = sqrt(x*x + y*y);
+  if(distance <= proximity_margin)
+  {
+    // Reached the current waypoint, so increament the index to the next waypoint.
+    // if the current_waypoint_index == waypoint.count ==> reached final waypoint.
+    ++(node->current_waypoint_index);
+  }
+}
+
+static void compute_dynamics_per_thread_no_time_sync(void* current_node)
+{
+  struct Simulation* node = (struct Simulation*)current_node;
+  for(node->current_time_index = 0; ; ++(node->current_time_index))
+  {
+    if(node->current_waypoint_index < node->count_waypoints)
+    {
+      // Not yet reached the final waypoint, but check if buffer limit reached before further computation.
+      // Check if buffer exceeded
+      if(node->current_time_index >= OUTPUT_BUFFER_SIZE)
+      {
+        // buffer exceeded
+        fprintf(stderr, "ERROR: output buffer exceeded for asv with id '%s'.\n", node->id);
+        break;        
+      }
+      // If buffer not exceeded.
+      compute_dynamics((void*)node);
+    }
+    else
+    {
+      // Reached the final waypoint
+      break;
+    }
+  }
+}
+
+static void simulation_for_time_step(struct Simulation* first_node, long t, bool* buffer_exceeded, bool* has_all_reached_final_waypoint)
+{
+  // Create threads
+    // int limit_threads = get_nprocs();
+    // spawn threads
+    for(struct Simulation* node = first_node; node != NULL; node = node->next)
+    {
+      // Set time step for the node
+      node->current_time_index = t;
+
+      // Check if asv reached the final waypoint.
+      if(node->current_waypoint_index < node->count_waypoints)
+      {
+        // Not yet reached the final waypoint, but check if buffer limit reached before further computation.
+        // Check if buffer exceeded
+        if(node->current_time_index >= OUTPUT_BUFFER_SIZE)
+        {
+          // buffer exceeded
+          *buffer_exceeded = true;
+          fprintf(stderr, "ERROR: output buffer exceeded for asv with id '%s'.\n", node->id);
+          break;        
+        }
+        *has_all_reached_final_waypoint = false;
+        #ifdef DISABLE_MULTI_THREADING
+        compute_dynamics((void*)node);
+        #else
+        pthread_create(&(node->thread), NULL, &compute_dynamics, (void*)node);
+        #endif
+      }
+    }
+    #ifndef DISABLE_MULTI_THREADING
+    // join threads
+    for(struct Simulation* node = first_node; node != NULL; node = node->next)
+    {
+      if(node->current_waypoint_index < node->count_waypoints)
+      {
+        pthread_join(node->thread, NULL);
+      }
+    }
+    #endif
+}
+
+static void simulation_run_with_time_sync(struct Simulation* first_node)
+{
+  bool buffer_exceeded = false;
+  for(long t = 0; ; ++t)
+  {
+    // Variable to check if all reached the destination.
+    bool has_all_reached_final_waypoint = true;
+
+    simulation_for_time_step(first_node, t, &buffer_exceeded, &has_all_reached_final_waypoint);
+
+    // stop if all reached the destination or if buffer exceeded.
+    if(has_all_reached_final_waypoint || buffer_exceeded)
+    {
+      break;
+    }
+  }
+}
+
+/**
+ * Simulate vehicle dynamics for each time step. This function runs 
+ * simultion of each ASV in a independent thread and does not synchronize
+ * the simulation for each time step between ASVs. This function is faster
+ * compared to the alternative simulate_with_time_sync().
+ */
+static void simulation_run_without_time_sync(struct Simulation* first_node)
+{
+  for(struct Simulation* node = first_node; node != NULL; node = node->next)
+  {
+    pthread_create(&(node->thread), NULL, &compute_dynamics_per_thread_no_time_sync, (void*)node);
+  }
+  // join threads
+  for(struct Simulation* node = first_node; node != NULL; node = node->next)
+  {
+    if(node->current_waypoint_index < node->count_waypoints)
+    {
+      pthread_join(node->thread, NULL);
+    }
+  }
+}
 
 double get_sea_surface_edge_length()
 {
@@ -72,7 +228,7 @@ union Coordinates_3D get_sea_surface_position()
   return sea_surface_position;
 }
 
-struct Simulation* simulation_new_node()
+struct Simulation* simulation_new()
 {
   // Initialise memory
   struct Simulation* node = (struct Simulation*)malloc(sizeof(struct Simulation));
@@ -83,6 +239,7 @@ struct Simulation* simulation_new_node()
   node->buffer = (struct Buffer*)malloc(OUTPUT_BUFFER_SIZE * sizeof(struct Buffer));
   node->previous = NULL;
   node->next = NULL;
+  node->simulation_run = NULL;
   node->count_waypoints = 0;
   node->time_step_size = 40.0;
   node->current_time_index = 0;
@@ -110,7 +267,8 @@ void simulation_set_input(struct Simulation* first_node,
                                char *file,  
                                double wave_ht, 
                                double wave_heading, 
-                               long rand_seed)
+                               long rand_seed,
+                               bool with_time_sync)
 {
   // buffer to hold raw data from input file.
   const char *raw;
@@ -148,6 +306,15 @@ void simulation_set_input(struct Simulation* first_node,
   struct Simulation* current = first_node;
   for (int n = 0; n < count_asvs; ++n)
   {
+    // Set the Pointer to function for executing the simulation.
+    if(with_time_sync)
+    {
+      current->simulation_run = simulation_run_with_time_sync;
+    }
+    else
+    {
+      current->simulation_run = simulation_run_without_time_sync;
+    }
     // Create and initialise the sea surface
     int count_wave_spectral_directions  = 5;
     int count_wave_spectral_frequencies = 15;
@@ -791,166 +958,7 @@ void simulation_write_output(struct Simulation* first_node,
   }
 }
 
-// Computes dynamics for current node for the current time step.
-void compute_dynamics(void* current_node)
-{
-  struct Simulation* node = (struct Simulation*)current_node;
-  // Current time
-  double current_time = (node->current_time_index+1) * node->time_step_size/1000.0; //sec
-
-  // Set differential thrust on each propeller.
-  // ------------------------------------------
-  // PID controller estimate thrust to be applied on each propeller.
-  pid_controller_set_thrust(node->pid_controller, node->waypoints[node->current_waypoint_index]);
-
-  // Compute the dynamics of asv for the current time step
-  asv_compute_dynamics(node->asv, node->time_step_size);
-  struct Asv_specification spec = asv_get_spec(node->asv);
-  union Coordinates_3D cog_position = asv_get_position_cog(node->asv);
-  union Coordinates_3D attitude = asv_get_attitude(node->asv);
-
-  // save simulated data to buffer. 
-  node->buffer[node->current_time_index].time               = current_time;
-  node->buffer[node->current_time_index].sig_wave_ht        = wave_get_significant_height(node->wave);
-  node->buffer[node->current_time_index].wave_heading       = wave_get_predominant_heading(node->wave) * 180.0/PI;
-  node->buffer[node->current_time_index].wave_elevation     = wave_get_elevation(node->wave, cog_position, current_time);
-  node->buffer[node->current_time_index].F_surge            = asv_get_F(node->asv).keys.pitch;
-  node->buffer[node->current_time_index].surge_acceleration = asv_get_A(node->asv).keys.surge;
-  node->buffer[node->current_time_index].surge_velocity     = asv_get_V(node->asv).keys.surge;
-  node->buffer[node->current_time_index].cog_x              = cog_position.keys.x;
-  node->buffer[node->current_time_index].cog_y              = cog_position.keys.y;
-  node->buffer[node->current_time_index].cog_z              = cog_position.keys.z - (spec.cog.keys.z - spec.T);
-  node->buffer[node->current_time_index].heel               = attitude.keys.x * 180.0/PI;
-  node->buffer[node->current_time_index].trim               = attitude.keys.y * 180.0/PI;
-  node->buffer[node->current_time_index].heading            = attitude.keys.z * 180.0/PI;
-
-  // Check if reached the waypoint
-  double proximity_margin = 2.0; // target proximity to waypoint
-  int i = node->current_waypoint_index;
-  double x = cog_position.keys.x - node->waypoints[i].keys.x;
-  double y = cog_position.keys.y - node->waypoints[i].keys.y;
-  double distance = sqrt(x*x + y*y);
-  if(distance <= proximity_margin)
-  {
-    // Reached the current waypoint, so increament the index to the next waypoint.
-    // if the current_waypoint_index == waypoint.count ==> reached final waypoint.
-    ++(node->current_waypoint_index);
-  }
-}
-
-void compute_dynamics_per_thread_no_time_sync(void* current_node)
-{
-  struct Simulation* node = (struct Simulation*)current_node;
-  for(node->current_time_index = 0; ; ++(node->current_time_index))
-  {
-    if(node->current_waypoint_index < node->count_waypoints)
-    {
-      // Not yet reached the final waypoint, but check if buffer limit reached before further computation.
-      // Check if buffer exceeded
-      if(node->current_time_index >= OUTPUT_BUFFER_SIZE)
-      {
-        // buffer exceeded
-        fprintf(stderr, "ERROR: output buffer exceeded for asv with id '%s'.\n", node->id);
-        break;        
-      }
-      // If buffer not exceeded.
-      compute_dynamics((void*)node);
-    }
-    else
-    {
-      // Reached the final waypoint
-      break;
-    }
-  }
-}
-
-static void simulation_for_time_step(struct Simulation* first_node, long t, bool* buffer_exceeded, bool* has_all_reached_final_waypoint)
-{
-  // Create threads
-    // int limit_threads = get_nprocs();
-    // spawn threads
-    for(struct Simulation* node = first_node; node != NULL; node = node->next)
-    {
-      // Set time step for the node
-      node->current_time_index = t;
-
-      // Check if asv reached the final waypoint.
-      if(node->current_waypoint_index < node->count_waypoints)
-      {
-        // Not yet reached the final waypoint, but check if buffer limit reached before further computation.
-        // Check if buffer exceeded
-        if(node->current_time_index >= OUTPUT_BUFFER_SIZE)
-        {
-          // buffer exceeded
-          *buffer_exceeded = true;
-          fprintf(stderr, "ERROR: output buffer exceeded for asv with id '%s'.\n", node->id);
-          break;        
-        }
-        *has_all_reached_final_waypoint = false;
-        #ifdef DISABLE_MULTI_THREADING
-        compute_dynamics((void*)node);
-        #else
-        pthread_create(&(node->thread), NULL, &compute_dynamics, (void*)node);
-        #endif
-      }
-    }
-    #ifndef DISABLE_MULTI_THREADING
-    // join threads
-    for(struct Simulation* node = first_node; node != NULL; node = node->next)
-    {
-      if(node->current_waypoint_index < node->count_waypoints)
-      {
-        pthread_join(node->thread, NULL);
-      }
-    }
-    #endif
-}
-
-static void simulation_run_with_time_sync(struct Simulation* first_node)
-{
-  bool buffer_exceeded = false;
-  for(long t = 0; ; ++t)
-  {
-    // Variable to check if all reached the destination.
-    bool has_all_reached_final_waypoint = true;
-
-    simulation_for_time_step(first_node, t, &buffer_exceeded, &has_all_reached_final_waypoint);
-
-    // stop if all reached the destination or if buffer exceeded.
-    if(has_all_reached_final_waypoint || buffer_exceeded)
-    {
-      break;
-    }
-  }
-}
-
-/**
- * Simulate vehicle dynamics for each time step. This function runs 
- * simultion of each ASV in a independent thread and does not synchronize
- * the simulation for each time step between ASVs. This function is faster
- * compared to the alternative simulate_with_time_sync().
- */
-static void simulation_run_without_time_sync(struct Simulation* first_node)
-{
-  for(struct Simulation* node = first_node; node != NULL; node = node->next)
-  {
-    pthread_create(&(node->thread), NULL, &compute_dynamics_per_thread_no_time_sync, (void*)node);
-  }
-  // join threads
-  for(struct Simulation* node = first_node; node != NULL; node = node->next)
-  {
-    if(node->current_waypoint_index < node->count_waypoints)
-    {
-      pthread_join(node->thread, NULL);
-    }
-  }
-}
-
 void simulation_run(struct Simulation* first_node)
 {
-  #ifdef ENABLE_TIME_SYNC
-  simulation_run_with_time_sync(first_node);
-  #else
-  simulation_run_without_time_sync(first_node);
-  #endif
+  first_node->simulation_run(first_node);
 }

@@ -9,9 +9,9 @@ struct Buffer;
 struct Simulation;
 
 /** 
- * Initialise a new node for the linked list.
+ * Initialise a linked list of simulation nodes.
  */
-struct Simulation* simulation_new_node();
+struct Simulation* simulation_new();
 
 /** 
  * Free the heap memory.
@@ -25,13 +25,15 @@ void simulation_delete(struct Simulation* node);
  * @param file is the path to the input toml file.  
  * @param wave_ht wave height in meter.
  * @param wave_heading in deg.
- * @param rand_seed seed for random number generator. 
+ * @param rand_seed seed for random number generator.
+ * @param with_time_sync is true when simulations of all asvs are to run synchronous; else false.   
  */
 void simulation_set_input(struct Simulation* node,
                           char* file,  
                           double wave_ht, 
                           double wave_heading, 
-                          long rand_seed);
+                          long rand_seed,
+                          bool with_time_sync);
 
 /**
  * Function to write the simulated data to file. 

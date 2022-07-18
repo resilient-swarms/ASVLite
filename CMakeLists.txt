@@ -12,18 +12,6 @@ ELSE()
   MESSAGE(STATUS "Multi-threading enabled.")
 endif(NOT ENABLE_MULTI_THREADING)
 
-# ENABLE TIME SYNC WHILE MULTI-THREADING
-# --------------------------------------
-OPTION(ENABLE_TIME_SYNC "Enable time sync between parallel threads." OFF) # Disabled by default
-IF(ENABLE_MULTI_THREADING)
-  IF(ENABLE_TIME_SYNC)
-    ADD_DEFINITIONS(-DENABLE_TIME_SYNC)
-    MESSAGE(STATUS "Time sycn between threads enabled.")
-  ELSE()
-    MESSAGE(STATUS "Time sycn between threads disabled.")
-  ENDIF(ENABLE_TIME_SYNC)
-ENDIF(ENABLE_MULTI_THREADING)
-
 # INCLUDE HEADER FILES DIRECTORIES
 # --------------------------------
 INCLUDE_DIRECTORIES(

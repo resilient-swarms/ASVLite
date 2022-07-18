@@ -21,14 +21,16 @@ int main(int argc, char** argv)
   double wave_height = strtod(argv[3], &p_end);
   double wave_heading = strtod(argv[4], &p_end);
   long rand_seed = strtol(argv[5], &p_end, 10);  
+  bool with_time_sync = false;
 
   // Set simulation inputs
-  struct Simulation* simulation = simulation_new_node();
+  struct Simulation* simulation = simulation_new();
   simulation_set_input(simulation,
                        in_file, 
                        wave_height,
                        wave_heading,
-                       rand_seed);
+                       rand_seed,
+                       with_time_sync);
 
   // Simulate and record the time taken for the simulation.
   struct timespec start, finish;
