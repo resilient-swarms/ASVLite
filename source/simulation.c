@@ -125,7 +125,7 @@ static void simulation_run_per_node_without_time_sync(void* current_node)
       if(node->current_time_index >= OUTPUT_BUFFER_SIZE)
       {
         // buffer exceeded
-        fprintf(stderr, "ERROR: output buffer exceeded for asv with id '%s'.\n", node->id);
+        fprintf(stderr, "ERROR: ASV id = %s. Output buffer exceeded.\n", node->id);
         break;        
       }
       // If buffer not exceeded.
@@ -164,7 +164,7 @@ static void simulation_spawn_nodes_with_time_sync(struct Simulation* first_node)
         {
           // buffer exceeded
           buffer_exceeded = true;
-          fprintf(stderr, "ERROR: output buffer exceeded for asv with id '%s'.\n", node->id);
+          fprintf(stderr, "ERROR: ASV id = %s. Output buffer exceeded.\n", node->id);
           break;        
         }
         has_all_reached_final_waypoint = false;
@@ -986,7 +986,7 @@ void simulation_run(struct Simulation* first_node)
   {
     if(node->current_waypoint_index < node->count_waypoints)
     {
-      fprintf(stderr, "ERROR: ASV id = %s. %s", node->id, node->error_msg);
+      fprintf(stderr, "ERROR: ASV id = %s. %s\n", node->id, node->error_msg);
     }
   }
 }
