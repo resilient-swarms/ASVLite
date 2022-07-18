@@ -864,7 +864,7 @@ void compute_dynamics_per_thread_no_time_sync(void* current_node)
   }
 }
 
-void simulation_for_time_step(struct Simulation* first_node, long t, bool* buffer_exceeded, bool* has_all_reached_final_waypoint)
+static void simulation_for_time_step(struct Simulation* first_node, long t, bool* buffer_exceeded, bool* has_all_reached_final_waypoint)
 {
   // Create threads
     // int limit_threads = get_nprocs();
@@ -906,7 +906,7 @@ void simulation_for_time_step(struct Simulation* first_node, long t, bool* buffe
     #endif
 }
 
-void simulation_run(struct Simulation* first_node)
+static void simulation_run_with_time_sync(struct Simulation* first_node)
 {
   bool buffer_exceeded = false;
   for(long t = 0; ; ++t)
@@ -924,7 +924,13 @@ void simulation_run(struct Simulation* first_node)
   }
 }
 
-void simulation_run_without_time_sync(struct Simulation* first_node)
+/**
+ * Simulate vehicle dynamics for each time step. This function runs 
+ * simultion of each ASV in a independent thread and does not synchronize
+ * the simulation for each time step between ASVs. This function is faster
+ * compared to the alternative simulate_with_time_sync().
+ */
+static void simulation_run_without_time_sync(struct Simulation* first_node)
 {
   for(struct Simulation* node = first_node; node != NULL; node = node->next)
   {
@@ -938,4 +944,13 @@ void simulation_run_without_time_sync(struct Simulation* first_node)
       pthread_join(node->thread, NULL);
     }
   }
+}
+
+void simulation_run(struct Simulation* first_node)
+{
+  #ifdef ENABLE_TIME_SYNC
+  simulation_run_with_time_sync(first_node);
+  #else
+  simulation_run_without_time_sync(first_node);
+  #endif
 }

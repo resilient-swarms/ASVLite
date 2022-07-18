@@ -28,10 +28,10 @@ void simulation_delete(struct Simulation* node);
  * @param rand_seed seed for random number generator. 
  */
 void simulation_set_input(struct Simulation* node,
-                               char* file,  
-                               double wave_ht, 
-                               double wave_heading, 
-                               long rand_seed);
+                          char* file,  
+                          double wave_ht, 
+                          double wave_heading, 
+                          long rand_seed);
 
 /**
  * Function to write the simulated data to file. 
@@ -42,16 +42,9 @@ void simulation_set_input(struct Simulation* node,
  * @param simulation_time in sec.
  */
 void simulation_write_output(struct Simulation* node,
-                                  char* out, 
-                                  double simulation_time);
+                             char* out, 
+                             double simulation_time);
 
-/**
- * Simulate vehicle dynamics for each time step. This function runs 
- * simultion of each ASV in a independent thread and does not synchronize
- * the simulation for each time step between ASVs. This function is faster
- * compared to the alternative simulate_with_time_sync().
- */
-void simulation_run_without_time_sync(struct Simulation* first_node);
 
 /**
  * Simulate vehicle dynamics for each time step. This function runs 
@@ -61,11 +54,6 @@ void simulation_run_without_time_sync(struct Simulation* first_node);
  * waits and joins the threads at each time step.
  */
 void simulation_run(struct Simulation* first_node);
-
-/**
- * For all nodes simulate one time step.
- */
-void simulation_for_time_step(struct Simulation* first_node, long timer_count, bool* buffer_exceeded, bool* has_all_reached_final_waypoint);
 
 /**
  * Visualisation data from input file. Function to get the sea surface edge length in meter.
