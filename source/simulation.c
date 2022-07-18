@@ -59,7 +59,7 @@ static union Coordinates_3D sea_surface_position;
 static int count_mesh_cells_along_edge;
 
 // Computes dynamics for current node for the current time step.
-static void compute_dynamics(void* current_node)
+static void simulation_run_per_node_per_time_step(void* current_node)
 {
   struct Simulation* node = (struct Simulation*)current_node;
   // Current time
@@ -105,7 +105,7 @@ static void compute_dynamics(void* current_node)
   }
 }
 
-static void compute_dynamics_per_thread_no_time_sync(void* current_node)
+static void simulation_run_per_node_without_time_sync(void* current_node)
 {
   struct Simulation* node = (struct Simulation*)current_node;
   for(node->current_time_index = 0; ; ++(node->current_time_index))
@@ -121,7 +121,7 @@ static void compute_dynamics_per_thread_no_time_sync(void* current_node)
         break;        
       }
       // If buffer not exceeded.
-      compute_dynamics((void*)node);
+      simulation_run_per_node_per_time_step((void*)node);
     }
     else
     {
@@ -131,9 +131,15 @@ static void compute_dynamics_per_thread_no_time_sync(void* current_node)
   }
 }
 
-static void simulation_for_time_step(struct Simulation* first_node, long t, bool* buffer_exceeded, bool* has_all_reached_final_waypoint)
+static void simulation_spawn_nodes_with_time_sync(struct Simulation* first_node)
 {
-  // Create threads
+  bool buffer_exceeded = false;
+  for(long t = 0; ; ++t)
+  {
+    // Variable to check if all reached the destination.
+    bool has_all_reached_final_waypoint = true;
+
+    // Create threads
     // int limit_threads = get_nprocs();
     // spawn threads
     for(struct Simulation* node = first_node; node != NULL; node = node->next)
@@ -149,15 +155,15 @@ static void simulation_for_time_step(struct Simulation* first_node, long t, bool
         if(node->current_time_index >= OUTPUT_BUFFER_SIZE)
         {
           // buffer exceeded
-          *buffer_exceeded = true;
+          buffer_exceeded = true;
           fprintf(stderr, "ERROR: output buffer exceeded for asv with id '%s'.\n", node->id);
           break;        
         }
-        *has_all_reached_final_waypoint = false;
+        has_all_reached_final_waypoint = false;
         #ifdef DISABLE_MULTI_THREADING
-        compute_dynamics((void*)node);
+        simulation_run_per_node_per_time_step((void*)node);
         #else
-        pthread_create(&(node->thread), NULL, &compute_dynamics, (void*)node);
+        pthread_create(&(node->thread), NULL, &simulation_run_per_node_per_time_step, (void*)node);
         #endif
       }
     }
@@ -171,17 +177,6 @@ static void simulation_for_time_step(struct Simulation* first_node, long t, bool
       }
     }
     #endif
-}
-
-static void simulation_run_with_time_sync(struct Simulation* first_node)
-{
-  bool buffer_exceeded = false;
-  for(long t = 0; ; ++t)
-  {
-    // Variable to check if all reached the destination.
-    bool has_all_reached_final_waypoint = true;
-
-    simulation_for_time_step(first_node, t, &buffer_exceeded, &has_all_reached_final_waypoint);
 
     // stop if all reached the destination or if buffer exceeded.
     if(has_all_reached_final_waypoint || buffer_exceeded)
@@ -197,11 +192,11 @@ static void simulation_run_with_time_sync(struct Simulation* first_node)
  * the simulation for each time step between ASVs. This function is faster
  * compared to the alternative simulate_with_time_sync().
  */
-static void simulation_run_without_time_sync(struct Simulation* first_node)
+static void simulation_spawn_nodes_without_time_sync(struct Simulation* first_node)
 {
   for(struct Simulation* node = first_node; node != NULL; node = node->next)
   {
-    pthread_create(&(node->thread), NULL, &compute_dynamics_per_thread_no_time_sync, (void*)node);
+    pthread_create(&(node->thread), NULL, &simulation_run_per_node_without_time_sync, (void*)node);
   }
   // join threads
   for(struct Simulation* node = first_node; node != NULL; node = node->next)
@@ -228,7 +223,7 @@ union Coordinates_3D get_sea_surface_position()
   return sea_surface_position;
 }
 
-struct Simulation* simulation_new()
+struct Simulation* simulation_new_node()
 {
   // Initialise memory
   struct Simulation* node = (struct Simulation*)malloc(sizeof(struct Simulation));
@@ -245,6 +240,11 @@ struct Simulation* simulation_new()
   node->current_time_index = 0;
   node->current_waypoint_index = 0;
   return node;
+}
+
+struct Simulation* simulation_new()
+{
+  return simulation_new_node();
 }
 
 void simulation_delete(struct Simulation* first_node)
@@ -309,11 +309,11 @@ void simulation_set_input(struct Simulation* first_node,
     // Set the Pointer to function for executing the simulation.
     if(with_time_sync)
     {
-      current->simulation_run = simulation_run_with_time_sync;
+      current->simulation_run = simulation_spawn_nodes_with_time_sync;
     }
     else
     {
-      current->simulation_run = simulation_run_without_time_sync;
+      current->simulation_run = simulation_spawn_nodes_without_time_sync;
     }
     // Create and initialise the sea surface
     int count_wave_spectral_directions  = 5;
