@@ -1,8 +1,9 @@
 #include <stdlib.h>
+#include <sys/stat.h> // for creating directory
 #include "toml.h"
 #include "string.h"
 #include "simulation.h"
-#include <sys/stat.h> // for creating directory
+#include "error.h"
 
 #define OUTPUT_BUFFER_SIZE 200000 /*!< Output buffer size. */
 
@@ -51,6 +52,7 @@ struct Simulation
   struct Simulation* previous; // previous in the linked list.
   struct Simulation* next; // next in the linked list.
   void (*simulation_run)(struct Simulation*); // Pointer to function for executing the simulation. 
+  char* error_msg;
 };
 
 // Visualisation data
@@ -72,6 +74,12 @@ static void simulation_run_per_node_per_time_step(void* current_node)
 
   // Compute the dynamics of asv for the current time step
   asv_compute_dynamics(node->asv, node->time_step_size);
+  const char* error_msg = asv_get_error_msg(node->asv);
+  if(error_msg)
+  {
+    set_error_msg(node->error_msg, error_msg);
+    return;
+  }
   struct Asv_specification spec = asv_get_spec(node->asv);
   union Coordinates_3D cog_position = asv_get_position_cog(node->asv);
   union Coordinates_3D attitude = asv_get_attitude(node->asv);
@@ -162,24 +170,33 @@ static void simulation_spawn_nodes_with_time_sync(struct Simulation* first_node)
         has_all_reached_final_waypoint = false;
         #ifdef DISABLE_MULTI_THREADING
         simulation_run_per_node_per_time_step((void*)node);
+        if(node->error_msg)
+        {
+          break;
+        }
         #else
         pthread_create(&(node->thread), NULL, &simulation_run_per_node_per_time_step, (void*)node);
         #endif
       }
     }
+    // Join threads. Also check if there were errors in any node.
+    bool has_error = false;
     #ifndef DISABLE_MULTI_THREADING
-    // join threads
     for(struct Simulation* node = first_node; node != NULL; node = node->next)
     {
       if(node->current_waypoint_index < node->count_waypoints)
       {
+        if(node->error_msg)
+        {
+          has_error = true;
+        }
         pthread_join(node->thread, NULL);
       }
     }
     #endif
 
     // stop if all reached the destination or if buffer exceeded.
-    if(has_all_reached_final_waypoint || buffer_exceeded)
+    if(has_all_reached_final_waypoint || buffer_exceeded || has_error)
     {
       break;
     }
@@ -234,6 +251,7 @@ struct Simulation* simulation_new_node()
   node->buffer = (struct Buffer*)malloc(OUTPUT_BUFFER_SIZE * sizeof(struct Buffer));
   node->previous = NULL;
   node->next = NULL;
+  node->error_msg = NULL;
   node->simulation_run = NULL;
   node->count_waypoints = 0;
   node->time_step_size = 40.0;
@@ -254,6 +272,7 @@ void simulation_delete(struct Simulation* first_node)
     wave_delete(current_node->wave);
     asv_delete(current_node->asv);
     pid_controller_delete(current_node->pid_controller);
+    free(current_node->error_msg);
     free(current_node->buffer);
     free(current_node->waypoints);
     free(current_node);
@@ -277,7 +296,7 @@ void simulation_set_input(struct Simulation* first_node,
   FILE *fp = fopen(file, "r");
   if (fp == 0)
   {
-    fprintf(stderr, "Error: cannot open file \"%s\".\n", file);
+    fprintf(stderr, "ERROR: cannot open file \"%s\".\n", file);
     exit(1);
   }
 
@@ -912,7 +931,7 @@ void simulation_write_output(struct Simulation* first_node,
     // Open the file
     if (!(fp = fopen(file, "a")))
     {
-      fprintf(stderr, "Error. Cannot open output file %s.\n", file);
+      fprintf(stderr, "ERROR: Cannot open output file %s.\n", file);
       exit(1);
     }
     // Check if the file is empty and add header only for empty file.
@@ -961,4 +980,13 @@ void simulation_write_output(struct Simulation* first_node,
 void simulation_run(struct Simulation* first_node)
 {
   first_node->simulation_run(first_node);
+
+  // Check for any errors during simulation and print it. 
+  for(struct Simulation* node = first_node; node != NULL; node = node->next)
+  {
+    if(node->current_waypoint_index < node->count_waypoints)
+    {
+      fprintf(stderr, "ERROR: ASV id = %s. %s", node->id, node->error_msg);
+    }
+  }
 }

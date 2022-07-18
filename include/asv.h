@@ -91,7 +91,7 @@ void asv_delete(struct Asv* asv);
 
 /**
  * Returns error message related to the last function called for the instance of Asv.
- * @param wave is a non-null pointer to an instance of Asv for which the error message is to be fetched.
+ * @param asv is a non-null pointer to an instance of Asv for which the error message is to be fetched.
  */
 const char* asv_get_error_msg(const struct Asv* asv);
 
