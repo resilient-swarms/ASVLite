@@ -15,6 +15,7 @@ cd ../dependency/VTK-9.1.0
 mkdir build
 cd build
 cmake ../
+make 
 ```
 
 ## Build instruction
@@ -25,12 +26,12 @@ cd build
 
 If using the VTK-9 installed by package manager:
 ```
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_BUILD_TYPE=Release ../
 make 
 ```
 
 Or, if using the VTK-9 that is available with this repository:
 ```
-cmake -DVTK_DIR:PATH=../dependency/VTK-9.1.0/build -DCMAKE_BUILD_TYPE=Release ..
+cmake -DVTK_DIR:PATH=../dependency/VTK-9.1.0/build -DCMAKE_BUILD_TYPE=Release ../
 make 
 ```
