@@ -138,7 +138,7 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
     // Angle between two lines with slope m1, m2 = atan((m1-m2)/(1 + m1*m2))
     double m1 = (p2.keys.y == p1.keys.y)? __DBL_MAX__ : (p2.keys.x - p1.keys.x)/(p2.keys.y - p1.keys.y);
     double m2 = (p3.keys.y == p1.keys.y)? __DBL_MAX__ : (p3.keys.x - p1.keys.x)/(p3.keys.y - p1.keys.y);
-    double error_heading = atan((m1-m2)/(1+ m1*m2)); // radians
+    double error_heading = atan((m2-m1)/(1+ m1*m2)); // radians
     // Correction for angles in 3rd and 4th quadrants.
     if(p3.keys.x<p1.keys.x && p3.keys.y<p1.keys.y)
     {
