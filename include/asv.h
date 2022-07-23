@@ -1,77 +1,90 @@
 #ifndef ASV_H
 #define ASV_H
 
-#include <stdbool.h>
-#include "constants.h"
 #include "geometry.h"
-#include "wave.h"
 
 /**
  * Struct to hold specification of the vehicle. 
- * Coordinate system: Body-centric frame. The origin of the frame is on the
- * waterplane at the aft-centre.
+ * Coordinate system used is body-centric frame. 
+ * The origin of the frame is on the waterplane at the aft-centreline.
  */
 struct Asv_specification
 {
-  double L_wl;      //!< Input variable. Length waterline in m.
-  double B_wl;      //!< Input variable. Breadth waterline in m.
-  double D;         //!< Input variable. Depth of the ASV in m.
-  double T;         //!< Input variable. Draught of the ASV in m.
-  double max_speed; //!< Input variable. Maximum operational speed of the ASV in 
-                    //!< m/s.
-  double disp;   //!< Input variable. Displacement of the ASV in m3.
-  double r_roll; //!< Input variable. roll radius of gyration.
-  double r_pitch;//!< Input variable. pitch radius of gyration.
-  double r_yaw;  //!< Input variable. yaw radius of gyration.
-  union Coordinates_3D cog; //!< Input variable. Centre of gravity in body-fixed 
-                            //!< frame.
+  double L_wl;              //!< Length at waterline in m.
+  double B_wl;              //!< Breadth at waterline in m.
+  double D;                 //!< Depth of the ASV in m.
+  double T;                 //!< Draught of the ASV in m.
+  double max_speed;         //!< Maximum operational speed of the ASV in m/s.
+  double disp;              //!< Displacement, in m3, at draught T.
+  double r_roll;            //!< Roll radius of gyration in m.
+  double r_pitch;           //!< Pitch radius of gyration in m.
+  double r_yaw;             //!< Yaw radius of gyration in m.
+  union Coordinates_3D cog; //!< Centre of gravity in body-fixed frame. Coordinates in meter.
 };
 
 /**
- * A propeller for an asv. 
+ * An instance of Thruster should only be created by calling the function thruster_new(). 
+ * This function allocates and initialises a block of memory on the stack, and 
+ * therefore all calls to thruster_new() should be paired with a call to thruster_delete() 
+ * to avoid memory leaks. 
+ * 
+ * All functions operating on an instance of a Thruster have a mechanism to notify of 
+ * exceptions. All instances of Thruster have a member variable that holds a pointer 
+ * to an error message. When there are no errors, the pointer is set to null. If 
+ * an error occurs in a call to a function that takes an instance of Thruster, an error 
+ * message is set within the instance. The error message can be fetched using the 
+ * function thruster_get_error_msg(). The expected usage is to pair all function calls 
+ * that take an instance of Thruster with a call to thruster_get_error_msg() and check for 
+ * a null pointer. If a null pointer is returned, there is no error; otherwise, an 
+ * error has occurred. Any subsequent calls to other functions that take an instance 
+ * of Thruster will reset the last know error message. 
  */
-struct Propeller;
+struct Thruster;
 
 /**
- * An ASV.
- * An instance of Asv should only be created by calling 
- * the method asv_new(). This function allocates and 
- * initialises a block of memory on the stack, and therefore 
- * all calls to asv_new() should be paired with a call to 
- * asv_delete() to avoid memory leaks. All function calls 
- * may not result in a successful operation due to error. 
- * To find the status of an operation, call the function 
- * asv_get_error_msg(), which returns a null pointer if 
- * the operation was successful; else returns an error message. 
+ * An instance of Asv should only be created by calling the function asv_new(). 
+ * This function allocates and initialises a block of memory on the stack, and 
+ * therefore all calls to asv_new() should be paired with a call to asv_delete() 
+ * to avoid memory leaks. 
+ * 
+ * All functions operating on an instance of a Asv have a mechanism to notify of 
+ * exceptions. All instances of Asv have a member variable that holds a pointer 
+ * to an error message. When there are no errors, the pointer is set to null. If 
+ * an error occurs in a call to a function that takes an instance of Asv, an error 
+ * message is set within the instance. The error message can be fetched using the 
+ * function asv_get_error_msg(). The expected usage is to pair all function calls 
+ * that take an instance of Asv with a call to asv_get_error_msg() and check for 
+ * a null pointer. If a null pointer is returned, there is no error; otherwise, an 
+ * error has occurred. Any subsequent calls to other functions that take an instance 
+ * of Asv will reset the last know error message. 
  */
 struct Asv;
 
 /**
- * Create and initialise a Propeller.
- * @param position of the propeller in ASV's body-fixed frame.
+ * Create and initialise a Thruster.
+ * @param position of the thruster in ASV's body-fixed frame.
  * @return pointer to the initialised object if the operation was successful; else, returns a null pointer.
  */
-struct Propeller* propeller_new(const union Coordinates_3D position);
+struct Thruster* thruster_new(const union Coordinates_3D position);
 
 /**
- * Free memory allocated for the propeller.
- * @param propeller is a non-null pointer to an instance of Propeller to be deallocated.
+ * Free memory allocated for the thruster.
+ * @param thruster is a non-null pointer to an instance of Thruster to be deallocated.
  */
-void propeller_delete(struct Propeller* propeller);
+void thruster_delete(struct Thruster* thruster);
 
 /**
- * Returns error message related to the last function called for the instance of Propeller.
- * @param wave is a non-null pointer to an instance of Propeller for which the error message is to be fetched.
+ * Returns error message related to the last function called for the instance of Thruster.
+ * @return pointer to the error msg, if any, else returns a null pointer. 
  */
-const char* propeller_get_error_msg(const struct Propeller* propeller);
+const char* thruster_get_error_msg(const struct Thruster* thruster);
 
 /**
- * Set the orientation and magnitude of propeller thrust. 
- * @param propeller is a non-null pointer to an instance of Propeller for which the thrust is to be set.
- * @param orientation of the thrust vector in body-fixed frame.
- * @param magnitude of the thrust.
+ * Set the orientation and magnitude of thrust vector. 
+ * @param orientation of the thrust vector, in radians, in body-fixed frame.
+ * @param magnitude of the thrust in N.
  */
-void propeller_set_thrust(struct Propeller* propeller, const union Coordinates_3D orientation, double magnitude); 
+void thruster_set_thrust(struct Thruster* thruster, const union Coordinates_3D orientation, double magnitude); 
 
 /**
  * Create and initialise an asv.
@@ -91,91 +104,89 @@ void asv_delete(struct Asv* asv);
 
 /**
  * Returns error message related to the last function called for the instance of Asv.
- * @param asv is a non-null pointer to an instance of Asv for which the error message is to be fetched.
+ * @return pointer to the error msg, if any, else returns a null pointer. 
  */
 const char* asv_get_error_msg(const struct Asv* asv);
 
 /**
- * Set the propellers for the asv.
- * @param asv is a non-null pointer to an instance of Asv for which the propellers are to be set.
- * @param propellers is the array of propellers for the asv.
- * @param cout_propellers is the size of propellers array.
+ * Set the thrusters for the asv.
+ * @param thrusters array of thrusters for the asv.
+ * @param cout_thrusters is the size of thrusters array.
  */
-void asv_set_propellers(struct Asv* asv, struct Propeller** propellers, int cout_propellers);
+void asv_set_thrusters(struct Asv* asv, struct Thruster** thrusters, int cout_thrusters);
 
 /**
- * Get the array of pointers to the propellers.
- * @param asv is a non-null pointer to an instance of Asv for which the array of propellers is to be fetched.
- * @return array of pointers to propellers.
+ * Get the array of pointers to the thrusters.
+ * @return array of pointers to thrusters.
  */
-struct Propeller** asv_get_propellers(struct Asv* asv);
+struct Thruster** asv_get_thrusters(struct Asv* asv);
 
 /**
- * Get the number of propeller for the asv. 
- * @param asv is a non-null pointer to an instance of Asv for which the count of propellers is to be fetched.
- * @return number of propellers attached to the asv.
+ * Get the number of thruster for the asv. 
+ * @return number of thrusters attached to the asv.
  */
-int asv_get_count_propellers(struct Asv* asv);
+int asv_get_count_thrusters(struct Asv* asv);
 
 /**
- * Function to modify the current sea state to a new sea state.
- * @param asv is a non-null pointer to an instance of Asv for which a new irregular wave is to be set.
+ * Function to modify the current sea state to a new sea state. If operation was unsuccessful then the 
+ * new wave is rejected and the asv instance retains the pointer to its existing wave. Since the asv
+ * may retain the pointer to the old wave if error occurred, check for error by calling asv_get_error_msg() before
+ * calling wave_delete() on the replaced instance of Wave.  
  * @param wave is a non-null pointer for the new instance of irregular wave. 
  * If memory is to  be cleaned, call wave_delete() on the pointer to the old irregular wave instance.   
  */
 void asv_set_sea_state(struct Asv* asv, const struct Wave* wave);
 
 /**
- * Function to set the position and attitude of the ASV for the given time step.
- * @param asv is a non-null pointer to an instance of Asv for which the dynamics is to be computed.
+ * Function to compute dynamics of the ASV by incrementing time.
  * @param time_step_size in milliseconds to increment the current time.
  */
 void asv_compute_dynamics(struct Asv* asv, double time_step_size);
 
 /**
  * Similar to function asv_compute_dynamics but should be used only for a wave glider. 
- * The function sets the position and attitude of the wave glider for the given time step, 
+ * The function computes the dynamics of the wave glider for the next time step, 
  * and also computes the wave thrust force generated by the underwater glider.
- * @param asv is a non-null pointer to an instance of Asv for which the dynamics is to be computed.
  * @param rudder_angle is the angle of the rudder with respect to X axis of the ASV. 
- * Rudder angle must within (-PI/2, PI/2). Angle is positive when the vehicle has to turn to right (ie. aft end of the rudder points to starboard side). 
+ * Rudder angle must within (-PI/2, PI/2). Angle is positive when the vehicle has to turn 
+ * to starboard (ie. aft end of the rudder points to starboard side). 
  * @param time_step_size in milliseconds to increment the current time.
  */
 void wave_glider_compute_dynamics(struct Asv* asv, double rudder_angle, double time_step_size);
 
 /**
  * Get the position of the asv using the COG of the vehicle. 
- * @param asv is a non-null pointer to an instance of Asv for which the position is to be fetched.
- * @return position of the asv.
+ * @return position of the asv with coordinates in meter.
  */
 union Coordinates_3D asv_get_position_cog(struct Asv* asv);
 
 /**
  * Get the position of the asv using the origin of the body reference frame of the vehicle. 
- * @param asv is a non-null pointer to an instance of Asv for which the position is to be fetched.
- * @return position of the asv.
+ * @return position of the asv with coordinates in meter.
  */
 union Coordinates_3D asv_get_position_origin(struct Asv* asv);
 
 /**
  * Get the floating attitude of the asv. 
- * @param asv is a non-null pointer to an instance of Asv for which the attitude is to be fetched.
- * @return attitude of the asv.
+ * @return attitude of the asv with angles in radians.
  */
 union Coordinates_3D asv_get_attitude(struct Asv* asv);
 
 /**
- * Get force. 
+ * Get force.
+ * @return force, in N, along each DOF. 
  */
 union Rigid_body_DOF asv_get_F(struct Asv* asv);
 
 /**
  * Get acceleration. 
+ * @return acceleration, in m/s2, along each DOF.
  */
 union Rigid_body_DOF asv_get_A(struct Asv* asv);
 
 /**
  * Get velocity. 
+ * @return velocity, in m/s, along each DOF.
  */
 union Rigid_body_DOF asv_get_V(struct Asv* asv);
 

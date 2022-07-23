@@ -1,21 +1,23 @@
-#include <stdio.h>
-#include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <math.h>
 #include "asv.h"
-#include "errors.h"
+#include "wave.h"
 #include "regular_wave.h"
+#include "errors.h"
 
 #define COUNT_ASV_SPECTRAL_DIRECTIONS 360  /*!< Number of directions in the wave force spectrum. */
 #define COUNT_ASV_SPECTRAL_FREQUENCIES 100 /*!< Number of frequencies in the wave force spectrum. */
 
 /**
- * Struct to hold all the inputs for the propeller.
+ * Struct to hold all the inputs for the thruster.
  */
-struct Propeller
+struct Thruster
 {
-  union Coordinates_3D position;  //!< Position of propeller force vector in ASV's body-fixed frame.
-  union Coordinates_3D orientation; //!< Orientation of the force vector of the propeller in body-fixed frame.
-  double thrust;    //!< Magnitude of propeller force in Newton.
+  union Coordinates_3D position;    //!< Position of thrust vector in ASV's body-fixed frame.
+  union Coordinates_3D orientation; //!< Orientation of the thrust vector in body-fixed frame.
+  double thrust;    //!< Magnitude of thrust in Newton.
   char* error_msg;  //!< Error message, if any.
 };
 
@@ -39,7 +41,7 @@ struct Asv_dynamics
   
   union Rigid_body_DOF F; //!< Net force. 
   union Rigid_body_DOF F_wave; //!< Wave force. 
-  union Rigid_body_DOF F_propeller; //!< Propeller force. 
+  union Rigid_body_DOF F_thruster; //!< Thruster force. 
   union Rigid_body_DOF F_drag; //!< Quadratic force force. 
   union Rigid_body_DOF F_restoring; //!< Hydrostatic restoring force. 
 
@@ -58,9 +60,9 @@ struct Asv
 {
   // Input
   struct Asv_specification spec; //!< ASV specification.
-  int count_propellers;         //!< Number of propellers attached to the ASV.
-  struct Propeller** propellers; //!< Array of propellers.
-  const struct Wave* wave;            //!< Irregular wave instance. 
+  int count_thrusters;           //!< Number of thrusters attached to the ASV.
+  struct Thruster** thrusters;   //!< Array of thrusters.
+  const struct Wave* wave;       //!< Irregular wave instance. 
   
   // Initial used for input but later contains results. 
   union Coordinates_3D origin_position; //!< Position of the origin of the body-fixed frame in 
@@ -341,7 +343,7 @@ static void set_wave_force(struct Asv* asv)
         // fprintf(stderr, "FATAL ERROR! Array index out of bounds.\n");
         // fprintf(stderr, "array index = %i \n", index);
         // fprintf(stderr, "V[surge] = %f \n", asv->dynamics.V[surge]);
-        // fprintf(stderr, "F_propeller[surge] = %f \n", asv->dynamics.F_propeller[surge]);
+        // fprintf(stderr, "F_thruster[surge] = %f \n", asv->dynamics.F_thruster[surge]);
         // fprintf(stderr, "encounter freq = %f \n", freq);
         // fprintf(stderr, "freq_step_size = %f \n", freq_step_size);
         // fprintf(stderr, "P_unit_wave_freq_min = %f \n", asv->dynamics.P_unit_wave_freq_min);
@@ -404,50 +406,50 @@ static void set_wave_force(struct Asv* asv)
   } 
 }
 
-// Function to calculate the propeller force for the current time step.
-static void set_propeller_force(struct Asv* asv)
+// Function to calculate the thruster force for the current time step.
+static void set_thruster_force(struct Asv* asv)
 {
-  // Reset the propeller force to 0.
+  // Reset the thruster force to 0.
   for(int i = 0; i < COUNT_DOF; ++i)
   {
-    asv->dynamics.F_propeller.array[i] = 0.0;
+    asv->dynamics.F_thruster.array[i] = 0.0;
   }
 
-  // Calculate force from each propeller.
-  for(int i = 0; i < asv->count_propellers; ++i)
+  // Calculate force from each thruster.
+  for(int i = 0; i < asv->count_thrusters; ++i)
   {
-    double thrust = asv->propellers[i]->thrust;
-    double trim = asv->propellers[i]->orientation.keys.y;
-    double prop_angle = asv->propellers[i]->orientation.keys.z;
+    double thrust = asv->thrusters[i]->thrust;
+    double trim = asv->thrusters[i]->orientation.keys.y;
+    double prop_angle = asv->thrusters[i]->orientation.keys.z;
     
-    double F_x =  thrust * cos(asv->propellers[i]->orientation.keys.z);
-    double F_y =  thrust * sin(asv->propellers[i]->orientation.keys.z);
-    double F_z =  thrust * sin(asv->propellers[i]->orientation.keys.y);
+    double F_x =  thrust * cos(asv->thrusters[i]->orientation.keys.z);
+    double F_y =  thrust * sin(asv->thrusters[i]->orientation.keys.z);
+    double F_z =  thrust * sin(asv->thrusters[i]->orientation.keys.y);
     
-    double x = asv->spec.cog.keys.x - asv->propellers[i]->position.keys.x;
-    double y = asv->spec.cog.keys.y - asv->propellers[i]->position.keys.y;
-    double z = asv->propellers[i]->position.keys.z - asv->spec.cog.keys.z;
+    double x = asv->spec.cog.keys.x - asv->thrusters[i]->position.keys.x;
+    double y = asv->spec.cog.keys.y - asv->thrusters[i]->position.keys.y;
+    double z = asv->thrusters[i]->position.keys.z - asv->spec.cog.keys.z;
  
     double M_x = F_y * z + F_z * y;
     double M_y = F_x * z + F_z * x; 
     double M_z = F_x * y + F_y * x;
 
-    asv->dynamics.F_propeller.keys.surge  += F_x;
-    asv->dynamics.F_propeller.keys.sway   += F_y;
-    asv->dynamics.F_propeller.keys.heave  += F_z;
-    asv->dynamics.F_propeller.keys.roll   += M_x;
-    asv->dynamics.F_propeller.keys.pitch  += M_y;
-    asv->dynamics.F_propeller.keys.yaw    += M_z;
+    asv->dynamics.F_thruster.keys.surge  += F_x;
+    asv->dynamics.F_thruster.keys.sway   += F_y;
+    asv->dynamics.F_thruster.keys.heave  += F_z;
+    asv->dynamics.F_thruster.keys.roll   += M_x;
+    asv->dynamics.F_thruster.keys.pitch  += M_y;
+    asv->dynamics.F_thruster.keys.yaw    += M_z;
   }
 }
 
-// Function to calculate the propeller force for the current time step.
+// Function to calculate the thruster force for the current time step.
 static void set_wave_glider_thrust(struct Asv* asv, double rudder_angle)
 {
-  // Reset the propeller force to 0.
+  // Reset the thruster force to 0.
   for(int i = 0; i < COUNT_DOF; ++i)
   {
-    asv->dynamics.F_propeller.array[i] = 0.0;
+    asv->dynamics.F_thruster.array[i] = 0.0;
   }
 
   // Ref: Dynamic modeling and simulations of the wave glider, Peng Wang, Xinliang Tian, Wenyue Lu, Zhihuan Hu, Yong Luo
@@ -476,7 +478,7 @@ static void set_wave_glider_thrust(struct Asv* asv, double rudder_angle)
   double angle_F_L = 45 * PI/180.0; // Assuming the lift force is always at an angle of 45 deg to the surge direction. 
   double thrust_per_hydrofoil = F_L * cos(angle_F_L);
   double thrust = count_hydrofoils * thrust_per_hydrofoil;
-  asv->dynamics.F_propeller.keys.surge = thrust;
+  asv->dynamics.F_thruster.keys.surge = thrust;
 
   // Compute the yaw moment generated by the rudder
   // Assuming the rudder area = area of a hydrofoil
@@ -486,7 +488,7 @@ static void set_wave_glider_thrust(struct Asv* asv, double rudder_angle)
   double F_L_rudder = 0.5 * SEA_WATER_DENSITY * C_L * A * V * V;
   double yaw_moment = F_L_rudder * asv->spec.L_wl/2.0;
   yaw_moment = (rudder_angle < 0.0)? -yaw_moment: yaw_moment;
-  asv->dynamics.F_propeller.keys.yaw = yaw_moment;
+  asv->dynamics.F_thruster.keys.yaw = yaw_moment;
 }
 
 // Function to compute the drag force for the current time step.
@@ -519,7 +521,7 @@ static void set_net_force(struct Asv* asv)
   for(int i = 0; i < COUNT_DOF; ++i)
   {
     asv->dynamics.F.array[i] = asv->dynamics.F_wave.array[i]            
-                             + asv->dynamics.F_propeller.array[i]  
+                             + asv->dynamics.F_thruster.array[i]  
                              + asv->dynamics.F_drag.array[i]       
                              + asv->dynamics.F_restoring.array[i];
   }
@@ -587,54 +589,57 @@ static void set_attitude(struct Asv* asv)
   asv->attitude.keys.y += asv->dynamics.X.keys.pitch;
 }
 
-struct Propeller* propeller_new(const union Coordinates_3D position)
+struct Thruster* thruster_new(const union Coordinates_3D position)
 {
-  struct Propeller* propeller = NULL;
-  if(propeller = (struct Propeller*)malloc(sizeof(struct Propeller)))
+  struct Thruster* thruster = NULL;
+  if(thruster = (struct Thruster*)malloc(sizeof(struct Thruster)))
   {
-    propeller->error_msg = NULL;
-    propeller->position = position;
+    thruster->error_msg = NULL;
+    thruster->position = position;
     for(int i = 0; i < COUNT_COORDINATES; ++i)
     {
-      propeller->orientation.array[i] = 0.0;
+      thruster->orientation.array[i] = 0.0;
     }
-    propeller->thrust = 0.0;
-    return propeller;
+    thruster->thrust = 0.0;
   }
 
-  return NULL;
+  return thruster;
 }
 
-void propeller_delete(struct Propeller* propeller)
+void thruster_delete(struct Thruster* thruster)
 {
-  if(propeller)
+  if(thruster)
   {
-    free(propeller->error_msg);
-    free(propeller);
-    propeller = NULL;
+    free(thruster->error_msg);
+    free(thruster);
+    thruster = NULL;
   }
 }
 
-const char* propeller_get_error_msg(const struct Propeller* propeller)
+const char* thruster_get_error_msg(const struct Thruster* thruster)
 {
-  if(propeller)
+  if(thruster)
   {
-    return propeller->error_msg;
+    return thruster->error_msg;
   }
-  return NULL;
+  else
+  {
+    return NULL;
+  }
 }
 
-void propeller_set_thrust(struct Propeller* propeller, const union Coordinates_3D orientation, double magnitude)
+void thruster_set_thrust(struct Thruster* thruster, const union Coordinates_3D orientation, double magnitude)
 {
-  clear_error_msg(propeller->error_msg);
-  if(propeller)
+  clear_error_msg(thruster->error_msg);
+  if(thruster)
   {
-    propeller->orientation = orientation;
-    propeller->thrust = magnitude;
-    return;
+    thruster->orientation = orientation;
+    thruster->thrust = magnitude;
   }
-
-  set_error_msg(propeller->error_msg, error_null_pointer);
+  else
+  {
+    set_error_msg(thruster->error_msg, error_null_pointer);
+  }
 } 
 
 struct Asv* asv_new(const struct Asv_specification specification, const struct Wave* wave, union Coordinates_3D position, union Coordinates_3D attitude)
@@ -646,8 +651,8 @@ struct Asv* asv_new(const struct Asv_specification specification, const struct W
     {
       asv->error_msg = NULL;
       asv->spec = specification;
-      // Propellers set to null
-      asv->propellers = NULL;
+      // Thrusters set to null
+      asv->thrusters = NULL;
       // Initialise time record 
       asv->dynamics.time = 0.0;
 
@@ -682,7 +687,7 @@ struct Asv* asv_new(const struct Asv_specification specification, const struct W
         asv->dynamics.A.array          [k] = 0.0;
         asv->dynamics.F.array          [k] = 0.0;
         asv->dynamics.F_wave.array     [k] = 0.0;
-        asv->dynamics.F_propeller.array[k] = 0.0;
+        asv->dynamics.F_thruster.array[k] = 0.0;
         asv->dynamics.F_drag.array     [k] = 0.0;
         asv->dynamics.F_restoring.array[k] = 0.0;
       }
@@ -740,7 +745,7 @@ void asv_delete(struct Asv* asv)
   {
     free(asv->error_msg);
     free(asv->dynamics.P_unit_wave);
-    free(asv->propellers);
+    free(asv->thrusters);
     free(asv);
     asv = NULL;
   }
@@ -752,55 +757,62 @@ const char* asv_get_error_msg(const struct Asv* asv)
   {
     return asv->error_msg;
   }
-  return NULL;
+  else
+  {
+    return NULL;
+  }
 }
 
-void asv_set_propellers(struct Asv* asv, struct Propeller** propellers, int count_propellers)
+void asv_set_thrusters(struct Asv* asv, struct Thruster** thrusters, int count_thrusters)
 {
   clear_error_msg(asv->error_msg);
-  if(asv && propellers)
+  if(asv && thrusters)
   {
-    if(asv->propellers = (struct Propeller**)malloc(sizeof(struct Propeller*) * count_propellers))
+    if(asv->thrusters = (struct Thruster**)malloc(sizeof(struct Thruster*) * count_thrusters))
     {
-      for(int i = 0; i<count_propellers; ++i)
+      for(int i = 0; i<count_thrusters; ++i)
       {
-        asv->propellers[i] = propellers[i];
+        asv->thrusters[i] = thrusters[i];
       }
-      asv->count_propellers = count_propellers;
-      return;
+      asv->count_thrusters = count_thrusters;
     }
     else
     {
       set_error_msg(asv->error_msg, error_malloc_failed);
-      return;
     }
   }
-
-  set_error_msg(asv->error_msg, error_null_pointer);
+  else
+  {
+    set_error_msg(asv->error_msg, error_null_pointer);
+  }
 }
 
-struct Propeller** asv_get_propellers(struct Asv* asv)
+struct Thruster** asv_get_thrusters(struct Asv* asv)
 {
   clear_error_msg(asv->error_msg);
   if(asv)
   {
-    return asv->propellers;
+    return asv->thrusters;
   }
-
-  set_error_msg(asv->error_msg, error_null_pointer);
-  return NULL;
+  else
+  {
+    set_error_msg(asv->error_msg, error_null_pointer);
+    return NULL;
+  }
 }
 
-int asv_get_count_propellers(struct Asv* asv)
+int asv_get_count_thrusters(struct Asv* asv)
 {
   clear_error_msg(asv->error_msg);
   if(asv)
   {
-    return asv->count_propellers;
+    return asv->count_thrusters;
   }
-
-  set_error_msg(asv->error_msg, error_null_pointer);
-  return 0;
+  else
+  {
+    set_error_msg(asv->error_msg, error_null_pointer);
+    return 0;
+  }
 }
 
 union Coordinates_3D asv_get_position_cog(struct Asv* asv)
@@ -810,9 +822,11 @@ union Coordinates_3D asv_get_position_cog(struct Asv* asv)
   {
     return asv->cog_position;
   }
-
-  set_error_msg(asv->error_msg, error_null_pointer);
-  return (union Coordinates_3D){0.0, 0.0, 0.0};
+  else
+  {
+    set_error_msg(asv->error_msg, error_null_pointer);
+    return (union Coordinates_3D){0.0, 0.0, 0.0};
+  }
 }
 
 union Coordinates_3D asv_get_position_origin(struct Asv* asv)
@@ -822,9 +836,11 @@ union Coordinates_3D asv_get_position_origin(struct Asv* asv)
   {
     return asv->origin_position;
   }
-
-  set_error_msg(asv->error_msg, error_null_pointer);
-  return (union Coordinates_3D){0.0, 0.0, 0.0};
+  else
+  {
+    set_error_msg(asv->error_msg, error_null_pointer);
+    return (union Coordinates_3D){0.0, 0.0, 0.0};
+  }
 }
 
 union Coordinates_3D asv_get_attitude(struct Asv* asv)
@@ -834,9 +850,11 @@ union Coordinates_3D asv_get_attitude(struct Asv* asv)
   {
     return asv->attitude;
   }
-
-  set_error_msg(asv->error_msg, error_null_pointer);
-  return (union Coordinates_3D){0.0, 0.0, 0.0};
+  else
+  {
+    set_error_msg(asv->error_msg, error_null_pointer);
+    return (union Coordinates_3D){0.0, 0.0, 0.0};
+  }
 }
 
 union Rigid_body_DOF asv_get_F(struct Asv* asv)
@@ -846,9 +864,11 @@ union Rigid_body_DOF asv_get_F(struct Asv* asv)
   {
     return asv->dynamics.F;
   }
-
-  set_error_msg(asv->error_msg, error_null_pointer);
-  return (union Rigid_body_DOF){0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  else
+  {
+    set_error_msg(asv->error_msg, error_null_pointer);
+    return (union Rigid_body_DOF){0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  }
 }
 
 union Rigid_body_DOF asv_get_A(struct Asv* asv)
@@ -858,9 +878,11 @@ union Rigid_body_DOF asv_get_A(struct Asv* asv)
   {
     return asv->dynamics.A;
   }
-
-  set_error_msg(asv->error_msg, error_null_pointer);
-  return (union Rigid_body_DOF){0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  else
+  {
+    set_error_msg(asv->error_msg, error_null_pointer);
+    return (union Rigid_body_DOF){0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  }
 }
 
 union Rigid_body_DOF asv_get_V(struct Asv* asv)
@@ -870,9 +892,11 @@ union Rigid_body_DOF asv_get_V(struct Asv* asv)
   {
     return asv->dynamics.V;
   }
-
-  set_error_msg(asv->error_msg, error_null_pointer);
-  return (union Rigid_body_DOF){0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  else
+  {
+    set_error_msg(asv->error_msg, error_null_pointer);
+    return (union Rigid_body_DOF){0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  }
 }
 
 struct Asv_specification asv_get_spec(struct Asv* asv)
@@ -882,13 +906,16 @@ struct Asv_specification asv_get_spec(struct Asv* asv)
   {
     return asv->spec;
   }
-
-  set_error_msg(asv->error_msg, error_null_pointer);
+  else
+  {
+    set_error_msg(asv->error_msg, error_null_pointer);
+  }
 }
 
 void asv_set_sea_state(struct Asv* asv, const struct Wave* wave)
 { 
   clear_error_msg(asv->error_msg);
+  const struct Wave* old_wave = asv->wave;
   if(asv && wave)
   {
     // set the wave for the ASV
@@ -909,6 +936,7 @@ void asv_set_sea_state(struct Asv* asv, const struct Wave* wave)
     if(error_msg)
     {
       set_error_msg(asv->error_msg, error_msg);
+      asv_set_sea_state(asv, old_wave);
       return;
     }
     // Reset the cog position.
@@ -923,44 +951,48 @@ void asv_set_sea_state(struct Asv* asv, const struct Wave* wave)
     
     // Set the wave force for unit waves
     set_unit_wave_pressure(asv);
-    error_msg = asv_get_error_msg(asv);
-    if(error_msg)
+    if(asv->error_msg)
     {
-      set_error_msg(asv->error_msg, error_msg);
+      // Some error occurred in the call to set_unit_wave_pressure.
+      asv_set_sea_state(asv, old_wave);
       return;
     }
-    return;
   }
-  
-  set_error_msg(asv->error_msg, error_null_pointer);
+  else
+  {
+    set_error_msg(asv->error_msg, error_null_pointer);
+  }
 }
 
 static void compute_dynamics(struct Asv* asv, bool is_wave_glider, double rudder_angle, double time_step_size)
 {
-  clear_error_msg(asv->error_msg);
   if(asv)
   {
+    double old_time_step_size = asv->dynamics.time_step_size;
+    double old_time = asv->dynamics.time;
     // Update the time
     asv->dynamics.time_step_size = time_step_size; // milliseconds
     asv->dynamics.time += time_step_size/1000.0; // seconds
 
     // Get the wave force for the current time step
     set_wave_force(asv);
-    const char* error_msg = asv_get_error_msg(asv);
-    if(error_msg)
+    if(asv->error_msg)
     {
-      set_error_msg(asv->error_msg, error_msg);
+      // Some error occurred.
+      // Reset time
+      asv->dynamics.time_step_size = old_time_step_size; // milliseconds
+      asv->dynamics.time old_time; // seconds
       return;
     }
     
-    // Get the propeller force for the current time step
+    // Get the thruster force for the current time step
     if(is_wave_glider)
     {
       set_wave_glider_thrust(asv, rudder_angle);
     }
     else
     {
-      set_propeller_force(asv);
+      set_thruster_force(asv);
     }
     
     // Compute the drag force for the current time step based on velocity reading
@@ -987,22 +1019,18 @@ static void compute_dynamics(struct Asv* asv, bool is_wave_glider, double rudder
     
     // Translate the deflection to global frame and compute the new position.
     set_position(asv);
-    
-    return;
   }
-
-  set_error_msg(asv->error_msg, error_null_pointer);
+  else
+  {
+    set_error_msg(asv->error_msg, error_null_pointer);
+  }
 }
 
 void asv_compute_dynamics(struct Asv* asv, double time_step_size)
 {
+  clear_error_msg(asv->error_msg);
   compute_dynamics(asv, false, 0.0, time_step_size);
   const char* error_msg = asv_get_error_msg(asv);
-  if(error_msg)
-  {
-    set_error_msg(asv->error_msg, error_msg);
-    return;
-  }
 }
 
 void wave_glider_compute_dynamics(struct Asv* asv, double rudder_angle, double time_step_size)
@@ -1012,12 +1040,9 @@ void wave_glider_compute_dynamics(struct Asv* asv, double rudder_angle, double t
   {
     compute_dynamics(asv, true, rudder_angle, time_step_size);
     const char* error_msg = asv_get_error_msg(asv);
-    if(error_msg)
-    {
-      set_error_msg(asv->error_msg, error_msg);
-      return;
-    }
-    return;
   }
-  set_error_msg(asv->error_msg, error_incorrect_rudder_angle);
+  else
+  {
+    set_error_msg(asv->error_msg, error_incorrect_rudder_angle);
+  }
 }
