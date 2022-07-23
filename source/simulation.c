@@ -8,6 +8,7 @@
 #include "wave.h"
 #include "geometry.h"
 #include "errors.h"
+#include "constants.h"
 
 #define OUTPUT_BUFFER_SIZE 200000 /*!< Output buffer size. */
 

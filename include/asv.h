@@ -3,6 +3,8 @@
 
 #include "geometry.h"
 
+struct Wave;
+
 /**
  * Struct to hold specification of the vehicle. 
  * Coordinate system used is body-centric frame. 
@@ -84,7 +86,9 @@ const char* thruster_get_error_msg(const struct Thruster* thruster);
  * @param orientation of the thrust vector, in radians, in body-fixed frame.
  * @param magnitude of the thrust in N.
  */
-void thruster_set_thrust(struct Thruster* thruster, const union Coordinates_3D orientation, double magnitude); 
+void thruster_set_thrust(struct Thruster* thruster, 
+                         const union Coordinates_3D orientation, 
+                         double magnitude); 
 
 /**
  * Create and initialise an asv.
@@ -94,7 +98,10 @@ void thruster_set_thrust(struct Thruster* thruster, const union Coordinates_3D o
  * @param attitude of the asv.
  * @return pointer to the initialised object if the operation was successful; else, returns a null pointer.
  */
-struct Asv* asv_new(const struct Asv_specification specification, const struct Wave* wave, union Coordinates_3D position, union Coordinates_3D attitude);
+struct Asv* asv_new(const struct Asv_specification specification, 
+                    const struct Wave* wave, 
+                    union Coordinates_3D position, 
+                    union Coordinates_3D attitude);
 
 /**
  * Free memory allocated for the asv.
@@ -113,7 +120,9 @@ const char* asv_get_error_msg(const struct Asv* asv);
  * @param thrusters array of thrusters for the asv.
  * @param cout_thrusters is the size of thrusters array.
  */
-void asv_set_thrusters(struct Asv* asv, struct Thruster** thrusters, int cout_thrusters);
+void asv_set_thrusters(struct Asv* asv, 
+                       struct Thruster** thrusters, 
+                       int cout_thrusters);
 
 /**
  * Get the array of pointers to the thrusters.
@@ -152,7 +161,9 @@ void asv_compute_dynamics(struct Asv* asv, double time_step_size);
  * to starboard (ie. aft end of the rudder points to starboard side). 
  * @param time_step_size in milliseconds to increment the current time.
  */
-void wave_glider_compute_dynamics(struct Asv* asv, double rudder_angle, double time_step_size);
+void wave_glider_compute_dynamics(struct Asv* asv, 
+                                  double rudder_angle, 
+                                  double time_step_size);
 
 /**
  * Get the position of the asv using the COG of the vehicle. 

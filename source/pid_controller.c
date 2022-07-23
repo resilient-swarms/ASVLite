@@ -133,7 +133,7 @@ void pid_controller_set_thrust(struct PID_controller* controller, union Coordina
   controller->error_diff_heading = error_heading - controller->error_heading;
   controller->error_heading = error_heading; 
  
-  // Calculate propeller thrust.
+  // Calculate thruster thrust.
   double max_thrust = 5.0; // SMARTY platform thruster has a maximum capacity of 5N. 
 
   double heading_thrust = 
@@ -170,11 +170,11 @@ void pid_controller_set_thrust(struct PID_controller* controller, union Coordina
     thrust_sb = thrust_sb * ratio;
   } 
 
-  // Set propeller thrust on each of the 4 propellers.
+  // Set thruster thrust on each of the 4 thrusters.
   union Coordinates_3D orientation_fore_thrusters = {0.0, PI, 0.0};
   union Coordinates_3D orientation_aft_thrusters  = {0.0, 0.0, 0.0};
-  struct Propellers** propellers = asv_get_propellers(controller->asv);
-  // Propeller configuration
+  struct Thruster** thrusters = asv_get_thrusters(controller->asv);
+  // Thruster configuration
   //
   // Thust direction is towards aft
   //  |              |
@@ -195,23 +195,23 @@ void pid_controller_set_thrust(struct PID_controller* controller, union Coordina
   //    
   if(thrust_ps >= 0.0)
   {
-    propeller_set_thrust(propellers[2], orientation_aft_thrusters, thrust_ps);
-    propeller_set_thrust(propellers[0], orientation_fore_thrusters, 0.0);
+    thruster_set_thrust(thrusters[2], orientation_aft_thrusters, thrust_ps);
+    thruster_set_thrust(thrusters[0], orientation_fore_thrusters, 0.0);
   }
   else
   {
-    propeller_set_thrust(propellers[2], orientation_aft_thrusters, 0.0);
-    propeller_set_thrust(propellers[0], orientation_fore_thrusters, thrust_ps);
+    thruster_set_thrust(thrusters[2], orientation_aft_thrusters, 0.0);
+    thruster_set_thrust(thrusters[0], orientation_fore_thrusters, thrust_ps);
   }
   if(thrust_sb >= 0.0)
   {
-    propeller_set_thrust(propellers[3], orientation_aft_thrusters, thrust_sb);
-    propeller_set_thrust(propellers[1], orientation_fore_thrusters, 0.0);
+    thruster_set_thrust(thrusters[3], orientation_aft_thrusters, thrust_sb);
+    thruster_set_thrust(thrusters[1], orientation_fore_thrusters, 0.0);
   }
   else
   {
-    propeller_set_thrust(propellers[3], orientation_aft_thrusters, 0.0);
-    propeller_set_thrust(propellers[1], orientation_fore_thrusters, thrust_sb);
+    thruster_set_thrust(thrusters[3], orientation_aft_thrusters, 0.0);
+    thruster_set_thrust(thrusters[1], orientation_fore_thrusters, thrust_sb);
   }
 }
 

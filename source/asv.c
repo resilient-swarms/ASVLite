@@ -6,6 +6,7 @@
 #include "wave.h"
 #include "regular_wave.h"
 #include "errors.h"
+#include "constants.h"
 
 #define COUNT_ASV_SPECTRAL_DIRECTIONS 360  /*!< Number of directions in the wave force spectrum. */
 #define COUNT_ASV_SPECTRAL_FREQUENCIES 100 /*!< Number of frequencies in the wave force spectrum. */
@@ -642,7 +643,10 @@ void thruster_set_thrust(struct Thruster* thruster, const union Coordinates_3D o
   }
 } 
 
-struct Asv* asv_new(const struct Asv_specification specification, const struct Wave* wave, union Coordinates_3D position, union Coordinates_3D attitude)
+struct Asv* asv_new(const struct Asv_specification specification, 
+                    const struct Wave* wave, 
+                    union Coordinates_3D position, 
+                    union Coordinates_3D attitude)
 {
   if(wave)
   {
@@ -981,7 +985,7 @@ static void compute_dynamics(struct Asv* asv, bool is_wave_glider, double rudder
       // Some error occurred.
       // Reset time
       asv->dynamics.time_step_size = old_time_step_size; // milliseconds
-      asv->dynamics.time old_time; // seconds
+      asv->dynamics.time = old_time; // seconds
       return;
     }
     
