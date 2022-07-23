@@ -4,6 +4,7 @@
 #include <string.h>
 #include "toml.h"
 #include "simulation.h"
+#include "pid_controller.h"
 #include "asv.h"
 #include "wave.h"
 #include "geometry.h"
@@ -45,13 +46,14 @@ struct Simulation
   char id[32];
   struct Wave* wave;
   struct Asv* asv; 
-  struct PID_controller* pid_controller;
+  struct Controller* controller;
   union Coordinates_3D* waypoints;
   int count_waypoints;
   struct Buffer* buffer;
   // Data related to current time step
   double time_step_size; // milliseconds
   long current_time_index;
+  double max_time; // seconds
   int current_waypoint_index;
   // Link pointers
   struct Simulation* previous; // previous in the linked list.
@@ -66,7 +68,7 @@ static union Coordinates_3D sea_surface_position;
 static int count_mesh_cells_along_edge;
 
 // Computes dynamics for current node for the current time step.
-static void simulation_run_per_node_per_time_step(void* current_node)
+static void* simulation_run_per_node_per_time_step(void* current_node)
 {
   struct Simulation* node = (struct Simulation*)current_node;
   // Current time
@@ -75,7 +77,7 @@ static void simulation_run_per_node_per_time_step(void* current_node)
   // Set differential thrust on each thruster.
   // ------------------------------------------
   // PID controller estimate thrust to be applied on each thruster.
-  pid_controller_set_thrust(node->pid_controller, node->waypoints[node->current_waypoint_index]);
+  controller_set_thrust(node->controller, node->waypoints[node->current_waypoint_index]);
 
   // Compute the dynamics of asv for the current time step
   asv_compute_dynamics(node->asv, node->time_step_size);
@@ -83,7 +85,7 @@ static void simulation_run_per_node_per_time_step(void* current_node)
   if(error_msg)
   {
     set_error_msg(node->error_msg, error_msg);
-    return;
+    return NULL;
   }
   struct Asv_specification spec = asv_get_spec(node->asv);
   union Coordinates_3D cog_position = asv_get_position_cog(node->asv);
@@ -116,12 +118,15 @@ static void simulation_run_per_node_per_time_step(void* current_node)
     // if the current_waypoint_index == waypoint.count ==> reached final waypoint.
     ++(node->current_waypoint_index);
   }
+  return NULL;
 }
 
-static void simulation_run_per_node_without_time_sync(void* current_node)
+static void* simulation_run_per_node_without_time_sync(void* current_node)
 {
   struct Simulation* node = (struct Simulation*)current_node;
-  for(node->current_time_index = 0; ; ++(node->current_time_index))
+  for(node->current_time_index = 0; 
+      node->max_time == 0 || node->current_time_index*node->time_step_size/1000.0 < node->max_time; 
+      ++(node->current_time_index))
   {
     if(node->current_waypoint_index < node->count_waypoints)
     {
@@ -146,6 +151,7 @@ static void simulation_run_per_node_without_time_sync(void* current_node)
       break;
     }
   }
+  return NULL;
 }
 
 static void simulation_spawn_nodes_with_time_sync(struct Simulation* first_node)
@@ -164,28 +170,33 @@ static void simulation_spawn_nodes_with_time_sync(struct Simulation* first_node)
       // Set time step for the node
       node->current_time_index = t;
 
-      // Check if asv reached the final waypoint.
-      if(node->current_waypoint_index < node->count_waypoints)
+      // Check if simulating for max time and stop if required.
+      if(node->max_time == 0 || 
+         t*node->time_step_size/1000.0 < node->max_time)
       {
-        // Not yet reached the final waypoint, but check if buffer limit reached before further computation.
-        // Check if buffer exceeded
-        if(node->current_time_index >= OUTPUT_BUFFER_SIZE)
+        // Check if asv reached the final waypoint.
+        if(node->current_waypoint_index < node->count_waypoints)
         {
-          // buffer exceeded
-          buffer_exceeded = true;
-          fprintf(stderr, "ERROR: ASV id = %s. Output buffer exceeded.\n", node->id);
-          break;        
+          // Not yet reached the final waypoint, but check if buffer limit reached before further computation.
+          // Check if buffer exceeded
+          if(node->current_time_index >= OUTPUT_BUFFER_SIZE)
+          {
+            // buffer exceeded
+            buffer_exceeded = true;
+            fprintf(stderr, "ERROR: ASV id = %s. Output buffer exceeded.\n", node->id);
+            break;        
+          }
+          has_all_reached_final_waypoint = false;
+          #ifdef DISABLE_MULTI_THREADING
+          simulation_run_per_node_per_time_step((void*)node);
+          if(node->error_msg)
+          {
+            break;
+          }
+          #else
+          pthread_create(&(node->thread), NULL, &simulation_run_per_node_per_time_step, (void*)node);
+          #endif
         }
-        has_all_reached_final_waypoint = false;
-        #ifdef DISABLE_MULTI_THREADING
-        simulation_run_per_node_per_time_step((void*)node);
-        if(node->error_msg)
-        {
-          break;
-        }
-        #else
-        pthread_create(&(node->thread), NULL, &simulation_run_per_node_per_time_step, (void*)node);
-        #endif
       }
     }
     // Join threads. Also check if there were errors in any node.
@@ -255,7 +266,7 @@ struct Simulation* simulation_new_node()
   struct Simulation* node = (struct Simulation*)malloc(sizeof(struct Simulation));
   node->wave = NULL;
   node->asv = NULL;
-  node->pid_controller = NULL;
+  node->controller = NULL;
   node->waypoints = NULL;
   node->buffer = (struct Buffer*)malloc(OUTPUT_BUFFER_SIZE * sizeof(struct Buffer));
   node->previous = NULL;
@@ -265,6 +276,7 @@ struct Simulation* simulation_new_node()
   node->count_waypoints = 0;
   node->time_step_size = 40.0;
   node->current_time_index = 0;
+  node->max_time = 0.0;
   node->current_waypoint_index = 0;
   return node;
 }
@@ -280,7 +292,6 @@ void simulation_delete(struct Simulation* first_node)
   {
     wave_delete(current_node->wave);
     asv_delete(current_node->asv);
-    pid_controller_delete(current_node->pid_controller);
     free(current_node->error_msg);
     free(current_node->buffer);
     free(current_node->waypoints);
@@ -291,12 +302,12 @@ void simulation_delete(struct Simulation* first_node)
   }
 }
 
-void simulation_set_input(struct Simulation* first_node,
-                               char *file,  
-                               double wave_ht, 
-                               double wave_heading, 
-                               long rand_seed,
-                               bool with_time_sync)
+void simulation_set_input_using_file(struct Simulation* first_node,
+                                     char *file,  
+                                     double wave_ht, 
+                                     double wave_heading, 
+                                     long rand_seed,
+                                     bool with_time_sync)
 {
   // buffer to hold raw data from input file.
   const char *raw;
@@ -334,6 +345,17 @@ void simulation_set_input(struct Simulation* first_node,
   struct Simulation* current = first_node;
   for (int n = 0; n < count_asvs; ++n)
   {
+    // Create a new entry to the linked list of simulation data.
+    if(n != 0)
+    {
+      struct Simulation* previous = current;
+      // Create a new entry to the linked list.
+      current = simulation_new_node();
+      // Link it to the previous entry in the linked list.
+      previous->next = current; 
+      current->previous = previous;
+    } 
+    
     // Set the Pointer to function for executing the simulation.
     if(with_time_sync)
     {
@@ -349,16 +371,6 @@ void simulation_set_input(struct Simulation* first_node,
     current->wave = wave_new(wave_ht, wave_heading * PI/180.0, rand_seed, count_wave_spectral_directions, count_wave_spectral_frequencies);
     // ASV specification
     struct Asv_specification asv_spec;
-    // Create a new entry to the linked list of simulation data.
-    if(n != 0)
-    {
-      struct Simulation* previous = current;
-      // Create a new entry to the linked list.
-      current = simulation_new_node();
-      // Link it to the previous entry in the linked list.
-      previous->next = current; 
-      current->previous = previous;
-    } 
     
     // Get toml table to set the input data
     toml_table_t *table = toml_table_at(tables, n);
@@ -752,18 +764,6 @@ void simulation_set_input(struct Simulation* first_node,
     asv_set_thrusters(current->asv, thrusters, count_thrusters);
     free(thrusters);
 
-    // PID controller
-    current->pid_controller = pid_controller_new(current->asv);
-    // PID controller set gain terms
-    double p_position = 1.0   * current->time_step_size/1000.0;
-    double i_position = 0.1   * current->time_step_size/1000.0;
-    double d_position = -10.0 * current->time_step_size/1000.0;
-    pid_controller_set_gains_position(current->pid_controller, p_position, i_position, d_position);
-    double p_heading = 1.0   * current->time_step_size/1000.0;
-    double i_heading = 0.1   * current->time_step_size/1000.0;
-    double d_heading = -10.0 * current->time_step_size/1000.0;
-    pid_controller_set_gains_heading(current->pid_controller, p_heading, i_heading, d_heading);
-
     // waypoints
     arrays = toml_array_in(table, "waypoints");
     if (arrays == 0)
@@ -897,6 +897,58 @@ void simulation_set_input(struct Simulation* first_node,
   toml_free(input);
 }
 
+void simulation_set_controller(struct Simulation* first_node, double* gain_position, double* gain_heading)
+{
+  for(struct Simulation* node = first_node; node != NULL; node = node->next)
+  {
+    node->controller = controller_new(node->asv);
+    // PID controller set gain terms
+    double p_position = gain_position[0];
+    double i_position = gain_position[1];
+    double d_position = gain_position[2];
+    controller_set_gains_position(node->controller, p_position, i_position, d_position);
+    double p_heading = gain_heading[0];
+    double i_heading = gain_heading[1];
+    double d_heading = gain_heading[2];
+    controller_set_gains_heading(node->controller, p_heading, i_heading, d_heading);
+  }
+}
+
+void simulation_set_input_using_asvs(struct Simulation* first_node,
+                                    struct Asv** asvs,  
+                                    int count_asvs,
+                                    bool with_time_sync)
+{
+  struct Simulation* current = first_node;
+  for (int n = 0; n < count_asvs; ++n)
+  {
+    // Create a new entry to the linked list of simulation data.
+    if(n != 0)
+    {
+      struct Simulation* previous = current;
+      // Create a new entry to the linked list.
+      current = simulation_new_node();
+      // Link it to the previous entry in the linked list.
+      previous->next = current; 
+      current->previous = previous;
+    }
+
+    // Set the Pointer to function for executing the simulation.
+    if(with_time_sync)
+    {
+      current->simulation_run = simulation_spawn_nodes_with_time_sync;
+    }
+    else
+    {
+      current->simulation_run = simulation_spawn_nodes_without_time_sync;
+    }
+
+    // Create and initialise the sea surface
+    current->asv = asvs[n];
+    current->wave = asv_get_wave(current->asv);
+  }   
+}
+
 void simulation_write_output(struct Simulation* first_node,
                                   char* out, 
                                   double simulation_time)
@@ -986,7 +1038,7 @@ void simulation_write_output(struct Simulation* first_node,
   }
 }
 
-void simulation_run(struct Simulation* first_node)
+void simulation_run_upto_waypoint(struct Simulation* first_node)
 {
   first_node->simulation_run(first_node);
 
@@ -998,4 +1050,13 @@ void simulation_run(struct Simulation* first_node)
       fprintf(stderr, "ERROR: ASV id = %s. %s\n", node->id, node->error_msg);
     }
   }
+}
+
+void simulation_run_upto_time(struct Simulation* first_node, double max_time)
+{
+  for(struct Simulation* node = first_node; node != NULL; node = node->next)
+  {
+    node->max_time = max_time;
+  }
+  simulation_run_upto_waypoint(first_node);
 }

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include "simulation.h"
+#include "pid_controller.h"
 
 int main(int argc, char** argv)
 {
@@ -25,12 +26,16 @@ int main(int argc, char** argv)
 
   // Set simulation inputs
   struct Simulation* simulation = simulation_new();
-  simulation_set_input(simulation,
-                       in_file, 
-                       wave_height,
-                       wave_heading,
-                       rand_seed,
-                       with_time_sync);
+  simulation_set_input_using_file(simulation,
+                                  in_file, 
+                                  wave_height,
+                                  wave_heading,
+                                  rand_seed,
+                                  with_time_sync);
+  // Set PID controller
+  double gain_position[3] = {1.0, 1.0, 1.0};
+  double gain_heading[3] = {1.0, 1.0, 1.0};
+  simulation_set_controller(simulation, gain_position, gain_heading);
 
   // Simulate and record the time taken for the simulation.
   struct timespec start, finish;
@@ -39,7 +44,7 @@ int main(int argc, char** argv)
   // time() provides a resolution of only 1 sec so its not good if simulation is really short. 
   // In a unix the better option is to use clock_gettime() along with CLOCK_MONOTONIC. 
   clock_gettime(CLOCK_MONOTONIC, &start);
-  simulation_run(simulation);
+  simulation_run_upto_waypoint(simulation);
   clock_gettime(CLOCK_MONOTONIC, &finish);
   elapsed = (finish.tv_sec - start.tv_sec);
   elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;

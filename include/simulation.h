@@ -11,6 +11,7 @@
  * to avoid memory leaks. 
  */
 struct Simulation;
+struct Asv;
 
 /** 
  * Initialise a simulation.
@@ -31,12 +32,33 @@ void simulation_delete(struct Simulation* simulation);
  * @param rand_seed seed for random number generator.
  * @param with_time_sync is true when simulations of all asvs are to run synchronous; else false.   
  */
-void simulation_set_input(struct Simulation* simulation,
-                          char* file,  
-                          double wave_ht, 
-                          double wave_heading, 
-                          long rand_seed,
-                          bool with_time_sync);
+void simulation_set_input_using_file(struct Simulation* simulation,
+                                     char* file,  
+                                     double wave_ht, 
+                                     double wave_heading, 
+                                     long rand_seed,
+                                     bool with_time_sync);
+
+/**
+ * Function to init simulation using an instance of Asv. 
+ * @param asvs array to pointers of asvs used for initialising simulation.
+ * @param count_asvs is the size of the asvs array.  
+ * @param wave_hts array with wave heights in meter. The array should be of the same size of asvs.
+ * @param wave_heading array with wave headings in deg. The array should be of the same size of asvs.
+ * @param rand_seed seed for random number generator.
+ * @param with_time_sync is true when simulations of all asvs are to run synchronous; else false.   
+ */
+void simulation_set_input_using_asvs(struct Simulation* simulation,
+                                    struct Asv** asvs,  
+                                    int count_asvs,
+                                    bool with_time_sync);
+
+/**
+ * Set the controller used for all asvs in the simulation.
+ * @param gain_position is an array of size 3 with gain terms for position in the order - proportional, integral, differential.
+ * @param gain_heading is an array of size 3 with gain terms for heading in the order - proportional, integral, differential.
+ */
+void simulation_set_controller(struct Simulation* simulation, double* gain_position, double* gain_heading);
 
 /**
  * Function to write the simulated data to file. 
@@ -51,9 +73,15 @@ void simulation_write_output(struct Simulation* simulation,
 
 
 /**
- * Simulate vehicle dynamics for each time step. 
+ * Simulate vehicle dynamics for each time step till the vehicle reaches the last waypoint. 
  */
-void simulation_run(struct Simulation* simulation);
+void simulation_run_upto_waypoint(struct Simulation* simulation);
+
+/**
+ * Simulate vehicle dynamics for each time step for a fixed time. 
+ * @param max_time is the time to stop simulation.
+ */
+void simulation_run_upto_time(struct Simulation* simulation, double max_time);
 
 /**
  * Visualisation data from input file. Function to get the sea surface edge length in meter.

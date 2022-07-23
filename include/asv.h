@@ -150,6 +150,11 @@ void wave_glider_compute_dynamics(struct Asv* asv,
                                   double time_step_size);
 
 /**
+ * Get the sea state initialised for the asv.
+ */
+const struct Wave* asv_get_wave(struct Asv* asv); 
+
+/**
  * Get the position of the asv using the COG of the vehicle. 
  * @return position of the asv with coordinates in meter.
  */

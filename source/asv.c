@@ -819,6 +819,20 @@ int asv_get_count_thrusters(struct Asv* asv)
   }
 }
 
+const struct Wave* asv_get_wave(struct Asv* asv)
+{
+  clear_error_msg(asv->error_msg);
+  if(asv)
+  {
+    return asv->wave;
+  }
+  else
+  {
+    set_error_msg(asv->error_msg, error_null_pointer);
+    return NULL;
+  }
+}
+
 union Coordinates_3D asv_get_position_cog(struct Asv* asv)
 {
   clear_error_msg(asv->error_msg);
