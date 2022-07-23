@@ -1,34 +1,36 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
-#include "asv.h"
-#include "pid_controller.h"
-#include <pthread.h>
+#include <stdbool.h>
 
-struct Buffer;
+/**
+ * An instance of Simulation should only be created by calling the function simulation_new(). 
+ * This function allocates and initialises a block of memory on the stack, and 
+ * therefore all calls to simulation_new() should be paired with a call to simulation_delete() 
+ * to avoid memory leaks. 
+ */
 struct Simulation;
 
 /** 
- * Initialise a linked list of simulation nodes.
+ * Initialise a simulation.
  */
 struct Simulation* simulation_new();
 
 /** 
  * Free the heap memory.
- * @param node is the first node in the linked list Simulatation_data.
+ * @param simulation is a non-null pointer to an instance of Simulation to be deallocated.
  */
-void simulation_delete(struct Simulation* node);
+void simulation_delete(struct Simulation* simulation);
 
 /**
  * Function to read the input file and set the ASV's input values. 
- * @param node is the first node in the linked list Simulatation_data.
- * @param file is the path to the input toml file.  
+ * @param file is the path to the input toml file with asv specs.  
  * @param wave_ht wave height in meter.
  * @param wave_heading in deg.
  * @param rand_seed seed for random number generator.
  * @param with_time_sync is true when simulations of all asvs are to run synchronous; else false.   
  */
-void simulation_set_input(struct Simulation* node,
+void simulation_set_input(struct Simulation* simulation,
                           char* file,  
                           double wave_ht, 
                           double wave_heading, 
@@ -37,25 +39,20 @@ void simulation_set_input(struct Simulation* node,
 
 /**
  * Function to write the simulated data to file. 
- * @param node is the first node in the linked list Simulatation_data.
- * @param out is the path to the output director or file. If the linked list contain only one node
+ * @param out is the path to the output director or file. If the linked list contain only one simulation
  * then out is the name of the ouput file, else out is the name of the directory which will contain 
- * output files corresponding to each node.
+ * output files corresponding to each simulation.
  * @param simulation_time in sec.
  */
-void simulation_write_output(struct Simulation* node,
+void simulation_write_output(struct Simulation* simulation,
                              char* out, 
                              double simulation_time);
 
 
 /**
- * Simulate vehicle dynamics for each time step. This function runs 
- * simultion of each ASV in a independent thread and also synchronize
- * the simulation for each time step between ASVs. This function is slower
- * compared to the alternative simulate_without_time_sync() because the function
- * waits and joins the threads at each time step.
+ * Simulate vehicle dynamics for each time step. 
  */
-void simulation_run(struct Simulation* first_node);
+void simulation_run(struct Simulation* simulation);
 
 /**
  * Visualisation data from input file. Function to get the sea surface edge length in meter.

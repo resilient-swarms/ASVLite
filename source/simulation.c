@@ -1,9 +1,13 @@
 #include <stdlib.h>
 #include <sys/stat.h> // for creating directory
+#include <pthread.h>
+#include <string.h>
 #include "toml.h"
-#include "string.h"
 #include "simulation.h"
-#include "error.h"
+#include "asv.h"
+#include "wave.h"
+#include "geometry.h"
+#include "errors.h"
 
 #define OUTPUT_BUFFER_SIZE 200000 /*!< Output buffer size. */
 
@@ -67,9 +71,9 @@ static void simulation_run_per_node_per_time_step(void* current_node)
   // Current time
   double current_time = (node->current_time_index+1) * node->time_step_size/1000.0; //sec
 
-  // Set differential thrust on each propeller.
+  // Set differential thrust on each thruster.
   // ------------------------------------------
-  // PID controller estimate thrust to be applied on each propeller.
+  // PID controller estimate thrust to be applied on each thruster.
   pid_controller_set_thrust(node->pid_controller, node->waypoints[node->current_waypoint_index]);
 
   // Compute the dynamics of asv for the current time step
@@ -128,7 +132,11 @@ static void simulation_run_per_node_without_time_sync(void* current_node)
         fprintf(stderr, "ERROR: ASV id = %s. Output buffer exceeded.\n", node->id);
         break;        
       }
-      // If buffer not exceeded.
+      if(node->error_msg)
+      {
+        break;
+      }
+      // If buffer not exceeded and no error.
       simulation_run_per_node_per_time_step((void*)node);
     }
     else
@@ -688,12 +696,12 @@ void simulation_set_input(struct Simulation* first_node,
       exit(1);
     }
     // get number of thrusters
-    int count_propellers = toml_array_nelem(arrays);
-    struct Propeller** propellers = (struct Propeller**)malloc(sizeof(struct Propeller*) * count_propellers);
-    // Set propeller data
-    for (int i = 0; i < count_propellers; ++i)
+    int count_thrusters = toml_array_nelem(arrays);
+    struct Thruster** thrusters = (struct Thruster**)malloc(sizeof(struct Thruster*) * count_thrusters);
+    // Set thruster data
+    for (int i = 0; i < count_thrusters; ++i)
     {
-      union Coordinates_3D propeller_position;
+      union Coordinates_3D thruster_position;
       array = toml_array_at(arrays, i);
       // x
       raw = toml_raw_at(array, 0);
@@ -703,7 +711,7 @@ void simulation_set_input(struct Simulation* first_node,
         toml_free(input);
         exit(1);
       }
-      if (toml_rtod(raw, &(propeller_position.keys.x)))
+      if (toml_rtod(raw, &(thruster_position.keys.x)))
       {
         fprintf(stderr, "ERROR: bad value in '[asv][%d]thrustes[%d][0]'\n", n, i);
         toml_free(input);
@@ -717,7 +725,7 @@ void simulation_set_input(struct Simulation* first_node,
         toml_free(input);
         exit(1);
       }
-      if (toml_rtod(raw, &(propeller_position.keys.y)))
+      if (toml_rtod(raw, &(thruster_position.keys.y)))
       {
         fprintf(stderr, "ERROR: bad value in '[asv][%d]thrustes[%d][1]'\n", n, i);
         toml_free(input);
@@ -731,17 +739,17 @@ void simulation_set_input(struct Simulation* first_node,
         toml_free(input);
         exit(1);
       }
-      if (toml_rtod(raw, &(propeller_position.keys.z)))
+      if (toml_rtod(raw, &(thruster_position.keys.z)))
       {
         fprintf(stderr, "ERROR: bad value in '[asv][%d]thrustes[%d][2]'\n", n, i);
         toml_free(input);
         exit(1);
       }
-      propellers[i] = propeller_new(propeller_position);
+      thrusters[i] = thruster_new(thruster_position);
     }
     // Set the thrusters on the ASV
-    asv_set_propellers(current->asv, propellers, count_propellers);
-    free(propellers);
+    asv_set_thrusters(current->asv, thrusters, count_thrusters);
+    free(thrusters);
 
     // PID controller
     current->pid_controller = pid_controller_new(current->asv);
