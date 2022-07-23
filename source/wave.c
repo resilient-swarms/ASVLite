@@ -22,7 +22,7 @@ struct Wave
 
   // Output variables
   // ----------------
-  struct Regular_wave** spectrum;    //!< Output variable. Table of regular waves in the irregular sea.
+  struct Regular_wave** spectrum;   //!< Output variable. Table of regular waves in the irregular sea.
                                            //!< Size is count_wave_spectral_directions * count_wave_spectral_frequencies.
   double min_spectral_frequency;    //!< Output variable. Lower limit (0.1%) of spectral energy threshold.
   double max_spectral_frequency;    //!< Output variable. Upper limit (99.9%) of spectral energy threshold.
@@ -48,11 +48,12 @@ struct Wave* wave_new(const double sig_wave_ht,
                       const int count_wave_spectral_directions,
                       const int count_wave_spectral_frequencies)
 {
+  struct Wave* wave = NULL;
+
   if(sig_wave_ht > 0.0 && 
      count_wave_spectral_directions > 1 && 
      count_wave_spectral_frequencies > 1)
   {
-    struct Wave* wave = NULL;
     // Initialise the pointers...
     if(wave = (struct Wave*)malloc(sizeof(struct Wave)))
     {
@@ -142,23 +143,18 @@ struct Wave* wave_new(const double sig_wave_ht,
           // One or more of the regular wave is NULL. 
           // This is an invalid spectrum.
           wave_delete(wave);
-          return NULL;
-        }
-        else
-        {
-          // Spectrum is OK. Proceed. Nothing to do here.
-          return wave;
+          wave = NULL;
         }
       }
       else
       {
         free(wave);
-        return NULL;
+        wave = NULL;
       }
     }
   }
   
-  return NULL;
+  return wave;
 }
 
 void wave_delete(struct Wave* wave)
@@ -185,27 +181,26 @@ double wave_get_elevation(const struct Wave* wave,
                           double time)
 {
   clear_error_msg(wave->error_msg);
+  double elevation = 0.0;
+
   if(wave)
   {
     // check if time is negative
     if(time >= 0.0)
     {
-      double elevation = 0.0;
       for(int i = 0; i < wave->count_wave_spectral_directions; ++i)
       {
         for(int j = 0; j < wave->count_wave_spectral_frequencies; ++j)
         {
           const struct Regular_wave* regular_wave = wave_get_regular_wave_at(wave, i, j);
-          // We do not expect a NULL regular_wave, but still check.
-          const char* error_msg = wave_get_error_msg(wave);
-          if(error_msg)
+          if(!regular_wave)
           {
-            // Something really wrong happened. 
-            set_error_msg(wave->error_msg, error_msg);
+            // Something really wrong happened.
+            // Error should already be set by wave_get_regular_wave_at().
             return 0.0;
           }
           double regular_wave_elevation = regular_wave_get_elevation(regular_wave, location, time);
-          error_msg = regular_wave_get_error_msg(regular_wave);
+          const char* error_msg = regular_wave_get_error_msg(regular_wave);
           if(error_msg)
           {
             // Something went wrong when getting wave elevation for the regular_wave.
@@ -218,17 +213,19 @@ double wave_get_elevation(const struct Wave* wave,
           }
         }
       }
-      return elevation;
     }
     else
     {
       set_error_msg(wave->error_msg, error_negative_time);
       return 0.0;
     }
+  }
+  else
+  {
+    set_error_msg(wave->error_msg, error_null_pointer);
     return 0.0;
   }
-  set_error_msg(wave->error_msg, error_null_pointer);
-  return 0.0;
+  return elevation;
 }
 
 int wave_get_count_wave_spectral_directions(const struct Wave* wave)
@@ -238,8 +235,11 @@ int wave_get_count_wave_spectral_directions(const struct Wave* wave)
   {
     return wave->count_wave_spectral_directions;
   }
-  set_error_msg(wave->error_msg, error_null_pointer);
-  return 0.0;
+  else
+  {
+    set_error_msg(wave->error_msg, error_null_pointer);
+    return 0.0;
+  }
 }
 
 int wave_get_count_wave_spectral_frequencies(const struct Wave* wave)
@@ -249,8 +249,11 @@ int wave_get_count_wave_spectral_frequencies(const struct Wave* wave)
   {
     return wave->count_wave_spectral_frequencies;
   }
-  set_error_msg(wave->error_msg, error_null_pointer);
-  return 0.0;
+  else
+  {
+    set_error_msg(wave->error_msg, error_null_pointer);
+    return 0.0;
+  }
 }
 
 const struct Regular_wave* wave_get_regular_wave_at(const struct Wave* wave, int d, int f)
@@ -270,8 +273,11 @@ const struct Regular_wave* wave_get_regular_wave_at(const struct Wave* wave, int
       return NULL;
     }
   }
-  set_error_msg(wave->error_msg, error_null_pointer);
-  return NULL;
+  else
+  {
+    set_error_msg(wave->error_msg, error_null_pointer);
+    return NULL;
+  }
 }
 
 double wave_get_min_spectral_frequency(const struct Wave* wave)
@@ -281,8 +287,11 @@ double wave_get_min_spectral_frequency(const struct Wave* wave)
   {
     return wave->min_spectral_frequency;
   }
-  set_error_msg(wave->error_msg, error_null_pointer);
-  return 0.0;
+  else
+  {
+    set_error_msg(wave->error_msg, error_null_pointer);
+    return 0.0;
+  }
 }
 
 double wave_get_max_spectral_frequency(const struct Wave* wave)
@@ -292,8 +301,11 @@ double wave_get_max_spectral_frequency(const struct Wave* wave)
   {
     return wave->max_spectral_frequency;
   }
-  set_error_msg(wave->error_msg, error_null_pointer);
-  return 0.0;
+  else
+  {
+    set_error_msg(wave->error_msg, error_null_pointer);
+    return 0.0;
+  }
 }
 
 double wave_get_significant_height(const struct Wave* wave)
@@ -303,8 +315,11 @@ double wave_get_significant_height(const struct Wave* wave)
   {
     return wave->significant_wave_height;
   }
-  set_error_msg(wave->error_msg, error_null_pointer);
-  return 0.0;
+  else
+  {
+    set_error_msg(wave->error_msg, error_null_pointer);
+    return 0.0;
+  }
 }
 
 double wave_get_predominant_heading(const struct Wave* wave)
@@ -314,6 +329,9 @@ double wave_get_predominant_heading(const struct Wave* wave)
   {
     return wave->heading;
   }
-  set_error_msg(wave->error_msg, error_null_pointer);
-  return 0.0;
+  else
+  {
+    set_error_msg(wave->error_msg, error_null_pointer);
+    return 0.0;
+  }
 }
