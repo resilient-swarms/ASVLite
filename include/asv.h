@@ -75,6 +75,12 @@ void thruster_set_thrust(struct Thruster* thruster,
                          double magnitude); 
 
 /**
+ * Get the position of the thruster. 
+ * @return position of the thruster in body-fixed frame of the ASV.
+ */
+const union Coordinates_3D thruster_get_position(struct Thruster* thruster);
+
+/**
  * Create and initialise an asv.
  * @param specification of the ASV. 
  * @param wave is the irregular sea surface for the asv. 
@@ -102,11 +108,11 @@ const char* asv_get_error_msg(const struct Asv* asv);
 /**
  * Set the thrusters for the asv.
  * @param thrusters array of thrusters for the asv.
- * @param cout_thrusters is the size of thrusters array.
+ * @param count_thrusters is the size of thrusters array.
  */
 void asv_set_thrusters(struct Asv* asv, 
                        struct Thruster** thrusters, 
-                       int cout_thrusters);
+                       int count_thrusters);
 
 /**
  * Get the array of pointers to the thrusters.

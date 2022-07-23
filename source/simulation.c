@@ -897,23 +897,6 @@ void simulation_set_input_using_file(struct Simulation* first_node,
   toml_free(input);
 }
 
-void simulation_set_controller(struct Simulation* first_node, double* gain_position, double* gain_heading)
-{
-  for(struct Simulation* node = first_node; node != NULL; node = node->next)
-  {
-    node->controller = controller_new(node->asv);
-    // PID controller set gain terms
-    double p_position = gain_position[0];
-    double i_position = gain_position[1];
-    double d_position = gain_position[2];
-    controller_set_gains_position(node->controller, p_position, i_position, d_position);
-    double p_heading = gain_heading[0];
-    double i_heading = gain_heading[1];
-    double d_heading = gain_heading[2];
-    controller_set_gains_heading(node->controller, p_heading, i_heading, d_heading);
-  }
-}
-
 void simulation_set_input_using_asvs(struct Simulation* first_node,
                                     struct Asv** asvs,  
                                     int count_asvs,
@@ -947,6 +930,71 @@ void simulation_set_input_using_asvs(struct Simulation* first_node,
     current->asv = asvs[n];
     current->wave = asv_get_wave(current->asv);
   }   
+}
+
+void simulation_set_waypoints_for_asv(struct Simulation* first_node,
+                                      struct Asv* asv, 
+                                      union Coordinates_3D* waypoints,
+                                      int count_waypoints)
+{
+  // Find the asv from the linked list
+  struct Simulation* node = NULL;
+  for(struct Simulation* current_node = first_node; current_node != NULL; current_node = current_node->next)
+  {
+    if(current_node->asv == asv)
+    {
+      // Found it. 
+      node = current_node;
+      break;
+    }
+  }
+  if(node)
+  {
+    if(node->count_waypoints < count_waypoints)
+    {
+      // More waypoints to store. Expand heap. 
+      free(node->waypoints);
+      node->waypoints = (union Coordinates_3D*)malloc(sizeof(union Coordinates_3D)*count_waypoints);
+    }
+    for(int i = 0; i < count_waypoints; ++i)
+    {
+      node->waypoints[i] = waypoints[i];
+    }
+    node->count_waypoints = count_waypoints;
+    node->current_waypoint_index = 0;
+  }
+  else
+  {
+    fprintf(stdout, "Could not find the ASV to set the new list of waypoints. \n");
+    exit(1);
+  }
+}
+
+void simulation_set_controller(struct Simulation* first_node, double* gain_position, double* gain_heading)
+{
+  for(struct Simulation* node = first_node; node != NULL; node = node->next)
+  {
+    node->controller = controller_new(node->asv);
+    // PID controller set gain terms
+    double p_position = gain_position[0];
+    double i_position = gain_position[1];
+    double d_position = gain_position[2];
+    controller_set_gains_position(node->controller, p_position, i_position, d_position);
+    double p_heading = gain_heading[0];
+    double i_heading = gain_heading[1];
+    double d_heading = gain_heading[2];
+    controller_set_gains_heading(node->controller, p_heading, i_heading, d_heading);
+  }
+}
+
+void simulation_tune_controller(struct Simulation* first_node)
+{
+  first_node->controller = controller_new(first_node->asv);
+  controller_tune(first_node->controller);
+  union Coordinates_3D k_position = controller_get_gains_position(first_node->controller);
+  union Coordinates_3D k_heading  = controller_get_gains_heading(first_node->controller);
+  // Assuming all asvs will use the controller with same gain terms. 
+  simulation_set_controller(first_node->next, k_position.array, k_heading.array);
 }
 
 void simulation_write_output(struct Simulation* first_node,
@@ -1059,4 +1107,64 @@ void simulation_run_upto_time(struct Simulation* first_node, double max_time)
     node->max_time = max_time;
   }
   simulation_run_upto_waypoint(first_node);
+}
+
+
+struct Buffer* simulation_get_buffer(struct Simulation* first_node, struct Asv* asv)
+{
+  // Find the asv from the linked list
+  struct Simulation* node = NULL;
+  for(struct Simulation* current_node = first_node; current_node != NULL; current_node = current_node->next)
+  {
+    if(current_node->asv == asv)
+    {
+      // Found it. 
+      node = current_node;
+      break;
+    }
+  }
+  if(node)
+  {
+    return node->buffer;
+  }
+  else
+  {
+    fprintf(stdout, "Could not find the buffer. \n");
+    exit(1);
+  }
+}
+
+
+struct Buffer* simulation_get_buffer_length(struct Simulation* first_node, struct Asv* asv)
+{
+  // Find the asv from the linked list
+  struct Simulation* node = NULL;
+  for(struct Simulation* current_node = first_node; current_node != NULL; current_node = current_node->next)
+  {
+    if(current_node->asv == asv)
+    {
+      // Found it. 
+      node = current_node;
+      break;
+    }
+  }
+  if(node)
+  {
+    return node->current_time_index;
+  }
+  else
+  {
+    fprintf(stdout, "Could not find the buffer. \n");
+    exit(1);
+  }
+}
+
+
+union Coordinates_3D buffer_get_asv_position_at(struct Buffer* buffer, int index)
+{
+  union Coordinates_3D position;
+  position.keys.x = buffer[index].cog_x;
+  position.keys.y = buffer[index].cog_y;
+  position.keys.z = buffer[index].cog_z;
+  return position;
 }

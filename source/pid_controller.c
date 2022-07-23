@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "pid_controller.h"
 #include "simulation.h"
 #include "asv.h"
+#include "wave.h"
+#include "geometry.h"
 #include "constants.h"
 #include "errors.h"
 
@@ -47,6 +50,7 @@ struct Controller* controller_new(struct Asv* asv)
     controller->error_position      = 0.0;
     controller->error_int_position  = 0.0;
     controller->error_diff_position = 0.0;
+    controller->error_msg           = NULL;
   }
   return controller;
 }
@@ -249,42 +253,285 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
   }
 }
 
+static double simulate_for_tunning(struct Asv* asv, double* gain_position, double* gain_heading)
+{
+  double error = -1.0;
+  if(asv)
+  {
+    int max_count_iterations = 20;
+    double min_significant_wave_height = 1.0; // m
+    double max_significant_wave_height = 5.0; // m
+    double delta_significant_wave_height = 1.0; // m
+    int count_significant_wave_heights = (max_significant_wave_height - min_significant_wave_height)/delta_significant_wave_height + 1;
+    double delta_asv_heading = PI/4.0;
+    int count_asv_headings = (2.0*PI)/delta_asv_heading;
+    int count_asvs = count_significant_wave_heights * count_asv_headings;
+    int count_thrusters = asv_get_count_thrusters(asv);
+    struct Asv** asvs = (struct Asv**)malloc(sizeof(struct Asv*) * count_asvs);
+    union Coordinates_3D start_point;
+    start_point.keys.x = 1000.0;
+    start_point.keys.y = 1000.0;
+    start_point.keys.z = 0.0;
+    union Coordinates_3D waypoint;
+    waypoint.keys.x = 1000.0;
+    waypoint.keys.y = 5000.0;
+    waypoint.keys.z = 0.0;
+
+    int j = 0;
+    for(double significant_wave_height = min_significant_wave_height; 
+        significant_wave_height <= max_significant_wave_height; 
+        significant_wave_height += delta_significant_wave_height)
+    {
+      for(double asv_heading = 0.0; asv_heading < 2.0*PI; asv_heading += PI/4.0)
+      {
+        // Create the sea surface.
+        double wave_heading = 0.0;
+        int rand_seed = 1;
+        int count_wave_spectral_directions  = 5;
+        int count_wave_spectral_frequencies = 15;
+        struct Wave* wave = wave_new(significant_wave_height, wave_heading, rand_seed, count_wave_spectral_directions, count_wave_spectral_frequencies);
+        // Create the thrusters for the ASV by copying data from the existing ASV. 
+        struct Thruster** thrusters = asv_get_thrusters(asv);
+        struct Thruster** new_thrusters = (struct Thruster**)malloc(sizeof(struct Thruster*)*count_thrusters);
+        for(int i = 0; i < count_thrusters; ++i)
+        {
+          union Coordinates_3D position = thruster_get_position(thrusters[i]);
+          new_thrusters[i] = thruster_new(position);
+        }
+        // Create ASV
+        union Coordinates_3D start_attitude;
+        start_attitude.keys.x = 0;
+        start_attitude.keys.y = 0;
+        start_attitude.keys.z = asv_heading;        
+        struct Asv_specification spec = asv_get_spec(asv);
+        struct Asv* new_asv = asv_new(spec, wave, start_point, start_attitude);
+        asv_set_thrusters(new_asv, new_thrusters, count_thrusters);
+        free(new_thrusters);
+        asvs[j++] = new_asv;
+      }
+    }
+
+    // Create simulation
+    struct Simulation* simulation = simulation_new();
+    bool time_sync = false;
+    simulation_set_input_using_asvs(simulation, asvs, count_asvs, time_sync);
+    // Set the waypoints for all asvs
+    for(int i = 0; i < count_asvs; ++i)
+    {
+      static const count_waypoints = 1;
+      simulation_set_waypoints_for_asv(simulation, asvs[i], &waypoint, count_waypoints);
+      simulation_set_controller(simulation, gain_position, gain_heading);
+    }
+    
+    // Run simulation for a set period of time.
+    double max_time = 200.0; // seconds
+    simulation_run_upto_time(simulation, max_time);
+
+    // Compute error
+    double sum_error = 0.0;
+    for(int i = 0; i < count_asvs; ++i)
+    {
+      struct Buffer* buffer = simulation_get_buffer(simulation, asvs[i]);
+      int buffer_length = simulation_get_buffer_length(simulation, asvs[i]);
+      double sum_error_per_asv = 0.0;
+      for(int j = 0; j < buffer_length; ++j)
+      {
+        union Coordinates_3D p1 = start_point;
+        union Coordinates_3D p2 = waypoint;
+        union Coordinates_3D p0 = buffer_get_asv_position_at(buffer, j);
+        // Distance between a point p0 to a line joining p1 and p2 is:
+        // distance = abs((x2-x1)(y1-y0) - (x1-x0)(y2-y1))/sqrt((x2-x1)^2 + (y2-y1)^2) 
+        double numerator = fabs((p2.keys.x - p1.keys.x)*(p1.keys.y - p0.keys.y) - (p1.keys.x - p0.keys.x)*(p2.keys.y - p1.keys.y));
+        double denominator = sqrt((p2.keys.x-p1.keys.x)*(p2.keys.x-p1.keys.x) + (p2.keys.y-p1.keys.y)*(p2.keys.y-p1.keys.y));
+        double distance = numerator/denominator;
+        sum_error_per_asv += distance;
+      }
+      sum_error += sum_error_per_asv/buffer_length;
+    }
+    error = sum_error/count_asvs;
+
+    // Clean memory
+    for(int i = 0; i < count_asvs; ++i)
+    {
+      struct Thruster** thrusters = asv_get_thrusters(asvs[i]);
+      for(int j = 0; j < count_thrusters; ++j)
+      {
+        thruster_delete(thrusters[j]);
+      }
+    }
+    simulation_delete(simulation);
+    free(asvs);
+  }
+  return error;
+}
+
+static int compute_and_set_average_costs(double** costs, double* average_costs, double* k)
+{
+  // Find average cost for each case of p_position
+  for(int i = 0; i < 3; ++i)
+  {
+    double sum_cost = 0.0;
+    double count = 1.0; 
+    for(int j = 0; j < pow(3, 6); ++j)
+    {
+      if(costs[j][0] == k[i])
+      {
+        sum_cost += costs[j][6];
+        count += 1.0;
+      }
+    }
+    average_costs[i] = sum_cost/count;
+  }
+  // Find the max of the 3 averages
+  double max = 0.0;
+  int max_index = -1;
+  for(int i = 0; i < 3; ++i)
+  {
+    if(average_costs[i] > max)
+    {
+      max = average_costs[i];
+      max_index = i;
+    }
+  }
+  return max_index;
+}
+
 void controller_tune(struct Controller* controller)
 {
   clear_error_msg(controller->error_msg);
-  if(controller)
+  // Open file to write
+  char* file = "./tunning";
+  FILE *fp = fopen(file, "w");
+  if (fp == 0)
   {
-    // Initial values for gain terms
-    controller->kp_position = 1.0;
-    controller->ki_position = 1.0;
-    controller->kd_position = 1.0;
-    controller->kp_heading  = 1.0;
-    controller->ki_heading  = 1.0;
-    controller->kd_heading  = 1.0;
-    int max_count_iterations = 20;
-    double max_significant_wave_height = 5.0; // m
-    for(int i=0; i < max_count_iterations; ++i)
+    fprintf(stderr, "ERROR: cannot open file \"%s\".\n", file);
+    exit(1);
+  }
+  fprintf(fp,  
+            "position_p "
+            "position_i "
+            "position_d "
+            "heading_p "
+            "heading_i "
+            "heading_d "
+            "cost ");
+  // Initialise gain terms
+  double gain_position[3] = {1.0, 1.0, 1.0};
+  double gain_heading[3]  = {1.0, 1.0, 1.0};
+  double delta = 0.1;
+  int count_iterations = 20;
+  for(int i = 0; i < count_iterations; ++i)
+  {
+    double p_position[3] = {gain_position[0]-delta, gain_position[0], gain_position[0]+delta}; 
+    double i_position[3] = {gain_position[1]-delta, gain_position[1], gain_position[1]+delta};
+    double d_position[3] = {gain_position[2]-delta, gain_position[2], gain_position[2]+delta};
+    double p_heading[3] = {gain_heading[0]-delta, gain_heading[0], gain_heading[0]+delta}; 
+    double i_heading[3] = {gain_heading[1]-delta, gain_heading[1], gain_heading[1]+delta};
+    double d_heading[3] = {gain_heading[2]-delta, gain_heading[2], gain_heading[2]+delta};
+    double** costs = (double**)malloc(sizeof(double*)* pow(3, 6)); // This is a table of 7 columns and 3^6 rows.
+    int i = 0;
+    for(int p_p = 0; p_p < 3; ++p_p)
     {
-      for(double significant_wave_height = 1.0; significant_wave_height < max_significant_wave_height; significant_wave_height += 1.0)
+      for(int p_i = 0; p_i < 3; ++p_i)
       {
-        for(double asv_heading = 0.0; asv_heading < 2.0*PI; asv_heading += PI/4.0)
+        for(int p_d = 0; p_d < 3; ++p_d)
         {
-          // Create wave
-
-          // Create Asv
-
-          // Append the asv to the array
+          for(int h_p = 0; h_p < 3; ++h_p)
+          {
+            for(int h_i = 0; h_i < 3; ++h_i)
+            {
+              for(int h_d = 0; h_d < 3; ++h_d)
+              {
+                fprintf(stdout, "%d\n", i);
+                double* row = (double*)malloc(sizeof(double)*7);
+                row[0] = p_position[p_p];
+                row[1] = i_position[p_i];
+                row[2] = d_position[p_d];
+                row[3] = p_heading[h_p];
+                row[4] = i_heading[h_i];
+                row[5] = d_heading[h_d];
+                row[6] = simulate_for_tunning(controller->asv, row, row+3);
+                costs[i++] = row;
+              }
+            }
+          }
         }
       }
     }
-    // Create simulation using array of asvs
 
-    // Run simulation for a fixed time. 
+    double average_costs_p_position[3]; // [gain-delta, gain, gain+delta]
+    double average_costs_i_position[3];
+    double average_costs_d_position[3];
+    double average_costs_p_heading[3]; 
+    double average_costs_i_heading[3];
+    double average_costs_d_heading[3];
+    // Find average cost for each case
+    int max_index_position_p = compute_and_set_average_costs(costs, average_costs_p_position, p_position);
+    int max_index_position_i = compute_and_set_average_costs(costs, average_costs_i_position, i_position);
+    int max_index_position_d = compute_and_set_average_costs(costs, average_costs_d_position, d_position);
+    int max_index_heading_p = compute_and_set_average_costs(costs, average_costs_p_heading, p_heading);
+    int max_index_heading_i = compute_and_set_average_costs(costs, average_costs_i_heading, i_heading);
+    int max_index_heading_d = compute_and_set_average_costs(costs, average_costs_d_heading, d_heading);
+    // Write to file 
+    double average_cost_for_current_gains = -1.0;
+    for(int i = 0; i < pow(3, 6); ++i)
+    {
+      if(costs[i][0] == gain_position[0] && 
+         costs[i][1] == gain_position[1] &&
+         costs[i][2] == gain_position[2] &&
+         costs[i][3] == gain_heading[0] && 
+         costs[i][4] == gain_heading[1] &&
+         costs[i][5] == gain_heading[2])
+      {
+        average_cost_for_current_gains = costs[i][6];
+      }
+    }
+    fprintf(fp, "\n%f %f %f %f %f %f %f", 
+            gain_position[0],
+            gain_position[1],
+            gain_position[2],
+            gain_heading[0],
+            gain_heading[1],
+            gain_heading[2],
+            average_cost_for_current_gains);
+    fprintf(stdout, "\n%f %f %f %f %f %f %f", 
+            gain_position[0],
+            gain_position[1],
+            gain_position[2],
+            gain_heading[0],
+            gain_heading[1],
+            gain_heading[2],
+            average_cost_for_current_gains);
+    // Set the new gain terms
+    gain_position[0] = p_position[max_index_position_p];
+    gain_position[1] = i_position[max_index_position_i];
+    gain_position[2] = d_position[max_index_position_d];
+    gain_heading[0] = p_heading[max_index_heading_p];
+    gain_heading[1] = i_heading[max_index_heading_i];
+    gain_heading[2] = d_heading[max_index_heading_d];
+    // Clean memory
+    for(int i = 0; i < pow(3, 6); ++i)
+    {
+      free(costs[i]);
+    }
+    free(costs);
+  }
+}
 
-    // Compute the next gain terms.
-  }
-  else
-  {
-    set_error_msg(controller->error_msg, error_null_pointer);
-  }
+union Coordinates_3D controller_get_gains_position(struct Controller* controller)
+{
+  union Coordinates_3D k;
+  k.keys.x = controller->kp_position;
+  k.keys.y = controller->ki_position;
+  k.keys.z = controller->kd_position;
+  return k;
+}
+
+union Coordinates_3D controller_get_gains_heading(struct Controller* controller)
+{
+  union Coordinates_3D k;
+  k.keys.x = controller->kp_heading;
+  k.keys.y = controller->ki_heading;
+  k.keys.z = controller->kd_heading;
+  return k;
 }

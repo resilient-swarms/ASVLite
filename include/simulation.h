@@ -2,6 +2,7 @@
 #define SIMULATION_H
 
 #include <stdbool.h>
+#include "geometry.h"
 
 /**
  * @file
@@ -43,9 +44,6 @@ void simulation_set_input_using_file(struct Simulation* simulation,
  * Function to init simulation using an instance of Asv. 
  * @param asvs array to pointers of asvs used for initialising simulation.
  * @param count_asvs is the size of the asvs array.  
- * @param wave_hts array with wave heights in meter. The array should be of the same size of asvs.
- * @param wave_heading array with wave headings in deg. The array should be of the same size of asvs.
- * @param rand_seed seed for random number generator.
  * @param with_time_sync is true when simulations of all asvs are to run synchronous; else false.   
  */
 void simulation_set_input_using_asvs(struct Simulation* simulation,
@@ -54,11 +52,27 @@ void simulation_set_input_using_asvs(struct Simulation* simulation,
                                     bool with_time_sync);
 
 /**
+ * Set a new array of waypoints for an asv. 
+ * @param asv for which the new set of waypoints are to be set.
+ * @param waypoints is the array of new waypoints for the asv.
+ * @param count_waypoints is the size of the array waypoints.
+ */
+void simulation_set_waypoints_for_asv(struct Simulation* simulation,
+                                      struct Asv* asv, 
+                                      union Coordinates_3D* waypoints,
+                                      int count_waypoints);
+
+/**
  * Set the controller used for all asvs in the simulation.
  * @param gain_position is an array of size 3 with gain terms for position in the order - proportional, integral, differential.
  * @param gain_heading is an array of size 3 with gain terms for heading in the order - proportional, integral, differential.
  */
 void simulation_set_controller(struct Simulation* simulation, double* gain_position, double* gain_heading);
+
+/**
+ * Tune the controllers for the asvs.
+ */
+void simulation_tune_controller(struct Simulation* simulation);
 
 /**
  * Function to write the simulated data to file. 
@@ -98,5 +112,20 @@ int get_count_mesh_cells_along_edge();
  * Visualisation data from input file. Function to get the bottom left corner of the simulated sea surface.
  */
 union Coordinates_3D get_sea_surface_position();
+
+/**
+ * Get the buffer associated with the simulation of an asv. 
+ */
+struct Buffer* simulation_get_buffer(struct Simulation* simulation, struct Asv* asv);
+
+/**
+ * Get the buffer length associated with the simulation of an asv. 
+ */
+struct Buffer* simulation_get_buffer_length(struct Simulation* simulation, struct Asv* asv);
+
+/**
+ * Get the position of the asv recorded in the buffer at given index.
+ */
+union Coordinates_3D buffer_get_asv_position_at(struct Buffer* buffer, int index);
 
 #endif // SIMULATION_H

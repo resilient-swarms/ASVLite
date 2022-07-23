@@ -772,6 +772,8 @@ void asv_set_thrusters(struct Asv* asv, struct Thruster** thrusters, int count_t
   clear_error_msg(asv->error_msg);
   if(asv && thrusters)
   {
+    // Need more memory
+    free(asv->thrusters);
     if(asv->thrusters = (struct Thruster**)malloc(sizeof(struct Thruster*) * count_thrusters))
     {
       for(int i = 0; i<count_thrusters; ++i)
@@ -802,6 +804,20 @@ struct Thruster** asv_get_thrusters(struct Asv* asv)
   {
     set_error_msg(asv->error_msg, error_null_pointer);
     return NULL;
+  }
+}
+
+const union Coordinates_3D thruster_get_position(struct Thruster* thruster)
+{
+  clear_error_msg(thruster->error_msg);
+  if(thruster)
+  {
+    return thruster->position;
+  }
+  else
+  {
+    set_error_msg(thruster->error_msg, error_null_pointer);
+    return (union Coordinates_3D){0.0, 0.0, 0.0};
   }
 }
 

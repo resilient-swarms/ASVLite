@@ -67,4 +67,16 @@ void controller_set_gains_heading(struct Controller* controller,
  */
 void controller_set_thrust(struct Controller* controller, union Coordinates_3D way_point);
 
+/**
+ * Get the gain terms for position.  
+ * @return gain terms returned as a coordinate, where x = p, y = i, z = d.
+ */
+union Coordinates_3D controller_get_gains_position(struct Controller* controller);
+
+/**
+ * Get the gain terms for heading.  
+ * @return gain terms returned as a coordinate, where x = p, y = i, z = d.
+ */
+union Coordinates_3D controller_get_gains_heading(struct Controller* controller);
+
 #endif
