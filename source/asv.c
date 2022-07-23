@@ -261,7 +261,7 @@ static void set_unit_wave_pressure(struct Asv* asv)
     if(wave)
     {
       // Calculate wave pressure amplitude for the regular wave at the cog depth
-      double P_unit_wave = regular_wave_get_pressure_amp(wave, -1.0 * asv->spec.T);
+      double P_unit_wave = regular_wave_get_pressure_amp(wave, asv->spec.T);
       const char* error_msg = regular_wave_get_error_msg(wave);
       if(error_msg)
       {
