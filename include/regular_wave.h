@@ -4,6 +4,7 @@
 #include "geometry.h"
 
 /**
+ * @file
  * An instance of Regular_wave should only be created by calling the 
  * function regular_wave_new(). This function allocates and initialises 
  * a block of memory on the stack, and therefore all calls to 

@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 /**
+ * @file
  * An instance of Simulation should only be created by calling the function simulation_new(). 
  * This function allocates and initialises a block of memory on the stack, and 
  * therefore all calls to simulation_new() should be paired with a call to simulation_delete() 

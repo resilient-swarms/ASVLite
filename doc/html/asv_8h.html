@@ -97,10 +97,7 @@ $(document).ready(function(){initNavTree('asv_8h.html',''); initResizable(); });
   <div class="headertitle"><div class="title">asv.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="constants_8h_source.html">constants.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="geometry_8h_source.html">geometry.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="wave_8h_source.html">wave.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="geometry_8h_source.html">geometry.h</a>&quot;</code><br />
 </div>
 <p><a href="asv_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -111,26 +108,26 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ab80dfe2fe106ffcb52fdc217c88fcde8"><td class="memItemLeft" align="right" valign="top">struct Propeller *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#ab80dfe2fe106ffcb52fdc217c88fcde8">propeller_new</a> (const union <a class="el" href="union_coordinates__3_d.html">Coordinates_3D</a> position)</td></tr>
-<tr class="separator:ab80dfe2fe106ffcb52fdc217c88fcde8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae62e1df62b1d260186a3ad6ede5072f7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#ae62e1df62b1d260186a3ad6ede5072f7">propeller_delete</a> (struct Propeller *propeller)</td></tr>
-<tr class="separator:ae62e1df62b1d260186a3ad6ede5072f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3134283f66277170a84fd2a6b808d0e3"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#a3134283f66277170a84fd2a6b808d0e3">propeller_get_error_msg</a> (const struct Propeller *propeller)</td></tr>
-<tr class="separator:a3134283f66277170a84fd2a6b808d0e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a85df5f34b33dc1b4c2e68a4aad69ce46"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#a85df5f34b33dc1b4c2e68a4aad69ce46">propeller_set_thrust</a> (struct Propeller *propeller, const union <a class="el" href="union_coordinates__3_d.html">Coordinates_3D</a> orientation, double magnitude)</td></tr>
-<tr class="separator:a85df5f34b33dc1b4c2e68a4aad69ce46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5efa9a27c570364e2e7762f242fade0a"><td class="memItemLeft" align="right" valign="top">struct Thruster *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#a5efa9a27c570364e2e7762f242fade0a">thruster_new</a> (const union <a class="el" href="union_coordinates__3_d.html">Coordinates_3D</a> position)</td></tr>
+<tr class="separator:a5efa9a27c570364e2e7762f242fade0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40f0340b5d040c0d7583581000d0ac69"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#a40f0340b5d040c0d7583581000d0ac69">thruster_delete</a> (struct Thruster *thruster)</td></tr>
+<tr class="separator:a40f0340b5d040c0d7583581000d0ac69"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9477c54b4a2c2aa92b38cc28062cb850"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#a9477c54b4a2c2aa92b38cc28062cb850">thruster_get_error_msg</a> (const struct Thruster *thruster)</td></tr>
+<tr class="separator:a9477c54b4a2c2aa92b38cc28062cb850"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae10a255e92a421dec4f2ea0f283d6b1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#aae10a255e92a421dec4f2ea0f283d6b1">thruster_set_thrust</a> (struct Thruster *thruster, const union <a class="el" href="union_coordinates__3_d.html">Coordinates_3D</a> orientation, double magnitude)</td></tr>
+<tr class="separator:aae10a255e92a421dec4f2ea0f283d6b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a49ba04cce9735d2f1e6552f78bedc9bd"><td class="memItemLeft" align="right" valign="top">struct Asv *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#a49ba04cce9735d2f1e6552f78bedc9bd">asv_new</a> (const struct <a class="el" href="struct_asv__specification.html">Asv_specification</a> specification, const struct Wave *wave, union <a class="el" href="union_coordinates__3_d.html">Coordinates_3D</a> position, union <a class="el" href="union_coordinates__3_d.html">Coordinates_3D</a> attitude)</td></tr>
 <tr class="separator:a49ba04cce9735d2f1e6552f78bedc9bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a84e411180f97e53b343e240743847912"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#a84e411180f97e53b343e240743847912">asv_delete</a> (struct Asv *asv)</td></tr>
 <tr class="separator:a84e411180f97e53b343e240743847912"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a812fe08c262717c78ec6e36cd89530a9"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#a812fe08c262717c78ec6e36cd89530a9">asv_get_error_msg</a> (const struct Asv *asv)</td></tr>
 <tr class="separator:a812fe08c262717c78ec6e36cd89530a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a497ac162cf9e8c7f5cea3301136f991f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#a497ac162cf9e8c7f5cea3301136f991f">asv_set_propellers</a> (struct Asv *asv, struct Propeller **propellers, int cout_propellers)</td></tr>
-<tr class="separator:a497ac162cf9e8c7f5cea3301136f991f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af678a96ea22909f90dc188bf1299e60e"><td class="memItemLeft" align="right" valign="top">struct Propeller **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#af678a96ea22909f90dc188bf1299e60e">asv_get_propellers</a> (struct Asv *asv)</td></tr>
-<tr class="separator:af678a96ea22909f90dc188bf1299e60e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a875c5d1ba3f1ae5812a5cd0d0e907454"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#a875c5d1ba3f1ae5812a5cd0d0e907454">asv_get_count_propellers</a> (struct Asv *asv)</td></tr>
-<tr class="separator:a875c5d1ba3f1ae5812a5cd0d0e907454"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeba1a5db0f859ceab6c918605d86d302"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#aeba1a5db0f859ceab6c918605d86d302">asv_set_thrusters</a> (struct Asv *asv, struct Thruster **thrusters, int cout_thrusters)</td></tr>
+<tr class="separator:aeba1a5db0f859ceab6c918605d86d302"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d43ccb00732cbde755210e7ec98924e"><td class="memItemLeft" align="right" valign="top">struct Thruster **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#a7d43ccb00732cbde755210e7ec98924e">asv_get_thrusters</a> (struct Asv *asv)</td></tr>
+<tr class="separator:a7d43ccb00732cbde755210e7ec98924e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a28a4df4c1fcfa4def5f62d157560e462"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#a28a4df4c1fcfa4def5f62d157560e462">asv_get_count_thrusters</a> (struct Asv *asv)</td></tr>
+<tr class="separator:a28a4df4c1fcfa4def5f62d157560e462"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6f775ab30236a02869dab91105a949e5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#a6f775ab30236a02869dab91105a949e5">asv_set_sea_state</a> (struct Asv *asv, const struct Wave *wave)</td></tr>
 <tr class="separator:a6f775ab30236a02869dab91105a949e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a83c43b004d52166e9cd24fc93a3393fc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#a83c43b004d52166e9cd24fc93a3393fc">asv_compute_dynamics</a> (struct Asv *asv, double time_step_size)</td></tr>
@@ -152,7 +149,10 @@ Functions</h2></td></tr>
 <tr class="memitem:a83c2c20c3c0d7b1349a3623197069ad5"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_asv__specification.html">Asv_specification</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asv_8h.html#a83c2c20c3c0d7b1349a3623197069ad5">asv_get_spec</a> (struct Asv *asv)</td></tr>
 <tr class="separator:a83c2c20c3c0d7b1349a3623197069ad5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >An instance of Thruster or Asv should only be created by calling the function <a class="el" href="asv_8h.html#a5efa9a27c570364e2e7762f242fade0a">thruster_new()</a> or Asv_new(). This function allocates and initialises a block of memory on the stack, and therefore all calls to Thruster_new() and Asv_new() should be paired with a call to Thruster_delete() and Asv_delete() to avoid memory leaks.</p>
+<p >All functions operating on an instance of a Thruster or Asv have a mechanism to notify of exceptions. All instances of Thruster and Asv have a member variable that holds a pointer to an error message. When there are no errors, the pointer is set to null. If an error occurs in a call to a function that takes an instance of the struct, an error message is set within the instance. The error message can be fetched using the function <a class="el" href="asv_8h.html#a9477c54b4a2c2aa92b38cc28062cb850">thruster_get_error_msg()</a> or <a class="el" href="asv_8h.html#a812fe08c262717c78ec6e36cd89530a9">asv_get_error_msg()</a>. The expected usage is to pair all function calls that take an instance of Thruster or Asv with a call to the corresponding _get_error_msg() and check for a null pointer. If a null pointer is returned, there is no error; otherwise, an error has occurred. Any subsequent calls to other functions that take an instance of Thruster will reset the last know error message in Thruster. Similarly, any subsequent calls to other functions that take an instance of Asv will reset the last know error message in the Asv. </p>
+</div><h2 class="groupheader">Function Documentation</h2>
 <a id="a83c43b004d52166e9cd24fc93a3393fc" name="a83c43b004d52166e9cd24fc93a3393fc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a83c43b004d52166e9cd24fc93a3393fc">&#9670;&nbsp;</a></span>asv_compute_dynamics()</h2>
 
@@ -178,9 +178,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Function to set the position and attitude of the ASV for the given time step. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Function to compute dynamics of the ASV by incrementing time. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">asv</td><td>is a non-null pointer to an instance of Asv for which the dynamics is to be computed. </td></tr>
     <tr><td class="paramname">time_step_size</td><td>in milliseconds to increment the current time. </td></tr>
   </table>
   </dd>
@@ -227,7 +226,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Get acceleration. </p>
+<p >Get acceleration. </p><dl class="section return"><dt>Returns</dt><dd>acceleration, in m/s2, along each DOF. </dd></dl>
 
 </div>
 </div>
@@ -246,24 +245,18 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Get the floating attitude of the asv. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">asv</td><td>is a non-null pointer to an instance of Asv for which the attitude is to be fetched. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>attitude of the asv. </dd></dl>
+<p >Get the floating attitude of the asv. </p><dl class="section return"><dt>Returns</dt><dd>attitude of the asv with angles in radians. </dd></dl>
 
 </div>
 </div>
-<a id="a875c5d1ba3f1ae5812a5cd0d0e907454" name="a875c5d1ba3f1ae5812a5cd0d0e907454"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a875c5d1ba3f1ae5812a5cd0d0e907454">&#9670;&nbsp;</a></span>asv_get_count_propellers()</h2>
+<a id="a28a4df4c1fcfa4def5f62d157560e462" name="a28a4df4c1fcfa4def5f62d157560e462"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a28a4df4c1fcfa4def5f62d157560e462">&#9670;&nbsp;</a></span>asv_get_count_thrusters()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int asv_get_count_propellers </td>
+          <td class="memname">int asv_get_count_thrusters </td>
           <td>(</td>
           <td class="paramtype">struct Asv *&#160;</td>
           <td class="paramname"><em>asv</em></td><td>)</td>
@@ -271,13 +264,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Get the number of propeller for the asv. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">asv</td><td>is a non-null pointer to an instance of Asv for which the count of propellers is to be fetched. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>number of propellers attached to the asv. </dd></dl>
+<p >Get the number of thruster for the asv. </p><dl class="section return"><dt>Returns</dt><dd>number of thrusters attached to the asv. </dd></dl>
 
 </div>
 </div>
@@ -296,12 +283,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Returns error message related to the last function called for the instance of Asv. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">asv</td><td>is a non-null pointer to an instance of Asv for which the error message is to be fetched. </td></tr>
-  </table>
-  </dd>
-</dl>
+<p >Returns error message related to the last function called for the instance of Asv. </p><dl class="section return"><dt>Returns</dt><dd>pointer to the error msg, if any, else returns a null pointer. </dd></dl>
 
 </div>
 </div>
@@ -320,7 +302,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Get force. </p>
+<p >Get force. </p><dl class="section return"><dt>Returns</dt><dd>force, in N, along each DOF. </dd></dl>
 
 </div>
 </div>
@@ -339,13 +321,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Get the position of the asv using the COG of the vehicle. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">asv</td><td>is a non-null pointer to an instance of Asv for which the position is to be fetched. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>position of the asv. </dd></dl>
+<p >Get the position of the asv using the COG of the vehicle. </p><dl class="section return"><dt>Returns</dt><dd>position of the asv with coordinates in meter. </dd></dl>
 
 </div>
 </div>
@@ -364,38 +340,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Get the position of the asv using the origin of the body reference frame of the vehicle. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">asv</td><td>is a non-null pointer to an instance of Asv for which the position is to be fetched. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>position of the asv. </dd></dl>
-
-</div>
-</div>
-<a id="af678a96ea22909f90dc188bf1299e60e" name="af678a96ea22909f90dc188bf1299e60e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af678a96ea22909f90dc188bf1299e60e">&#9670;&nbsp;</a></span>asv_get_propellers()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct Propeller ** asv_get_propellers </td>
-          <td>(</td>
-          <td class="paramtype">struct Asv *&#160;</td>
-          <td class="paramname"><em>asv</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Get the array of pointers to the propellers. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">asv</td><td>is a non-null pointer to an instance of Asv for which the array of propellers is to be fetched. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>array of pointers to propellers. </dd></dl>
+<p >Get the position of the asv using the origin of the body reference frame of the vehicle. </p><dl class="section return"><dt>Returns</dt><dd>position of the asv with coordinates in meter. </dd></dl>
 
 </div>
 </div>
@@ -418,6 +363,25 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a7d43ccb00732cbde755210e7ec98924e" name="a7d43ccb00732cbde755210e7ec98924e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d43ccb00732cbde755210e7ec98924e">&#9670;&nbsp;</a></span>asv_get_thrusters()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct Thruster ** asv_get_thrusters </td>
+          <td>(</td>
+          <td class="paramtype">struct Asv *&#160;</td>
+          <td class="paramname"><em>asv</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Get the array of pointers to the thrusters. </p><dl class="section return"><dt>Returns</dt><dd>array of pointers to thrusters. </dd></dl>
+
+</div>
+</div>
 <a id="ae487af138296358a76d8e01a7e94258a" name="ae487af138296358a76d8e01a7e94258a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae487af138296358a76d8e01a7e94258a">&#9670;&nbsp;</a></span>asv_get_V()</h2>
 
@@ -433,7 +397,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Get velocity. </p>
+<p >Get velocity. </p><dl class="section return"><dt>Returns</dt><dd>velocity, in m/s, along each DOF. </dd></dl>
 
 </div>
 </div>
@@ -487,48 +451,6 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a497ac162cf9e8c7f5cea3301136f991f" name="a497ac162cf9e8c7f5cea3301136f991f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a497ac162cf9e8c7f5cea3301136f991f">&#9670;&nbsp;</a></span>asv_set_propellers()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void asv_set_propellers </td>
-          <td>(</td>
-          <td class="paramtype">struct Asv *&#160;</td>
-          <td class="paramname"><em>asv</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">struct Propeller **&#160;</td>
-          <td class="paramname"><em>propellers</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>cout_propellers</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Set the propellers for the asv. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">asv</td><td>is a non-null pointer to an instance of Asv for which the propellers are to be set. </td></tr>
-    <tr><td class="paramname">propellers</td><td>is the array of propellers for the asv. </td></tr>
-    <tr><td class="paramname">cout_propellers</td><td>is the size of propellers array. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a id="a6f775ab30236a02869dab91105a949e5" name="a6f775ab30236a02869dab91105a949e5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6f775ab30236a02869dab91105a949e5">&#9670;&nbsp;</a></span>asv_set_sea_state()</h2>
 
@@ -554,9 +476,9 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Function to modify the current sea state to a new sea state. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Function to modify the current sea state to a new sea state. If operation was unsuccessful then the new wave is rejected and the asv instance retains the pointer to its existing wave. Since the asv may retain the pointer to the old wave if error occurred, check for error by calling <a class="el" href="asv_8h.html#a812fe08c262717c78ec6e36cd89530a9">asv_get_error_msg()</a> before calling <a class="el" href="wave_8h.html#aad03825a16bf91c73e2048024756a112">wave_delete()</a> on the replaced instance of Wave. <br  />
+ </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">asv</td><td>is a non-null pointer to an instance of Asv for which a new irregular wave is to be set. </td></tr>
     <tr><td class="paramname">wave</td><td>is a non-null pointer for the new instance of irregular wave. If memory is to be cleaned, call <a class="el" href="wave_8h.html#aad03825a16bf91c73e2048024756a112">wave_delete()</a> on the pointer to the old irregular wave instance. <br  />
  </td></tr>
   </table>
@@ -565,62 +487,98 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ae62e1df62b1d260186a3ad6ede5072f7" name="ae62e1df62b1d260186a3ad6ede5072f7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae62e1df62b1d260186a3ad6ede5072f7">&#9670;&nbsp;</a></span>propeller_delete()</h2>
+<a id="aeba1a5db0f859ceab6c918605d86d302" name="aeba1a5db0f859ceab6c918605d86d302"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeba1a5db0f859ceab6c918605d86d302">&#9670;&nbsp;</a></span>asv_set_thrusters()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void propeller_delete </td>
+          <td class="memname">void asv_set_thrusters </td>
           <td>(</td>
-          <td class="paramtype">struct Propeller *&#160;</td>
-          <td class="paramname"><em>propeller</em></td><td>)</td>
+          <td class="paramtype">struct Asv *&#160;</td>
+          <td class="paramname"><em>asv</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">struct Thruster **&#160;</td>
+          <td class="paramname"><em>thrusters</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>cout_thrusters</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Free memory allocated for the propeller. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Set the thrusters for the asv. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">propeller</td><td>is a non-null pointer to an instance of Propeller to be deallocated. </td></tr>
+    <tr><td class="paramname">thrusters</td><td>array of thrusters for the asv. </td></tr>
+    <tr><td class="paramname">cout_thrusters</td><td>is the size of thrusters array. </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a3134283f66277170a84fd2a6b808d0e3" name="a3134283f66277170a84fd2a6b808d0e3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3134283f66277170a84fd2a6b808d0e3">&#9670;&nbsp;</a></span>propeller_get_error_msg()</h2>
+<a id="a40f0340b5d040c0d7583581000d0ac69" name="a40f0340b5d040c0d7583581000d0ac69"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a40f0340b5d040c0d7583581000d0ac69">&#9670;&nbsp;</a></span>thruster_delete()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">const char * propeller_get_error_msg </td>
+          <td class="memname">void thruster_delete </td>
           <td>(</td>
-          <td class="paramtype">const struct Propeller *&#160;</td>
-          <td class="paramname"><em>propeller</em></td><td>)</td>
+          <td class="paramtype">struct Thruster *&#160;</td>
+          <td class="paramname"><em>thruster</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Returns error message related to the last function called for the instance of Propeller. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Free memory allocated for the thruster. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">wave</td><td>is a non-null pointer to an instance of Propeller for which the error message is to be fetched. </td></tr>
+    <tr><td class="paramname">thruster</td><td>is a non-null pointer to an instance of Thruster to be deallocated. </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="ab80dfe2fe106ffcb52fdc217c88fcde8" name="ab80dfe2fe106ffcb52fdc217c88fcde8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab80dfe2fe106ffcb52fdc217c88fcde8">&#9670;&nbsp;</a></span>propeller_new()</h2>
+<a id="a9477c54b4a2c2aa92b38cc28062cb850" name="a9477c54b4a2c2aa92b38cc28062cb850"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9477c54b4a2c2aa92b38cc28062cb850">&#9670;&nbsp;</a></span>thruster_get_error_msg()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">struct Propeller * propeller_new </td>
+          <td class="memname">const char * thruster_get_error_msg </td>
+          <td>(</td>
+          <td class="paramtype">const struct Thruster *&#160;</td>
+          <td class="paramname"><em>thruster</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Returns error message related to the last function called for the instance of Thruster. </p><dl class="section return"><dt>Returns</dt><dd>pointer to the error msg, if any, else returns a null pointer. </dd></dl>
+
+</div>
+</div>
+<a id="a5efa9a27c570364e2e7762f242fade0a" name="a5efa9a27c570364e2e7762f242fade0a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5efa9a27c570364e2e7762f242fade0a">&#9670;&nbsp;</a></span>thruster_new()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct Thruster * thruster_new </td>
           <td>(</td>
           <td class="paramtype">const union <a class="el" href="union_coordinates__3_d.html">Coordinates_3D</a>&#160;</td>
           <td class="paramname"><em>position</em></td><td>)</td>
@@ -628,9 +586,9 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Create and initialise a Propeller. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Create and initialise a Thruster. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">position</td><td>of the propeller in ASV's body-fixed frame. </td></tr>
+    <tr><td class="paramname">position</td><td>of the thruster in ASV's body-fixed frame. </td></tr>
   </table>
   </dd>
 </dl>
@@ -638,17 +596,17 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a85df5f34b33dc1b4c2e68a4aad69ce46" name="a85df5f34b33dc1b4c2e68a4aad69ce46"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a85df5f34b33dc1b4c2e68a4aad69ce46">&#9670;&nbsp;</a></span>propeller_set_thrust()</h2>
+<a id="aae10a255e92a421dec4f2ea0f283d6b1" name="aae10a255e92a421dec4f2ea0f283d6b1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aae10a255e92a421dec4f2ea0f283d6b1">&#9670;&nbsp;</a></span>thruster_set_thrust()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void propeller_set_thrust </td>
+          <td class="memname">void thruster_set_thrust </td>
           <td>(</td>
-          <td class="paramtype">struct Propeller *&#160;</td>
-          <td class="paramname"><em>propeller</em>, </td>
+          <td class="paramtype">struct Thruster *&#160;</td>
+          <td class="paramname"><em>thruster</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -669,11 +627,10 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Set the orientation and magnitude of propeller thrust. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Set the orientation and magnitude of thrust vector. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">propeller</td><td>is a non-null pointer to an instance of Propeller for which the thrust is to be set. </td></tr>
-    <tr><td class="paramname">orientation</td><td>of the thrust vector in body-fixed frame. </td></tr>
-    <tr><td class="paramname">magnitude</td><td>of the thrust. </td></tr>
+    <tr><td class="paramname">orientation</td><td>of the thrust vector, in radians, in body-fixed frame. </td></tr>
+    <tr><td class="paramname">magnitude</td><td>of the thrust in N. </td></tr>
   </table>
   </dd>
 </dl>
@@ -711,10 +668,9 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Similar to function asv_compute_dynamics but should be used only for a wave glider. The function sets the position and attitude of the wave glider for the given time step, and also computes the wave thrust force generated by the underwater glider. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Similar to function asv_compute_dynamics but should be used only for a wave glider. The function computes the dynamics of the wave glider for the next time step, and also computes the wave thrust force generated by the underwater glider. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">asv</td><td>is a non-null pointer to an instance of Asv for which the dynamics is to be computed. </td></tr>
-    <tr><td class="paramname">rudder_angle</td><td>is the angle of the rudder with respect to X axis of the ASV. Rudder angle must within (-PI/2, PI/2). Angle is positive when the vehicle has to turn to right (ie. aft end of the rudder points to starboard side). </td></tr>
+    <tr><td class="paramname">rudder_angle</td><td>is the angle of the rudder with respect to X axis of the ASV. Rudder angle must within (-PI/2, PI/2). Angle is positive when the vehicle has to turn to starboard (ie. aft end of the rudder points to starboard side). </td></tr>
     <tr><td class="paramname">time_step_size</td><td>in milliseconds to increment the current time. </td></tr>
   </table>
   </dd>

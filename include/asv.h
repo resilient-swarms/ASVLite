@@ -25,41 +25,25 @@ struct Asv_specification
 };
 
 /**
- * An instance of Thruster should only be created by calling the function thruster_new(). 
+ * @file
+ * An instance of Thruster or Asv should only be created by calling the function thruster_new() or Asv_new(). 
  * This function allocates and initialises a block of memory on the stack, and 
- * therefore all calls to thruster_new() should be paired with a call to thruster_delete() 
+ * therefore all calls to Thruster_new() and Asv_new() should be paired with a call to Thruster_delete() and Asv_delete() 
  * to avoid memory leaks. 
  * 
- * All functions operating on an instance of a Thruster have a mechanism to notify of 
- * exceptions. All instances of Thruster have a member variable that holds a pointer 
+ * All functions operating on an instance of a Thruster or Asv have a mechanism to notify of 
+ * exceptions. All instances of Thruster and Asv have a member variable that holds a pointer 
  * to an error message. When there are no errors, the pointer is set to null. If 
- * an error occurs in a call to a function that takes an instance of Thruster, an error 
+ * an error occurs in a call to a function that takes an instance of the struct, an error 
  * message is set within the instance. The error message can be fetched using the 
- * function thruster_get_error_msg(). The expected usage is to pair all function calls 
- * that take an instance of Thruster with a call to thruster_get_error_msg() and check for 
+ * function thruster_get_error_msg() or asv_get_error_msg(). The expected usage is to pair all function calls 
+ * that take an instance of Thruster or Asv with a call to the corresponding _get_error_msg() and check for 
  * a null pointer. If a null pointer is returned, there is no error; otherwise, an 
  * error has occurred. Any subsequent calls to other functions that take an instance 
- * of Thruster will reset the last know error message. 
+ * of Thruster will reset the last know error message in Thruster. Similarly, any subsequent 
+ * calls to other functions that take an instance of Asv will reset the last know error message in the Asv. 
  */
 struct Thruster;
-
-/**
- * An instance of Asv should only be created by calling the function asv_new(). 
- * This function allocates and initialises a block of memory on the stack, and 
- * therefore all calls to asv_new() should be paired with a call to asv_delete() 
- * to avoid memory leaks. 
- * 
- * All functions operating on an instance of a Asv have a mechanism to notify of 
- * exceptions. All instances of Asv have a member variable that holds a pointer 
- * to an error message. When there are no errors, the pointer is set to null. If 
- * an error occurs in a call to a function that takes an instance of Asv, an error 
- * message is set within the instance. The error message can be fetched using the 
- * function asv_get_error_msg(). The expected usage is to pair all function calls 
- * that take an instance of Asv with a call to asv_get_error_msg() and check for 
- * a null pointer. If a null pointer is returned, there is no error; otherwise, an 
- * error has occurred. Any subsequent calls to other functions that take an instance 
- * of Asv will reset the last know error message. 
- */
 struct Asv;
 
 /**

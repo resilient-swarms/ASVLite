@@ -1,6 +1,28 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
 
+/**
+ * @file
+ * Coordinates_3D and Rigid_body_DOF provides mechanisms to access a block
+ * of memory as a struct or as an array. Example:
+ * \code{.c}
+ * const union Coordinates_3D point = asv_get_position_cog(asv); // Returns the position of an asv.
+ * 
+ * // Access the x, y, z coordinates of point as a struct:
+ * double x = point.keys.x;
+ * double y = point.keys.y;
+ * double z = point.keys.z;
+ * 
+ * // Access the same x,y,z coordinates of point as an array:
+ * double coordinates[3];
+ * for(int i = 0; i < COUNT_COORDINATES; ++i)
+ * {
+ *   coordinates[i] = point.array[i];
+ * }
+ * \endcode
+ * 
+ */
+
 #define COUNT_COORDINATES 3 /* Number of dimensions in 3D space */ 
 /**
  * Cartesian coordinates for a three-dimensional space. 

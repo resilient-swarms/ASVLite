@@ -96,9 +96,7 @@ $(document).ready(function(){initNavTree('simulation_8h.html',''); initResizable
   <div class="headertitle"><div class="title">simulation.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="asv_8h_source.html">asv.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="pid__controller_8h_source.html">pid_controller.h</a>&quot;</code><br />
-<code>#include &lt;pthread.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
 </div>
 <p><a href="simulation_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -106,14 +104,14 @@ $(document).ready(function(){initNavTree('simulation_8h.html',''); initResizable
 Functions</h2></td></tr>
 <tr class="memitem:a5bb93c2fa735b4b79e8600980b98bc9b"><td class="memItemLeft" align="right" valign="top">struct Simulation *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8h.html#a5bb93c2fa735b4b79e8600980b98bc9b">simulation_new</a> ()</td></tr>
 <tr class="separator:a5bb93c2fa735b4b79e8600980b98bc9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac557a5fe31f6a25c2f0b5cf255894a36"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8h.html#ac557a5fe31f6a25c2f0b5cf255894a36">simulation_delete</a> (struct Simulation *node)</td></tr>
-<tr class="separator:ac557a5fe31f6a25c2f0b5cf255894a36"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeec201bd2495d5e75a8aea70052b9129"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8h.html#aeec201bd2495d5e75a8aea70052b9129">simulation_set_input</a> (struct Simulation *node, char *file, double wave_ht, double wave_heading, long rand_seed, bool with_time_sync)</td></tr>
-<tr class="separator:aeec201bd2495d5e75a8aea70052b9129"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a67363cd8175dbc321b52ccc12cdb5160"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8h.html#a67363cd8175dbc321b52ccc12cdb5160">simulation_write_output</a> (struct Simulation *node, char *out, double simulation_time)</td></tr>
-<tr class="separator:a67363cd8175dbc321b52ccc12cdb5160"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a09ea134c171cc876f5691a027881da63"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8h.html#a09ea134c171cc876f5691a027881da63">simulation_run</a> (struct Simulation *first_node)</td></tr>
-<tr class="separator:a09ea134c171cc876f5691a027881da63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a736e2177717181f3bf9f0a774f24b097"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8h.html#a736e2177717181f3bf9f0a774f24b097">simulation_delete</a> (struct Simulation *simulation)</td></tr>
+<tr class="separator:a736e2177717181f3bf9f0a774f24b097"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a133abd36178a1949b323ad4f1faa7874"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8h.html#a133abd36178a1949b323ad4f1faa7874">simulation_set_input</a> (struct Simulation *simulation, char *file, double wave_ht, double wave_heading, long rand_seed, bool with_time_sync)</td></tr>
+<tr class="separator:a133abd36178a1949b323ad4f1faa7874"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af51cdc80861f3445dda637f1186dc385"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8h.html#af51cdc80861f3445dda637f1186dc385">simulation_write_output</a> (struct Simulation *simulation, char *out, double simulation_time)</td></tr>
+<tr class="separator:af51cdc80861f3445dda637f1186dc385"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a4cdc6139db2ce1f4b514fd75b22591"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8h.html#a1a4cdc6139db2ce1f4b514fd75b22591">simulation_run</a> (struct Simulation *simulation)</td></tr>
+<tr class="separator:a1a4cdc6139db2ce1f4b514fd75b22591"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab4d61809b17e709893b464e3c60ddde"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8h.html#aab4d61809b17e709893b464e3c60ddde">get_sea_surface_edge_length</a> ()</td></tr>
 <tr class="separator:aab4d61809b17e709893b464e3c60ddde"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afd4d5deecd5acb021390d67dae2f79ee"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8h.html#afd4d5deecd5acb021390d67dae2f79ee">get_count_mesh_cells_along_edge</a> ()</td></tr>
@@ -121,7 +119,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a0717d768c7a0f2a0b978c95222d9cff0"><td class="memItemLeft" align="right" valign="top">union <a class="el" href="union_coordinates__3_d.html">Coordinates_3D</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8h.html#a0717d768c7a0f2a0b978c95222d9cff0">get_sea_surface_position</a> ()</td></tr>
 <tr class="separator:a0717d768c7a0f2a0b978c95222d9cff0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >An instance of Simulation should only be created by calling the function <a class="el" href="simulation_8h.html#a5bb93c2fa735b4b79e8600980b98bc9b">simulation_new()</a>. This function allocates and initialises a block of memory on the stack, and therefore all calls to <a class="el" href="simulation_8h.html#a5bb93c2fa735b4b79e8600980b98bc9b">simulation_new()</a> should be paired with a call to <a class="el" href="simulation_8h.html#a736e2177717181f3bf9f0a774f24b097">simulation_delete()</a> to avoid memory leaks. </p>
+</div><h2 class="groupheader">Function Documentation</h2>
 <a id="afd4d5deecd5acb021390d67dae2f79ee" name="afd4d5deecd5acb021390d67dae2f79ee"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afd4d5deecd5acb021390d67dae2f79ee">&#9670;&nbsp;</a></span>get_count_mesh_cells_along_edge()</h2>
 
@@ -176,8 +176,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ac557a5fe31f6a25c2f0b5cf255894a36" name="ac557a5fe31f6a25c2f0b5cf255894a36"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac557a5fe31f6a25c2f0b5cf255894a36">&#9670;&nbsp;</a></span>simulation_delete()</h2>
+<a id="a736e2177717181f3bf9f0a774f24b097" name="a736e2177717181f3bf9f0a774f24b097"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a736e2177717181f3bf9f0a774f24b097">&#9670;&nbsp;</a></span>simulation_delete()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -186,14 +186,14 @@ Functions</h2></td></tr>
           <td class="memname">void simulation_delete </td>
           <td>(</td>
           <td class="paramtype">struct Simulation *&#160;</td>
-          <td class="paramname"><em>node</em></td><td>)</td>
+          <td class="paramname"><em>simulation</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p >Free the heap memory. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">node</td><td>is the first node in the linked list Simulatation_data. </td></tr>
+    <tr><td class="paramname">simulation</td><td>is a non-null pointer to an instance of Simulation to be deallocated. </td></tr>
   </table>
   </dd>
 </dl>
@@ -214,12 +214,12 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Initialise a linked list of simulation nodes. </p>
+<p >Initialise a simulation. </p>
 
 </div>
 </div>
-<a id="a09ea134c171cc876f5691a027881da63" name="a09ea134c171cc876f5691a027881da63"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a09ea134c171cc876f5691a027881da63">&#9670;&nbsp;</a></span>simulation_run()</h2>
+<a id="a1a4cdc6139db2ce1f4b514fd75b22591" name="a1a4cdc6139db2ce1f4b514fd75b22591"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1a4cdc6139db2ce1f4b514fd75b22591">&#9670;&nbsp;</a></span>simulation_run()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -228,17 +228,17 @@ Functions</h2></td></tr>
           <td class="memname">void simulation_run </td>
           <td>(</td>
           <td class="paramtype">struct Simulation *&#160;</td>
-          <td class="paramname"><em>first_node</em></td><td>)</td>
+          <td class="paramname"><em>simulation</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Simulate vehicle dynamics for each time step. This function runs simultion of each ASV in a independent thread and also synchronize the simulation for each time step between ASVs. This function is slower compared to the alternative simulate_without_time_sync() because the function waits and joins the threads at each time step. </p>
+<p >Simulate vehicle dynamics for each time step. </p>
 
 </div>
 </div>
-<a id="aeec201bd2495d5e75a8aea70052b9129" name="aeec201bd2495d5e75a8aea70052b9129"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeec201bd2495d5e75a8aea70052b9129">&#9670;&nbsp;</a></span>simulation_set_input()</h2>
+<a id="a133abd36178a1949b323ad4f1faa7874" name="a133abd36178a1949b323ad4f1faa7874"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a133abd36178a1949b323ad4f1faa7874">&#9670;&nbsp;</a></span>simulation_set_input()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -247,7 +247,7 @@ Functions</h2></td></tr>
           <td class="memname">void simulation_set_input </td>
           <td>(</td>
           <td class="paramtype">struct Simulation *&#160;</td>
-          <td class="paramname"><em>node</em>, </td>
+          <td class="paramname"><em>simulation</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -288,8 +288,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p >Function to read the input file and set the ASV's input values. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">node</td><td>is the first node in the linked list Simulatation_data. </td></tr>
-    <tr><td class="paramname">file</td><td>is the path to the input toml file. <br  />
+    <tr><td class="paramname">file</td><td>is the path to the input toml file with asv specs. <br  />
  </td></tr>
     <tr><td class="paramname">wave_ht</td><td>wave height in meter. </td></tr>
     <tr><td class="paramname">wave_heading</td><td>in deg. </td></tr>
@@ -302,8 +301,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a67363cd8175dbc321b52ccc12cdb5160" name="a67363cd8175dbc321b52ccc12cdb5160"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a67363cd8175dbc321b52ccc12cdb5160">&#9670;&nbsp;</a></span>simulation_write_output()</h2>
+<a id="af51cdc80861f3445dda637f1186dc385" name="af51cdc80861f3445dda637f1186dc385"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af51cdc80861f3445dda637f1186dc385">&#9670;&nbsp;</a></span>simulation_write_output()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -312,7 +311,7 @@ Functions</h2></td></tr>
           <td class="memname">void simulation_write_output </td>
           <td>(</td>
           <td class="paramtype">struct Simulation *&#160;</td>
-          <td class="paramname"><em>node</em>, </td>
+          <td class="paramname"><em>simulation</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -335,8 +334,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p >Function to write the simulated data to file. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">node</td><td>is the first node in the linked list Simulatation_data. </td></tr>
-    <tr><td class="paramname">out</td><td>is the path to the output director or file. If the linked list contain only one node then out is the name of the ouput file, else out is the name of the directory which will contain output files corresponding to each node. </td></tr>
+    <tr><td class="paramname">out</td><td>is the path to the output director or file. If the linked list contain only one simulation then out is the name of the ouput file, else out is the name of the directory which will contain output files corresponding to each simulation. </td></tr>
     <tr><td class="paramname">simulation_time</td><td>in sec. </td></tr>
   </table>
   </dd>

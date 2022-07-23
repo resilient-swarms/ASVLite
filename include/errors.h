@@ -1,6 +1,11 @@
 #ifndef ERRORS_H
 #define ERRORS_H
 
+/**
+ * @file
+ * This file is not part of ASVLite API and need not be accessed. 
+ */
+
 extern const char* error_null_pointer;
 extern const char* error_negative_time;
 extern const char* error_time_not_incremented;

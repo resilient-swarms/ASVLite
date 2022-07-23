@@ -4,6 +4,7 @@
 #include "geometry.h"
 
 /**
+ * @file
  * An instance of Wave should only be created by calling the function wave_new(). 
  * This function allocates and initialises a block of memory on the stack, and 
  * therefore all calls to wave_new() should be paired with a call to wave_delete() 

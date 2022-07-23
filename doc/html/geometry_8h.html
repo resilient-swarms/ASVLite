@@ -114,7 +114,29 @@ Macros</h2></td></tr>
 <tr class="memitem:a18cf707fed4b15fa68273e48f1f1f4cf"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geometry_8h.html#a18cf707fed4b15fa68273e48f1f1f4cf">COUNT_DOF</a>&#160;&#160;&#160;6 /* Number of degrees of freedom for a rigid body. */</td></tr>
 <tr class="separator:a18cf707fed4b15fa68273e48f1f1f4cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Macro Definition Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p ><a class="el" href="union_coordinates__3_d.html">Coordinates_3D</a> and <a class="el" href="union_rigid__body___d_o_f.html">Rigid_body_DOF</a> provides mechanisms to access a block of memory as a struct or as an array. Example: </p><div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">union </span><a class="code hl_union" href="union_coordinates__3_d.html">Coordinates_3D</a> point = <a class="code hl_function" href="asv_8h.html#a14055a685b88556073bc3382eafb8df5">asv_get_position_cog</a>(asv); <span class="comment">// Returns the position of an asv.</span></div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Access the x, y, z coordinates of point as a struct:</span></div>
+<div class="line"><span class="keywordtype">double</span> <a class="code hl_variable" href="union_coordinates__3_d.html#ace2284863ebd168743756af6cf90882b">x</a> = point.<a class="code hl_variable" href="union_coordinates__3_d.html#ae56c1357a805c382da231dd0bffcd68e">keys</a>.<a class="code hl_variable" href="union_coordinates__3_d.html#ace2284863ebd168743756af6cf90882b">x</a>;</div>
+<div class="line"><span class="keywordtype">double</span> <a class="code hl_variable" href="union_coordinates__3_d.html#a57ca4a11f5ec5c107f307b677a3687d4">y</a> = point.<a class="code hl_variable" href="union_coordinates__3_d.html#ae56c1357a805c382da231dd0bffcd68e">keys</a>.<a class="code hl_variable" href="union_coordinates__3_d.html#a57ca4a11f5ec5c107f307b677a3687d4">y</a>;</div>
+<div class="line"><span class="keywordtype">double</span> <a class="code hl_variable" href="union_coordinates__3_d.html#a8d328465bdd5a43b178f015e2592cf5b">z</a> = point.<a class="code hl_variable" href="union_coordinates__3_d.html#ae56c1357a805c382da231dd0bffcd68e">keys</a>.<a class="code hl_variable" href="union_coordinates__3_d.html#a8d328465bdd5a43b178f015e2592cf5b">z</a>;</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Access the same x,y,z coordinates of point as an array:</span></div>
+<div class="line"><span class="keywordtype">double</span> coordinates[3];</div>
+<div class="line"><span class="keywordflow">for</span>(<span class="keywordtype">int</span> i = 0; i &lt; <a class="code hl_define" href="geometry_8h.html#a7e4e161c0f0945d6eb752c7619e5f552">COUNT_COORDINATES</a>; ++i)</div>
+<div class="line">{</div>
+<div class="line">  coordinates[i] = point.<a class="code hl_variable" href="union_coordinates__3_d.html#ad6c749a4c6a9c2c4a517cc547a285deb">array</a>[i];</div>
+<div class="line">}</div>
+<div class="ttc" id="aasv_8h_html_a14055a685b88556073bc3382eafb8df5"><div class="ttname"><a href="asv_8h.html#a14055a685b88556073bc3382eafb8df5">asv_get_position_cog</a></div><div class="ttdeci">union Coordinates_3D asv_get_position_cog(struct Asv *asv)</div></div>
+<div class="ttc" id="ageometry_8h_html_a7e4e161c0f0945d6eb752c7619e5f552"><div class="ttname"><a href="geometry_8h.html#a7e4e161c0f0945d6eb752c7619e5f552">COUNT_COORDINATES</a></div><div class="ttdeci">#define COUNT_COORDINATES</div><div class="ttdef"><b>Definition:</b> geometry.h:26</div></div>
+<div class="ttc" id="aunion_coordinates__3_d_html"><div class="ttname"><a href="union_coordinates__3_d.html">Coordinates_3D</a></div><div class="ttdef"><b>Definition:</b> geometry.h:32</div></div>
+<div class="ttc" id="aunion_coordinates__3_d_html_a57ca4a11f5ec5c107f307b677a3687d4"><div class="ttname"><a href="union_coordinates__3_d.html#a57ca4a11f5ec5c107f307b677a3687d4">Coordinates_3D::y</a></div><div class="ttdeci">double y</div><div class="ttdoc">y coordinate</div><div class="ttdef"><b>Definition:</b> geometry.h:35</div></div>
+<div class="ttc" id="aunion_coordinates__3_d_html_a8d328465bdd5a43b178f015e2592cf5b"><div class="ttname"><a href="union_coordinates__3_d.html#a8d328465bdd5a43b178f015e2592cf5b">Coordinates_3D::z</a></div><div class="ttdeci">double z</div><div class="ttdoc">z coordinate</div><div class="ttdef"><b>Definition:</b> geometry.h:36</div></div>
+<div class="ttc" id="aunion_coordinates__3_d_html_ace2284863ebd168743756af6cf90882b"><div class="ttname"><a href="union_coordinates__3_d.html#ace2284863ebd168743756af6cf90882b">Coordinates_3D::x</a></div><div class="ttdeci">double x</div><div class="ttdoc">x coordinate</div><div class="ttdef"><b>Definition:</b> geometry.h:34</div></div>
+<div class="ttc" id="aunion_coordinates__3_d_html_ad6c749a4c6a9c2c4a517cc547a285deb"><div class="ttname"><a href="union_coordinates__3_d.html#ad6c749a4c6a9c2c4a517cc547a285deb">Coordinates_3D::array</a></div><div class="ttdeci">double array[COUNT_COORDINATES]</div><div class="ttdoc">To access the coordinate values using index 0, 1, 2.</div><div class="ttdef"><b>Definition:</b> geometry.h:38</div></div>
+<div class="ttc" id="aunion_coordinates__3_d_html_ae56c1357a805c382da231dd0bffcd68e"><div class="ttname"><a href="union_coordinates__3_d.html#ae56c1357a805c382da231dd0bffcd68e">Coordinates_3D::keys</a></div><div class="ttdeci">struct Coordinates_3D::@0 keys</div><div class="ttdoc">To access the coordinate values using the keys x, y, z.</div></div>
+</div><!-- fragment --> </div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a7e4e161c0f0945d6eb752c7619e5f552" name="a7e4e161c0f0945d6eb752c7619e5f552"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7e4e161c0f0945d6eb752c7619e5f552">&#9670;&nbsp;</a></span>COUNT_COORDINATES</h2>
 
