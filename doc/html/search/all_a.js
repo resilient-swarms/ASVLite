@@ -1,12 +1,19 @@
 var searchData=
 [
-  ['p_5funit_5fregular_5fwave_36',['P_unit_regular_wave',['../struct_asv__dynamics.html#a61ccee83fe2d4cc7ff0c8272568bd222',1,'Asv_dynamics']]],
-  ['p_5funit_5fwave_37',['P_unit_wave',['../struct_asv__dynamics.html#a482e201094358970a67018c10efd2209',1,'Asv_dynamics']]],
-  ['p_5funit_5fwave_5ffreq_5fmax_38',['P_unit_wave_freq_max',['../struct_asv__dynamics.html#aade0c1a551058387b4eb49997e227714',1,'Asv_dynamics']]],
-  ['p_5funit_5fwave_5ffreq_5fmin_39',['P_unit_wave_freq_min',['../struct_asv__dynamics.html#a957ac38fc536e175112892fe6cb1a4bd',1,'Asv_dynamics']]],
-  ['peak_5fspectral_5ffrequency_40',['peak_spectral_frequency',['../struct_wave.html#a1d20d246d04824229085f7a2737ca0c0',1,'Wave']]],
-  ['phase_5flag_41',['phase_lag',['../struct_regular__wave.html#ac3cb2006150ee0f537f5a962681b0f57',1,'Regular_wave']]],
-  ['pid_5fcontroller_42',['PID_controller',['../struct_p_i_d__controller.html',1,'']]],
-  ['position_43',['position',['../struct_asv__propeller.html#a94a3a1ad726701cb30d9d92c4ea13835',1,'Asv_propeller']]],
-  ['propellers_44',['propellers',['../struct_asv.html#add69cbb40d0f68a43e829c74831dcaf7',1,'Asv']]]
+  ['r_5fearth_0',['R_EARTH',['../constants_8h.html#a80687d199eb293b36d747d4f5f440bb7',1,'constants.h']]],
+  ['r_5fpitch_1',['r_pitch',['../struct_asv__specification.html#acf5192dcbca41c676af1690555457f1d',1,'Asv_specification']]],
+  ['r_5froll_2',['r_roll',['../struct_asv__specification.html#ad7f0606f2a3b24a958e74d03c8d1b664',1,'Asv_specification']]],
+  ['r_5fyaw_3',['r_yaw',['../struct_asv__specification.html#a4bb5cad450c408bed9c22bb981f82467',1,'Asv_specification']]],
+  ['regular_5fwave_2eh_4',['regular_wave.h',['../regular__wave_8h.html',1,'']]],
+  ['regular_5fwave_5fdelete_5',['regular_wave_delete',['../regular__wave_8h.html#af2ad8c77ee47b33d5ef0d5b8857933f1',1,'regular_wave.h']]],
+  ['regular_5fwave_5fget_5famplitude_6',['regular_wave_get_amplitude',['../regular__wave_8h.html#a0c1cf329d9b79425cd5e2ac3d84dcca2',1,'regular_wave.h']]],
+  ['regular_5fwave_5fget_5fdirection_7',['regular_wave_get_direction',['../regular__wave_8h.html#a7ee4a9a871b50594a1a62f9785d30408',1,'regular_wave.h']]],
+  ['regular_5fwave_5fget_5felevation_8',['regular_wave_get_elevation',['../regular__wave_8h.html#aaea244e1352e35bd13d069835cb16a4b',1,'regular_wave.h']]],
+  ['regular_5fwave_5fget_5ferror_5fmsg_9',['regular_wave_get_error_msg',['../regular__wave_8h.html#a3756d03d43ab8b9fb3e6cc24ec23ca12',1,'regular_wave.h']]],
+  ['regular_5fwave_5fget_5ffrequency_10',['regular_wave_get_frequency',['../regular__wave_8h.html#ac3395a826b0774bee7cc22e3dd8b956c',1,'regular_wave.h']]],
+  ['regular_5fwave_5fget_5fphase_11',['regular_wave_get_phase',['../regular__wave_8h.html#a4335e27701fdde3d777bc614ab61aada',1,'regular_wave.h']]],
+  ['regular_5fwave_5fget_5fpressure_5famp_12',['regular_wave_get_pressure_amp',['../regular__wave_8h.html#a12184089f7752622a94aa991b7ecca1d',1,'regular_wave.h']]],
+  ['regular_5fwave_5fnew_13',['regular_wave_new',['../regular__wave_8h.html#af0f4950a990550d4b9a5159fe52bf194',1,'regular_wave.h']]],
+  ['rigid_5fbody_5fdof_14',['Rigid_body_DOF',['../union_rigid__body___d_o_f.html',1,'']]],
+  ['roll_15',['roll',['../union_rigid__body___d_o_f.html#a4260b6c275948712fef713f5555c6007',1,'Rigid_body_DOF']]]
 ];

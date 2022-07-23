@@ -73,7 +73,7 @@ double regular_wave_get_direction(const struct Regular_wave* regular_wave);
 
 /**
  * Get the phase of the wave at a given point for a given time.
- * @param location, with all coordinates in meter, at which the phase is to be calculated.
+ * @param location with all coordinates in meter, at which the phase is to be calculated.
  * @param time for which the phase is to be calculated. Time is measured in seconds from 
  * the start of simulation. Time should be non-negative.
  * @return wave phase in radian.
@@ -83,7 +83,7 @@ double regular_wave_get_phase(const struct Regular_wave* regular_wave,
                               double time);
 /**
  * Get elevation of the wave at a given point for a given time.
- * @param location, with all coordinates in meter, at which the elevation is to be computed.
+ * @param location with all coordinates in meter, at which the elevation is to be computed.
  * @param time for which elevation is to be computed. Time is measured in 
  * seconds from the start of simulation. Time should be non-negative.
  * @return wave elevation in meter. 

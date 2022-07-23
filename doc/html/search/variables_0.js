@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['a_77',['A',['../struct_asv__dynamics.html#a5a2a44f196c6961bf68e638bd717c882',1,'Asv_dynamics']]],
-  ['amplitude_78',['amplitude',['../struct_regular__wave.html#ae492fd9731968d5f09e00f2a5227d8ce',1,'Regular_wave']]],
-  ['attitude_79',['attitude',['../struct_asv.html#a3413a5ad48751239f810f63f0d5b803d',1,'Asv']]]
+  ['array_0',['array',['../union_coordinates__3_d.html#ad6c749a4c6a9c2c4a517cc547a285deb',1,'Coordinates_3D::array()'],['../union_rigid__body___d_o_f.html#a3c09d726e8c45db933e768c73c8c66b4',1,'Rigid_body_DOF::array()']]]
 ];

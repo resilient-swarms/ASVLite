@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['orientation_104',['orientation',['../struct_asv__propeller.html#a352cea40a8bea21896afa60032ff7e28',1,'Asv_propeller']]],
-  ['origin_5fposition_105',['origin_position',['../struct_asv.html#aba4a051d36e9eb21376d8362e204e6ae',1,'Asv']]]
+  ['r_5fpitch_0',['r_pitch',['../struct_asv__specification.html#acf5192dcbca41c676af1690555457f1d',1,'Asv_specification']]],
+  ['r_5froll_1',['r_roll',['../struct_asv__specification.html#ad7f0606f2a3b24a958e74d03c8d1b664',1,'Asv_specification']]],
+  ['r_5fyaw_2',['r_yaw',['../struct_asv__specification.html#a4bb5cad450c408bed9c22bb981f82467',1,'Asv_specification']]],
+  ['roll_3',['roll',['../union_rigid__body___d_o_f.html#a4260b6c275948712fef713f5555c6007',1,'Rigid_body_DOF']]]
 ];

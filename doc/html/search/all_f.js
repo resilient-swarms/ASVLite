@@ -1,8 +1,5 @@
 var searchData=
 [
-  ['wave_60',['Wave',['../struct_wave.html',1,'']]],
-  ['wave_61',['wave',['../struct_asv.html#aad6fbb7eb616b19eca408e79a4a59454',1,'Asv']]],
-  ['wave_5flength_62',['wave_length',['../struct_regular__wave.html#a14e311fcbe24edfdbcf6b3285b4443b0',1,'Regular_wave']]],
-  ['wave_5fnumber_63',['wave_number',['../struct_regular__wave.html#ac3db4fc6298499daec364ddb0aa4b87c',1,'Regular_wave']]],
-  ['waypoints_64',['Waypoints',['../struct_waypoints.html',1,'']]]
+  ['y_0',['y',['../union_coordinates__3_d.html#a57ca4a11f5ec5c107f307b677a3687d4',1,'Coordinates_3D']]],
+  ['yaw_1',['yaw',['../union_rigid__body___d_o_f.html#a363ed91bb6e61e64939d5211bfa5baf1',1,'Rigid_body_DOF']]]
 ];
