@@ -320,28 +320,28 @@ static double simulate_for_tunning(struct Asv* asv, double* k_position, double* 
     {
       // Calculate the sum of offsets of the asv position from the straight line joining 
       // start and end point.
-      struct Buffer* buffer = simulation_get_buffer(simulation, asvs[i]);
-      long buffer_length = simulation_get_buffer_length(simulation, asvs[i]);
-      double sum_offsets = 0.0;
-      for(int j = 0; j < buffer_length; ++j)
-      {
-        union Coordinates_3D p1 = start_point;
-        union Coordinates_3D p2 = waypoint;
-        union Coordinates_3D p0 = buffer_get_asv_position_at(buffer, j);
-        // Distance between a point p0 to a line joining p1 and p2 is:
-        // distance = abs((x2-x1)(y1-y0) - (x1-x0)(y2-y1))/sqrt((x2-x1)^2 + (y2-y1)^2) 
-        double numerator = fabs((p2.keys.x - p1.keys.x)*(p1.keys.y - p0.keys.y) - (p1.keys.x - p0.keys.x)*(p2.keys.y - p1.keys.y));
-        double denominator = sqrt((p2.keys.x-p1.keys.x)*(p2.keys.x-p1.keys.x) + (p2.keys.y-p1.keys.y)*(p2.keys.y-p1.keys.y));
-        double offset = numerator/denominator;
-        sum_offsets += offset;
-      }
+      // struct Buffer* buffer = simulation_get_buffer(simulation, asvs[i]);
+      // long buffer_length = simulation_get_buffer_length(simulation, asvs[i]);
+      // double sum_offsets = 0.0;
+      // for(int j = 0; j < buffer_length; ++j)
+      // {
+      //   union Coordinates_3D p1 = start_point;
+      //   union Coordinates_3D p2 = waypoint;
+      //   union Coordinates_3D p0 = buffer_get_asv_position_at(buffer, j);
+      //   // Distance between a point p0 to a line joining p1 and p2 is:
+      //   // distance = abs((x2-x1)(y1-y0) - (x1-x0)(y2-y1))/sqrt((x2-x1)^2 + (y2-y1)^2) 
+      //   double numerator = fabs((p2.keys.x - p1.keys.x)*(p1.keys.y - p0.keys.y) - (p1.keys.x - p0.keys.x)*(p2.keys.y - p1.keys.y));
+      //   double denominator = sqrt((p2.keys.x-p1.keys.x)*(p2.keys.x-p1.keys.x) + (p2.keys.y-p1.keys.y)*(p2.keys.y-p1.keys.y));
+      //   double offset = numerator/denominator;
+      //   sum_offsets += offset;
+      // }
       // Calculate the distance of the asv from the waypoint
       union Coordinates_3D p1 = waypoint;
       union Coordinates_3D p2 = asv_get_position_cog(asvs[i]);
       double distance = sqrt((p1.keys.x-p2.keys.x)*(p1.keys.x-p2.keys.x) + (p1.keys.y-p2.keys.y)*(p1.keys.y-p2.keys.y));
       // Total error = sum of offsets + distance to waypoint
-      sum_error += distance + sum_offsets;
-      // sum_error += distance;
+      // sum_error += distance + sum_offsets;
+      sum_error += distance;
     }
     error = sum_error/count_asvs;
 

@@ -107,7 +107,7 @@ static void* simulation_run_per_node_per_time_step(void* current_node)
   node->buffer[node->current_time_index].heading            = attitude.keys.z * 180.0/PI;
 
   // Check if reached the waypoint
-  double proximity_margin = 2.0; // target proximity to waypoint
+  double proximity_margin = 5.0; // target proximity to waypoint
   int i = node->current_waypoint_index;
   double x = cog_position.keys.x - node->waypoints[i].keys.x;
   double y = cog_position.keys.y - node->waypoints[i].keys.y;
