@@ -1135,7 +1135,7 @@ struct Buffer* simulation_get_buffer(struct Simulation* first_node, struct Asv* 
 }
 
 
-struct Buffer* simulation_get_buffer_length(struct Simulation* first_node, struct Asv* asv)
+long simulation_get_buffer_length(struct Simulation* first_node, struct Asv* asv)
 {
   // Find the asv from the linked list
   struct Simulation* node = NULL;

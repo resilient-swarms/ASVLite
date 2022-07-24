@@ -121,7 +121,7 @@ struct Buffer* simulation_get_buffer(struct Simulation* simulation, struct Asv* 
 /**
  * Get the buffer length associated with the simulation of an asv. 
  */
-struct Buffer* simulation_get_buffer_length(struct Simulation* simulation, struct Asv* asv);
+long simulation_get_buffer_length(struct Simulation* simulation, struct Asv* asv);
 
 /**
  * Get the position of the asv recorded in the buffer at given index.

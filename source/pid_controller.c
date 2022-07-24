@@ -318,7 +318,7 @@ static double simulate_for_tunning(struct Asv* asv, double* k_position, double* 
     // Set the waypoints for all asvs
     for(int i = 0; i < count_asvs; ++i)
     {
-      static const count_waypoints = 1;
+      int count_waypoints = 1;
       simulation_set_waypoints_for_asv(simulation, asvs[i], &waypoint, count_waypoints);
       simulation_set_controller(simulation, k_position, k_heading);
     }
@@ -332,7 +332,7 @@ static double simulate_for_tunning(struct Asv* asv, double* k_position, double* 
     for(int i = 0; i < count_asvs; ++i)
     {
       struct Buffer* buffer = simulation_get_buffer(simulation, asvs[i]);
-      int buffer_length = simulation_get_buffer_length(simulation, asvs[i]);
+      long buffer_length = simulation_get_buffer_length(simulation, asvs[i]);
       double sum_error_per_asv = 0.0;
       for(int j = 0; j < buffer_length; ++j)
       {
@@ -368,16 +368,16 @@ static double simulate_for_tunning(struct Asv* asv, double* k_position, double* 
   return error;
 }
 
-static int compute_and_set_average_costs(double** costs, double* average_costs, double* k)
+static int compute_and_set_average_costs(double** costs, int index, double* average_costs, double* k)
 {
-  // Find average cost for each case of p_position
+  // Find average cost for each case of k-delta, k, k+delta
   for(int i = 0; i < 3; ++i)
   {
     double sum_cost = 0.0;
-    double count = 1.0; 
+    double count = 0.0; 
     for(int j = 0; j < pow(3, 6); ++j)
     {
-      if(costs[j][0] == k[i])
+      if(costs[j][index] == k[i])
       {
         sum_cost += costs[j][6];
         count += 1.0;
@@ -421,7 +421,7 @@ void controller_tune(struct Controller* controller)
   // Initialise gain terms
   double k_position[3] = {1.0, 1.0, 1.0};
   double k_heading[3]  = {1.0, 1.0, 1.0};
-  double delta = 0.1;
+  double delta = 0.5;
   int count_iterations = 20;
   for(int i = 0; i < count_iterations; ++i)
   {
@@ -468,12 +468,15 @@ void controller_tune(struct Controller* controller)
     double average_costs_i_heading[3];
     double average_costs_d_heading[3];
     // Find average cost for each case
-    int min_index_position_p = compute_and_set_average_costs(costs, average_costs_p_position, p_position);
-    int min_index_position_i = compute_and_set_average_costs(costs, average_costs_i_position, i_position);
-    int min_index_position_d = compute_and_set_average_costs(costs, average_costs_d_position, d_position);
-    int min_index_heading_p = compute_and_set_average_costs(costs, average_costs_p_heading, p_heading);
-    int min_index_heading_i = compute_and_set_average_costs(costs, average_costs_i_heading, i_heading);
-    int min_index_heading_d = compute_and_set_average_costs(costs, average_costs_d_heading, d_heading);
+    int min_index_position_p = compute_and_set_average_costs(costs, 0, average_costs_p_position, p_position);
+    int min_index_position_i = compute_and_set_average_costs(costs, 1, average_costs_i_position, i_position);
+    int min_index_position_d = compute_and_set_average_costs(costs, 2, average_costs_d_position, d_position);
+    int min_index_heading_p = compute_and_set_average_costs(costs, 3, average_costs_p_heading, p_heading);
+    int min_index_heading_i = compute_and_set_average_costs(costs, 4, average_costs_i_heading, i_heading);
+    int min_index_heading_d = compute_and_set_average_costs(costs, 5, average_costs_d_heading, d_heading);
+    fprintf(stdout, "%f %f %f\n", average_costs_p_position[0], average_costs_p_position[1], average_costs_p_position[2]);
+    fprintf(stdout, "%f %f %f\n", average_costs_i_position[0], average_costs_i_position[1], average_costs_i_position[2]);
+    fprintf(stdout, "%f %f %f\n", average_costs_d_position[0], average_costs_d_position[1], average_costs_d_position[2]);
     // Write to file 
     double average_cost_for_current_ks = -1.0;
     for(int i = 0; i < pow(3, 6); ++i)
