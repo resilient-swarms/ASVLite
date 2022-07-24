@@ -33,7 +33,13 @@ int main(int argc, char** argv)
                                   rand_seed,
                                   with_time_sync);
   // Set PID controller
-  simulation_tune_controller(simulation);
+  // set gain terms by tuning the controller...
+  // simulation_tune_controller(simulation);
+  // ...or
+  // set gain term manually 
+  double k_position[3] = {1.0, 1.0, 1.0};
+  double k_heading[3]  = {1.0, 1.0, 1.0};
+  simulation_set_controller(simulation, k_position, k_heading);
 
   // Simulate and record the time taken for the simulation.
   struct timespec start, finish;
