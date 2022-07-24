@@ -111,60 +111,17 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
   clear_error_msg(controller->error_msg);
   if(controller)
   {
-    // Calculate the heading required in radian.
     union Coordinates_3D p1 = asv_get_position_origin(controller->asv);
     union Coordinates_3D p2 = asv_get_position_cog(controller->asv);
     union Coordinates_3D p3 = way_point;
 
     const double limit_error_magnitude = PI; 
-  
-    double error_position = sqrt(pow(p3.keys.x - p1.keys.x, 2.0) + pow(p3.keys.y - p1.keys.y, 2.0));
-    error_position = (error_position > limit_error_magnitude)? limit_error_magnitude : error_position; 
-                                            // The heading error is always in the range (-PI, PI).
-                                            // But the position error has no limits. It could be 
-                                            // in the range (-Inf, Inf) depending on the position of
-                                            // the waypoint w.r.t vehicle. Clamp the position error so that 
-                                            // it is in similar magnitude to that of heading error.
-  
-    // Calculate the integral error for position.
-    double gamma_position_error = 0.9; // Should be in the range (0,1).
-                                      // Value = 1, implies the past error is never forgotten.
-                                      // Value = 0, implies the past error is always ignored. 
-                                      // Value between 0 and 1 implies the past errors gradually decreases. 
-                                      // Value > 0 implies past errors are magnified. 
-    controller->error_int_position = error_position + gamma_position_error * controller->error_int_position;
-    
-    // Calculate the differential error for position.
-    controller->error_diff_position = error_position - controller->error_position;
-    controller->error_position = error_position;
     
     // Calculate the heading error in radian.
     // Angle between two lines with slope m1, m2 = atan((m1-m2)/(1 + m1*m2))
     double m1 = (p2.keys.y == p1.keys.y)? __DBL_MAX__ : (p2.keys.x - p1.keys.x)/(p2.keys.y - p1.keys.y);
     double m2 = (p3.keys.y == p1.keys.y)? __DBL_MAX__ : (p3.keys.x - p1.keys.x)/(p3.keys.y - p1.keys.y);
     double error_heading = atan((m2-m1)/(1+ m1*m2)); // radians
-    // Correction for angles in 3rd and 4th quadrants.
-    if(p3.keys.x<p1.keys.x && p3.keys.y<p1.keys.y)
-    {
-      error_heading = -PI + error_heading;
-    }
-    if(p3.keys.x>=p1.keys.x && p3.keys.y<p1.keys.y)
-    {
-      error_heading = PI + error_heading;
-    }
-    // *****
-    // Uncomment below code if using a limit_error_magnitude < PI
-    // *****
-    // Limit heading errors.
-    // if(error_heading > limit_error_magnitude)
-    // {
-    //   error_heading = limit_error_magnitude;
-    // }
-    // if(error_heading < limit_error_magnitude)
-    // {
-    //   error_heading = -limit_error_magnitude;
-    // }
-    
     // Calculate the integral heading error.
     double gamma_heading_error = 0.9; // Should be in the range (0,1).
                                       // Value = 1, implies the past error is never forgotten.
@@ -172,10 +129,37 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
                                       // Value between 0 and 1 implies the past errors gradually decreases. 
                                       // Value > 0 implies past errors are magnified.  
     controller->error_int_heading = error_heading + gamma_heading_error * controller->error_int_heading;
-    
     // Calculate the differential heading error.
     controller->error_diff_heading = error_heading - controller->error_heading;
     controller->error_heading = error_heading; 
+
+    // Calculate the position error
+    double error_position = sqrt(pow(p3.keys.x - p1.keys.x, 2.0) + pow(p3.keys.y - p1.keys.y, 2.0));
+    error_position = (error_position > limit_error_magnitude)? limit_error_magnitude : error_position; 
+                                            // The heading error is always in the range (-PI, PI).
+                                            // But the position error has no limits. It could be 
+                                            // in the range (-Inf, Inf) depending on the position of
+                                            // the waypoint w.r.t vehicle. Clamp the position error so that 
+                                            // it is in similar magnitude to that of heading error.
+    // Set -ve magnitude for 3rd and 4th quadrants.
+    if(p3.keys.x<p1.keys.x && p3.keys.y<p1.keys.y)
+    {
+      error_position = -error_position;
+    }
+    if(p3.keys.x>=p1.keys.x && p3.keys.y<p1.keys.y)
+    {
+      error_position = -error_position;
+    }
+    // Calculate the integral error for position.
+    double gamma_position_error = 0.9; // Should be in the range (0,1).
+                                      // Value = 1, implies the past error is never forgotten.
+                                      // Value = 0, implies the past error is always ignored. 
+                                      // Value between 0 and 1 implies the past errors gradually decreases. 
+                                      // Value > 0 implies past errors are magnified. 
+    controller->error_int_position = error_position + gamma_position_error * controller->error_int_position;
+    // Calculate the differential error for position.
+    controller->error_diff_position = error_position - controller->error_position;
+    controller->error_position = error_position;
   
     // Calculate thruster thrust.
     double max_thrust = 5.0; // SMARTY platform thruster has a maximum capacity of 5N. 
@@ -323,7 +307,7 @@ static double simulate_for_tunning(struct Asv* asv, double* k_position, double* 
     }
     
     // Run simulation for a set period of time.
-    double max_time = 500.0; // seconds
+    double max_time = 200.0; // seconds
     simulation_run_upto_time(simulation, max_time);
 
     // Compute error
