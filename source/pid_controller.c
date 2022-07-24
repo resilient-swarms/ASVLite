@@ -258,9 +258,8 @@ static double simulate_for_tunning(struct Asv* asv, double* k_position, double* 
   double error = -1.0;
   if(asv)
   {
-    int max_count_iterations = 20;
     double min_significant_wave_height = 1.0; // m
-    double max_significant_wave_height = 2.0; // m
+    double max_significant_wave_height = 1.0; // m
     double delta_significant_wave_height = 1.0; // m
     int count_significant_wave_heights = (max_significant_wave_height - min_significant_wave_height)/delta_significant_wave_height + 1;
     double delta_asv_heading = PI/4.0;
@@ -324,32 +323,33 @@ static double simulate_for_tunning(struct Asv* asv, double* k_position, double* 
     }
     
     // Run simulation for a set period of time.
-    double max_time = 200.0; // seconds
+    double max_time = 500.0; // seconds
     simulation_run_upto_time(simulation, max_time);
 
     // Compute error
     double sum_error = 0.0;
     for(int i = 0; i < count_asvs; ++i)
     {
-      struct Buffer* buffer = simulation_get_buffer(simulation, asvs[i]);
-      long buffer_length = simulation_get_buffer_length(simulation, asvs[i]);
-      double sum_error_per_asv = 0.0;
-      for(int j = 0; j < buffer_length; ++j)
-      {
-        union Coordinates_3D p1 = start_point;
-        union Coordinates_3D p2 = waypoint;
-        union Coordinates_3D p0 = buffer_get_asv_position_at(buffer, j);
-        // Distance between a point p0 to a line joining p1 and p2 is:
-        // distance = abs((x2-x1)(y1-y0) - (x1-x0)(y2-y1))/sqrt((x2-x1)^2 + (y2-y1)^2) 
-        double numerator = fabs((p2.keys.x - p1.keys.x)*(p1.keys.y - p0.keys.y) - (p1.keys.x - p0.keys.x)*(p2.keys.y - p1.keys.y));
-        double denominator = sqrt((p2.keys.x-p1.keys.x)*(p2.keys.x-p1.keys.x) + (p2.keys.y-p1.keys.y)*(p2.keys.y-p1.keys.y));
-        double distance = numerator/denominator;
-        sum_error_per_asv += distance;
-      }
+      // struct Buffer* buffer = simulation_get_buffer(simulation, asvs[i]);
+      // long buffer_length = simulation_get_buffer_length(simulation, asvs[i]);
+      // double sum_error_per_asv = 0.0;
+      // for(int j = 0; j < buffer_length; ++j)
+      // {
+      //   union Coordinates_3D p1 = start_point;
+      //   union Coordinates_3D p2 = waypoint;
+      //   union Coordinates_3D p0 = buffer_get_asv_position_at(buffer, j);
+      //   // Distance between a point p0 to a line joining p1 and p2 is:
+      //   // distance = abs((x2-x1)(y1-y0) - (x1-x0)(y2-y1))/sqrt((x2-x1)^2 + (y2-y1)^2) 
+      //   double numerator = fabs((p2.keys.x - p1.keys.x)*(p1.keys.y - p0.keys.y) - (p1.keys.x - p0.keys.x)*(p2.keys.y - p1.keys.y));
+      //   double denominator = sqrt((p2.keys.x-p1.keys.x)*(p2.keys.x-p1.keys.x) + (p2.keys.y-p1.keys.y)*(p2.keys.y-p1.keys.y));
+      //   double distance = numerator/denominator;
+      //   sum_error_per_asv += distance;
+      // }
       union Coordinates_3D p1 = waypoint;
       union Coordinates_3D p2 = asv_get_position_cog(asvs[i]);
       double distance = sqrt((p1.keys.x-p2.keys.x)*(p1.keys.x-p2.keys.x) + (p1.keys.y-p2.keys.y)*(p1.keys.y-p2.keys.y));
-      sum_error += distance + sum_error_per_asv/buffer_length;
+      // sum_error += distance + sum_error_per_asv/buffer_length;
+      sum_error += distance;
     }
     error = sum_error/count_asvs;
 
@@ -422,7 +422,7 @@ void controller_tune(struct Controller* controller)
   double k_position[3] = {1.0, 1.0, 1.0};
   double k_heading[3]  = {1.0, 1.0, 1.0};
   double delta = 0.5;
-  int count_iterations = 20;
+  int count_iterations = 100;
   for(int i = 0; i < count_iterations; ++i)
   {
     double p_position[3] = {k_position[0]-delta, k_position[0], k_position[0]+delta}; 
@@ -461,22 +461,6 @@ void controller_tune(struct Controller* controller)
       }
     }
 
-    double average_costs_p_position[3]; // [k-delta, k, k+delta]
-    double average_costs_i_position[3];
-    double average_costs_d_position[3];
-    double average_costs_p_heading[3]; 
-    double average_costs_i_heading[3];
-    double average_costs_d_heading[3];
-    // Find average cost for each case
-    int min_index_position_p = compute_and_set_average_costs(costs, 0, average_costs_p_position, p_position);
-    int min_index_position_i = compute_and_set_average_costs(costs, 1, average_costs_i_position, i_position);
-    int min_index_position_d = compute_and_set_average_costs(costs, 2, average_costs_d_position, d_position);
-    int min_index_heading_p = compute_and_set_average_costs(costs, 3, average_costs_p_heading, p_heading);
-    int min_index_heading_i = compute_and_set_average_costs(costs, 4, average_costs_i_heading, i_heading);
-    int min_index_heading_d = compute_and_set_average_costs(costs, 5, average_costs_d_heading, d_heading);
-    fprintf(stdout, "%f %f %f\n", average_costs_p_position[0], average_costs_p_position[1], average_costs_p_position[2]);
-    fprintf(stdout, "%f %f %f\n", average_costs_i_position[0], average_costs_i_position[1], average_costs_i_position[2]);
-    fprintf(stdout, "%f %f %f\n", average_costs_d_position[0], average_costs_d_position[1], average_costs_d_position[2]);
     // Write to file 
     double average_cost_for_current_ks = -1.0;
     for(int i = 0; i < pow(3, 6); ++i)
@@ -507,13 +491,52 @@ void controller_tune(struct Controller* controller)
             k_heading[1],
             k_heading[2],
             average_cost_for_current_ks);
+
+    // (1) Set the new gain terms using method of average 
+    // ------
+    // double average_costs_p_position[3]; // [k-delta, k, k+delta]
+    // double average_costs_i_position[3];
+    // double average_costs_d_position[3];
+    // double average_costs_p_heading[3]; 
+    // double average_costs_i_heading[3];
+    // double average_costs_d_heading[3];
+    // // Find average cost for each case
+    // int min_index_position_p = compute_and_set_average_costs(costs, 0, average_costs_p_position, p_position);
+    // int min_index_position_i = compute_and_set_average_costs(costs, 1, average_costs_i_position, i_position);
+    // int min_index_position_d = compute_and_set_average_costs(costs, 2, average_costs_d_position, d_position);
+    // int min_index_heading_p = compute_and_set_average_costs(costs, 3, average_costs_p_heading, p_heading);
+    // int min_index_heading_i = compute_and_set_average_costs(costs, 4, average_costs_i_heading, i_heading);
+    // int min_index_heading_d = compute_and_set_average_costs(costs, 5, average_costs_d_heading, d_heading);
     // Set the new gain terms
-    k_position[0] = p_position[min_index_position_p];
-    k_position[1] = i_position[min_index_position_i];
-    k_position[2] = d_position[min_index_position_d];
-    k_heading[0]  = p_heading[min_index_heading_p];
-    k_heading[1]  = i_heading[min_index_heading_i];
-    k_heading[2]  = d_heading[min_index_heading_d];
+    // k_position[0] = p_position[min_index_position_p];
+    // k_position[1] = i_position[min_index_position_i];
+    // k_position[2] = d_position[min_index_position_d];
+    // k_heading[0]  = p_heading[min_index_heading_p];
+    // k_heading[1]  = i_heading[min_index_heading_i];
+    // k_heading[2]  = d_heading[min_index_heading_d];
+    // ------
+
+    // (2) Set the new gain terms using method of min cost
+    // ------
+    double min_cost = __DBL_MAX__;
+    int min_index = -1;
+    for(int i = 0; i < pow(3,6); ++i)
+    {
+      if(costs[i][6] < min_cost)
+      {
+        min_cost = costs[i][6];
+        min_index = i;
+      }
+    }
+    // Set the new gain terms
+    k_position[0] = costs[min_index][0];
+    k_position[1] = costs[min_index][1];
+    k_position[2] = costs[min_index][2];
+    k_heading[0]  = costs[min_index][3];
+    k_heading[1]  = costs[min_index][4];
+    k_heading[2]  = costs[min_index][5];
+    // ------
+
     // Clean memory
     for(int i = 0; i < pow(3, 6); ++i)
     {
