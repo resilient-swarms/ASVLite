@@ -253,14 +253,14 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
   }
 }
 
-static double simulate_for_tunning(struct Asv* asv, double* gain_position, double* gain_heading)
+static double simulate_for_tunning(struct Asv* asv, double* k_position, double* k_heading)
 {
   double error = -1.0;
   if(asv)
   {
     int max_count_iterations = 20;
     double min_significant_wave_height = 1.0; // m
-    double max_significant_wave_height = 5.0; // m
+    double max_significant_wave_height = 2.0; // m
     double delta_significant_wave_height = 1.0; // m
     int count_significant_wave_heights = (max_significant_wave_height - min_significant_wave_height)/delta_significant_wave_height + 1;
     double delta_asv_heading = PI/4.0;
@@ -320,7 +320,7 @@ static double simulate_for_tunning(struct Asv* asv, double* gain_position, doubl
     {
       static const count_waypoints = 1;
       simulation_set_waypoints_for_asv(simulation, asvs[i], &waypoint, count_waypoints);
-      simulation_set_controller(simulation, gain_position, gain_heading);
+      simulation_set_controller(simulation, k_position, k_heading);
     }
     
     // Run simulation for a set period of time.
@@ -382,18 +382,18 @@ static int compute_and_set_average_costs(double** costs, double* average_costs, 
     }
     average_costs[i] = sum_cost/count;
   }
-  // Find the max of the 3 averages
-  double max = 0.0;
-  int max_index = -1;
+  // Find the min of the 3 averages
+  double min = __DBL_MAX__;
+  int min_index = -1;
   for(int i = 0; i < 3; ++i)
   {
-    if(average_costs[i] > max)
+    if(average_costs[i] < min)
     {
-      max = average_costs[i];
-      max_index = i;
+      min = average_costs[i];
+      min_index = i;
     }
   }
-  return max_index;
+  return min_index;
 }
 
 void controller_tune(struct Controller* controller)
@@ -416,18 +416,18 @@ void controller_tune(struct Controller* controller)
             "heading_d "
             "cost ");
   // Initialise gain terms
-  double gain_position[3] = {1.0, 1.0, 1.0};
-  double gain_heading[3]  = {1.0, 1.0, 1.0};
+  double k_position[3] = {1.0, 1.0, 1.0};
+  double k_heading[3]  = {1.0, 1.0, 1.0};
   double delta = 0.1;
   int count_iterations = 20;
   for(int i = 0; i < count_iterations; ++i)
   {
-    double p_position[3] = {gain_position[0]-delta, gain_position[0], gain_position[0]+delta}; 
-    double i_position[3] = {gain_position[1]-delta, gain_position[1], gain_position[1]+delta};
-    double d_position[3] = {gain_position[2]-delta, gain_position[2], gain_position[2]+delta};
-    double p_heading[3] = {gain_heading[0]-delta, gain_heading[0], gain_heading[0]+delta}; 
-    double i_heading[3] = {gain_heading[1]-delta, gain_heading[1], gain_heading[1]+delta};
-    double d_heading[3] = {gain_heading[2]-delta, gain_heading[2], gain_heading[2]+delta};
+    double p_position[3] = {k_position[0]-delta, k_position[0], k_position[0]+delta}; 
+    double i_position[3] = {k_position[1]-delta, k_position[1], k_position[1]+delta};
+    double d_position[3] = {k_position[2]-delta, k_position[2], k_position[2]+delta};
+    double p_heading[3] = {k_heading[0]-delta, k_heading[0], k_heading[0]+delta}; 
+    double i_heading[3] = {k_heading[1]-delta, k_heading[1], k_heading[1]+delta};
+    double d_heading[3] = {k_heading[2]-delta, k_heading[2], k_heading[2]+delta};
     double** costs = (double**)malloc(sizeof(double*)* pow(3, 6)); // This is a table of 7 columns and 3^6 rows.
     int i = 0;
     for(int p_p = 0; p_p < 3; ++p_p)
@@ -442,7 +442,6 @@ void controller_tune(struct Controller* controller)
             {
               for(int h_d = 0; h_d < 3; ++h_d)
               {
-                fprintf(stdout, "%d\n", i);
                 double* row = (double*)malloc(sizeof(double)*7);
                 row[0] = p_position[p_p];
                 row[1] = i_position[p_i];
@@ -459,56 +458,56 @@ void controller_tune(struct Controller* controller)
       }
     }
 
-    double average_costs_p_position[3]; // [gain-delta, gain, gain+delta]
+    double average_costs_p_position[3]; // [k-delta, k, k+delta]
     double average_costs_i_position[3];
     double average_costs_d_position[3];
     double average_costs_p_heading[3]; 
     double average_costs_i_heading[3];
     double average_costs_d_heading[3];
     // Find average cost for each case
-    int max_index_position_p = compute_and_set_average_costs(costs, average_costs_p_position, p_position);
-    int max_index_position_i = compute_and_set_average_costs(costs, average_costs_i_position, i_position);
-    int max_index_position_d = compute_and_set_average_costs(costs, average_costs_d_position, d_position);
-    int max_index_heading_p = compute_and_set_average_costs(costs, average_costs_p_heading, p_heading);
-    int max_index_heading_i = compute_and_set_average_costs(costs, average_costs_i_heading, i_heading);
-    int max_index_heading_d = compute_and_set_average_costs(costs, average_costs_d_heading, d_heading);
+    int min_index_position_p = compute_and_set_average_costs(costs, average_costs_p_position, p_position);
+    int min_index_position_i = compute_and_set_average_costs(costs, average_costs_i_position, i_position);
+    int min_index_position_d = compute_and_set_average_costs(costs, average_costs_d_position, d_position);
+    int min_index_heading_p = compute_and_set_average_costs(costs, average_costs_p_heading, p_heading);
+    int min_index_heading_i = compute_and_set_average_costs(costs, average_costs_i_heading, i_heading);
+    int min_index_heading_d = compute_and_set_average_costs(costs, average_costs_d_heading, d_heading);
     // Write to file 
-    double average_cost_for_current_gains = -1.0;
+    double average_cost_for_current_ks = -1.0;
     for(int i = 0; i < pow(3, 6); ++i)
     {
-      if(costs[i][0] == gain_position[0] && 
-         costs[i][1] == gain_position[1] &&
-         costs[i][2] == gain_position[2] &&
-         costs[i][3] == gain_heading[0] && 
-         costs[i][4] == gain_heading[1] &&
-         costs[i][5] == gain_heading[2])
+      if(costs[i][0] == k_position[0] && 
+         costs[i][1] == k_position[1] &&
+         costs[i][2] == k_position[2] &&
+         costs[i][3] == k_heading[0] && 
+         costs[i][4] == k_heading[1] &&
+         costs[i][5] == k_heading[2])
       {
-        average_cost_for_current_gains = costs[i][6];
+        average_cost_for_current_ks = costs[i][6];
       }
     }
     fprintf(fp, "\n%f %f %f %f %f %f %f", 
-            gain_position[0],
-            gain_position[1],
-            gain_position[2],
-            gain_heading[0],
-            gain_heading[1],
-            gain_heading[2],
-            average_cost_for_current_gains);
+            k_position[0],
+            k_position[1],
+            k_position[2],
+            k_heading[0],
+            k_heading[1],
+            k_heading[2],
+            average_cost_for_current_ks);
     fprintf(stdout, "\n%f %f %f %f %f %f %f", 
-            gain_position[0],
-            gain_position[1],
-            gain_position[2],
-            gain_heading[0],
-            gain_heading[1],
-            gain_heading[2],
-            average_cost_for_current_gains);
+            k_position[0],
+            k_position[1],
+            k_position[2],
+            k_heading[0],
+            k_heading[1],
+            k_heading[2],
+            average_cost_for_current_ks);
     // Set the new gain terms
-    gain_position[0] = p_position[max_index_position_p];
-    gain_position[1] = i_position[max_index_position_i];
-    gain_position[2] = d_position[max_index_position_d];
-    gain_heading[0] = p_heading[max_index_heading_p];
-    gain_heading[1] = i_heading[max_index_heading_i];
-    gain_heading[2] = d_heading[max_index_heading_d];
+    k_position[0] = p_position[min_index_position_p];
+    k_position[1] = i_position[min_index_position_i];
+    k_position[2] = d_position[min_index_position_d];
+    k_heading[0]  = p_heading[min_index_heading_p];
+    k_heading[1]  = i_heading[min_index_heading_i];
+    k_heading[2]  = d_heading[min_index_heading_d];
     // Clean memory
     for(int i = 0; i < pow(3, 6); ++i)
     {
@@ -516,6 +515,14 @@ void controller_tune(struct Controller* controller)
     }
     free(costs);
   }
+  // Set the controller
+  controller->kp_position = k_position[0];
+  controller->ki_position = k_position[1];
+  controller->kd_position = k_position[2];
+  controller->kp_heading = k_heading[0];
+  controller->ki_heading = k_heading[1];
+  controller->kd_heading = k_heading[2];
+  fclose(fp);
 }
 
 union Coordinates_3D controller_get_gains_position(struct Controller* controller)
