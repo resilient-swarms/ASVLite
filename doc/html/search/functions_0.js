@@ -12,7 +12,8 @@ var searchData=
   ['asv_5fget_5fspec_9',['asv_get_spec',['../asv_8h.html#a83c2c20c3c0d7b1349a3623197069ad5',1,'asv.h']]],
   ['asv_5fget_5fthrusters_10',['asv_get_thrusters',['../asv_8h.html#a7d43ccb00732cbde755210e7ec98924e',1,'asv.h']]],
   ['asv_5fget_5fv_11',['asv_get_V',['../asv_8h.html#ae487af138296358a76d8e01a7e94258a',1,'asv.h']]],
-  ['asv_5fnew_12',['asv_new',['../asv_8h.html#a49ba04cce9735d2f1e6552f78bedc9bd',1,'asv.h']]],
-  ['asv_5fset_5fsea_5fstate_13',['asv_set_sea_state',['../asv_8h.html#a6f775ab30236a02869dab91105a949e5',1,'asv.h']]],
-  ['asv_5fset_5fthrusters_14',['asv_set_thrusters',['../asv_8h.html#aeba1a5db0f859ceab6c918605d86d302',1,'asv.h']]]
+  ['asv_5fget_5fwave_12',['asv_get_wave',['../asv_8h.html#a2c6512a6954ef555abdca799e80c1526',1,'asv.h']]],
+  ['asv_5fnew_13',['asv_new',['../asv_8h.html#a49ba04cce9735d2f1e6552f78bedc9bd',1,'asv.h']]],
+  ['asv_5fset_5fsea_5fstate_14',['asv_set_sea_state',['../asv_8h.html#a6f775ab30236a02869dab91105a949e5',1,'asv.h']]],
+  ['asv_5fset_5fthrusters_15',['asv_set_thrusters',['../asv_8h.html#af6575b8770df8667e229232fc8f4b2eb',1,'asv.h']]]
 ];

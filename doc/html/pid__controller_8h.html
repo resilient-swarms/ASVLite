@@ -102,28 +102,39 @@ $(document).ready(function(){initNavTree('pid__controller_8h.html',''); initResi
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a6ff77cacbdd50eaeb09419496fbe02eb"><td class="memItemLeft" align="right" valign="top">struct PID_controller *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pid__controller_8h.html#a6ff77cacbdd50eaeb09419496fbe02eb">pid_controller_new</a> (struct Asv *asv)</td></tr>
-<tr class="separator:a6ff77cacbdd50eaeb09419496fbe02eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6d41c9ca1e43727fa9e8501b9b6b823a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pid__controller_8h.html#a6d41c9ca1e43727fa9e8501b9b6b823a">pid_controller_delete</a> (struct PID_controller *controller)</td></tr>
-<tr class="separator:a6d41c9ca1e43727fa9e8501b9b6b823a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9777251153ac095a4609fb735ea3a1ca"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pid__controller_8h.html#a9777251153ac095a4609fb735ea3a1ca">pid_controller_set_gains_position</a> (struct PID_controller *controller, double p, double i, double d)</td></tr>
-<tr class="separator:a9777251153ac095a4609fb735ea3a1ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a92dc9edfa31e35032f52c32cfd79dbf1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pid__controller_8h.html#a92dc9edfa31e35032f52c32cfd79dbf1">pid_controller_set_gains_heading</a> (struct PID_controller *controller, double p, double i, double d)</td></tr>
-<tr class="separator:a92dc9edfa31e35032f52c32cfd79dbf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a16702263015b1295f5c3f045c30cf795"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pid__controller_8h.html#a16702263015b1295f5c3f045c30cf795">pid_controller_set_thrust</a> (struct PID_controller *controller, union <a class="el" href="union_coordinates__3_d.html">Coordinates_3D</a> way_point)</td></tr>
-<tr class="separator:a16702263015b1295f5c3f045c30cf795"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4861ae83c6c67d4ea94917238eef8b08"><td class="memItemLeft" align="right" valign="top">struct Controller *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pid__controller_8h.html#a4861ae83c6c67d4ea94917238eef8b08">controller_new</a> (struct Asv *asv)</td></tr>
+<tr class="separator:a4861ae83c6c67d4ea94917238eef8b08"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31581b9439f44863a9d03fdfed3389b4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pid__controller_8h.html#a31581b9439f44863a9d03fdfed3389b4">controller_delete</a> (struct Controller *controller)</td></tr>
+<tr class="separator:a31581b9439f44863a9d03fdfed3389b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76a5041d22d736720ab4d0914ac29998"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pid__controller_8h.html#a76a5041d22d736720ab4d0914ac29998">controller_get_error_msg</a> (const struct Controller *controller)</td></tr>
+<tr class="separator:a76a5041d22d736720ab4d0914ac29998"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9262c9e135759c9816ebf27241e2c9eb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pid__controller_8h.html#a9262c9e135759c9816ebf27241e2c9eb">controller_tune</a> (struct Controller *controller)</td></tr>
+<tr class="separator:a9262c9e135759c9816ebf27241e2c9eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afcb44606cde0d9addbb12b1893728d2d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pid__controller_8h.html#afcb44606cde0d9addbb12b1893728d2d">controller_set_gains_position</a> (struct Controller *controller, double p, double i, double d)</td></tr>
+<tr class="separator:afcb44606cde0d9addbb12b1893728d2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a993c42110c2169087d4ffe1533a3db33"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pid__controller_8h.html#a993c42110c2169087d4ffe1533a3db33">controller_set_gains_heading</a> (struct Controller *controller, double p, double i, double d)</td></tr>
+<tr class="separator:a993c42110c2169087d4ffe1533a3db33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84921f41adc527c4e8d9f0fa8bc993a9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pid__controller_8h.html#a84921f41adc527c4e8d9f0fa8bc993a9">controller_set_thrust</a> (struct Controller *controller, union <a class="el" href="union_coordinates__3_d.html">Coordinates_3D</a> way_point)</td></tr>
+<tr class="separator:a84921f41adc527c4e8d9f0fa8bc993a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7428cb1af9309806aebbdd5fa5b5bef1"><td class="memItemLeft" align="right" valign="top">union <a class="el" href="union_coordinates__3_d.html">Coordinates_3D</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pid__controller_8h.html#a7428cb1af9309806aebbdd5fa5b5bef1">controller_get_gains_position</a> (struct Controller *controller)</td></tr>
+<tr class="separator:a7428cb1af9309806aebbdd5fa5b5bef1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50244b552ac353ab1770bf9999801879"><td class="memItemLeft" align="right" valign="top">union <a class="el" href="union_coordinates__3_d.html">Coordinates_3D</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pid__controller_8h.html#a50244b552ac353ab1770bf9999801879">controller_get_gains_heading</a> (struct Controller *controller)</td></tr>
+<tr class="separator:a50244b552ac353ab1770bf9999801879"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Function Documentation</h2>
-<a id="a6d41c9ca1e43727fa9e8501b9b6b823a" name="a6d41c9ca1e43727fa9e8501b9b6b823a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6d41c9ca1e43727fa9e8501b9b6b823a">&#9670;&nbsp;</a></span>pid_controller_delete()</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >An instance of Controller should only be created by calling the function <a class="el" href="pid__controller_8h.html#a4861ae83c6c67d4ea94917238eef8b08">controller_new()</a>. This function allocates and initialises a block of memory on the stack, and therefore all calls to <a class="el" href="pid__controller_8h.html#a4861ae83c6c67d4ea94917238eef8b08">controller_new()</a> should be paired with a call to <a class="el" href="pid__controller_8h.html#a31581b9439f44863a9d03fdfed3389b4">controller_delete()</a> to avoid memory leaks.</p>
+<p >All functions operating on an instance of a Controller have a mechanism to notify of exceptions. All instances of Controller have a member variable that holds a pointer to an error message. When there are no errors, the pointer is set to null. If an error occurs in a call to a function that takes an instance of Controller, an error message is set within the instance. The error message can be fetched using the function <a class="el" href="pid__controller_8h.html#a76a5041d22d736720ab4d0914ac29998">controller_get_error_msg()</a>. The expected usage is to pair all function calls that take an instance of Controller with a call to <a class="el" href="pid__controller_8h.html#a76a5041d22d736720ab4d0914ac29998">controller_get_error_msg()</a> and check for a null pointer. If a null pointer is returned, there is no error; otherwise, an error has occurred. Any subsequent calls to other functions that take an instance of Controller will reset the last know error message. </p>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="a31581b9439f44863a9d03fdfed3389b4" name="a31581b9439f44863a9d03fdfed3389b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a31581b9439f44863a9d03fdfed3389b4">&#9670;&nbsp;</a></span>controller_delete()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void pid_controller_delete </td>
+          <td class="memname">void controller_delete </td>
           <td>(</td>
-          <td class="paramtype">struct PID_controller *&#160;</td>
+          <td class="paramtype">struct Controller *&#160;</td>
           <td class="paramname"><em>controller</em></td><td>)</td>
           <td></td>
         </tr>
@@ -131,21 +142,80 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p >Free memory allocated for the asv. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">controller</td><td>is a non-null pointer to an instance of PID_controller to be deallocated. </td></tr>
+    <tr><td class="paramname">controller</td><td>is a non-null pointer to an instance of Controller to be deallocated. </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a6ff77cacbdd50eaeb09419496fbe02eb" name="a6ff77cacbdd50eaeb09419496fbe02eb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6ff77cacbdd50eaeb09419496fbe02eb">&#9670;&nbsp;</a></span>pid_controller_new()</h2>
+<a id="a76a5041d22d736720ab4d0914ac29998" name="a76a5041d22d736720ab4d0914ac29998"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a76a5041d22d736720ab4d0914ac29998">&#9670;&nbsp;</a></span>controller_get_error_msg()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">struct PID_controller * pid_controller_new </td>
+          <td class="memname">const char * controller_get_error_msg </td>
+          <td>(</td>
+          <td class="paramtype">const struct Controller *&#160;</td>
+          <td class="paramname"><em>controller</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Returns error message related to the last function called for the instance of Controller. </p><dl class="section return"><dt>Returns</dt><dd>pointer to the error msg, if any, else returns a null pointer. </dd></dl>
+
+</div>
+</div>
+<a id="a50244b552ac353ab1770bf9999801879" name="a50244b552ac353ab1770bf9999801879"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a50244b552ac353ab1770bf9999801879">&#9670;&nbsp;</a></span>controller_get_gains_heading()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">union <a class="el" href="union_coordinates__3_d.html">Coordinates_3D</a> controller_get_gains_heading </td>
+          <td>(</td>
+          <td class="paramtype">struct Controller *&#160;</td>
+          <td class="paramname"><em>controller</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Get the gain terms for heading. <br  />
+ </p><dl class="section return"><dt>Returns</dt><dd>gain terms returned as a coordinate, where x = p, y = i, z = d. </dd></dl>
+
+</div>
+</div>
+<a id="a7428cb1af9309806aebbdd5fa5b5bef1" name="a7428cb1af9309806aebbdd5fa5b5bef1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7428cb1af9309806aebbdd5fa5b5bef1">&#9670;&nbsp;</a></span>controller_get_gains_position()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">union <a class="el" href="union_coordinates__3_d.html">Coordinates_3D</a> controller_get_gains_position </td>
+          <td>(</td>
+          <td class="paramtype">struct Controller *&#160;</td>
+          <td class="paramname"><em>controller</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Get the gain terms for position. <br  />
+ </p><dl class="section return"><dt>Returns</dt><dd>gain terms returned as a coordinate, where x = p, y = i, z = d. </dd></dl>
+
+</div>
+</div>
+<a id="a4861ae83c6c67d4ea94917238eef8b08" name="a4861ae83c6c67d4ea94917238eef8b08"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4861ae83c6c67d4ea94917238eef8b08">&#9670;&nbsp;</a></span>controller_new()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct Controller * controller_new </td>
           <td>(</td>
           <td class="paramtype">struct Asv *&#160;</td>
           <td class="paramname"><em>asv</em></td><td>)</td>
@@ -163,16 +233,16 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a92dc9edfa31e35032f52c32cfd79dbf1" name="a92dc9edfa31e35032f52c32cfd79dbf1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a92dc9edfa31e35032f52c32cfd79dbf1">&#9670;&nbsp;</a></span>pid_controller_set_gains_heading()</h2>
+<a id="a993c42110c2169087d4ffe1533a3db33" name="a993c42110c2169087d4ffe1533a3db33"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a993c42110c2169087d4ffe1533a3db33">&#9670;&nbsp;</a></span>controller_set_gains_heading()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void pid_controller_set_gains_heading </td>
+          <td class="memname">void controller_set_gains_heading </td>
           <td>(</td>
-          <td class="paramtype">struct PID_controller *&#160;</td>
+          <td class="paramtype">struct Controller *&#160;</td>
           <td class="paramname"><em>controller</em>, </td>
         </tr>
         <tr>
@@ -204,16 +274,16 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a9777251153ac095a4609fb735ea3a1ca" name="a9777251153ac095a4609fb735ea3a1ca"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9777251153ac095a4609fb735ea3a1ca">&#9670;&nbsp;</a></span>pid_controller_set_gains_position()</h2>
+<a id="afcb44606cde0d9addbb12b1893728d2d" name="afcb44606cde0d9addbb12b1893728d2d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afcb44606cde0d9addbb12b1893728d2d">&#9670;&nbsp;</a></span>controller_set_gains_position()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void pid_controller_set_gains_position </td>
+          <td class="memname">void controller_set_gains_position </td>
           <td>(</td>
-          <td class="paramtype">struct PID_controller *&#160;</td>
+          <td class="paramtype">struct Controller *&#160;</td>
           <td class="paramname"><em>controller</em>, </td>
         </tr>
         <tr>
@@ -245,16 +315,16 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a16702263015b1295f5c3f045c30cf795" name="a16702263015b1295f5c3f045c30cf795"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a16702263015b1295f5c3f045c30cf795">&#9670;&nbsp;</a></span>pid_controller_set_thrust()</h2>
+<a id="a84921f41adc527c4e8d9f0fa8bc993a9" name="a84921f41adc527c4e8d9f0fa8bc993a9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a84921f41adc527c4e8d9f0fa8bc993a9">&#9670;&nbsp;</a></span>controller_set_thrust()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void pid_controller_set_thrust </td>
+          <td class="memname">void controller_set_thrust </td>
           <td>(</td>
-          <td class="paramtype">struct PID_controller *&#160;</td>
+          <td class="paramtype">struct Controller *&#160;</td>
           <td class="paramname"><em>controller</em>, </td>
         </tr>
         <tr>
@@ -271,6 +341,25 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p >Function to calculate thruster forces on each of the four thrusters - fore_ps, fore_sb, aft_ps and aft_sb, and set the thrust on the asv's thrusters. </p>
+
+</div>
+</div>
+<a id="a9262c9e135759c9816ebf27241e2c9eb" name="a9262c9e135759c9816ebf27241e2c9eb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9262c9e135759c9816ebf27241e2c9eb">&#9670;&nbsp;</a></span>controller_tune()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void controller_tune </td>
+          <td>(</td>
+          <td class="paramtype">struct Controller *&#160;</td>
+          <td class="paramname"><em>controller</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Tunes the controller and sets optimal values for position and heading gain terms. Results from tunning iterations are written to a file ./tunning. </p>
 
 </div>
 </div>
