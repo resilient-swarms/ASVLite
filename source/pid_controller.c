@@ -346,7 +346,10 @@ static double simulate_for_tunning(struct Asv* asv, double* k_position, double* 
         double distance = numerator/denominator;
         sum_error_per_asv += distance;
       }
-      sum_error += sum_error_per_asv/buffer_length;
+      union Coordinates_3D p1 = waypoint;
+      union Coordinates_3D p2 = asv_get_position_cog(asvs[i]);
+      double distance = sqrt((p1.keys.x-p2.keys.x)*(p1.keys.x-p2.keys.x) + (p1.keys.y-p2.keys.y)*(p1.keys.y-p2.keys.y));
+      sum_error += distance + sum_error_per_asv/buffer_length;
     }
     error = sum_error/count_asvs;
 
