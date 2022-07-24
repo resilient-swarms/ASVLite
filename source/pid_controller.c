@@ -133,20 +133,24 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
     controller->error_diff_heading = error_heading - controller->error_heading;
     controller->error_heading = error_heading; 
 
+    // Equation of a line passing through the origin and perpendicular to the longitudinal axis of the asv:
+    // Slope of the longitudinal axis of the asv in the global frame
+    m1 = (p2.keys.x - p1.keys.x != 0.0)? (p2.keys.y - p1.keys.y)/(p2.keys.x - p1.keys.x) : __DBL_MAX__;
+    // Slope of line perpendicular to the longitudinal axis
+    m2 = (m1 != 0.0)? -1.0/m1 : __DBL_MAX__;
+    // Equation of line with slope m is y = mx + c
+    // Compute c for line passing through p1 and slope m2
+    double c = p1.keys.y - m2*p1.keys.y;
+
     // Calculate the position error
     double error_position = sqrt(pow(p3.keys.x - p1.keys.x, 2.0) + pow(p3.keys.y - p1.keys.y, 2.0));
-    error_position = (error_position > limit_error_magnitude)? limit_error_magnitude : error_position; 
-                                            // The heading error is always in the range (-PI, PI).
-                                            // But the position error has no limits. It could be 
-                                            // in the range (-Inf, Inf) depending on the position of
-                                            // the waypoint w.r.t vehicle. Clamp the position error so that 
-                                            // it is in similar magnitude to that of heading error.
-    // Set -ve magnitude for 3rd and 4th quadrants.
-    if(p3.keys.x<p1.keys.x && p3.keys.y<p1.keys.y)
-    {
-      error_position = -error_position;
-    }
-    if(p3.keys.x>=p1.keys.x && p3.keys.y<p1.keys.y)
+    // Set -ve magnitude for error_position if waypoint is behind the asv.
+    // Check if waypoint is behind the vehicle.
+    // A point is above a line if y - mx -c is +ve, 
+    // A point is below a line if y - mx -c is -ve, and
+    // A point is on the line if y - mx -c is 0
+    // Check if the both the cog and waypoint are on either sides of the line 
+    if((p3.keys.y - m2*p3.keys.x - c)*(p2.keys.y - m2*p2.keys.x - c) < 0.0)
     {
       error_position = -error_position;
     }
