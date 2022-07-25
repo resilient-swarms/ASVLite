@@ -77,9 +77,9 @@ const char* controller_get_error_msg(const struct Controller* controller)
 void controller_set_gains_position(struct Controller* controller, 
                                       double p, double i, double d)
 {
-  clear_error_msg(controller->error_msg);
   if(controller)
   {
+    clear_error_msg(controller->error_msg);
     controller->kp_position = p;
     controller->ki_position = i;
     controller->kd_position = d;
@@ -93,9 +93,9 @@ void controller_set_gains_position(struct Controller* controller,
 void controller_set_gains_heading(struct Controller* controller, 
                                       double p, double i, double d)
 {
-  clear_error_msg(controller->error_msg);
   if(controller)
   {
+    clear_error_msg(controller->error_msg);
     controller->kp_heading = p;
     controller->ki_heading = i;
     controller->kd_heading = d;
@@ -108,9 +108,9 @@ void controller_set_gains_heading(struct Controller* controller,
 
 void controller_set_thrust(struct Controller* controller, union Coordinates_3D way_point)
 {
-  clear_error_msg(controller->error_msg);
   if(controller)
   {
+    clear_error_msg(controller->error_msg);
     union Coordinates_3D p1 = asv_get_position_origin(controller->asv);
     union Coordinates_3D p2 = asv_get_position_cog(controller->asv);
     union Coordinates_3D p3 = way_point;
@@ -398,173 +398,196 @@ static int compute_and_set_average_costs(double** costs, int index, double* aver
 
 void controller_tune(struct Controller* controller)
 {
-  clear_error_msg(controller->error_msg);
-  // Open file to write
-  char* file = "./tunning";
-  FILE *fp = fopen(file, "w");
-  if (fp == 0)
+  if(controller)
   {
-    fprintf(stderr, "ERROR: cannot open file \"%s\".\n", file);
-    exit(1);
-  }
-  fprintf(fp,  
-            "position_p "
-            "position_i "
-            "position_d "
-            "heading_p "
-            "heading_i "
-            "heading_d "
-            "cost ");
-  // Initialise gain terms
-  double k_position[3] = {1.0, 1.0, 1.0};
-  double k_heading[3]  = {1.0, 1.0, 1.0};
-  double delta = 0.5;
-  int count_iterations = 100;
-  for(int i = 0; i < count_iterations; ++i)
-  {
-    double p_position[3] = {k_position[0]-delta, k_position[0], k_position[0]+delta}; 
-    double i_position[3] = {k_position[1]-delta, k_position[1], k_position[1]+delta};
-    double d_position[3] = {k_position[2]-delta, k_position[2], k_position[2]+delta};
-    double p_heading[3] = {k_heading[0]-delta, k_heading[0], k_heading[0]+delta}; 
-    double i_heading[3] = {k_heading[1]-delta, k_heading[1], k_heading[1]+delta};
-    double d_heading[3] = {k_heading[2]-delta, k_heading[2], k_heading[2]+delta};
-    double** costs = (double**)malloc(sizeof(double*)* pow(3, 6)); // This is a table of 7 columns and 3^6 rows.
-    int i = 0;
-    for(int p_p = 0; p_p < 3; ++p_p)
+    clear_error_msg(controller->error_msg);
+    // Open file to write
+    char* file = "./tunning";
+    FILE *fp = fopen(file, "w");
+    if (fp == 0)
     {
-      for(int p_i = 0; p_i < 3; ++p_i)
+      fprintf(stderr, "ERROR: cannot open file \"%s\".\n", file);
+      exit(1);
+    }
+    fprintf(fp,  
+              "position_p "
+              "position_i "
+              "position_d "
+              "heading_p "
+              "heading_i "
+              "heading_d "
+              "cost ");
+    // Initialise gain terms
+    double k_position[3] = {1.0, 1.0, 1.0};
+    double k_heading[3]  = {1.0, 1.0, 1.0};
+    double delta = 0.5;
+    int count_iterations = 100;
+    for(int i = 0; i < count_iterations; ++i)
+    {
+      double p_position[3] = {k_position[0]-delta, k_position[0], k_position[0]+delta}; 
+      double i_position[3] = {k_position[1]-delta, k_position[1], k_position[1]+delta};
+      double d_position[3] = {k_position[2]-delta, k_position[2], k_position[2]+delta};
+      double p_heading[3] = {k_heading[0]-delta, k_heading[0], k_heading[0]+delta}; 
+      double i_heading[3] = {k_heading[1]-delta, k_heading[1], k_heading[1]+delta};
+      double d_heading[3] = {k_heading[2]-delta, k_heading[2], k_heading[2]+delta};
+      double** costs = (double**)malloc(sizeof(double*)* pow(3, 6)); // This is a table of 7 columns and 3^6 rows.
+      int i = 0;
+      for(int p_p = 0; p_p < 3; ++p_p)
       {
-        for(int p_d = 0; p_d < 3; ++p_d)
+        for(int p_i = 0; p_i < 3; ++p_i)
         {
-          for(int h_p = 0; h_p < 3; ++h_p)
+          for(int p_d = 0; p_d < 3; ++p_d)
           {
-            for(int h_i = 0; h_i < 3; ++h_i)
+            for(int h_p = 0; h_p < 3; ++h_p)
             {
-              for(int h_d = 0; h_d < 3; ++h_d)
+              for(int h_i = 0; h_i < 3; ++h_i)
               {
-                double* row = (double*)malloc(sizeof(double)*7);
-                row[0] = p_position[p_p];
-                row[1] = i_position[p_i];
-                row[2] = d_position[p_d];
-                row[3] = p_heading[h_p];
-                row[4] = i_heading[h_i];
-                row[5] = d_heading[h_d];
-                row[6] = simulate_for_tunning(controller->asv, row, row+3);
-                costs[i++] = row;
+                for(int h_d = 0; h_d < 3; ++h_d)
+                {
+                  double* row = (double*)malloc(sizeof(double)*7);
+                  row[0] = p_position[p_p];
+                  row[1] = i_position[p_i];
+                  row[2] = d_position[p_d];
+                  row[3] = p_heading[h_p];
+                  row[4] = i_heading[h_i];
+                  row[5] = d_heading[h_d];
+                  row[6] = simulate_for_tunning(controller->asv, row, row+3);
+                  costs[i++] = row;
+                }
               }
             }
           }
         }
       }
-    }
 
-    // Write to file 
-    double average_cost_for_current_ks = -1.0;
-    for(int i = 0; i < pow(3, 6); ++i)
-    {
-      if(costs[i][0] == k_position[0] && 
-         costs[i][1] == k_position[1] &&
-         costs[i][2] == k_position[2] &&
-         costs[i][3] == k_heading[0] && 
-         costs[i][4] == k_heading[1] &&
-         costs[i][5] == k_heading[2])
+      // Write to file 
+      double average_cost_for_current_ks = -1.0;
+      for(int i = 0; i < pow(3, 6); ++i)
       {
-        average_cost_for_current_ks = costs[i][6];
+        if(costs[i][0] == k_position[0] && 
+          costs[i][1] == k_position[1] &&
+          costs[i][2] == k_position[2] &&
+          costs[i][3] == k_heading[0] && 
+          costs[i][4] == k_heading[1] &&
+          costs[i][5] == k_heading[2])
+        {
+          average_cost_for_current_ks = costs[i][6];
+        }
       }
-    }
-    fprintf(fp, "\n%f %f %f %f %f %f %f", 
-            k_position[0],
-            k_position[1],
-            k_position[2],
-            k_heading[0],
-            k_heading[1],
-            k_heading[2],
-            average_cost_for_current_ks);
-    fprintf(stdout, "\n%f %f %f %f %f %f %f", 
-            k_position[0],
-            k_position[1],
-            k_position[2],
-            k_heading[0],
-            k_heading[1],
-            k_heading[2],
-            average_cost_for_current_ks);
+      fprintf(fp, "\n%f %f %f %f %f %f %f", 
+              k_position[0],
+              k_position[1],
+              k_position[2],
+              k_heading[0],
+              k_heading[1],
+              k_heading[2],
+              average_cost_for_current_ks);
+      fprintf(stdout, "\n%f %f %f %f %f %f %f", 
+              k_position[0],
+              k_position[1],
+              k_position[2],
+              k_heading[0],
+              k_heading[1],
+              k_heading[2],
+              average_cost_for_current_ks);
 
-    // (1) Set the new gain terms using method of average 
-    // ------
-    // double average_costs_p_position[3]; // [k-delta, k, k+delta]
-    // double average_costs_i_position[3];
-    // double average_costs_d_position[3];
-    // double average_costs_p_heading[3]; 
-    // double average_costs_i_heading[3];
-    // double average_costs_d_heading[3];
-    // // Find average cost for each case
-    // int min_index_position_p = compute_and_set_average_costs(costs, 0, average_costs_p_position, p_position);
-    // int min_index_position_i = compute_and_set_average_costs(costs, 1, average_costs_i_position, i_position);
-    // int min_index_position_d = compute_and_set_average_costs(costs, 2, average_costs_d_position, d_position);
-    // int min_index_heading_p = compute_and_set_average_costs(costs, 3, average_costs_p_heading, p_heading);
-    // int min_index_heading_i = compute_and_set_average_costs(costs, 4, average_costs_i_heading, i_heading);
-    // int min_index_heading_d = compute_and_set_average_costs(costs, 5, average_costs_d_heading, d_heading);
-    // Set the new gain terms
-    // k_position[0] = p_position[min_index_position_p];
-    // k_position[1] = i_position[min_index_position_i];
-    // k_position[2] = d_position[min_index_position_d];
-    // k_heading[0]  = p_heading[min_index_heading_p];
-    // k_heading[1]  = i_heading[min_index_heading_i];
-    // k_heading[2]  = d_heading[min_index_heading_d];
-    // ------
+      // (1) Set the new gain terms using method of average 
+      // ------
+      double average_costs_p_position[3]; // [k-delta, k, k+delta]
+      double average_costs_i_position[3];
+      double average_costs_d_position[3];
+      double average_costs_p_heading[3]; 
+      double average_costs_i_heading[3];
+      double average_costs_d_heading[3];
+      // Find average cost for each case
+      int min_index_position_p = compute_and_set_average_costs(costs, 0, average_costs_p_position, p_position);
+      int min_index_position_i = compute_and_set_average_costs(costs, 1, average_costs_i_position, i_position);
+      int min_index_position_d = compute_and_set_average_costs(costs, 2, average_costs_d_position, d_position);
+      int min_index_heading_p = compute_and_set_average_costs(costs, 3, average_costs_p_heading, p_heading);
+      int min_index_heading_i = compute_and_set_average_costs(costs, 4, average_costs_i_heading, i_heading);
+      int min_index_heading_d = compute_and_set_average_costs(costs, 5, average_costs_d_heading, d_heading);
+      // Set the new gain terms
+      k_position[0] = p_position[min_index_position_p];
+      k_position[1] = i_position[min_index_position_i];
+      k_position[2] = d_position[min_index_position_d];
+      k_heading[0]  = p_heading[min_index_heading_p];
+      k_heading[1]  = i_heading[min_index_heading_i];
+      k_heading[2]  = d_heading[min_index_heading_d];
+      // ------
 
-    // (2) Set the new gain terms using method of min cost
-    // ------
-    double min_cost = __DBL_MAX__;
-    int min_index = -1;
-    for(int i = 0; i < pow(3,6); ++i)
-    {
-      if(costs[i][6] < min_cost)
+      // (2) Set the new gain terms using method of min cost
+      // ------
+      // double min_cost = __DBL_MAX__;
+      // int min_index = -1;
+      // for(int i = 0; i < pow(3,6); ++i)
+      // {
+      //   if(costs[i][6] < min_cost)
+      //   {
+      //     min_cost = costs[i][6];
+      //     min_index = i;
+      //   }
+      // }
+      // // Set the new gain terms
+      // k_position[0] = costs[min_index][0];
+      // k_position[1] = costs[min_index][1];
+      // k_position[2] = costs[min_index][2];
+      // k_heading[0]  = costs[min_index][3];
+      // k_heading[1]  = costs[min_index][4];
+      // k_heading[2]  = costs[min_index][5];
+      // ------
+
+      // Clean memory
+      for(int i = 0; i < pow(3, 6); ++i)
       {
-        min_cost = costs[i][6];
-        min_index = i;
+        free(costs[i]);
       }
+      free(costs);
     }
-    // Set the new gain terms
-    k_position[0] = costs[min_index][0];
-    k_position[1] = costs[min_index][1];
-    k_position[2] = costs[min_index][2];
-    k_heading[0]  = costs[min_index][3];
-    k_heading[1]  = costs[min_index][4];
-    k_heading[2]  = costs[min_index][5];
-    // ------
-
-    // Clean memory
-    for(int i = 0; i < pow(3, 6); ++i)
-    {
-      free(costs[i]);
-    }
-    free(costs);
+    // Set the controller
+    controller->kp_position = k_position[0];
+    controller->ki_position = k_position[1];
+    controller->kd_position = k_position[2];
+    controller->kp_heading = k_heading[0];
+    controller->ki_heading = k_heading[1];
+    controller->kd_heading = k_heading[2];
+    fclose(fp);
   }
-  // Set the controller
-  controller->kp_position = k_position[0];
-  controller->ki_position = k_position[1];
-  controller->kd_position = k_position[2];
-  controller->kp_heading = k_heading[0];
-  controller->ki_heading = k_heading[1];
-  controller->kd_heading = k_heading[2];
-  fclose(fp);
+  else
+  {
+    set_error_msg(controller->error_msg, error_null_pointer);
+  }
 }
 
 union Coordinates_3D controller_get_gains_position(struct Controller* controller)
 {
-  union Coordinates_3D k;
-  k.keys.x = controller->kp_position;
-  k.keys.y = controller->ki_position;
-  k.keys.z = controller->kd_position;
-  return k;
+  if(controller)
+  {
+    union Coordinates_3D k;
+    k.keys.x = controller->kp_position;
+    k.keys.y = controller->ki_position;
+    k.keys.z = controller->kd_position;
+    return k;
+  }
+  else
+  {
+    set_error_msg(controller->error_msg, error_null_pointer);
+    return (union Coordinates_3D){0.0, 0.0, 0.0};
+  }
 }
 
 union Coordinates_3D controller_get_gains_heading(struct Controller* controller)
 {
-  union Coordinates_3D k;
-  k.keys.x = controller->kp_heading;
-  k.keys.y = controller->ki_heading;
-  k.keys.z = controller->kd_heading;
-  return k;
+  if(controller)
+  {
+    union Coordinates_3D k;
+    k.keys.x = controller->kp_heading;
+    k.keys.y = controller->ki_heading;
+    k.keys.z = controller->kd_heading;
+    return k;
+  }
+  else
+  {
+    set_error_msg(controller->error_msg, error_null_pointer);
+    return (union Coordinates_3D){0.0, 0.0, 0.0};
+  }
 }

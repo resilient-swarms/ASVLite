@@ -180,14 +180,13 @@ double wave_get_elevation(const struct Wave* wave,
                           const union Coordinates_3D location,
                           double time)
 {
-  clear_error_msg(wave->error_msg);
-  double elevation = 0.0;
-
   if(wave)
   {
+    clear_error_msg(wave->error_msg);
     // check if time is negative
     if(time >= 0.0)
     {
+      double elevation = 0.0;
       for(int i = 0; i < wave->count_wave_spectral_directions; ++i)
       {
         for(int j = 0; j < wave->count_wave_spectral_frequencies; ++j)
@@ -213,6 +212,7 @@ double wave_get_elevation(const struct Wave* wave,
           }
         }
       }
+      return elevation;
     }
     else
     {
@@ -225,14 +225,13 @@ double wave_get_elevation(const struct Wave* wave,
     set_error_msg(wave->error_msg, error_null_pointer);
     return 0.0;
   }
-  return elevation;
 }
 
 int wave_get_count_wave_spectral_directions(const struct Wave* wave)
 {
-  clear_error_msg(wave->error_msg);
   if(wave)
   {
+    clear_error_msg(wave->error_msg);
     return wave->count_wave_spectral_directions;
   }
   else
@@ -244,9 +243,9 @@ int wave_get_count_wave_spectral_directions(const struct Wave* wave)
 
 int wave_get_count_wave_spectral_frequencies(const struct Wave* wave)
 {
-  clear_error_msg(wave->error_msg);
   if(wave)
   {
+    clear_error_msg(wave->error_msg);
     return wave->count_wave_spectral_frequencies;
   }
   else
@@ -258,9 +257,9 @@ int wave_get_count_wave_spectral_frequencies(const struct Wave* wave)
 
 const struct Regular_wave* wave_get_regular_wave_at(const struct Wave* wave, int d, int f)
 {
-  clear_error_msg(wave->error_msg);
   if(wave)
   {
+    clear_error_msg(wave->error_msg);
     if(d >= 0 && d < wave->count_wave_spectral_directions &&
       f >= 0 && f < wave->count_wave_spectral_frequencies)
     {
@@ -282,9 +281,9 @@ const struct Regular_wave* wave_get_regular_wave_at(const struct Wave* wave, int
 
 double wave_get_min_spectral_frequency(const struct Wave* wave)
 {
-  clear_error_msg(wave->error_msg);
   if(wave)
   {
+    clear_error_msg(wave->error_msg);
     return wave->min_spectral_frequency;
   }
   else
@@ -296,9 +295,9 @@ double wave_get_min_spectral_frequency(const struct Wave* wave)
 
 double wave_get_max_spectral_frequency(const struct Wave* wave)
 {
-  clear_error_msg(wave->error_msg);
   if(wave)
   {
+    clear_error_msg(wave->error_msg);
     return wave->max_spectral_frequency;
   }
   else
@@ -310,9 +309,9 @@ double wave_get_max_spectral_frequency(const struct Wave* wave)
 
 double wave_get_significant_height(const struct Wave* wave)
 {
-  clear_error_msg(wave->error_msg);
   if(wave)
   {
+    clear_error_msg(wave->error_msg);
     return wave->significant_wave_height;
   }
   else
@@ -324,9 +323,9 @@ double wave_get_significant_height(const struct Wave* wave)
 
 double wave_get_predominant_heading(const struct Wave* wave)
 {
-  clear_error_msg(wave->error_msg);
   if(wave)
   {
+    clear_error_msg(wave->error_msg);
     return wave->heading;
   }
   else

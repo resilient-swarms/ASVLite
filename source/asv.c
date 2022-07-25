@@ -631,9 +631,9 @@ const char* thruster_get_error_msg(const struct Thruster* thruster)
 
 void thruster_set_thrust(struct Thruster* thruster, const union Coordinates_3D orientation, double magnitude)
 {
-  clear_error_msg(thruster->error_msg);
   if(thruster)
   {
+    clear_error_msg(thruster->error_msg);
     thruster->orientation = orientation;
     thruster->thrust = magnitude;
   }
@@ -739,8 +739,10 @@ struct Asv* asv_new(const struct Asv_specification specification,
       return NULL;
     }
   }
-
-  return NULL;  
+  else
+  {
+    return NULL;  
+  }
 }
 
 void asv_delete(struct Asv* asv)
@@ -769,9 +771,9 @@ const char* asv_get_error_msg(const struct Asv* asv)
 
 void asv_set_thrusters(struct Asv* asv, struct Thruster** thrusters, int count_thrusters)
 {
-  clear_error_msg(asv->error_msg);
   if(asv && thrusters)
   {
+    clear_error_msg(asv->error_msg);
     // Need more memory
     free(asv->thrusters);
     if(asv->thrusters = (struct Thruster**)malloc(sizeof(struct Thruster*) * count_thrusters))
@@ -795,9 +797,9 @@ void asv_set_thrusters(struct Asv* asv, struct Thruster** thrusters, int count_t
 
 struct Thruster** asv_get_thrusters(struct Asv* asv)
 {
-  clear_error_msg(asv->error_msg);
   if(asv)
   {
+    clear_error_msg(asv->error_msg);
     return asv->thrusters;
   }
   else
@@ -809,9 +811,9 @@ struct Thruster** asv_get_thrusters(struct Asv* asv)
 
 const union Coordinates_3D thruster_get_position(struct Thruster* thruster)
 {
-  clear_error_msg(thruster->error_msg);
   if(thruster)
   {
+    clear_error_msg(thruster->error_msg);
     return thruster->position;
   }
   else
@@ -823,9 +825,9 @@ const union Coordinates_3D thruster_get_position(struct Thruster* thruster)
 
 int asv_get_count_thrusters(struct Asv* asv)
 {
-  clear_error_msg(asv->error_msg);
   if(asv)
   {
+    clear_error_msg(asv->error_msg);
     return asv->count_thrusters;
   }
   else
@@ -837,9 +839,9 @@ int asv_get_count_thrusters(struct Asv* asv)
 
 const struct Wave* asv_get_wave(struct Asv* asv)
 {
-  clear_error_msg(asv->error_msg);
   if(asv)
   {
+    clear_error_msg(asv->error_msg);
     return asv->wave;
   }
   else
@@ -851,9 +853,9 @@ const struct Wave* asv_get_wave(struct Asv* asv)
 
 union Coordinates_3D asv_get_position_cog(struct Asv* asv)
 {
-  clear_error_msg(asv->error_msg);
   if(asv)
   {
+    clear_error_msg(asv->error_msg);
     return asv->cog_position;
   }
   else
@@ -865,9 +867,9 @@ union Coordinates_3D asv_get_position_cog(struct Asv* asv)
 
 union Coordinates_3D asv_get_position_origin(struct Asv* asv)
 {
-  clear_error_msg(asv->error_msg);
   if(asv)
   {
+    clear_error_msg(asv->error_msg);
     return asv->origin_position;
   }
   else
@@ -879,9 +881,9 @@ union Coordinates_3D asv_get_position_origin(struct Asv* asv)
 
 union Coordinates_3D asv_get_attitude(struct Asv* asv)
 {
-  clear_error_msg(asv->error_msg);
   if(asv)
   {
+    clear_error_msg(asv->error_msg);
     return asv->attitude;
   }
   else
@@ -893,9 +895,9 @@ union Coordinates_3D asv_get_attitude(struct Asv* asv)
 
 union Rigid_body_DOF asv_get_F(struct Asv* asv)
 {
-  clear_error_msg(asv->error_msg);
   if(asv)
   {
+    clear_error_msg(asv->error_msg);
     return asv->dynamics.F;
   }
   else
@@ -907,9 +909,9 @@ union Rigid_body_DOF asv_get_F(struct Asv* asv)
 
 union Rigid_body_DOF asv_get_A(struct Asv* asv)
 {
-  clear_error_msg(asv->error_msg);
   if(asv)
   {
+    clear_error_msg(asv->error_msg);
     return asv->dynamics.A;
   }
   else
@@ -921,9 +923,9 @@ union Rigid_body_DOF asv_get_A(struct Asv* asv)
 
 union Rigid_body_DOF asv_get_V(struct Asv* asv)
 {
-  clear_error_msg(asv->error_msg);
   if(asv)
   {
+    clear_error_msg(asv->error_msg);
     return asv->dynamics.V;
   }
   else
@@ -935,9 +937,9 @@ union Rigid_body_DOF asv_get_V(struct Asv* asv)
 
 struct Asv_specification asv_get_spec(struct Asv* asv)
 {
-  clear_error_msg(asv->error_msg);
   if(asv)
   {
+    clear_error_msg(asv->error_msg);
     return asv->spec;
   }
   else
@@ -948,10 +950,10 @@ struct Asv_specification asv_get_spec(struct Asv* asv)
 
 void asv_set_sea_state(struct Asv* asv, const struct Wave* wave)
 { 
-  clear_error_msg(asv->error_msg);
   const struct Wave* old_wave = asv->wave;
   if(asv && wave)
   {
+    clear_error_msg(asv->error_msg);
     // set the wave for the ASV
     asv->wave = wave;
 
@@ -1062,21 +1064,37 @@ static void compute_dynamics(struct Asv* asv, bool is_wave_glider, double rudder
 
 void asv_compute_dynamics(struct Asv* asv, double time_step_size)
 {
-  clear_error_msg(asv->error_msg);
-  compute_dynamics(asv, false, 0.0, time_step_size);
-  const char* error_msg = asv_get_error_msg(asv);
+  if(asv)
+  {
+    clear_error_msg(asv->error_msg);
+    if(time_step_size)
+    {
+      compute_dynamics(asv, false, 0.0, time_step_size);
+    }
+  }
+  
 }
 
 void wave_glider_compute_dynamics(struct Asv* asv, double rudder_angle, double time_step_size)
 {
-  clear_error_msg(asv->error_msg);
-  if(rudder_angle >= PI/2.0 && rudder_angle <= PI/2.0)
+  if(asv)
   {
-    compute_dynamics(asv, true, rudder_angle, time_step_size);
-    const char* error_msg = asv_get_error_msg(asv);
+    clear_error_msg(asv->error_msg);
+    if(rudder_angle >= PI/2.0 && rudder_angle <= PI/2.0)
+    {
+      if(time_step_size)
+      {
+        compute_dynamics(asv, true, rudder_angle, time_step_size);
+      }
+    }
+    else
+    {
+      // Rudder angle out of range. 
+      set_error_msg(asv->error_msg, error_incorrect_rudder_angle);
+    }
   }
   else
   {
-    set_error_msg(asv->error_msg, error_incorrect_rudder_angle);
+    set_error_msg(asv->error_msg, error_null_pointer);
   }
 }

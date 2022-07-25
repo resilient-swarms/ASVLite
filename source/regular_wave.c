@@ -80,9 +80,9 @@ const char* regular_wave_get_error_msg(const struct Regular_wave* regular_wave)
 
 double regular_wave_get_amplitude(const struct Regular_wave* regular_wave)
 {
-  clear_error_msg(regular_wave->error_msg);
   if(regular_wave)
   {
+    clear_error_msg(regular_wave->error_msg);
     return regular_wave->amplitude;
   }
   else
@@ -95,9 +95,9 @@ double regular_wave_get_amplitude(const struct Regular_wave* regular_wave)
 
 double regular_wave_get_frequency(const struct Regular_wave* regular_wave)
 {
-  clear_error_msg(regular_wave->error_msg);
   if(regular_wave)
   {
+    clear_error_msg(regular_wave->error_msg);
     return regular_wave->frequency;
   }
   else
@@ -110,9 +110,9 @@ double regular_wave_get_frequency(const struct Regular_wave* regular_wave)
 
 double regular_wave_get_direction(const struct Regular_wave* regular_wave)
 {
-  clear_error_msg(regular_wave->error_msg);
   if(regular_wave)
   {
+    clear_error_msg(regular_wave->error_msg);
     return regular_wave->direction;
   }
   else
@@ -127,9 +127,9 @@ double regular_wave_get_phase(const struct Regular_wave* const regular_wave,
                               const union Coordinates_3D location, 
                               const double time)
 {
-  clear_error_msg(regular_wave->error_msg);
   if(regular_wave)
   {
+    clear_error_msg(regular_wave->error_msg);
     // Check if time is -ve.
     if(time >= 0.0)
     {
@@ -169,9 +169,9 @@ double regular_wave_get_elevation(const struct Regular_wave* const regular_wave,
                                   const union Coordinates_3D location,
                                   const double time)
 {
-  clear_error_msg(regular_wave->error_msg);
   if(regular_wave)
-  {    
+  {
+    clear_error_msg(regular_wave->error_msg);    
     // Check if time is -ve. 
     if(time >= 0.0)
     {
@@ -203,9 +203,9 @@ double regular_wave_get_elevation(const struct Regular_wave* const regular_wave,
 
 double regular_wave_get_pressure_amp(const struct Regular_wave* regular_wave, double depth)
 {
-  clear_error_msg(regular_wave->error_msg);
   if(regular_wave)
-  {    
+  {   
+    clear_error_msg(regular_wave->error_msg); 
     double amplitude = regular_wave->amplitude;
     double wave_number = regular_wave->wave_number;
     return (SEA_WATER_DENSITY* G* amplitude* exp(wave_number* -depth)); // Note: we expect depth to be positive. 
