@@ -114,8 +114,6 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
     union Coordinates_3D p1 = asv_get_position_origin(controller->asv);
     union Coordinates_3D p2 = asv_get_position_cog(controller->asv);
     union Coordinates_3D p3 = way_point;
-
-    const double limit_error_magnitude = PI; 
     
     // Calculate the heading error in radian.
     // Angle between two lines with slope m1, m2 = atan((m1-m2)/(1 + m1*m2))
@@ -143,7 +141,14 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
     double c = p1.keys.y - m2*p1.keys.y;
 
     // Calculate the position error
+    const double limit_error_magnitude = PI/2.0; 
     double error_position = sqrt(pow(p3.keys.x - p1.keys.x, 2.0) + pow(p3.keys.y - p1.keys.y, 2.0));
+    error_position = (error_position > limit_error_magnitude)? limit_error_magnitude : error_position; 
+                                            // The heading error is always in the range (-PI/2, PI/2).
+                                            // But the position error has no limits. It could be 
+                                            // in the range (-Inf, Inf) depending on the position of
+                                            // the waypoint w.r.t vehicle. Clamp the position error so that 
+                                            // it is in similar magnitude to that of heading error.
     // Set -ve magnitude for error_position if waypoint is behind the asv.
     // Check if waypoint is behind the vehicle.
     // A point is above a line if y - mx -c is +ve, 
