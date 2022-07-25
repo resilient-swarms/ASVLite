@@ -24,6 +24,7 @@ INCLUDE_DIRECTORIES(
 SET( SOURCE
   dependency/tomlc99/toml.c
   source/errors.c
+  source/geometry.c
   source/regular_wave.c
   source/wave.c
   source/asv.c

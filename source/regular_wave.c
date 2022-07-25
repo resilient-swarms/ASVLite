@@ -5,6 +5,7 @@
 #include "regular_wave.h"
 #include "constants.h"
 #include "errors.h"
+#include "geometry.h"
 
 struct Regular_wave
 {
@@ -43,7 +44,7 @@ struct Regular_wave* regular_wave_new(const double amplitude,
       regular_wave->amplitude = amplitude; 
       regular_wave->frequency = frequency;
       regular_wave->phase_lag = phase_lag;
-      regular_wave->direction = direction;
+      regular_wave->direction = normalise_angle_PI(direction);
       regular_wave->time_period = (1.0/frequency);
       regular_wave->wave_length = (G * regular_wave->time_period * regular_wave->time_period)/(2.0 * PI);
       regular_wave->wave_number = (2.0 * PI)/regular_wave->wave_length;

@@ -368,7 +368,11 @@ void simulation_set_input_using_file(struct Simulation* first_node,
     // Create and initialise the sea surface
     int count_wave_spectral_directions  = 5;
     int count_wave_spectral_frequencies = 15;
-    current->wave = wave_new(wave_ht, wave_heading * PI/180.0, rand_seed, count_wave_spectral_directions, count_wave_spectral_frequencies);
+    current->wave = wave_new(wave_ht, 
+                            normalise_angle_PI(wave_heading * PI/180.0), 
+                            rand_seed, 
+                            count_wave_spectral_directions, 
+                            count_wave_spectral_frequencies);
     // ASV specification
     struct Asv_specification asv_spec;
     
@@ -694,7 +698,7 @@ void simulation_set_input_using_file(struct Simulation* first_node,
     else
     {
       // convert to radians and set value
-      attitude.keys.z = heading * PI / 180.0;
+      attitude.keys.z = normalise_angle_PI(heading * PI / 180.0);
     }
 
     // Initialise the asv

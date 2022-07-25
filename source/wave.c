@@ -63,15 +63,11 @@ struct Wave* wave_new(const double sig_wave_ht,
         // ... and then the other member variables.
         wave->random_number_seed = rand_seed;
         srand(wave->random_number_seed);
-        wave->heading = wave_heading;
+        wave->heading = normalise_angle_PI(wave_heading);
         wave->count_wave_spectral_directions = count_wave_spectral_directions;
         wave->count_wave_spectral_frequencies = count_wave_spectral_frequencies;
-        wave->min_spectral_wave_heading = wave->heading - PI/2.0;
-        wave->max_spectral_wave_heading = wave->heading + PI/2.0;
-      
-        // wave directions should be in the range (0, 2PI)
-        wave->min_spectral_wave_heading = fmod(wave->min_spectral_wave_heading,  2.0*PI); 
-        wave->max_spectral_wave_heading = fmod(wave->max_spectral_wave_heading , 2.0*PI);
+        wave->min_spectral_wave_heading = normalise_angle_PI(wave->heading - PI/2.0);
+        wave->max_spectral_wave_heading = normalise_angle_PI(wave->heading + PI/2.0);
         
         // Bretschneider spectrum
         // Ref: Proceedings of the 23rd ITTC - Vol II, Table A.2, A.3.
@@ -117,9 +113,7 @@ struct Wave* wave_new(const double sig_wave_ht,
             // Create a wave
             double amplitude = sqrt(2.0 * S * G_spectrum); 
             double phase = rand(); 
-            double wave_heading = mu + wave->heading;
-            // wave directions should be in the range (0, 2PI)
-            wave_heading = fmod(wave_heading, 2.0 * PI);
+            double wave_heading = normalise_angle_PI(mu + wave->heading);
             struct Regular_wave* regular_wave = regular_wave_new(amplitude, f, phase, wave_heading);
             if(regular_wave)
             {

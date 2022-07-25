@@ -57,4 +57,18 @@ union Rigid_body_DOF
   double array[COUNT_DOF]; //!< To access the DOF values using index 0, 1, 2, 3, 4, 5.
 };
 
+/**
+ * Normalise angle so that -PI < angle <= PI.
+ * @param angle in radians.
+ * @return normalised angle in radians. 
+ */
+double normalise_angle_PI(double angle);
+
+/**
+ * Normalise angle so that 0 <= angle < 2PI.
+ * @param angle in radians.
+ * @return normalised angle in radians. 
+ */
+double normalise_angle_2PI(double angle);
+
 #endif // GEOMETRY_H

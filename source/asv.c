@@ -7,6 +7,7 @@
 #include "regular_wave.h"
 #include "errors.h"
 #include "constants.h"
+#include "geometry.h"
 
 #define COUNT_ASV_SPECTRAL_DIRECTIONS 360  /*!< Number of directions in the wave force spectrum. */
 #define COUNT_ASV_SPECTRAL_FREQUENCIES 100 /*!< Number of frequencies in the wave force spectrum. */
@@ -314,13 +315,7 @@ static void set_wave_force(struct Asv* asv)
 
       // Compute the encounter frequency
       double wave_direction = regular_wave_get_direction(wave);
-      double angle = wave_direction - asv->attitude.keys.z;
-      // Better to keep angle +ve
-      while(angle < 0.0)
-      {
-        angle += 2*PI;
-      }
-      angle = fmod(angle, 2.0*PI);
+      double angle = normalise_angle_PI(wave_direction - asv->attitude.keys.z);
       // Get encounter frequency
       double wave_frequency = regular_wave_get_frequency(wave);
       double freq = get_encounter_frequency(wave_frequency, asv->dynamics.V.keys.surge, angle);
@@ -580,12 +575,7 @@ static void set_position(struct Asv* asv)
 static void set_attitude(struct Asv* asv)
 {
   asv->attitude.keys.z += asv->dynamics.X.keys.yaw;
-  // Normalise yaw between (0, 2PI)
-  while(asv->attitude.keys.z < 0)
-  {
-    asv->attitude.keys.z += 2.0*PI;
-  }
-  asv->attitude.keys.z = fmod(asv->attitude.keys.z, 2.0*PI);
+  asv->attitude.keys.z = normalise_angle_PI(asv->attitude.keys.z);
   asv->attitude.keys.x += asv->dynamics.X.keys.roll;
   asv->attitude.keys.y += asv->dynamics.X.keys.pitch;
 }
@@ -635,6 +625,7 @@ void thruster_set_thrust(struct Thruster* thruster, const union Coordinates_3D o
   {
     clear_error_msg(thruster->error_msg);
     thruster->orientation = orientation;
+    thruster->orientation.keys.z = normalise_angle_PI(thruster->orientation.keys.z); 
     thruster->thrust = magnitude;
   }
   else
@@ -699,6 +690,7 @@ struct Asv* asv_new(const struct Asv_specification specification,
       // Place the asv vertically in the correct position W.R.T wave
       asv->origin_position = position;
       asv->attitude = attitude;
+      asv->attitude.keys.z = normalise_angle_PI(asv->attitude.keys.z);
       asv->origin_position.keys.z = wave_get_elevation(asv->wave, asv->origin_position, 0.0) - asv->spec.T; 
       const char* error_msg = wave_get_error_msg(asv->wave);
       if(error_msg)

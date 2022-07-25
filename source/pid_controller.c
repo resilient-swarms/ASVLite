@@ -117,9 +117,62 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
     
     // Calculate the heading error in radian.
     // Angle between two lines with slope m1, m2 = atan((m1-m2)/(1 + m1*m2))
-    double m1 = (p2.keys.y == p1.keys.y)? __DBL_MAX__ : (p2.keys.x - p1.keys.x)/(p2.keys.y - p1.keys.y);
-    double m2 = (p3.keys.y == p1.keys.y)? __DBL_MAX__ : (p3.keys.x - p1.keys.x)/(p3.keys.y - p1.keys.y);
-    double error_heading = atan((m2-m1)/(1+ m1*m2)); // radians
+    double tolerance = 0.00001;
+    double m1 = 0.0;
+    if(fabs((p2.keys.y - p1.keys.y)) > tolerance)
+    {
+      m1 = (p2.keys.x - p1.keys.x)/(p2.keys.y - p1.keys.y);
+    }
+    else
+    {
+      // denominator is close to zero. 
+      if((p2.keys.x - p1.keys.x)*(p2.keys.y - p1.keys.y) < 0.0)
+      {
+        m1 = -__DBL_MAX__;
+      }
+      else
+      {
+        m1 = __DBL_MAX__;
+      }
+    }
+    
+    double m2 = 0.0;
+    if(fabs((p3.keys.y - p1.keys.y)) > tolerance)
+    {
+      m2 = (p3.keys.x - p1.keys.x)/(p3.keys.y - p1.keys.y);
+    }
+    else
+    {
+      // denominator is close to zero. 
+      if((p3.keys.x - p1.keys.x)*(p3.keys.y - p1.keys.y) < 0.0)
+      {
+        m2 = -__DBL_MAX__;
+      }
+      else
+      {
+        m2 = __DBL_MAX__;
+      }
+    }
+
+    double error_heading = 0.0;
+    // angle between two lines = atan((m2-m1)/(1+ m1*m2))
+    // but check if denominator is close to zero. 
+    if(1.0 + m1*m2 > tolerance)
+    {
+      error_heading = atan((m2-m1)/(1+ m1*m2)); // radians
+    }
+    else
+    {
+      // denominator is close to zero. 
+      if(m2-m1 < 0.0)
+      {
+        error_heading = -PI/2.0;
+      }
+      else
+      {
+        error_heading = PI/2.0;
+      }
+    }
     // Calculate the integral heading error.
     double gamma_heading_error = 0.9; // Should be in the range (0,1).
                                       // Value = 1, implies the past error is never forgotten.
@@ -132,10 +185,22 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
     controller->error_heading = error_heading; 
 
     // Equation of a line passing through the origin and perpendicular to the longitudinal axis of the asv:
-    // Slope of the longitudinal axis of the asv in the global frame
-    m1 = (p2.keys.x - p1.keys.x != 0.0)? (p2.keys.y - p1.keys.y)/(p2.keys.x - p1.keys.x) : __DBL_MAX__;
     // Slope of line perpendicular to the longitudinal axis
-    m2 = (m1 != 0.0)? -1.0/m1 : __DBL_MAX__;
+    if(fabs(m1) > tolerance)
+    {
+      m2 = -1.0/m1;
+    }
+    else
+    {
+      if(m1 < 0.0)
+      {
+        m2 = -__DBL_MAX__;
+      }
+      else
+      {
+        m2 = __DBL_MAX__;
+      }
+    }
     // Equation of line with slope m is y = mx + c
     // Compute c for line passing through p1 and slope m2
     double c = p1.keys.y - m2*p1.keys.y;
