@@ -93,7 +93,7 @@ static double get_encounter_frequency(double wave_freq,
 static void set_cog(struct Asv* asv)
 {
   // Match the position of the COG with that of the position of the origin.
-  double l = sqrt(pow(asv->spec.cog.keys.x, 2.0) + pow(asv->spec.cog.keys.y, 2.0));
+  double l = sqrt(asv->spec.cog.keys.x*asv->spec.cog.keys.x + asv->spec.cog.keys.y*asv->spec.cog.keys.y);
   asv->cog_position.keys.x = asv->origin_position.keys.x + l * sin(asv->attitude.keys.z);
   asv->cog_position.keys.y = asv->origin_position.keys.y + l * cos(asv->attitude.keys.z);
   asv->cog_position.keys.z = asv->origin_position.keys.z + asv->spec.cog.keys.z;

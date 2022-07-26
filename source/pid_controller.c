@@ -220,7 +220,11 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
     // A point is below a line if y - mx -c is -ve, and
     // A point is on the line if y - mx -c is 0
     // Check if the both the cog and waypoint are on either sides of the line 
-    if((p3.keys.y - m2*p3.keys.x - c)*(p2.keys.y - m2*p2.keys.x - c) < 0.0)
+    if((p3.keys.y - m2*p3.keys.x - c)*(10.0*p2.keys.y - 10.0*m2*p2.keys.x - c) < 0.0) // Point p2 can be too close to line m2. 
+                                                                                      // Scale and move to a point in the same 
+                                                                                      // direction so that we can accurately 
+                                                                                      // know if both points p3 and p2 are on 
+                                                                                      // same or either sides of the line. 
     {
       error_position = -error_position;
     }
@@ -470,8 +474,8 @@ void controller_tune(struct Controller* controller)
               "heading_d "
               "cost ");
     // Initialise gain terms
-    double k_position[3] = {1.0, 1.0, 1.0};
-    double k_heading[3]  = {1.0, 1.0, 1.0};
+    double k_position[3] = {1.0, 0.0, 0.0};
+    double k_heading[3]  = {1.0, 0.0, 0.0};
     double delta = 0.5;
     int count_iterations = 100;
     for(int i = 0; i < count_iterations; ++i)
