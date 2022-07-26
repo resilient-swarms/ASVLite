@@ -117,7 +117,49 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
     
     // Calculate the heading error in radian.
     // Angle between two lines with slope m1, m2 = atan((m1-m2)/(1 + m1*m2))
+    double p12 = sqrt((p2.keys.x - p1.keys.x)*(p2.keys.x - p1.keys.x) + (p2.keys.y - p1.keys.y)*(p2.keys.y - p1.keys.y)); // length of segment p1-p2
+    double p13 = sqrt((p3.keys.x - p1.keys.x)*(p3.keys.x - p1.keys.x) + (p3.keys.y - p1.keys.y)*(p3.keys.y - p1.keys.y)); // length of segment p1-p3
+    double p23 = sqrt((p3.keys.x - p2.keys.x)*(p3.keys.x - p2.keys.x) + (p3.keys.y - p2.keys.y)*(p3.keys.y - p2.keys.y)); // length of segment p2-p3
+    double value = (p12*p12 + p13*p13 - p23*p23)/(2.0*p12*p13);
+    if(value > 1.0)
+    {
+      value = 1.0;
+    }
+    if(value < -1.0)
+    {
+      value = -1.0;
+    }
+    double error_heading = acos(value);
+    // Avoid aggressive heading correction. 
+    double heading_tolerance = 5.0 * PI/180.0; // correct heading only if angle greater than 5deg.
+    if(fabs(error_heading) < heading_tolerance)
+    {
+      error_heading = 0.0;
+    }
+    if(fabs(PI - error_heading) < heading_tolerance)
+    {
+      error_heading = PI;
+    }
+
+
+    // Calculate the integral heading error.
+    double gamma_heading_error = 0.9; // Should be in the range (0,1).
+                                      // Value = 1, implies the past error is never forgotten.
+                                      // Value = 0, implies the past error is always ignored. 
+                                      // Value between 0 and 1 implies the past errors gradually decreases. 
+                                      // Value > 0 implies past errors are magnified.  
+    controller->error_int_heading = error_heading + gamma_heading_error * controller->error_int_heading;
+    // Calculate the differential heading error.
+    controller->error_diff_heading = error_heading - controller->error_heading;
+    controller->error_heading = error_heading; 
+
+    // Equation of a line passing through the origin and perpendicular to the longitudinal axis of the asv:
+    // Slope of line perpendicular to the longitudinal axis
+    // Equation of line with slope m is y = mx + c
+    // Compute c for line passing through p1 and slope m2
+    double c = 0.0;
     double tolerance = 0.00001;
+    // Calculate m1
     double m1 = 0.0;
     if(fabs((p2.keys.y - p1.keys.y)) > tolerance)
     {
@@ -135,75 +177,26 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
         m1 = __DBL_MAX__;
       }
     }
-    
+    // Calculate m2
     double m2 = 0.0;
-    if(fabs((p3.keys.y - p1.keys.y)) > tolerance)
-    {
-      m2 = (p3.keys.x - p1.keys.x)/(p3.keys.y - p1.keys.y);
-    }
-    else
-    {
-      // denominator is close to zero. 
-      if((p3.keys.x - p1.keys.x)*(p3.keys.y - p1.keys.y) < 0.0)
-      {
-        m2 = -__DBL_MAX__;
-      }
-      else
-      {
-        m2 = __DBL_MAX__;
-      }
-    }
-
-    double error_heading = 0.0;
-    // angle between two lines = atan((m2-m1)/(1+ m1*m2))
-    // but check if denominator is close to zero. 
-    if(1.0 + m1*m2 > tolerance)
-    {
-      error_heading = atan((m2-m1)/(1+ m1*m2)); // radians
-    }
-    else
-    {
-      // denominator is close to zero. 
-      if(m2-m1 < 0.0)
-      {
-        error_heading = -PI/2.0;
-      }
-      else
-      {
-        error_heading = PI/2.0;
-      }
-    }
-    // Calculate the integral heading error.
-    double gamma_heading_error = 0.9; // Should be in the range (0,1).
-                                      // Value = 1, implies the past error is never forgotten.
-                                      // Value = 0, implies the past error is always ignored. 
-                                      // Value between 0 and 1 implies the past errors gradually decreases. 
-                                      // Value > 0 implies past errors are magnified.  
-    controller->error_int_heading = error_heading + gamma_heading_error * controller->error_int_heading;
-    // Calculate the differential heading error.
-    controller->error_diff_heading = error_heading - controller->error_heading;
-    controller->error_heading = error_heading; 
-
-    // Equation of a line passing through the origin and perpendicular to the longitudinal axis of the asv:
-    // Slope of line perpendicular to the longitudinal axis
     if(fabs(m1) > tolerance)
     {
       m2 = -1.0/m1;
+      c = p1.keys.y - m2*p1.keys.y;
     }
     else
     {
       if(m1 < 0.0)
       {
         m2 = -__DBL_MAX__;
+        c = __DBL_MAX__;
       }
       else
       {
         m2 = __DBL_MAX__;
+        c = -__DBL_MAX__;
       }
     }
-    // Equation of line with slope m is y = mx + c
-    // Compute c for line passing through p1 and slope m2
-    double c = p1.keys.y - m2*p1.keys.y;
 
     // Calculate the position error
     const double limit_error_magnitude = PI/2.0; 
@@ -220,13 +213,24 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
     // A point is below a line if y - mx -c is -ve, and
     // A point is on the line if y - mx -c is 0
     // Check if the both the cog and waypoint are on either sides of the line 
-    if((p3.keys.y - m2*p3.keys.x - c)*(10.0*p2.keys.y - 10.0*m2*p2.keys.x - c) < 0.0) // Point p2 can be too close to line m2. 
-                                                                                      // Scale and move to a point in the same 
-                                                                                      // direction so that we can accurately 
-                                                                                      // know if both points p3 and p2 are on 
-                                                                                      // same or either sides of the line. 
+    if(fabs(m2) != __DBL_MAX__)
     {
-      error_position = -error_position;
+      if((p3.keys.y - m2*p3.keys.x - c)*(10.0*p2.keys.y - 10.0*m2*p2.keys.x - c) < 0.0) // Point p2 can be too close to line m2. 
+                                                                                        // Scale and move to a point in the same 
+                                                                                        // direction so that we can accurately 
+                                                                                        // know if both points p3 and p2 are on 
+                                                                                        // same or either sides of the line. 
+      {
+        error_position = -error_position;
+      }
+    }
+    else
+    {
+      struct Asv_specification spec = asv_get_spec(controller->asv);
+      if(p2.keys.y - p3.keys.y > spec.L_wl)
+      {
+        error_position = -error_position;
+      }
     }
     // Calculate the integral error for position.
     double gamma_position_error = 0.9; // Should be in the range (0,1).
@@ -266,7 +270,7 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
     } 
 
     // Set thruster thrust on each of the 4 thrusters.
-    union Coordinates_3D orientation_fore_thrusters = {0.0, PI, 0.0};
+    union Coordinates_3D orientation_fore_thrusters = {0.0, 0.0, PI};
     union Coordinates_3D orientation_aft_thrusters  = {0.0, 0.0, 0.0};
     struct Thruster** thrusters = asv_get_thrusters(controller->asv);
     // Thruster configuration
@@ -290,23 +294,23 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
     //    
     if(thrust_ps >= 0.0)
     {
-      thruster_set_thrust(thrusters[2], orientation_aft_thrusters, thrust_ps);
+      thruster_set_thrust(thrusters[2], orientation_aft_thrusters, fabs(thrust_ps));
       thruster_set_thrust(thrusters[0], orientation_fore_thrusters, 0.0);
     }
     else
     {
       thruster_set_thrust(thrusters[2], orientation_aft_thrusters, 0.0);
-      thruster_set_thrust(thrusters[0], orientation_fore_thrusters, thrust_ps);
+      thruster_set_thrust(thrusters[0], orientation_fore_thrusters, fabs(thrust_ps));
     }
     if(thrust_sb >= 0.0)
     {
-      thruster_set_thrust(thrusters[3], orientation_aft_thrusters, thrust_sb);
+      thruster_set_thrust(thrusters[3], orientation_aft_thrusters, fabs(thrust_sb));
       thruster_set_thrust(thrusters[1], orientation_fore_thrusters, 0.0);
     }
     else
     {
       thruster_set_thrust(thrusters[3], orientation_aft_thrusters, 0.0);
-      thruster_set_thrust(thrusters[1], orientation_fore_thrusters, thrust_sb);
+      thruster_set_thrust(thrusters[1], orientation_fore_thrusters, fabs(thrust_sb));
     }
   }
   else
@@ -372,7 +376,7 @@ static double simulate_for_tunning(struct Asv* asv, double* k_position, double* 
     }
     
     // Run simulation for a set period of time.
-    double max_time = 200.0; // seconds
+    double max_time = 2000.0; // seconds
     simulation_run_upto_time(simulation, max_time);
 
     // Compute error
