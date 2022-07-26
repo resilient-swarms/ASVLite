@@ -116,7 +116,9 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
     union Coordinates_3D p3 = way_point;
     
     // Calculate the heading error in radian.
-    // Angle between two lines with slope m1, m2 = atan((m1-m2)/(1 + m1*m2))
+    // Angle is calculated using the formuala:
+    // angle = acos((p12^2 + p13^2 - p23^2)/(2*p12*p13))
+    // where p12 is the length of line joining p1 and p2.
     double p12 = sqrt((p2.keys.x - p1.keys.x)*(p2.keys.x - p1.keys.x) + (p2.keys.y - p1.keys.y)*(p2.keys.y - p1.keys.y)); // length of segment p1-p2
     double p13 = sqrt((p3.keys.x - p1.keys.x)*(p3.keys.x - p1.keys.x) + (p3.keys.y - p1.keys.y)*(p3.keys.y - p1.keys.y)); // length of segment p1-p3
     double p23 = sqrt((p3.keys.x - p2.keys.x)*(p3.keys.x - p2.keys.x) + (p3.keys.y - p2.keys.y)*(p3.keys.y - p2.keys.y)); // length of segment p2-p3
@@ -131,7 +133,8 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
     }
     double error_heading = acos(value);
     // Avoid aggressive heading correction. 
-    double heading_tolerance = 5.0 * PI/180.0; // correct heading only if angle greater than 5deg.
+    double heading_tolerance = 5.0 * PI/180.0; 
+    // Correct heading only if angle greater than tolerance. 
     if(fabs(error_heading) < heading_tolerance)
     {
       error_heading = 0.0;
