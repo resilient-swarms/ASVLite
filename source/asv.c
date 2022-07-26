@@ -320,7 +320,7 @@ static void set_wave_force(struct Asv* asv)
 
         // Compute the encounter frequency
         double wave_direction = regular_wave_get_direction(wave);
-        double angle = normalise_angle_PI(wave_direction - asv->attitude.keys.z);
+        double angle = normalise_angle_2PI(wave_direction - asv->attitude.keys.z);
         // Get encounter frequency
         double wave_frequency = regular_wave_get_frequency(wave);
         double freq = get_encounter_frequency(wave_frequency, asv->dynamics.V.keys.surge, angle);
@@ -591,7 +591,7 @@ static void set_position(struct Asv* asv)
 static void set_attitude(struct Asv* asv)
 {
   asv->attitude.keys.z += asv->dynamics.X.keys.yaw;
-  asv->attitude.keys.z = normalise_angle_PI(asv->attitude.keys.z);
+  asv->attitude.keys.z = normalise_angle_2PI(asv->attitude.keys.z);
   asv->attitude.keys.x += asv->dynamics.X.keys.roll;
   asv->attitude.keys.y += asv->dynamics.X.keys.pitch;
 }
@@ -641,7 +641,7 @@ void thruster_set_thrust(struct Thruster* thruster, const union Coordinates_3D o
   {
     clear_error_msg(thruster->error_msg);
     thruster->orientation = orientation;
-    thruster->orientation.keys.z = normalise_angle_PI(thruster->orientation.keys.z); 
+    thruster->orientation.keys.z = normalise_angle_2PI(thruster->orientation.keys.z); 
     thruster->thrust = magnitude;
   }
   else
@@ -702,7 +702,7 @@ struct Asv* asv_new(const struct Asv_specification specification,
     }
 
     asv->attitude = attitude;
-    asv->attitude.keys.z = normalise_angle_PI(asv->attitude.keys.z);
+    asv->attitude.keys.z = normalise_angle_2PI(asv->attitude.keys.z);
     asv->origin_position = position;
     if(wave)
     {

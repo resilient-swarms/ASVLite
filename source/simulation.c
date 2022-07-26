@@ -371,7 +371,7 @@ void simulation_set_input_using_file(struct Simulation* first_node,
       int count_wave_spectral_directions  = 5;
       int count_wave_spectral_frequencies = 15;
       current->wave = wave_new(wave_ht, 
-                              normalise_angle_PI(wave_heading * PI/180.0), 
+                              normalise_angle_2PI(wave_heading * PI/180.0), 
                               rand_seed, 
                               count_wave_spectral_directions, 
                               count_wave_spectral_frequencies);
@@ -706,7 +706,7 @@ void simulation_set_input_using_file(struct Simulation* first_node,
     else
     {
       // convert to radians and set value
-      attitude.keys.z = normalise_angle_PI(heading * PI / 180.0);
+      attitude.keys.z = normalise_angle_2PI(heading * PI / 180.0);
     }
 
     // Initialise the asv
