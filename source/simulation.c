@@ -366,13 +366,21 @@ void simulation_set_input_using_file(struct Simulation* first_node,
       current->simulation_run = simulation_spawn_nodes_without_time_sync;
     }
     // Create and initialise the sea surface
-    int count_wave_spectral_directions  = 5;
-    int count_wave_spectral_frequencies = 15;
-    current->wave = wave_new(wave_ht, 
-                            normalise_angle_PI(wave_heading * PI/180.0), 
-                            rand_seed, 
-                            count_wave_spectral_directions, 
-                            count_wave_spectral_frequencies);
+    if(wave_ht)
+    {
+      int count_wave_spectral_directions  = 5;
+      int count_wave_spectral_frequencies = 15;
+      current->wave = wave_new(wave_ht, 
+                              normalise_angle_PI(wave_heading * PI/180.0), 
+                              rand_seed, 
+                              count_wave_spectral_directions, 
+                              count_wave_spectral_frequencies);
+    }
+    else
+    {
+      current->wave = NULL;
+    }
+    
     // ASV specification
     struct Asv_specification asv_spec;
     

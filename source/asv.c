@@ -247,39 +247,42 @@ static void set_stiffness(struct Asv* asv)
 
 static void set_unit_wave_pressure(struct Asv* asv)
 {
-  const char* error_computation_failed = "Unit pressure computation failed.";
-  double H_w = 1.0; // unit wave height in m.
-
-  // Calculate the pressure for each encounter wave freq
-  double freq_step_size = (asv->dynamics.P_unit_wave_freq_max - 
-                           asv->dynamics.P_unit_wave_freq_min)/
-                          (COUNT_ASV_SPECTRAL_FREQUENCIES - 1); 
-
-  for(int i = 0; i < COUNT_ASV_SPECTRAL_FREQUENCIES; ++i)
+  if(asv->wave)
   {
-    double freq = asv->dynamics.P_unit_wave_freq_min + (i * freq_step_size);
-    asv->dynamics.P_unit_wave[i*2 + 0] = freq;
-    // Create a regular wave for the freq with wave height = 0.01, 
-    // direction = 0.0 and phase = 0.0.
-    struct Regular_wave* wave = regular_wave_new(H_w/2.0, freq, 0.0, 0.0);
-    if(wave)
+    const char* error_computation_failed = "Unit pressure computation failed.";
+    double H_w = 1.0; // unit wave height in m.
+
+    // Calculate the pressure for each encounter wave freq
+    double freq_step_size = (asv->dynamics.P_unit_wave_freq_max - 
+                            asv->dynamics.P_unit_wave_freq_min)/
+                            (COUNT_ASV_SPECTRAL_FREQUENCIES - 1); 
+
+    for(int i = 0; i < COUNT_ASV_SPECTRAL_FREQUENCIES; ++i)
     {
-      // Calculate wave pressure amplitude for the regular wave at the cog depth
-      double P_unit_wave = regular_wave_get_pressure_amp(wave, asv->spec.T);
-      const char* error_msg = regular_wave_get_error_msg(wave);
-      if(error_msg)
+      double freq = asv->dynamics.P_unit_wave_freq_min + (i * freq_step_size);
+      asv->dynamics.P_unit_wave[i*2 + 0] = freq;
+      // Create a regular wave for the freq with wave height = 0.01, 
+      // direction = 0.0 and phase = 0.0.
+      struct Regular_wave* wave = regular_wave_new(H_w/2.0, freq, 0.0, 0.0);
+      if(wave)
+      {
+        // Calculate wave pressure amplitude for the regular wave at the cog depth
+        double P_unit_wave = regular_wave_get_pressure_amp(wave, asv->spec.T);
+        const char* error_msg = regular_wave_get_error_msg(wave);
+        if(error_msg)
+        {
+          set_error_msg(asv->error_msg, error_computation_failed);
+          regular_wave_delete(wave);
+          return;
+        }
+        asv->dynamics.P_unit_wave[i*2 + 1] = P_unit_wave;
+        regular_wave_delete(wave);
+      }
+      else
       {
         set_error_msg(asv->error_msg, error_computation_failed);
-        regular_wave_delete(wave);
         return;
       }
-      asv->dynamics.P_unit_wave[i*2 + 1] = P_unit_wave;
-      regular_wave_delete(wave);
-    }
-    else
-    {
-      set_error_msg(asv->error_msg, error_computation_failed);
-      return;
     }
   }
 }
@@ -287,119 +290,132 @@ static void set_unit_wave_pressure(struct Asv* asv)
 // Function to compute the wave force for the current time step.
 static void set_wave_force(struct Asv* asv)
 {
-  const char* error_computation_failed = "Wave force computation failed.";
-
-  // Dimensions of ellipsoid
-  double a = asv->spec.L_wl/ 2.0;
-  double b = asv->spec.B_wl/ 2.0;
-  double c = asv->spec.T;
-  double A_trans = PI/2.0 * b * c;
-  double A_profile = PI/2.0 * a * c;
-  double A_waterplane = PI * a * b;
-
-  // Reset the wave force to all zeros
-  for(int k = 0; k < COUNT_DOF; ++k)
+  if(asv->wave)
   {
-    asv->dynamics.F_wave.array[k] = 0.0;
-  }
+    const char* error_computation_failed = "Wave force computation failed.";
 
-  // For each wave in the wave spectrum
-  int count_wave_spectral_directions  = wave_get_count_wave_spectral_directions(asv->wave); 
-  int count_wave_spectral_frequencies = wave_get_count_wave_spectral_frequencies(asv->wave); 
-  for(int i = 0; i < count_wave_spectral_directions; ++i)
-  {
-    for(int j = 0; j < count_wave_spectral_frequencies; ++j)
+    // Dimensions of ellipsoid
+    double a = asv->spec.L_wl/ 2.0;
+    double b = asv->spec.B_wl/ 2.0;
+    double c = asv->spec.T;
+    double A_trans = PI/2.0 * b * c;
+    double A_profile = PI/2.0 * a * c;
+    double A_waterplane = PI * a * b;
+
+    // Reset the wave force to all zeros
+    for(int k = 0; k < COUNT_DOF; ++k)
     {
-      // Regular wave
-      const struct Regular_wave* wave = wave_get_regular_wave_at(asv->wave, i,j);
-
-      // Compute the encounter frequency
-      double wave_direction = regular_wave_get_direction(wave);
-      double angle = normalise_angle_PI(wave_direction - asv->attitude.keys.z);
-      // Get encounter frequency
-      double wave_frequency = regular_wave_get_frequency(wave);
-      double freq = get_encounter_frequency(wave_frequency, asv->dynamics.V.keys.surge, angle);
-      int index = 0;
-      // Compute the scaling factor to compute the wave force from unit wave
-      double wave_amplitude = regular_wave_get_amplitude(wave);
-      double scale = wave_amplitude * 2.0;
-
-      // Get the index for unit wave force for the encounter frequency
-      double nf = COUNT_ASV_SPECTRAL_FREQUENCIES;
-      double freq_step_size = (asv->dynamics.P_unit_wave_freq_max - 
-                                asv->dynamics.P_unit_wave_freq_min) /
-                              (COUNT_ASV_SPECTRAL_FREQUENCIES - 1.0);
-      index = round((freq - asv->dynamics.P_unit_wave_freq_min)/
-                          freq_step_size);
-      if(index >= COUNT_ASV_SPECTRAL_FREQUENCIES || index < 0)
-      {
-        set_error_msg(asv->error_msg, error_computation_failed);
-        return;
-
-        // fprintf(stderr, "FATAL ERROR! Array index out of bounds.\n");
-        // fprintf(stderr, "array index = %i \n", index);
-        // fprintf(stderr, "V[surge] = %f \n", asv->dynamics.V[surge]);
-        // fprintf(stderr, "F_thruster[surge] = %f \n", asv->dynamics.F_thruster[surge]);
-        // fprintf(stderr, "encounter freq = %f \n", freq);
-        // fprintf(stderr, "freq_step_size = %f \n", freq_step_size);
-        // fprintf(stderr, "P_unit_wave_freq_min = %f \n", asv->dynamics.P_unit_wave_freq_min);
-        // fprintf(stderr, "wave->frequency = %f \n", wave->frequency);
-        // fprintf(stderr, "angle = %f \n", angle);
-        // fprintf(stderr, "wave->direction = %f \n", wave->direction);
-        // fprintf(stderr, "asv->attitude.z = %f \n", asv->attitude.z);
-        // exit(1);
-      }
-
-      // Assume the wave force to be have zero phase lag with the wave
-      // wave phase at the cog position.
-      double phase_cog = regular_wave_get_phase(wave, asv->cog_position, asv->dynamics.time); 
-      // wave phase at the aft-CL position.
-      union Coordinates_3D point_aft = asv->cog_position;
-      point_aft.keys.x -= (a/4.0)*sin(asv->attitude.keys.z);
-      point_aft.keys.y -= (a/4.0)*cos(asv->attitude.keys.z);
-      point_aft.keys.z = regular_wave_get_elevation(wave, point_aft, asv->dynamics.time);
-      double phase_aft = regular_wave_get_phase(wave, point_aft, asv->dynamics.time);
-      // wave phase at the fore-CL position.
-      union Coordinates_3D point_fore = asv->cog_position;
-      point_fore.keys.x += (a/4.0)*sin(asv->attitude.keys.z);
-      point_fore.keys.y += (a/4.0)*cos(asv->attitude.keys.z);
-      point_fore.keys.z = regular_wave_get_elevation(wave, point_fore, asv->dynamics.time);
-      double phase_fore = regular_wave_get_phase(wave, point_fore, asv->dynamics.time);
-      // wave phase at the mid-PS position.
-      union Coordinates_3D point_ps = asv->cog_position;
-      point_ps.keys.x -= (b/4.0)*cos(asv->attitude.keys.z);
-      point_ps.keys.y += (b/4.0)*sin(asv->attitude.keys.z);
-      point_ps.keys.z = regular_wave_get_elevation(wave, point_ps, asv->dynamics.time);
-      double phase_ps = regular_wave_get_phase(wave, point_ps, asv->dynamics.time);
-      // wave phase at the mid-SB position.
-      union Coordinates_3D point_sb = asv->cog_position;
-      point_sb.keys.x += (b/4.0)*cos(asv->attitude.keys.z);
-      point_sb.keys.y -= (b/4.0)*sin(asv->attitude.keys.z);
-      point_sb.keys.z = regular_wave_get_elevation(wave, point_sb, asv->dynamics.time);
-      double phase_sb = regular_wave_get_phase(wave, point_sb, asv->dynamics.time);
-
-      // Compute the difference between the points
-      double lever_trans = b / 4.0;
-      //double lever_vertical_trans = z - asv->cog_position.z;
-      double lever_long = a / 4.0;
-      //double lever_vertical_long = z - asv->cog_position.z;
-      
-      // Compute the pressure difference between fore and aft point
-      double P = asv->dynamics.P_unit_wave[index*2 + 1];
-
-      double P_diff_long = P *(cos(phase_fore) - cos(phase_aft));
-      // Compute the pressure difference between SB and PS point
-      double P_diff_trans = P * (cos(phase_sb) - cos(phase_ps));
-      
-      // Compute wave force
-      asv->dynamics.F_wave.keys.heave += scale * (P * cos(phase_cog)) * A_waterplane;
-      asv->dynamics.F_wave.keys.surge += scale * P_diff_long * A_trans;
-      asv->dynamics.F_wave.keys.sway  += scale * P_diff_trans * A_profile;
-      asv->dynamics.F_wave.keys.roll  += scale * P_diff_trans * (A_waterplane/2.0) * lever_trans;
-      asv->dynamics.F_wave.keys.pitch += scale * P_diff_long * (A_waterplane/2.0) * lever_long;
-      asv->dynamics.F_wave.keys.yaw   += scale * P_diff_long * (A_profile/2.0) * lever_long * 0.0; // <-- RESTRAIN YAW MOTION.
+      asv->dynamics.F_wave.array[k] = 0.0;
     }
-  } 
+
+    // For each wave in the wave spectrum
+    int count_wave_spectral_directions  = wave_get_count_wave_spectral_directions(asv->wave); 
+    int count_wave_spectral_frequencies = wave_get_count_wave_spectral_frequencies(asv->wave); 
+    for(int i = 0; i < count_wave_spectral_directions; ++i)
+    {
+      for(int j = 0; j < count_wave_spectral_frequencies; ++j)
+      {
+        // Regular wave
+        const struct Regular_wave* wave = wave_get_regular_wave_at(asv->wave, i,j);
+
+        // Compute the encounter frequency
+        double wave_direction = regular_wave_get_direction(wave);
+        double angle = normalise_angle_PI(wave_direction - asv->attitude.keys.z);
+        // Get encounter frequency
+        double wave_frequency = regular_wave_get_frequency(wave);
+        double freq = get_encounter_frequency(wave_frequency, asv->dynamics.V.keys.surge, angle);
+        int index = 0;
+        // Compute the scaling factor to compute the wave force from unit wave
+        double wave_amplitude = regular_wave_get_amplitude(wave);
+        double scale = wave_amplitude * 2.0;
+
+        // Get the index for unit wave force for the encounter frequency
+        double nf = COUNT_ASV_SPECTRAL_FREQUENCIES;
+        double freq_step_size = (asv->dynamics.P_unit_wave_freq_max - 
+                                  asv->dynamics.P_unit_wave_freq_min) /
+                                (COUNT_ASV_SPECTRAL_FREQUENCIES - 1.0);
+        index = round((freq - asv->dynamics.P_unit_wave_freq_min)/
+                            freq_step_size);
+        if(index >= COUNT_ASV_SPECTRAL_FREQUENCIES || index < 0)
+        {
+          set_error_msg(asv->error_msg, error_computation_failed);
+          return;
+
+          // fprintf(stderr, "FATAL ERROR! Array index out of bounds.\n");
+          // fprintf(stderr, "array index = %i \n", index);
+          // fprintf(stderr, "V[surge] = %f \n", asv->dynamics.V[surge]);
+          // fprintf(stderr, "F_thruster[surge] = %f \n", asv->dynamics.F_thruster[surge]);
+          // fprintf(stderr, "encounter freq = %f \n", freq);
+          // fprintf(stderr, "freq_step_size = %f \n", freq_step_size);
+          // fprintf(stderr, "P_unit_wave_freq_min = %f \n", asv->dynamics.P_unit_wave_freq_min);
+          // fprintf(stderr, "wave->frequency = %f \n", wave->frequency);
+          // fprintf(stderr, "angle = %f \n", angle);
+          // fprintf(stderr, "wave->direction = %f \n", wave->direction);
+          // fprintf(stderr, "asv->attitude.z = %f \n", asv->attitude.z);
+          // exit(1);
+        }
+
+        // Assume the wave force to be have zero phase lag with the wave
+        // wave phase at the cog position.
+        double phase_cog = regular_wave_get_phase(wave, asv->cog_position, asv->dynamics.time); 
+        // wave phase at the aft-CL position.
+        union Coordinates_3D point_aft = asv->cog_position;
+        point_aft.keys.x -= (a/4.0)*sin(asv->attitude.keys.z);
+        point_aft.keys.y -= (a/4.0)*cos(asv->attitude.keys.z);
+        point_aft.keys.z = regular_wave_get_elevation(wave, point_aft, asv->dynamics.time);
+        double phase_aft = regular_wave_get_phase(wave, point_aft, asv->dynamics.time);
+        // wave phase at the fore-CL position.
+        union Coordinates_3D point_fore = asv->cog_position;
+        point_fore.keys.x += (a/4.0)*sin(asv->attitude.keys.z);
+        point_fore.keys.y += (a/4.0)*cos(asv->attitude.keys.z);
+        point_fore.keys.z = regular_wave_get_elevation(wave, point_fore, asv->dynamics.time);
+        double phase_fore = regular_wave_get_phase(wave, point_fore, asv->dynamics.time);
+        // wave phase at the mid-PS position.
+        union Coordinates_3D point_ps = asv->cog_position;
+        point_ps.keys.x -= (b/4.0)*cos(asv->attitude.keys.z);
+        point_ps.keys.y += (b/4.0)*sin(asv->attitude.keys.z);
+        point_ps.keys.z = regular_wave_get_elevation(wave, point_ps, asv->dynamics.time);
+        double phase_ps = regular_wave_get_phase(wave, point_ps, asv->dynamics.time);
+        // wave phase at the mid-SB position.
+        union Coordinates_3D point_sb = asv->cog_position;
+        point_sb.keys.x += (b/4.0)*cos(asv->attitude.keys.z);
+        point_sb.keys.y -= (b/4.0)*sin(asv->attitude.keys.z);
+        point_sb.keys.z = regular_wave_get_elevation(wave, point_sb, asv->dynamics.time);
+        double phase_sb = regular_wave_get_phase(wave, point_sb, asv->dynamics.time);
+
+        // Compute the difference between the points
+        double lever_trans = b / 4.0;
+        //double lever_vertical_trans = z - asv->cog_position.z;
+        double lever_long = a / 4.0;
+        //double lever_vertical_long = z - asv->cog_position.z;
+        
+        // Compute the pressure difference between fore and aft point
+        double P = asv->dynamics.P_unit_wave[index*2 + 1];
+
+        double P_diff_long = P *(cos(phase_fore) - cos(phase_aft));
+        // Compute the pressure difference between SB and PS point
+        double P_diff_trans = P * (cos(phase_sb) - cos(phase_ps));
+        
+        // Compute wave force
+        asv->dynamics.F_wave.keys.heave += scale * (P * cos(phase_cog)) * A_waterplane;
+        asv->dynamics.F_wave.keys.surge += scale * P_diff_long * A_trans;
+        asv->dynamics.F_wave.keys.sway  += scale * P_diff_trans * A_profile;
+        asv->dynamics.F_wave.keys.roll  += scale * P_diff_trans * (A_waterplane/2.0) * lever_trans;
+        asv->dynamics.F_wave.keys.pitch += scale * P_diff_long * (A_waterplane/2.0) * lever_long;
+        asv->dynamics.F_wave.keys.yaw   += scale * P_diff_long * (A_profile/2.0) * lever_long * 0.0; // <-- RESTRAIN YAW MOTION.
+      }
+    } 
+  }
+  else
+  {
+    // Still water simulation.
+    asv->dynamics.F_wave.keys.heave = 0.0;
+    asv->dynamics.F_wave.keys.surge = 0.0;
+    asv->dynamics.F_wave.keys.sway  = 0.0;
+    asv->dynamics.F_wave.keys.roll  = 0.0;
+    asv->dynamics.F_wave.keys.pitch = 0.0;
+    asv->dynamics.F_wave.keys.yaw   = 0.0;
+  }
 }
 
 // Function to calculate the thruster force for the current time step.
@@ -639,58 +655,58 @@ struct Asv* asv_new(const struct Asv_specification specification,
                     union Coordinates_3D position, 
                     union Coordinates_3D attitude)
 {
-  if(wave)
+  struct Asv* asv = NULL;
+  if(asv = (struct Asv*)malloc(sizeof(struct Asv)))
   {
-    struct Asv* asv = NULL;
-    if(asv = (struct Asv*)malloc(sizeof(struct Asv)))
+    asv->error_msg = NULL;
+    asv->spec = specification;
+    // Thrusters set to null
+    asv->thrusters = NULL;
+    // Initialise time record 
+    asv->dynamics.time = 0.0;
+
+    // set the wave for the ASV
+    asv->wave = wave;
+
+    // Initialise all the vectors matrices to zero.
+    if(asv->dynamics.P_unit_wave = (double*)malloc(sizeof(double) * COUNT_ASV_SPECTRAL_FREQUENCIES * 2))
     {
-      asv->error_msg = NULL;
-      asv->spec = specification;
-      // Thrusters set to null
-      asv->thrusters = NULL;
-      // Initialise time record 
-      asv->dynamics.time = 0.0;
-
-      // set the wave for the ASV
-      asv->wave = wave;
-
-      // Initialise all the vectors matrices to zero.
-      if(asv->dynamics.P_unit_wave = (double*)malloc(sizeof(double) * COUNT_ASV_SPECTRAL_FREQUENCIES * 2))
+      for(int i = 0; i < COUNT_ASV_SPECTRAL_FREQUENCIES; ++i)
       {
-        for(int i = 0; i < COUNT_ASV_SPECTRAL_FREQUENCIES; ++i)
+        for(int j = 0; j < 2; ++j)
         {
-          for(int j = 0; j < 2; ++j)
-          {
-            asv->dynamics.P_unit_wave[i*2 + j] = 0.0;
-          }
+          asv->dynamics.P_unit_wave[i*2 + j] = 0.0;
         }
       }
-      else
-      {
-        // Memory allocation failed.
-        free(asv);
-        return NULL;
-      }
-      
-      for(int k = 0; k < COUNT_DOF; ++k)
-      {
-        asv->dynamics.M.array          [k] = 0.0;
-        asv->dynamics.C.array          [k] = 0.0;
-        asv->dynamics.K.array          [k] = 0.0;
-        asv->dynamics.X.array          [k] = 0.0;
-        asv->dynamics.V.array          [k] = 0.0;
-        asv->dynamics.A.array          [k] = 0.0;
-        asv->dynamics.F.array          [k] = 0.0;
-        asv->dynamics.F_wave.array     [k] = 0.0;
-        asv->dynamics.F_thruster.array[k] = 0.0;
-        asv->dynamics.F_drag.array     [k] = 0.0;
-        asv->dynamics.F_restoring.array[k] = 0.0;
-      }
+    }
+    else
+    {
+      // Memory allocation failed.
+      free(asv);
+      return NULL;
+    }
+    
+    for(int k = 0; k < COUNT_DOF; ++k)
+    {
+      asv->dynamics.M.array          [k] = 0.0;
+      asv->dynamics.C.array          [k] = 0.0;
+      asv->dynamics.K.array          [k] = 0.0;
+      asv->dynamics.X.array          [k] = 0.0;
+      asv->dynamics.V.array          [k] = 0.0;
+      asv->dynamics.A.array          [k] = 0.0;
+      asv->dynamics.F.array          [k] = 0.0;
+      asv->dynamics.F_wave.array     [k] = 0.0;
+      asv->dynamics.F_thruster.array[k] = 0.0;
+      asv->dynamics.F_drag.array     [k] = 0.0;
+      asv->dynamics.F_restoring.array[k] = 0.0;
+    }
 
+    asv->attitude = attitude;
+    asv->attitude.keys.z = normalise_angle_PI(asv->attitude.keys.z);
+    asv->origin_position = position;
+    if(wave)
+    {
       // Place the asv vertically in the correct position W.R.T wave
-      asv->origin_position = position;
-      asv->attitude = attitude;
-      asv->attitude.keys.z = normalise_angle_PI(asv->attitude.keys.z);
       asv->origin_position.keys.z = wave_get_elevation(asv->wave, asv->origin_position, 0.0) - asv->spec.T; 
       const char* error_msg = wave_get_error_msg(asv->wave);
       if(error_msg)
@@ -699,22 +715,12 @@ struct Asv* asv_new(const struct Asv_specification specification,
         return NULL;
       }
 
-      // Reset the cog position.
-      set_cog(asv); // Match the position of the cog with that of origin
-
       // Set minimum and maximum encounter frequency
       double max_speed_for_spectrum = 2.0 * asv->spec.max_speed;
       double wave_min_spectral_frequency = wave_get_min_spectral_frequency(asv->wave); 
       double wave_max_spectral_frequency = wave_get_min_spectral_frequency(asv->wave); 
       asv->dynamics.P_unit_wave_freq_min = get_encounter_frequency(wave_min_spectral_frequency, max_speed_for_spectrum, 0);
       asv->dynamics.P_unit_wave_freq_max = get_encounter_frequency(wave_max_spectral_frequency, max_speed_for_spectrum, PI);
-      
-      // Set the mass matrix
-      set_mass(asv);
-      // Set the drag coefficient matrix
-      set_drag_coefficient(asv);
-      // Set the stiffness matrix
-      set_stiffness(asv);
       // Set the wave force for unit waves
       set_unit_wave_pressure(asv);
       error_msg = asv_get_error_msg(asv);
@@ -723,17 +729,77 @@ struct Asv* asv_new(const struct Asv_specification specification,
         asv_delete(asv);
         return NULL;
       }
-      return asv;
     }
-    else
-    {
-      // Memory allocation failed.
-      return NULL;
-    }
+    // Set the cog position.
+    set_cog(asv); // Match the position of the cog with that of origin
+    
+    // Set the mass matrix
+    set_mass(asv);
+    // Set the drag coefficient matrix
+    set_drag_coefficient(asv);
+    // Set the stiffness matrix
+    set_stiffness(asv);
+    return asv;
   }
   else
   {
-    return NULL;  
+    // Memory allocation failed.
+    return NULL;
+  }
+}
+
+void asv_set_sea_state(struct Asv* asv, const struct Wave* wave)
+{ 
+  if(asv)
+  {
+    clear_error_msg(asv->error_msg);
+    const struct Wave* old_wave = asv->wave;
+    // set the wave for the ASV
+    asv->wave = wave;
+
+    // Initialise all the vectors matrices to zero.
+    for(int i = 0; i < COUNT_ASV_SPECTRAL_FREQUENCIES; ++i)
+    {
+      for(int j = 0; j < 2; ++j)
+      {
+        asv->dynamics.P_unit_wave[i*2 + j] = 0.0;
+      }
+    }
+
+    if(wave)
+    {
+      // Place the asv vertically in the correct position W.R.T wave
+      asv->origin_position.keys.z = wave_get_elevation(asv->wave, asv->origin_position, asv->dynamics.time) - asv->spec.T; 
+      const char* error_msg = wave_get_error_msg(asv->wave);
+      if(error_msg)
+      {
+        set_error_msg(asv->error_msg, error_msg);
+        asv_set_sea_state(asv, old_wave);
+        return;
+      }
+
+      // Set minimum and maximum encounter frequency
+      double max_speed_for_spectrum = 2.0 * asv->spec.max_speed;
+      double wave_min_spectral_frequency = wave_get_min_spectral_frequency(asv->wave); 
+      double wave_max_spectral_frequency = wave_get_min_spectral_frequency(asv->wave); 
+      asv->dynamics.P_unit_wave_freq_min = get_encounter_frequency(wave_min_spectral_frequency, max_speed_for_spectrum, 0);
+      asv->dynamics.P_unit_wave_freq_max = get_encounter_frequency(wave_max_spectral_frequency, max_speed_for_spectrum, PI);
+      
+      // Set the wave force for unit waves
+      set_unit_wave_pressure(asv);
+      if(asv->error_msg)
+      {
+        // Some error occurred in the call to set_unit_wave_pressure.
+        asv_set_sea_state(asv, old_wave);
+        return;
+      }
+    }
+    // Set the cog position.
+    set_cog(asv); // Match the position of the cog with that of origin
+  }
+  else
+  {
+    set_error_msg(asv->error_msg, error_null_pointer);
   }
 }
 
@@ -933,58 +999,6 @@ struct Asv_specification asv_get_spec(struct Asv* asv)
   {
     clear_error_msg(asv->error_msg);
     return asv->spec;
-  }
-  else
-  {
-    set_error_msg(asv->error_msg, error_null_pointer);
-  }
-}
-
-void asv_set_sea_state(struct Asv* asv, const struct Wave* wave)
-{ 
-  const struct Wave* old_wave = asv->wave;
-  if(asv && wave)
-  {
-    clear_error_msg(asv->error_msg);
-    // set the wave for the ASV
-    asv->wave = wave;
-
-    // Initialise all the vectors matrices to zero.
-    for(int i = 0; i < COUNT_ASV_SPECTRAL_FREQUENCIES; ++i)
-    {
-      for(int j = 0; j < 2; ++j)
-      {
-        asv->dynamics.P_unit_wave[i*2 + j] = 0.0;
-      }
-    }
-
-    // Place the asv vertically in the correct position W.R.T wave
-    asv->origin_position.keys.z = wave_get_elevation(asv->wave, asv->origin_position, asv->dynamics.time) - asv->spec.T; 
-    const char* error_msg = wave_get_error_msg(asv->wave);
-    if(error_msg)
-    {
-      set_error_msg(asv->error_msg, error_msg);
-      asv_set_sea_state(asv, old_wave);
-      return;
-    }
-    // Reset the cog position.
-    set_cog(asv); // Match the position of the cog with that of origin
-
-    // Set minimum and maximum encounter frequency
-    double max_speed_for_spectrum = 2.0 * asv->spec.max_speed;
-    double wave_min_spectral_frequency = wave_get_min_spectral_frequency(asv->wave); 
-    double wave_max_spectral_frequency = wave_get_min_spectral_frequency(asv->wave); 
-    asv->dynamics.P_unit_wave_freq_min = get_encounter_frequency(wave_min_spectral_frequency, max_speed_for_spectrum, 0);
-    asv->dynamics.P_unit_wave_freq_max = get_encounter_frequency(wave_max_spectral_frequency, max_speed_for_spectrum, PI);
-    
-    // Set the wave force for unit waves
-    set_unit_wave_pressure(asv);
-    if(asv->error_msg)
-    {
-      // Some error occurred in the call to set_unit_wave_pressure.
-      asv_set_sea_state(asv, old_wave);
-      return;
-    }
   }
   else
   {

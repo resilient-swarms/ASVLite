@@ -37,8 +37,8 @@ int main(int argc, char** argv)
   // simulation_tune_controller(simulation);
   // ...or
   // set gain term manually 
-  double k_position[3] = {1.0, 1.5, 4.0};
-  double k_heading[3]  = {6.0, -0.5, 12.0};
+  double k_position[3] = {-1.0, 0.5, 1.5};
+  double k_heading[3]  = {0.0, 0.0, 0.5};
   simulation_set_controller(simulation, k_position, k_heading);
 
   // Simulate and record the time taken for the simulation.

@@ -316,13 +316,9 @@ static double simulate_for_tunning(struct Asv* asv, double* k_position, double* 
   double error = -1.0;
   if(asv)
   {
-    double min_significant_wave_height = 1.0; // m
-    double max_significant_wave_height = 1.0; // m
-    double delta_significant_wave_height = 1.0; // m
-    int count_significant_wave_heights = (max_significant_wave_height - min_significant_wave_height)/delta_significant_wave_height + 1;
     double delta_asv_heading = PI/4.0;
     int count_asv_headings = (2.0*PI)/delta_asv_heading;
-    int count_asvs = count_significant_wave_heights * count_asv_headings;
+    int count_asvs = count_asv_headings;
     int count_thrusters = asv_get_count_thrusters(asv);
     struct Asv** asvs = (struct Asv**)malloc(sizeof(struct Asv*) * count_asvs);
     union Coordinates_3D start_point;
@@ -335,37 +331,28 @@ static double simulate_for_tunning(struct Asv* asv, double* k_position, double* 
     waypoint.keys.z = 0.0;
 
     int j = 0;
-    for(double significant_wave_height = min_significant_wave_height; 
-        significant_wave_height <= max_significant_wave_height; 
-        significant_wave_height += delta_significant_wave_height)
+    for(double asv_heading = 0.0; asv_heading < 2.0*PI; asv_heading += PI/4.0)
     {
-      for(double asv_heading = 0.0; asv_heading < 2.0*PI; asv_heading += PI/4.0)
+      // Create the still sea surface.
+      struct Wave* wave = NULL;
+      // Create the thrusters for the ASV by copying data from the existing ASV. 
+      struct Thruster** thrusters = asv_get_thrusters(asv);
+      struct Thruster** new_thrusters = (struct Thruster**)malloc(sizeof(struct Thruster*)*count_thrusters);
+      for(int i = 0; i < count_thrusters; ++i)
       {
-        // Create the sea surface.
-        double wave_heading = 0.0;
-        int rand_seed = 1;
-        int count_wave_spectral_directions  = 5;
-        int count_wave_spectral_frequencies = 15;
-        struct Wave* wave = wave_new(significant_wave_height, wave_heading, rand_seed, count_wave_spectral_directions, count_wave_spectral_frequencies);
-        // Create the thrusters for the ASV by copying data from the existing ASV. 
-        struct Thruster** thrusters = asv_get_thrusters(asv);
-        struct Thruster** new_thrusters = (struct Thruster**)malloc(sizeof(struct Thruster*)*count_thrusters);
-        for(int i = 0; i < count_thrusters; ++i)
-        {
-          union Coordinates_3D position = thruster_get_position(thrusters[i]);
-          new_thrusters[i] = thruster_new(position);
-        }
-        // Create ASV
-        union Coordinates_3D start_attitude;
-        start_attitude.keys.x = 0;
-        start_attitude.keys.y = 0;
-        start_attitude.keys.z = asv_heading;        
-        struct Asv_specification spec = asv_get_spec(asv);
-        struct Asv* new_asv = asv_new(spec, wave, start_point, start_attitude);
-        asv_set_thrusters(new_asv, new_thrusters, count_thrusters);
-        free(new_thrusters);
-        asvs[j++] = new_asv;
+        union Coordinates_3D position = thruster_get_position(thrusters[i]);
+        new_thrusters[i] = thruster_new(position);
       }
+      // Create ASV
+      union Coordinates_3D start_attitude;
+      start_attitude.keys.x = 0;
+      start_attitude.keys.y = 0;
+      start_attitude.keys.z = asv_heading;        
+      struct Asv_specification spec = asv_get_spec(asv);
+      struct Asv* new_asv = asv_new(spec, wave, start_point, start_attitude);
+      asv_set_thrusters(new_asv, new_thrusters, count_thrusters);
+      free(new_thrusters);
+      asvs[j++] = new_asv;
     }
 
     // Create simulation
@@ -558,47 +545,47 @@ void controller_tune(struct Controller* controller)
 
       // (1) Set the new gain terms using method of average 
       // ------
-      double average_costs_p_position[3]; // [k-delta, k, k+delta]
-      double average_costs_i_position[3];
-      double average_costs_d_position[3];
-      double average_costs_p_heading[3]; 
-      double average_costs_i_heading[3];
-      double average_costs_d_heading[3];
-      // Find average cost for each case
-      int min_index_position_p = compute_and_set_average_costs(costs, 0, average_costs_p_position, p_position);
-      int min_index_position_i = compute_and_set_average_costs(costs, 1, average_costs_i_position, i_position);
-      int min_index_position_d = compute_and_set_average_costs(costs, 2, average_costs_d_position, d_position);
-      int min_index_heading_p = compute_and_set_average_costs(costs, 3, average_costs_p_heading, p_heading);
-      int min_index_heading_i = compute_and_set_average_costs(costs, 4, average_costs_i_heading, i_heading);
-      int min_index_heading_d = compute_and_set_average_costs(costs, 5, average_costs_d_heading, d_heading);
-      // Set the new gain terms
-      k_position[0] = p_position[min_index_position_p];
-      k_position[1] = i_position[min_index_position_i];
-      k_position[2] = d_position[min_index_position_d];
-      k_heading[0]  = p_heading[min_index_heading_p];
-      k_heading[1]  = i_heading[min_index_heading_i];
-      k_heading[2]  = d_heading[min_index_heading_d];
+      // double average_costs_p_position[3]; // [k-delta, k, k+delta]
+      // double average_costs_i_position[3];
+      // double average_costs_d_position[3];
+      // double average_costs_p_heading[3]; 
+      // double average_costs_i_heading[3];
+      // double average_costs_d_heading[3];
+      // // Find average cost for each case
+      // int min_index_position_p = compute_and_set_average_costs(costs, 0, average_costs_p_position, p_position);
+      // int min_index_position_i = compute_and_set_average_costs(costs, 1, average_costs_i_position, i_position);
+      // int min_index_position_d = compute_and_set_average_costs(costs, 2, average_costs_d_position, d_position);
+      // int min_index_heading_p = compute_and_set_average_costs(costs, 3, average_costs_p_heading, p_heading);
+      // int min_index_heading_i = compute_and_set_average_costs(costs, 4, average_costs_i_heading, i_heading);
+      // int min_index_heading_d = compute_and_set_average_costs(costs, 5, average_costs_d_heading, d_heading);
+      // // Set the new gain terms
+      // k_position[0] = p_position[min_index_position_p];
+      // k_position[1] = i_position[min_index_position_i];
+      // k_position[2] = d_position[min_index_position_d];
+      // k_heading[0]  = p_heading[min_index_heading_p];
+      // k_heading[1]  = i_heading[min_index_heading_i];
+      // k_heading[2]  = d_heading[min_index_heading_d];
       // ------
 
       // (2) Set the new gain terms using method of min cost
       // ------
-      // double min_cost = __DBL_MAX__;
-      // int min_index = -1;
-      // for(int i = 0; i < pow(3,6); ++i)
-      // {
-      //   if(costs[i][6] < min_cost)
-      //   {
-      //     min_cost = costs[i][6];
-      //     min_index = i;
-      //   }
-      // }
-      // // Set the new gain terms
-      // k_position[0] = costs[min_index][0];
-      // k_position[1] = costs[min_index][1];
-      // k_position[2] = costs[min_index][2];
-      // k_heading[0]  = costs[min_index][3];
-      // k_heading[1]  = costs[min_index][4];
-      // k_heading[2]  = costs[min_index][5];
+      double min_cost = __DBL_MAX__;
+      int min_index = -1;
+      for(int i = 0; i < pow(3,6); ++i)
+      {
+        if(costs[i][6] < min_cost)
+        {
+          min_cost = costs[i][6];
+          min_index = i;
+        }
+      }
+      // Set the new gain terms
+      k_position[0] = costs[min_index][0];
+      k_position[1] = costs[min_index][1];
+      k_position[2] = costs[min_index][2];
+      k_heading[0]  = costs[min_index][3];
+      k_heading[1]  = costs[min_index][4];
+      k_heading[2]  = costs[min_index][5];
       // ------
 
       // Clean memory
