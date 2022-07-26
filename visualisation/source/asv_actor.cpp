@@ -1,5 +1,6 @@
 #include "asv_actor.h"
 #include "exception.h"
+#include "constants.h"
 #include <iostream>
 #include <iomanip>
 
@@ -15,8 +16,9 @@ Asv_actor::Asv_actor(struct Asv* asv):
   // Initialise the cylinder geometry.
   cylinder = vtkSmartPointer<vtkCylinderSource>::New();
   cylinder->SetResolution(8);
-  cylinder->SetRadius(asv->spec.B_wl/2.0);
-  cylinder->SetHeight(asv->spec.D);
+  struct Asv_specification spec = asv_get_spec(asv);
+  cylinder->SetRadius(spec.B_wl/2.0);
+  cylinder->SetHeight(spec.D);
   cylinder->Update();
 
   // Initialize the mapper and actor
@@ -27,9 +29,10 @@ Asv_actor::Asv_actor(struct Asv* asv):
   asv_actor->GetProperty()->SetColor(1.0000, 0.3882, 0.2784);
 
   // Set the position at time step 0
-  double x = asv->origin_position.x;
-  double y = asv->origin_position.y;
-  double z = asv->origin_position.z + asv->spec.D/2.0; // The SetPosition() takes the coordinates of the centre of the ASV.
+  union Coordinates_3D origin_position = asv_get_position_origin(asv);
+  double x = origin_position.keys.x;
+  double y = origin_position.keys.y;
+  double z = origin_position.keys.z + spec.D/2.0; // The SetPosition() takes the coordinates of the centre of the ASV.
   asv_actor->SetPosition(x, y, z);
   //asv_actor->GetProperty()->SetRepresentationToWireframe();
 
@@ -43,9 +46,10 @@ Asv_actor::Asv_actor(struct Asv* asv):
   // z-axis changes ASV pitch by theta deg towards aft.
 
   // Set the orientation of the vehicle.
-  yaw = asv->attitude.z * 360.0/PI;
-  roll = asv->attitude.x * 360.0/PI;
-  pitch = asv->attitude.y * 360.0/PI; 
+  union Coordinates_3D attitude = asv_get_attitude(asv);
+  yaw   = attitude.keys.z * 360.0/PI;
+  roll  = attitude.keys.x * 360.0/PI;
+  pitch = attitude.keys.y * 360.0/PI; 
   asv_actor->RotateY(-yaw);
   asv_actor->RotateX(roll);
   asv_actor->RotateZ(pitch);
@@ -61,15 +65,18 @@ void Asv_actor::Execute(vtkObject* caller, unsigned long eventId,
                        void* vtkNotUsed(callData))
 {
   // Set the ASV position for current time step
-  double x = asv->origin_position.x;
-  double y = asv->origin_position.y;
-  double z = asv->origin_position.z + asv->spec.D/2.0; // The SetPosition() takes the coordinates of the centre of the ASV.
+  struct Asv_specification spec = asv_get_spec(asv);
+  union Coordinates_3D origin_position = asv_get_position_origin(asv);
+  double x = origin_position.keys.x;
+  double y = origin_position.keys.y;
+  double z = origin_position.keys.z + spec.D/2.0; // The SetPosition() takes the coordinates of the centre of the ASV.
   asv_actor->SetPosition(x, y, z);
 
   // Set the ASV attitude for current time step
-  double new_yaw = asv->attitude.z * 360.0/PI;
-  double new_roll = asv->attitude.x * 360.0/PI;
-  double new_pitch = asv->attitude.y * 360.0/PI; 
+  union Coordinates_3D attitude = asv_get_attitude(asv);
+  double new_yaw   = attitude.keys.z * 360.0/PI;
+  double new_roll  = attitude.keys.x * 360.0/PI;
+  double new_pitch = attitude.keys.y * 360.0/PI; 
   asv_actor->RotateY(new_yaw - yaw);
   asv_actor->RotateX(new_roll - roll);
   asv_actor->RotateZ(new_pitch - pitch);
