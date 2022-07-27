@@ -64,7 +64,7 @@ struct Asv
   struct Asv_specification spec; //!< ASV specification.
   int count_thrusters;           //!< Number of thrusters attached to the ASV.
   struct Thruster** thrusters;   //!< Array of thrusters.
-  const struct Wave* wave;       //!< Irregular wave instance. 
+  struct Wave* wave;       //!< Irregular wave instance. 
   
   // Initial used for input but later contains results. 
   union Coordinates_3D origin_position; //!< Position of the origin of the body-fixed frame in 
@@ -666,7 +666,7 @@ struct Asv* asv_new(const struct Asv_specification specification,
     asv->dynamics.time = 0.0;
 
     // set the wave for the ASV
-    asv->wave = wave;
+    asv->wave = (struct Wave*)wave;
 
     // Initialise all the vectors matrices to zero.
     if(asv->dynamics.P_unit_wave = (double*)malloc(sizeof(double) * COUNT_ASV_SPECTRAL_FREQUENCIES * 2))
@@ -755,7 +755,7 @@ void asv_set_sea_state(struct Asv* asv, const struct Wave* wave)
     clear_error_msg(asv->error_msg);
     const struct Wave* old_wave = asv->wave;
     // set the wave for the ASV
-    asv->wave = wave;
+    asv->wave = (struct Wave*)wave;
 
     // Initialise all the vectors matrices to zero.
     for(int i = 0; i < COUNT_ASV_SPECTRAL_FREQUENCIES; ++i)
@@ -895,7 +895,7 @@ int asv_get_count_thrusters(struct Asv* asv)
   }
 }
 
-const struct Wave* asv_get_wave(struct Asv* asv)
+struct Wave* asv_get_wave(struct Asv* asv)
 {
   if(asv)
   {

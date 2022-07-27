@@ -1121,6 +1121,14 @@ void simulation_run_upto_time(struct Simulation* first_node, double max_time)
   simulation_run_upto_waypoint(first_node);
 }
 
+void simulation_run_a_timestep(struct Simulation* first_node)
+{
+  for(struct Simulation* node = first_node; node != NULL; node = node->next)
+  {
+    simulation_run_per_node_per_time_step(first_node);
+  }
+}
+
 
 struct Buffer* simulation_get_buffer(struct Simulation* first_node, struct Asv* asv)
 {
@@ -1169,6 +1177,55 @@ long simulation_get_buffer_length(struct Simulation* first_node, struct Asv* asv
     fprintf(stdout, "Could not find the buffer. \n");
     exit(1);
   }
+}
+
+long simulation_get_buffer_size()
+{
+  return OUTPUT_BUFFER_SIZE;
+}
+
+union Coordinates_3D simulation_get_waypoint(struct Simulation* first_node, struct Asv* asv)
+{
+  // Find the asv from the linked list
+  struct Simulation* node = NULL;
+  for(struct Simulation* current_node = first_node; current_node != NULL; current_node = current_node->next)
+  {
+    if(current_node->asv == asv)
+    {
+      // Found it. 
+      node = current_node;
+      break;
+    }
+  }
+  if(node)
+  {
+    return node->waypoints[node->current_waypoint_index];
+  }
+  else
+  {
+    fprintf(stdout, "Could not find the buffer. \n");
+    exit(1);
+  }
+}
+
+int simulation_get_count_asvs(struct Simulation* first_node)
+{
+  int i = 0;
+  for(struct Simulation* node = first_node; node != NULL; node = node->next)
+  {
+    ++i;
+  }
+  return i;
+}
+
+int simulation_get_asvs(struct Simulation* first_node, struct Asv** asvs)
+{
+  int i = 0;
+  for(struct Simulation* node = first_node; node != NULL; node = node->next)
+  {
+    asvs[i++] = node->asv;
+  }
+  return i;
 }
 
 

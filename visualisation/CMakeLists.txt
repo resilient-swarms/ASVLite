@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0)
 
-PROJECT(ASVLite-visualisation)
+PROJECT(ASVLite_visualisation)
 
 # FIND LIBRARIES
 # --------------
@@ -34,6 +34,8 @@ INCLUDE_DIRECTORIES(
 # simulator source files
 SET( SOURCE
   ../dependency/tomlc99/toml.c
+  ../source/geometry.c
+  ../source/errors.c
   ../source/simulation.c
   ../source/regular_wave.c
   ../source/wave.c
@@ -52,12 +54,12 @@ SET( SOURCE
 
 # CREATE BINARIES
 # ---------------
-ADD_EXECUTABLE(ASVLite-visualisation ${SOURCE})
+ADD_EXECUTABLE(ASVLite_visualisation ${SOURCE})
 
 # LINK LIBRARIES 
 # --------------
-TARGET_LINK_LIBRARIES(ASVLite-visualisation m ${VTK_LIBRARIES})
+TARGET_LINK_LIBRARIES(ASVLite_visualisation m ${VTK_LIBRARIES})
 vtk_module_autoinit(
-  TARGETS ASVLite-visualisation
+  TARGETS ASVLite_visualisation
   MODULES ${VTK_LIBRARIES}
 )

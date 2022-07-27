@@ -98,6 +98,11 @@ void simulation_run_upto_waypoint(struct Simulation* simulation);
 void simulation_run_upto_time(struct Simulation* simulation, double max_time);
 
 /**
+ * Simulate the next time step. 
+ */
+void simulation_run_a_timestep(struct Simulation* simulation);
+
+/**
  * Visualisation data from input file. Function to get the sea surface edge length in meter.
  */
 double get_sea_surface_edge_length();
@@ -114,14 +119,37 @@ int get_count_mesh_cells_along_edge();
 union Coordinates_3D get_sea_surface_position();
 
 /**
- * Get the buffer associated with the simulation of an asv. 
+ * Get the buffer size associated with the simulation of an asv. Buffer length <= buffer size.
  */
-struct Buffer* simulation_get_buffer(struct Simulation* simulation, struct Asv* asv);
+long simulation_get_buffer_size();
 
 /**
  * Get the buffer length associated with the simulation of an asv. 
  */
 long simulation_get_buffer_length(struct Simulation* simulation, struct Asv* asv);
+
+/**
+ * Get the buffer associated with the simulation of an asv. 
+ */
+struct Buffer* simulation_get_buffer(struct Simulation* simulation, struct Asv* asv);
+
+/**
+ * Function to get the total number of asvs simulated. 
+ */
+int simulation_get_count_asvs(struct Simulation* simulation);
+
+/**
+ * Get the current waypoint for an asv.
+ */
+union Coordinates_3D simulation_get_waypoint(struct Simulation* simulation, struct Asv* asv);
+
+/**
+ * Function to get all asvs simulated.
+ * @param asvs is the return array with pointers to the asvs simulated. The function assumes that 
+ * the caller has allocated sufficient size for asvs to contain all the pointers to be placed in it.
+ * @return the number of pointers placed into the argument asvs. 
+ */
+int simulation_get_asvs(struct Simulation* simulation, struct Asv** asvs);
 
 /**
  * Get the position of the asv recorded in the buffer at given index.
