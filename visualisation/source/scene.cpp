@@ -59,14 +59,46 @@ Scene::Scene(struct Simulation* first_node): vtkCommand{}
   }
 
   // Set the sea surface mesh 
-  double field_length = get_sea_surface_edge_length();
-  int grid_count = get_count_mesh_cells_along_edge();
-  union Coordinates_3D sea_surface_position = get_sea_surface_position();
+  double max_x = 0.0;
+  double max_y = 0.0;
+  double min_x = __DBL_MAX__;
+  double min_y = __DBL_MAX__;
+  for(int i = 0; i < count_asvs; ++i)
+  {
+    union Coordinates_3D asv_position = asv_get_position_cog(asvs[i]);
+    max_x = (asv_position.keys.x > max_x)? asv_position.keys.x : max_x;
+    max_y = (asv_position.keys.y > max_y)? asv_position.keys.y : max_y;
+    min_x = (asv_position.keys.x < min_x)? asv_position.keys.x : min_x;
+    min_y = (asv_position.keys.y < min_y)? asv_position.keys.y : min_y;
+
+    int count_waypoints = simulation_get_count_waypoints(first_node, asvs[i]);
+    union Coordinates_3D* waypoints = simulation_get_waypoints(first_node, asvs[i]);
+    for(int j=0; j<count_waypoints; ++j)
+    {
+      union Coordinates_3D waypoint = waypoints[j];
+      max_x = (waypoint.keys.x > max_x)? waypoint.keys.x : max_x;
+      max_y = (waypoint.keys.y > max_y)? waypoint.keys.y : max_y;
+      min_x = (waypoint.keys.x < min_x)? waypoint.keys.x : min_x;
+      min_y = (waypoint.keys.y < min_y)? waypoint.keys.y : min_y;
+    }
+  }
+  double field_length_x = max_x - min_x;
+  double field_length_y = max_y - min_y;
+  double field_length = (field_length_x >= field_length_y)? field_length_x : field_length_y;
+
+  union Coordinates_3D sea_surface_position;
+  sea_surface_position.keys.x = min_x; //m
+  sea_surface_position.keys.y = min_y; //m
+  sea_surface_position.keys.z = 0.0; //m
+
+  int grid_count = 50;
+
+  // Clean the memory
+  delete[] asvs;
+
   sea_surface_actor->set_field_length(field_length);
   sea_surface_actor->set_sea_surface_grid_count(grid_count);
   sea_surface_actor->set_sea_surface_position(sea_surface_position);
-
-  delete[] asvs;
 }
 
 void Scene::start()
@@ -132,7 +164,8 @@ void Scene::Execute(vtkObject *caller,
     {
       buffer_exceeded = true;
     }
-  }  
+  } 
+  delete[] asvs; 
 
   // stop if all reached the destination or if buffer exceeded.
   if(has_any_reached_final_waypoint || buffer_exceeded)

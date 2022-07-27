@@ -245,21 +245,6 @@ static void simulation_spawn_nodes_without_time_sync(struct Simulation* first_no
   }
 }
 
-double get_sea_surface_edge_length()
-{
-  return sea_surface_edge_length;
-}
-
-int get_count_mesh_cells_along_edge()
-{
-  return count_mesh_cells_along_edge;
-}
-
-union Coordinates_3D get_sea_surface_position()
-{
-  return sea_surface_position;
-}
-
 struct Simulation* simulation_new_node()
 {
   // Initialise memory
@@ -1149,7 +1134,7 @@ struct Buffer* simulation_get_buffer(struct Simulation* first_node, struct Asv* 
   }
   else
   {
-    fprintf(stdout, "Could not find the buffer. \n");
+    fprintf(stdout, "Could not find the asv. \n");
     exit(1);
   }
 }
@@ -1174,7 +1159,7 @@ long simulation_get_buffer_length(struct Simulation* first_node, struct Asv* asv
   }
   else
   {
-    fprintf(stdout, "Could not find the buffer. \n");
+    fprintf(stdout, "Could not find the asv. \n");
     exit(1);
   }
 }
@@ -1203,7 +1188,55 @@ union Coordinates_3D simulation_get_waypoint(struct Simulation* first_node, stru
   }
   else
   {
-    fprintf(stdout, "Could not find the buffer. \n");
+    fprintf(stdout, "Could not find the asv. \n");
+    exit(1);
+  }
+}
+
+int simulation_get_count_waypoints(struct Simulation* first_node, struct Asv* asv)
+{
+  // Find the asv from the linked list
+  struct Simulation* node = NULL;
+  for(struct Simulation* current_node = first_node; current_node != NULL; current_node = current_node->next)
+  {
+    if(current_node->asv == asv)
+    {
+      // Found it. 
+      node = current_node;
+      break;
+    }
+  }
+  if(node)
+  {
+    return node->count_waypoints;
+  }
+  else
+  {
+    fprintf(stdout, "Could not find the asv. \n");
+    exit(1);
+  }
+}
+
+union Coordinates_3D* simulation_get_waypoints(struct Simulation* first_node, struct Asv* asv)
+{
+  // Find the asv from the linked list
+  struct Simulation* node = NULL;
+  for(struct Simulation* current_node = first_node; current_node != NULL; current_node = current_node->next)
+  {
+    if(current_node->asv == asv)
+    {
+      // Found it. 
+      node = current_node;
+      break;
+    }
+  }
+  if(node)
+  {
+    return node->waypoints;
+  }
+  else
+  {
+    fprintf(stdout, "Could not find the asv. \n");
     exit(1);
   }
 }

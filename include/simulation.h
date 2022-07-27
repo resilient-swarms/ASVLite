@@ -103,22 +103,6 @@ void simulation_run_upto_time(struct Simulation* simulation, double max_time);
 void simulation_run_a_timestep(struct Simulation* simulation);
 
 /**
- * Visualisation data from input file. Function to get the sea surface edge length in meter.
- */
-double get_sea_surface_edge_length();
-
-/** 
- * Visualisation data from input file. Function to get the number of mesh cells along 
- * one edge of the sea surface.
- */
-int get_count_mesh_cells_along_edge();
-
-/**
- * Visualisation data from input file. Function to get the bottom left corner of the simulated sea surface.
- */
-union Coordinates_3D get_sea_surface_position();
-
-/**
  * Get the buffer size associated with the simulation of an asv. Buffer length <= buffer size.
  */
 long simulation_get_buffer_size();
@@ -142,6 +126,16 @@ int simulation_get_count_asvs(struct Simulation* simulation);
  * Get the current waypoint for an asv.
  */
 union Coordinates_3D simulation_get_waypoint(struct Simulation* simulation, struct Asv* asv);
+
+/**
+ * Get the number of waypoints for the asv.
+ */
+int simulation_get_count_waypoints(struct Simulation* simulation, struct Asv* asv);
+
+/**
+ * Function to get all waypoints for an asv.
+ */
+union Coordinates_3D* simulation_get_waypoints(struct Simulation* simulation, struct Asv* asv);
 
 /**
  * Function to get all asvs simulated.

@@ -22,12 +22,3 @@ waypoints = [[1000.0, 1100.0], [1100.0, 1100.0]] # [[X(m), Y(m)]] or [X(latitude
 
 [clock]
 time_step_size = 40 # milli-sec
-
-[visualisation]
-sea_surface_edge_length = 10.0 #m
-sea_surface_position = [1000.0, 1000.0] # Position of the bottom-left corner of the simulated surface.
-count_mesh_cells_along_edge = 10 # Number of mesh cells along one edge of the sea surface. A larger number means a finer sea surface mesh.
-
-[cyclone]
-hs_nc = ["hs1.nc", "hs2.nc", "hs2.nc"] # List of netCDF files for wave heights listed in chronological order. 
-dp_nc = ["dp1.nc", "dp2.nc", "dp3.nc"] # List of netCDF files for wave heading listed in chronological order.
