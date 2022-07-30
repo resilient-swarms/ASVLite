@@ -93,21 +93,6 @@ void simulation_run_upto_time(struct Simulation* simulation, double max_time, ch
 void simulation_run_a_timestep(struct Simulation* simulation);
 
 /**
- * Get the buffer size associated with the simulation of an asv. Buffer length <= buffer size.
- */
-long simulation_get_buffer_size();
-
-/**
- * Get the buffer length associated with the simulation of an asv. 
- */
-long simulation_get_buffer_length(struct Simulation* simulation, struct Asv* asv);
-
-/**
- * Get the buffer associated with the simulation of an asv. 
- */
-struct Buffer* simulation_get_buffer(struct Simulation* simulation, struct Asv* asv);
-
-/**
  * Function to get the total number of asvs simulated. 
  */
 int simulation_get_count_asvs(struct Simulation* simulation);

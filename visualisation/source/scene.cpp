@@ -145,7 +145,6 @@ void Scene::Execute(vtkObject *caller,
   // Compute for current time step.
   simulation_run_a_timestep(first_node);
   bool has_any_reached_final_waypoint = false;
-  bool buffer_exceeded = false;
   int count_asvs = simulation_get_count_asvs(first_node);
   struct Asv** asvs = new struct Asv*[count_asvs];
   simulation_get_asvs(first_node, asvs);
@@ -158,17 +157,11 @@ void Scene::Execute(vtkObject *caller,
     {
       has_any_reached_final_waypoint = true;
     }
-    long buffer_size = simulation_get_buffer_size();
-    long buffer_length = simulation_get_buffer_length(first_node, asvs[i]);
-    if(buffer_length >= buffer_size)
-    {
-      buffer_exceeded = true;
-    }
   } 
   delete[] asvs; 
 
-  // stop if all reached the destination or if buffer exceeded.
-  if(has_any_reached_final_waypoint || buffer_exceeded)
+  // stop if all reached the destination.
+  if(has_any_reached_final_waypoint)
   {
     // stop simulation
     interactor->ExitCallback();
