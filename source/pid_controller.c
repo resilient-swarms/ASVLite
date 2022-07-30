@@ -380,7 +380,7 @@ static double simulate_for_tunning(struct Asv* asv, double* k_position, double* 
     
     // Run simulation for a set period of time.
     double max_time = 2000.0; // seconds
-    simulation_run_upto_time(simulation, max_time);
+    simulation_run_upto_time(simulation, max_time, NULL);
 
     // Compute error
     double sum_error = 0.0;

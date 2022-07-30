@@ -75,27 +75,17 @@ void simulation_set_controller(struct Simulation* simulation, double* gain_posit
 void simulation_tune_controller(struct Simulation* simulation);
 
 /**
- * Function to write the simulated data to file. 
- * @param out is the path to the output director or file. If the linked list contain only one simulation
- * then out is the name of the ouput file, else out is the name of the directory which will contain 
- * output files corresponding to each simulation.
- * @param simulation_time in sec.
+ * Simulate vehicle dynamics for each time step till the vehicle reaches the last waypoint.
+ * The function writes the results of the simulation into a file in the given output directory.
  */
-void simulation_write_output(struct Simulation* simulation,
-                             char* out, 
-                             double simulation_time);
-
-
-/**
- * Simulate vehicle dynamics for each time step till the vehicle reaches the last waypoint. 
- */
-void simulation_run_upto_waypoint(struct Simulation* simulation);
+void simulation_run_upto_waypoint(struct Simulation* simulation, char* out_dir);
 
 /**
  * Simulate vehicle dynamics for each time step for a fixed time. 
+ * The function writes the results of the simulation into a file in the given output directory.
  * @param max_time is the time to stop simulation.
  */
-void simulation_run_upto_time(struct Simulation* simulation, double max_time);
+void simulation_run_upto_time(struct Simulation* simulation, double max_time, char* out_dir);
 
 /**
  * Simulate the next time step. 
@@ -148,6 +138,6 @@ int simulation_get_asvs(struct Simulation* simulation, struct Asv** asvs);
 /**
  * Get the position of the asv recorded in the buffer at given index.
  */
-union Coordinates_3D buffer_get_asv_position_at(struct Buffer* buffer, int index);
+union Coordinates_3D simulation_get_asv_position_at(struct Simulation* simulation, struct Asv* asv, int index);
 
 #endif // SIMULATION_H
