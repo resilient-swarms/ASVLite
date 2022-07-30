@@ -59,8 +59,10 @@ struct Simulation
   // Data related to current time step
   double time_step_size; // milliseconds
   long current_time_index;
+  int buffer_index;
   double max_time; // seconds
   int current_waypoint_index;
+
   // Link pointers
   struct Simulation* previous; // previous in the linked list.
   struct Simulation* next; // next in the linked list.
@@ -111,7 +113,7 @@ static void simulation_write_output(struct Simulation* node, char* out_dir)
             "heading(deg) ");
   }
   // write buffer to file and close the file.
-  for (int i = 0; i < node->current_time_index; ++i)
+  for (int i = 0; i < node->buffer_index; ++i)
   {
     fprintf(fp, "\n%f %f %f %f %f %f %f %f %f %f %f %f %f",
             node->buffer[i].time,
@@ -156,19 +158,19 @@ static void* simulation_run_per_node_per_time_step(void* current_node)
   union Coordinates_3D attitude = asv_get_attitude(node->asv);
 
   // save simulated data to buffer. 
-  node->buffer[node->current_time_index].time               = current_time;
-  node->buffer[node->current_time_index].sig_wave_ht        = wave_get_significant_height(node->wave);
-  node->buffer[node->current_time_index].wave_heading       = wave_get_predominant_heading(node->wave) * 180.0/PI;
-  node->buffer[node->current_time_index].wave_elevation     = wave_get_elevation(node->wave, cog_position, current_time);
-  node->buffer[node->current_time_index].F_surge            = asv_get_F(node->asv).keys.pitch;
-  node->buffer[node->current_time_index].surge_acceleration = asv_get_A(node->asv).keys.surge;
-  node->buffer[node->current_time_index].surge_velocity     = asv_get_V(node->asv).keys.surge;
-  node->buffer[node->current_time_index].cog_x              = cog_position.keys.x;
-  node->buffer[node->current_time_index].cog_y              = cog_position.keys.y;
-  node->buffer[node->current_time_index].cog_z              = cog_position.keys.z - (spec.cog.keys.z - spec.T);
-  node->buffer[node->current_time_index].heel               = attitude.keys.x * 180.0/PI;
-  node->buffer[node->current_time_index].trim               = attitude.keys.y * 180.0/PI;
-  node->buffer[node->current_time_index].heading            = attitude.keys.z * 180.0/PI;
+  node->buffer[node->buffer_index].time               = current_time;
+  node->buffer[node->buffer_index].sig_wave_ht        = wave_get_significant_height(node->wave);
+  node->buffer[node->buffer_index].wave_heading       = wave_get_predominant_heading(node->wave) * 180.0/PI;
+  node->buffer[node->buffer_index].wave_elevation     = wave_get_elevation(node->wave, cog_position, current_time);
+  node->buffer[node->buffer_index].F_surge            = asv_get_F(node->asv).keys.pitch;
+  node->buffer[node->buffer_index].surge_acceleration = asv_get_A(node->asv).keys.surge;
+  node->buffer[node->buffer_index].surge_velocity     = asv_get_V(node->asv).keys.surge;
+  node->buffer[node->buffer_index].cog_x              = cog_position.keys.x;
+  node->buffer[node->buffer_index].cog_y              = cog_position.keys.y;
+  node->buffer[node->buffer_index].cog_z              = cog_position.keys.z - (spec.cog.keys.z - spec.T);
+  node->buffer[node->buffer_index].heel               = attitude.keys.x * 180.0/PI;
+  node->buffer[node->buffer_index].trim               = attitude.keys.y * 180.0/PI;
+  node->buffer[node->buffer_index].heading            = attitude.keys.z * 180.0/PI;
 
   // Check if reached the waypoint
   double proximity_margin = 5.0; // target proximity to waypoint
@@ -182,6 +184,8 @@ static void* simulation_run_per_node_per_time_step(void* current_node)
     // if the current_waypoint_index == waypoint.count ==> reached final waypoint.
     ++(node->current_waypoint_index);
   }
+  // Increment buffer counter
+  ++(node->buffer_index);
   return NULL;
 }
 
@@ -199,7 +203,7 @@ static void* simulation_run_per_node_without_time_sync(void* args)
     {
       // Not yet reached the final waypoint, but check if buffer limit reached before further computation.
       // Check if buffer exceeded
-      if(node->current_time_index >= OUTPUT_BUFFER_SIZE)
+      if(node->buffer_index >= OUTPUT_BUFFER_SIZE)
       {
         // Buffer exceeded. Dump buffer to output file.
         if(out_dir)
@@ -210,6 +214,8 @@ static void* simulation_run_per_node_without_time_sync(void* args)
         {
           // No out_dir provided. Skip writing output to file.
         }
+        // Reset the buffer
+        node->buffer_index = 0;
       }
       if(node->error_msg)
       {
@@ -256,7 +262,7 @@ static void simulation_spawn_nodes_with_time_sync(void* args)
         {
           // Not yet reached the final waypoint, but check if buffer limit reached before further computation.
           // Check if buffer exceeded
-          if(node->current_time_index >= OUTPUT_BUFFER_SIZE)
+          if(node->buffer_index >= OUTPUT_BUFFER_SIZE)
           {
             // Buffer exceeded. Dump buffer to output file.
             if(out_dir)
@@ -267,6 +273,8 @@ static void simulation_spawn_nodes_with_time_sync(void* args)
             {
               // No out_dir provided. Skip writing output to file.
             }      
+            // Reset buffer
+            node->buffer_index = 0;
           }
           has_all_reached_final_waypoint = false;
           struct Thread_args args;
@@ -1231,7 +1239,7 @@ long simulation_get_buffer_length(struct Simulation* first_node, struct Asv* asv
     }
     if(node)
     {
-      return node->current_time_index;
+      return node->buffer_index;
     }
     else
     {
@@ -1407,7 +1415,7 @@ union Coordinates_3D simulation_get_asv_position_at(struct Simulation* first_nod
     }
     if(node)
     {
-      if(index >= 0 && index < node->current_time_index)
+      if(index >= 0 && index < node->buffer_index)
       {
         union Coordinates_3D position;
         position.keys.x = node->buffer[index].cog_x;
