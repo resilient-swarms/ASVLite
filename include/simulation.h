@@ -98,6 +98,14 @@ void simulation_run_a_timestep(struct Simulation* simulation);
 int simulation_get_count_asvs(struct Simulation* simulation);
 
 /**
+ * Function to get all asvs simulated.
+ * @param asvs is the return array with pointers to the asvs simulated. The function assumes that 
+ * the caller has allocated sufficient size for asvs to contain all the pointers to be placed in it.
+ * @return the number of pointers placed into the argument asvs. 
+ */
+int simulation_get_asvs(struct Simulation* simulation, struct Asv** asvs);
+
+/**
  * Get the current waypoint for an asv.
  */
 union Coordinates_3D simulation_get_waypoint(struct Simulation* simulation, struct Asv* asv);
@@ -111,14 +119,6 @@ int simulation_get_count_waypoints(struct Simulation* simulation, struct Asv* as
  * Function to get all waypoints for an asv.
  */
 union Coordinates_3D* simulation_get_waypoints(struct Simulation* simulation, struct Asv* asv);
-
-/**
- * Function to get all asvs simulated.
- * @param asvs is the return array with pointers to the asvs simulated. The function assumes that 
- * the caller has allocated sufficient size for asvs to contain all the pointers to be placed in it.
- * @return the number of pointers placed into the argument asvs. 
- */
-int simulation_get_asvs(struct Simulation* simulation, struct Asv** asvs);
 
 /**
  * Get the position of the asv recorded in the buffer at given index.
