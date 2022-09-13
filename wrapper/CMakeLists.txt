@@ -45,11 +45,13 @@ INCLUDE_DIRECTORIES(
 
 # INCLUDE FILES
 SET( INCLUDE
+  ../include/errors.h
   ../include/geometry.h
   ../include/regular_wave.h  
   ../include/wave.h 
   ../include/asv.h 
   ../include/pid_controller.h
+  ../include/simulation.h
 )
 
 # SOURCE FILES
@@ -57,10 +59,13 @@ SET( INCLUDE
 # simulator source files
 SET( SOURCE
   ../dependency/tomlc99/toml.c
+  ../source/errors.c
+  ../source/geometry.c
   ../source/regular_wave.c
   ../source/wave.c
   ../source/asv.c
   ../source/pid_controller.c
+  ../source/simulation.c
   )
 
 # CREATE BINARIES
