@@ -8,7 +8,6 @@ class Wave(ctypes.Structure):
     '''
     Class to define a sea surface. 
     '''
-    pass
 
     def __init__(self, sig_wave_height, wave_heading, rand_seed, count_wave_spectral_directions, count_wave_spectral_frequencies):
         '''

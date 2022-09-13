@@ -7,7 +7,6 @@ class Regular_wave(ctypes.Structure):
     '''
     Class to define a regular wave. 
     '''
-    pass
 
     def __init__(self, amplitude, frequency, phase_lag, direction):
         '''
