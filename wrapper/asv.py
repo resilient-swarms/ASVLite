@@ -1,16 +1,13 @@
 import ctypes
 import dll
-import geometry
-import constants
-import regular_wave
-import wave
-   
-class Asv_propeller(ctypes.Structure):
-    _fields_ = [("position",    geometry.Dimensions),
-                ("orientation", geometry.Dimensions),
-                ("thrust",      ctypes.c_double)]
+from wave import Wave
+from geometry import Coordinates_3D, Rigid_body_DOF
 
+   
 class Asv_specification(ctypes.Structure):
+    '''
+    Specification of the vehicle. 
+    '''
     _fields_ = [("L_wl",        ctypes.c_double),
                 ("B_wl",        ctypes.c_double),
                 ("D",           ctypes.c_double),
@@ -20,70 +17,281 @@ class Asv_specification(ctypes.Structure):
                 ("r_roll",      ctypes.c_double),
                 ("r_pitch",     ctypes.c_double),
                 ("r_yaw",       ctypes.c_double),
-                ("cog",         geometry.Dimensions)]
+                ("cog",         Coordinates_3D)]
 
-class Asv_dynamics(ctypes.Structure):
-    _fields_ = [("time_step_size",       ctypes.c_double),
-                ("time",                 ctypes.c_double),
-                ("M",                    ctypes.c_double * constants.COUNT_DOF),
-                ("C",                    ctypes.c_double * constants.COUNT_DOF),
-                ("K",                    ctypes.c_double * constants.COUNT_DOF),
-                ("X",                    ctypes.c_double * constants.COUNT_DOF),
-                ("V",                    ctypes.c_double * constants.COUNT_DOF),
-                ("A",                    ctypes.c_double * constants.COUNT_DOF),
-                ("F",                    ctypes.c_double * constants.COUNT_DOF),
-                ("F_wave",               ctypes.c_double * constants.COUNT_DOF),
-                ("F_propeller",          ctypes.c_double * constants.COUNT_DOF),
-                ("F_drag",               ctypes.c_double * constants.COUNT_DOF),
-                ("F_restoring",          ctypes.c_double * constants.COUNT_DOF),
-                ("P_unit_wave",          ctypes.c_double * constants.COUNT_ASV_SPECTRAL_FREQUENCIES * 2),
-                ("P_unit_regular_wave",  ctypes.c_double),
-                ("P_unit_wave_freq_min", ctypes.c_double),
-                ("P_unit_wave_freq_max", ctypes.c_double)]
+class Thruster(ctypes.Structure):
+    '''
+    Class to define a thruster on the ASV.
+    '''
 
-class Asv(ctypes.Structure):
-    _fields_ = [("spec",            Asv_specification),
-                ("count_propellers", ctypes.c_int),
-                ("propellers",      Asv_propeller * constants.COUNT_PROPELLERS_MAX),
-                ("wave",            ctypes.POINTER(wave.Wave)),
-                ("origin_position", geometry.Dimensions),
-                ("attitude",        geometry.Dimensions),
-                ("dynamics",        Asv_dynamics),
-                ("cog_position",    geometry.Dimensions)]
+    def __init__(self, position):
+        '''
+        Create and initialise a Thruster.
+        '''
+        thruster_new = dll.dll.thruster_new
+        thruster_new.restype = ctypes.POINTER(Thruster)
+        result = thruster_new(position)
+        self.__c_base_object = result 
+
+    @classmethod
+    def from_c_base_object(cls, c_base_object):
+        '''
+        Create and initialise a thruster from a c object. 
+        '''
+        thruster = cls(Coordinates_3D(0.0, 0.0, 0.0))
+        thruster.__delete()
+        thruster.__c_base_object = c_base_object
+        return thruster
+
+    def __del__(self):
+        self.__delete()
     
-    def init(self, wave):
-        dll.dll.asv_init(ctypes.pointer(self), 
-                         ctypes.pointer(wave))
+    def __delete(self):
+        '''
+        Free memory allocated for the thruster. 
+        '''
+        thruster_delete = dll.dll.thruster_delete
+        thruster_delete.restype = None 
+        thruster_delete(self.__c_base_object)
+    
+    def __get_error_msg(self):
+        '''
+        Returns error message related to the last function called for the instance of Thruster.
+        '''
+        thruster_get_error_msg = dll.dll.thruster_get_error_msg
+        thruster_get_error_msg.restype = ctypes.c_char_p
+        result = thruster_get_error_msg(self.__c_base_object)
+        return result
+    
+    def __check_error_throw_exception(self):
+        error_msg = self.__get_error_msg()
+        if error_msg != None:
+            raise ValueError(error_msg.decode("utf-8") )
+
+    def get_c_base_object(self):
+        '''
+        Get the instance of the base class. 
+        '''
+        return self.__c_base_object
+
+    def set_thrust(self, orientation, magnitude):
+        '''
+        Set the orientation and magnitude of thrust vector. 
+        :param Coordinates_3D orientation: Orientation of the thrust vector, in radians, in body-fixed frame.
+        :param float magnitude: Magnitude of the thrust in N.
+        '''
+        thruster_set_thrust = dll.dll.thruster_set_thrust
+        thruster_set_thrust.restype = None
+        result = thruster_set_thrust(self.__c_base_object, orientation, ctypes.c_double(magnitude))
+        self.__check_error_throw_exception()
+        return result
+    
+    def get_position(self):
+        thruster_get_position = dll.dll.thruster_get_position
+        thruster_get_position.restype = Coordinates_3D
+        result = thruster_get_position(self.__c_base_object)
+        self.__check_error_throw_exception()
+        return result
+    
+class Asv(ctypes.Structure):
+    '''
+    Class to define an ASV. 
+    '''    
+
+    def __init__(self, spec, wave, position, attitude):
+        '''
+        Create and initialise an ASV.
+        :param Asv_specification spec: Specification of the ASV.
+        :param Wave wave: Sea surface for the ASV.
+        :param Coordinate_3D position: Position of ASV on the sea surface.
+        :param Coordinate_3D attitude: Floating attitude of the ASV.
+        '''
+        asv_new = dll.dll.asv_new
+        asv_new.restype = ctypes.POINTER(Asv)
+        result = asv_new(spec, wave.get_c_base_object(), position, attitude)
+        self.__c_base_object = result 
+    
+    @classmethod
+    def from_c_base_object(cls, c_base_object):
+        '''
+        Create and initialise an Asv from a c object. 
+        '''
+        asv = cls(Asv_specification(0,0,0,0,0,0,0,0,0,Coordinates_3D(0,0,0)), None, Coordinates_3D(0,0,0), Coordinates_3D(0,0,0))
+        asv.__delete()
+        asv.__c_base_object = c_base_object
+        return asv
+
+    def __del__(self):
+        self.__delete()
+    
+    def __delete(self):
+        '''
+        Free memory allocated for the ASV. 
+        '''
+        asv_delete = dll.dll.asv_delete
+        asv_delete.restype = None 
+        asv_delete(self.__c_base_object)
+    
+    def __get_error_msg(self):
+        '''
+        Returns error message related to the last function called for the instance of Asv.
+        '''
+        asv_get_error_msg = dll.dll.asv_get_error_msg
+        asv_get_error_msg.restype = ctypes.c_char_p
+        result = asv_get_error_msg(self.__c_base_object)
+        return result
+    
+    def __check_error_throw_exception(self):
+        error_msg = self.__get_error_msg()
+        if error_msg != None:
+            raise ValueError(error_msg.decode("utf-8") )
+
+    def get_c_base_object(self):
+        '''
+        Get the instance of the base class. 
+        '''
+        return self.__c_base_object
+    
+    def set_thrusters(self, thrusters):
+        '''
+        Set the thrusters for the asv.
+        :param list thrusters: List of thrusters for the asv.
+        '''
+        c_thrusters = (ctypes.POINTER(Thruster) * len(thrusters))(*thrusters)
+        asv_set_thrusters = dll.dll.asv_set_thrusters
+        asv_set_thrusters.restype = None
+        result = asv_set_thrusters(self.__c_base_object, c_thrusters, len(thrusters))
+        self.__check_error_throw_exception()
+        return result 
+
+    def get_thrusters(self):
+        '''
+        Get the list of thrusters.
+        '''
+        asv_get_thrusters = dll.dll.asv_get_thrusters
+        asv_get_count_thrusters = dll.dll.asv_get_count_thrusters
+        asv_get_thrusters.restype = ctypes.POINTER(ctypes.POINTER(Thruster))
+        asv_get_count_thrusters.restype = ctypes.c_int
+        count_thruster = asv_get_count_thrusters(self.__c_base_object)
+        self.__check_error_throw_exception()
+        result = asv_get_thrusters(self.__c_base_object)
+        self.__check_error_throw_exception()
+        thrusters = [result[i] for i in range(count_thruster)]
+        return thrusters
     
     def set_sea_state(self, wave):
+        '''
+        Modify the current sea state to a new sea state.
+        '''
         asv_set_sea_state = dll.dll.asv_set_sea_state
         asv_set_sea_state.restype = None
-        result = asv_set_sea_state(ctypes.pointer(self), 
-                                    ctypes.pointer(wave))
+        result = asv_set_sea_state(self.__c_base_object, wave)
+        self.__check_error_throw_exception()
         return result
 
-    def compute_dynamics(self, time):
+    def compute_dynamics(self, time_step_size):
+        '''
+        Increment time and compute dynamics for the ASV.
+        :param float time_step_size: Step size, in milliseconds, to increment the current time.
+        '''
         asv_compute_dynamics = dll.dll.asv_compute_dynamics
         asv_compute_dynamics.restype = None
-        result = asv_compute_dynamics(ctypes.pointer(self), 
-                                      ctypes.c_double(time))
+        result = asv_compute_dynamics(self.__c_base_object, ctypes.c_double(time_step_size))
+        self.__check_error_throw_exception()
         return result
 
-    def compute_dynamics(self, rudder_angle, time):
+    def wg_compute_dynamics(self, rudder_angle, time_step_size):
+        '''
+        Similar to function compute_dynamics but should be used only for a wave glider.
+        The function computes the dynamics of the wave glider for the next time step,
+        and also computes the wave thrust force generated by the underwater glider.
+        :param float rudder_angle: Angle of the rudder with respect to X axis of the ASV. 
+        Rudder angle must within (-PI/2, PI/2). Angle is positive when the vehicle has to turn 
+        to starboard (ie. aft end of the rudder points to starboard side). 
+        :param float time_step_size: Step size, in milliseconds, to increment the current time.
+        '''
         wave_glider_compute_dynamics = dll.dll.wave_glider_compute_dynamics
         wave_glider_compute_dynamics.restype = None
-        result = wave_glider_compute_dynamics(ctypes.pointer(self), 
-                                               ctypes.c_double(rudder_angle),
-                                               ctypes.c_double(time))
+        result = wave_glider_compute_dynamics(self.__c_base_object, ctypes.c_double(rudder_angle), ctypes.c_double(time_step_size))
+        self.__check_error_throw_exception()
+        return result 
+    
+    def get_wave(self):
+        '''
+        Get the sea surface initialised for the ASV.
+        '''
+        asv_get_wave = dll.dll.asv_get_wave
+        asv_get_wave.restype = ctypes.POINTER(Wave)
+        result = asv_get_wave(self.__c_base_object)
+        self.__check_error_throw_exception()
+        return Wave.from_c_base_object(result)
+    
+    def get_position_cog(self):
+        '''
+        Get the position of the asv using the COG of the vehicle.
+        '''
+        asv_get_position_cog = dll.dll.asv_get_position_cog
+        asv_get_position_cog.restype = Coordinates_3D
+        result = asv_get_position_cog(self.__c_base_object)
+        self.__check_error_throw_exception()
+        return result 
+    
+    def get_position_origin(self):
+        '''
+        Get the position of the asv using the origin of the vehicle.
+        '''
+        asv_get_position_origin = dll.dll.asv_get_position_origin
+        asv_get_position_origin.restype = Coordinates_3D
+        result = asv_get_position_origin(self.__c_base_object)
+        self.__check_error_throw_exception()
+        return result 
+
+    def get_position_attitude(self):
+        '''
+        Get the floating attitude of the asv.
+        '''
+        asv_get_attitude = dll.dll.asv_get_attitude
+        asv_get_attitude.restype = Coordinates_3D
+        result = asv_get_attitude(self.__c_base_object)
+        self.__check_error_throw_exception()
+        return result
+    
+    def get_F(self):
+        '''
+        Get force.
+        '''
+        asv_get_F = dll.dll.asv_get_F
+        asv_get_F.restype = Rigid_body_DOF
+        result = asv_get_F(self.__c_base_object)
+        self.__check_error_throw_exception()
+        return result
+    
+    def get_A(self):
+        '''
+        Get acceleration.
+        '''
+        asv_get_A = dll.dll.asv_get_A
+        asv_get_A.restype = Rigid_body_DOF
+        result = asv_get_A(self.__c_base_object)
+        self.__check_error_throw_exception()
         return result
 
-
-
-
-# Example of how to access data from Asv.wave:
-# >>> w = Wave(1.2, 0, 1)
-# >>> a = Asv(w)
-# >>> a.wave.contents.heading
-# 0.0
-# >>> a.wave.contents.significant_wave_height
-# 1.2
+    def get_V(self):
+        '''
+        Get velocity.
+        '''
+        asv_get_V = dll.dll.asv_get_V
+        asv_get_V.restype = Rigid_body_DOF
+        result = asv_get_V(self.__c_base_object)
+        self.__check_error_throw_exception()
+        return result
+    
+    def get_spec(self):
+        '''
+        Get ASV specification.
+        '''
+        asv_get_spec = dll.dll.asv_get_spec
+        asv_get_spec.restype = Asv_specification
+        result = asv_get_spec(self.__c_base_object)
+        self.__check_error_throw_exception()
+        return result   

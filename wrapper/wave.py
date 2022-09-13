@@ -1,5 +1,4 @@
 import ctypes
-from unittest import result
 import dll
 from geometry import Coordinates_3D
 from regular_wave import Regular_wave
@@ -61,6 +60,12 @@ class Wave(ctypes.Structure):
         error_msg = self.__get_error_msg()
         if error_msg != None:
             raise ValueError(error_msg.decode("utf-8") )
+
+    def get_c_base_object(self):
+        '''
+        Get the instance of the base class. 
+        '''
+        return self.__c_base_object
 
     def get_elevation(self, location, time):
         '''
