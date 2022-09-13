@@ -79,14 +79,14 @@ void controller_set_gains_position(struct Controller* controller,
 {
   if(controller)
   {
-    clear_error_msg(controller->error_msg);
+    clear_error_msg(&controller->error_msg);
     controller->kp_position = p;
     controller->ki_position = i;
     controller->kd_position = d;
   }
   else
   {
-    set_error_msg(controller->error_msg, error_null_pointer);
+    set_error_msg(&controller->error_msg, error_null_pointer);
   }
 }
 
@@ -95,14 +95,14 @@ void controller_set_gains_heading(struct Controller* controller,
 {
   if(controller)
   {
-    clear_error_msg(controller->error_msg);
+    clear_error_msg(&controller->error_msg);
     controller->kp_heading = p;
     controller->ki_heading = i;
     controller->kd_heading = d;
   }
   else
   {
-    set_error_msg(controller->error_msg, error_null_pointer);
+    set_error_msg(&controller->error_msg, error_null_pointer);
   }
 }
 
@@ -110,7 +110,7 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
 {
   if(controller)
   {
-    clear_error_msg(controller->error_msg);
+    clear_error_msg(&controller->error_msg);
     union Coordinates_3D p1 = asv_get_position_origin(controller->asv);
     union Coordinates_3D p2 = asv_get_position_cog(controller->asv);
     union Coordinates_3D p3 = way_point;
@@ -318,7 +318,7 @@ void controller_set_thrust(struct Controller* controller, union Coordinates_3D w
   }
   else
   {
-    set_error_msg(controller->error_msg, error_null_pointer);
+    set_error_msg(&controller->error_msg, error_null_pointer);
   }
 }
 
@@ -463,7 +463,7 @@ void controller_tune(struct Controller* controller)
 {
   if(controller)
   {
-    clear_error_msg(controller->error_msg);
+    clear_error_msg(&controller->error_msg);
     // Open file to write
     char* file = "./tunning";
     FILE *fp = fopen(file, "w");
@@ -617,7 +617,7 @@ void controller_tune(struct Controller* controller)
   }
   else
   {
-    set_error_msg(controller->error_msg, error_null_pointer);
+    set_error_msg(&controller->error_msg, error_null_pointer);
   }
 }
 
@@ -633,7 +633,7 @@ union Coordinates_3D controller_get_gains_position(struct Controller* controller
   }
   else
   {
-    set_error_msg(controller->error_msg, error_null_pointer);
+    set_error_msg(&controller->error_msg, error_null_pointer);
     return (union Coordinates_3D){0.0, 0.0, 0.0};
   }
 }
@@ -650,7 +650,7 @@ union Coordinates_3D controller_get_gains_heading(struct Controller* controller)
   }
   else
   {
-    set_error_msg(controller->error_msg, error_null_pointer);
+    set_error_msg(&controller->error_msg, error_null_pointer);
     return (union Coordinates_3D){0.0, 0.0, 0.0};
   }
 }

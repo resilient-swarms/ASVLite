@@ -6,6 +6,7 @@
 #include "constants.h"
 #include "errors.h"
 #include "geometry.h"
+#include <stdio.h>
 
 struct Regular_wave
 {
@@ -83,12 +84,12 @@ double regular_wave_get_amplitude(const struct Regular_wave* regular_wave)
 {
   if(regular_wave)
   {
-    clear_error_msg(regular_wave->error_msg);
+    clear_error_msg(&regular_wave->error_msg);
     return regular_wave->amplitude;
   }
   else
   {
-    set_error_msg(regular_wave->error_msg, error_null_pointer);
+    set_error_msg(&regular_wave->error_msg, error_null_pointer);
     return 0.0;
   }
 }
@@ -98,12 +99,12 @@ double regular_wave_get_frequency(const struct Regular_wave* regular_wave)
 {
   if(regular_wave)
   {
-    clear_error_msg(regular_wave->error_msg);
+    clear_error_msg(&regular_wave->error_msg);
     return regular_wave->frequency;
   }
   else
   {
-    set_error_msg(regular_wave->error_msg, error_null_pointer);
+    set_error_msg(&regular_wave->error_msg, error_null_pointer);
     return 0.0;
   }
 }
@@ -113,12 +114,12 @@ double regular_wave_get_direction(const struct Regular_wave* regular_wave)
 {
   if(regular_wave)
   {
-    clear_error_msg(regular_wave->error_msg);
+    clear_error_msg(&regular_wave->error_msg);
     return regular_wave->direction;
   }
   else
   {
-    set_error_msg(regular_wave->error_msg, error_null_pointer);
+    set_error_msg(&regular_wave->error_msg, error_null_pointer);
     return 0.0;
   }
 }
@@ -130,7 +131,7 @@ double regular_wave_get_phase(const struct Regular_wave* const regular_wave,
 {
   if(regular_wave)
   {
-    clear_error_msg(regular_wave->error_msg);
+    clear_error_msg(&regular_wave->error_msg);
     // Check if time is -ve.
     if(time >= 0.0)
     {
@@ -154,13 +155,13 @@ double regular_wave_get_phase(const struct Regular_wave* const regular_wave,
     }
     else
     {
-      set_error_msg(regular_wave->error_msg, error_negative_time);
+      set_error_msg(&regular_wave->error_msg, error_negative_time);
       return 0.0;
     }
   }
   else
   {
-    set_error_msg(regular_wave->error_msg, error_null_pointer);
+    set_error_msg(&regular_wave->error_msg, error_null_pointer);
     return 0.0;
   }
 }
@@ -172,7 +173,7 @@ double regular_wave_get_elevation(const struct Regular_wave* const regular_wave,
 {
   if(regular_wave)
   {
-    clear_error_msg(regular_wave->error_msg);    
+    clear_error_msg(&regular_wave->error_msg);    
     // Check if time is -ve. 
     if(time >= 0.0)
     {
@@ -190,13 +191,13 @@ double regular_wave_get_elevation(const struct Regular_wave* const regular_wave,
     }
     else
     {
-      set_error_msg(regular_wave->error_msg, error_negative_time);
+      set_error_msg(&regular_wave->error_msg, error_negative_time);
       return 0.0;
     }
   }
   else
   {
-    set_error_msg(regular_wave->error_msg, error_null_pointer);
+    set_error_msg(&regular_wave->error_msg, error_null_pointer);
     return 0.0;
   }
 } 
@@ -205,15 +206,23 @@ double regular_wave_get_elevation(const struct Regular_wave* const regular_wave,
 double regular_wave_get_pressure_amp(const struct Regular_wave* regular_wave, double depth)
 {
   if(regular_wave)
-  {   
-    clear_error_msg(regular_wave->error_msg); 
-    double amplitude = regular_wave->amplitude;
-    double wave_number = regular_wave->wave_number;
-    return (SEA_WATER_DENSITY* G* amplitude* exp(wave_number* -depth)); // Note: we expect depth to be positive. 
+  {
+    if(depth >= 0.0) 
+    {
+      clear_error_msg(&regular_wave->error_msg); 
+      double amplitude = regular_wave->amplitude;
+      double wave_number = regular_wave->wave_number;
+      return (SEA_WATER_DENSITY* G* amplitude* exp(wave_number* -depth)); // Note: we expect depth to be positive. 
+    } 
+    else
+    {
+      set_error_msg(&regular_wave->error_msg, error_negative_depth);
+      return 0.0;
+    } 
   }
   else
   {
-    set_error_msg(regular_wave->error_msg, error_null_pointer);
+    set_error_msg(&regular_wave->error_msg, error_null_pointer);
     return 0.0;
   }
 }
