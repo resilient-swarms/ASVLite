@@ -44,7 +44,7 @@ const char* wave_get_error_msg(const struct Wave* wave)
 
 struct Wave* wave_new(const double sig_wave_ht,
                       const double wave_heading, 
-                      const long rand_seed,
+                      const int rand_seed,
                       const int count_wave_spectral_directions,
                       const int count_wave_spectral_frequencies)
 {

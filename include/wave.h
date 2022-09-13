@@ -40,7 +40,7 @@ struct Wave;
  */
 struct Wave* wave_new(double sig_wave_ht,
                       double wave_heading, 
-                      long rand_seed,
+                      int rand_seed,
                       int count_wave_spectral_directions,
                       int count_wave_spectral_frequencies);
 /**
