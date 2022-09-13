@@ -6,7 +6,6 @@
 #include "constants.h"
 #include "errors.h"
 #include "geometry.h"
-#include <stdio.h>
 
 struct Regular_wave
 {
