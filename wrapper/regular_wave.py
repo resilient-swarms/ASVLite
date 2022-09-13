@@ -31,10 +31,14 @@ class Regular_wave(ctypes.Structure):
         Create and initialise a regular wave from a c object. 
         '''
         regular_wave = cls(0.0, 0.0, 0.0, 0.0)
+        regular_wave.__delete()
         regular_wave.__c_base_object = c_base_object
         return regular_wave
 
     def __del__(self):
+        self.__delete()
+
+    def __delete(self):
         '''
         Free memory allocated for the regular wave. 
         '''

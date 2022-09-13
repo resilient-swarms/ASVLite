@@ -34,11 +34,14 @@ class Wave(ctypes.Structure):
         Create and initialise a wave from a c object. 
         '''
         wave = cls(0.0, 0.0, 0, 0, 0)
-        wave.__del__()
+        wave.__delete()
         wave.__c_base_object = c_base_object
         return wave
-    
+
     def __del__(self):
+        self.__delete()
+    
+    def __delete(self):
         '''
         Free memory allocated for the wave. 
         '''
