@@ -24,7 +24,16 @@ class Regular_wave(ctypes.Structure):
                                   ctypes.c_double(phase_lag), 
                                   ctypes.c_double(direction))
         self.__c_base_object = result 
-    
+
+    @classmethod
+    def from_c_base_object(cls, c_base_object):
+        '''
+        Create and initialise a regular wave from a c object. 
+        '''
+        regular_wave = cls(0.0, 0.0, 0.0, 0.0)
+        regular_wave.__c_base_object = c_base_object
+        return regular_wave
+
     def __del__(self):
         '''
         Free memory allocated for the regular wave. 
@@ -33,7 +42,7 @@ class Regular_wave(ctypes.Structure):
         regular_wave_delete.restype = None 
         regular_wave_delete(self.__c_base_object)
     
-    def __get_error_msg__(self):
+    def __get_error_msg(self):
         '''
         Returns error message related to the last function called for the instance of Regular_wave.
         '''
@@ -43,7 +52,7 @@ class Regular_wave(ctypes.Structure):
         return result
 
     def __check_error_throw_exception(self):
-        error_msg = self.__get_error_msg__()
+        error_msg = self.__get_error_msg()
         if error_msg != None:
             raise ValueError(error_msg.decode("utf-8") )
   
