@@ -718,7 +718,7 @@ struct Asv* asv_new(const struct Asv_specification specification,
       // Set minimum and maximum encounter frequency
       double max_speed_for_spectrum = 2.0 * asv->spec.max_speed;
       double wave_min_spectral_frequency = wave_get_min_spectral_frequency(asv->wave); 
-      double wave_max_spectral_frequency = wave_get_min_spectral_frequency(asv->wave); 
+      double wave_max_spectral_frequency = wave_get_max_spectral_frequency(asv->wave); 
       asv->dynamics.P_unit_wave_freq_min = get_encounter_frequency(wave_min_spectral_frequency, max_speed_for_spectrum, 0);
       asv->dynamics.P_unit_wave_freq_max = get_encounter_frequency(wave_max_spectral_frequency, max_speed_for_spectrum, PI);
       // Set the wave force for unit waves
@@ -781,7 +781,7 @@ void asv_set_sea_state(struct Asv* asv, const struct Wave* wave)
       // Set minimum and maximum encounter frequency
       double max_speed_for_spectrum = 2.0 * asv->spec.max_speed;
       double wave_min_spectral_frequency = wave_get_min_spectral_frequency(asv->wave); 
-      double wave_max_spectral_frequency = wave_get_min_spectral_frequency(asv->wave); 
+      double wave_max_spectral_frequency = wave_get_max_spectral_frequency(asv->wave); 
       asv->dynamics.P_unit_wave_freq_min = get_encounter_frequency(wave_min_spectral_frequency, max_speed_for_spectrum, 0);
       asv->dynamics.P_unit_wave_freq_max = get_encounter_frequency(wave_max_spectral_frequency, max_speed_for_spectrum, PI);
       
