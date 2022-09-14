@@ -246,7 +246,7 @@ class Asv(ctypes.Structure):
         self.__check_error_throw_exception()
         return result 
 
-    def get_position_attitude(self):
+    def get_attitude(self):
         '''
         Get the floating attitude of the asv.
         '''
