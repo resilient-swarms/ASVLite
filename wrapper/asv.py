@@ -185,7 +185,7 @@ class Asv(ctypes.Structure):
         '''
         asv_set_sea_state = dll.dll.asv_set_sea_state
         asv_set_sea_state.restype = None
-        result = asv_set_sea_state(self.__c_base_object, wave)
+        result = asv_set_sea_state(self.__c_base_object, wave.get_c_base_object())
         self.__check_error_throw_exception()
         return result
 
