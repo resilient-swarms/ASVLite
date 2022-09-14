@@ -1086,7 +1086,7 @@ void wave_glider_compute_dynamics(struct Asv* asv, double rudder_angle, double t
   if(asv)
   {
     clear_error_msg(&asv->error_msg);
-    if(rudder_angle >= PI/2.0 && rudder_angle <= PI/2.0)
+    if(rudder_angle >= -PI/2.0 && rudder_angle <= PI/2.0)
     {
       if(time_step_size)
       {
