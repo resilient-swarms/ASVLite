@@ -158,12 +158,13 @@ void wave_glider_compute_dynamics(struct Asv* asv,
 /**
  * Simulate the wave glider for multiple time steps. 
  * @param callback_precompute callback at the beginning of each time step. Can be used for setting rudder angle
- * for the time step, modify the wave for the time step, etc. The return value of the callback is used to continue
+ * for the time step, modify the wave for the time step, etc. The value passed as argument is the pointer to the 
+ * rudder angle that is to be set. The return value of the callback is used to continue
  * or exit from the simulation. If the callback returned false, simulation is terminated. 
  * @param callback_postcompute callback at the end of each time step. Can be used for fetching/printing the results 
  * of the time step. 
  */
-void wave_glider_run(struct Asv* asv, double rudder_angle, double time_step_size, bool (*callback_precompute)(void), void (*callback_postcompute)(void));
+void wave_glider_run(struct Asv* asv, bool(*callback_precompute)(double*), void(*callback_postcompute)(void), double time_step_size);
 
 /**
  * Get the sea state initialised for the asv.

@@ -216,7 +216,7 @@ class Asv(ctypes.Structure):
         self.__check_error_throw_exception()
         return result 
     
-    def wg_run(self, rudder_angle, time_step_size, callback_precompute, callback_postcompute):
+    def wg_run(self, callback_precompute, callback_postcompute, time_step_size):
         '''
         Simulate the wave glider for multiple time steps. 
         :param callback_precompute: callback at the beginning of each time step. Can be used for setting rudder angle
@@ -227,7 +227,7 @@ class Asv(ctypes.Structure):
         '''
         wave_glider_run = dll.dll.wave_glider_run
         wave_glider_run.restype = None
-        result = wave_glider_run(self.__c_base_object, ctypes.c_double(rudder_angle), ctypes.c_double(time_step_size), callback_precompute, callback_postcompute)
+        result = wave_glider_run(self.__c_base_object, callback_precompute, callback_postcompute, ctypes.c_double(time_step_size))
         self.__check_error_throw_exception()
         return result
     
