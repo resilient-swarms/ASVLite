@@ -216,6 +216,21 @@ class Asv(ctypes.Structure):
         self.__check_error_throw_exception()
         return result 
     
+    def wg_run(self, rudder_angle, time_step_size, callback_precompute, callback_postcompute):
+        '''
+        Simulate the wave glider for multiple time steps. 
+        :param callback_precompute: callback at the beginning of each time step. Can be used for setting rudder angle
+        for the time step, modify the wave for the time step, etc. The return value of the callback is used to continue
+        or exit from the simulation. If the callback returned false, simulation is terminated.
+        :param callback_postcompute: callback at the end of each time step. Can be used for fetching/printing the results 
+        of the time step.
+        '''
+        wave_glider_run = dll.dll.wave_glider_run
+        wave_glider_run.restype = None
+        result = wave_glider_run(self.__c_base_object, ctypes.c_double(rudder_angle), ctypes.c_double(time_step_size), callback_precompute, callback_postcompute)
+        self.__check_error_throw_exception()
+        return result
+    
     def get_wave(self):
         '''
         Get the sea surface initialised for the ASV.
