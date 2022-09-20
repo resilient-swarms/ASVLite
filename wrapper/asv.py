@@ -220,14 +220,18 @@ class Asv(ctypes.Structure):
         '''
         Simulate the wave glider for multiple time steps. 
         :param callback_precompute: callback at the beginning of each time step. Can be used for setting rudder angle
-        for the time step, modify the wave for the time step, etc. The return value of the callback is used to continue
+        for the time step, modify the wave for the time step, etc. callback_precompute takes as argument a pointer to the 
+        rudder angle that is to be set. The return value of the callback is used to continue
         or exit from the simulation. If the callback returned false, simulation is terminated.
         :param callback_postcompute: callback at the end of each time step. Can be used for fetching/printing the results 
         of the time step.
         '''
         wave_glider_run = dll.dll.wave_glider_run
         wave_glider_run.restype = None
-        result = wave_glider_run(self.__c_base_object, callback_precompute, callback_postcompute, ctypes.c_double(time_step_size))
+        result = wave_glider_run(self.__c_base_object, 
+                                ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_double))(callback_precompute), 
+                                ctypes.CFUNCTYPE(None)(callback_postcompute), 
+                                ctypes.c_double(time_step_size))
         self.__check_error_throw_exception()
         return result
     

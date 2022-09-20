@@ -1112,10 +1112,23 @@ void wave_glider_compute_dynamics(struct Asv* asv, double rudder_angle, double t
 
 void wave_glider_run(struct Asv* asv, bool(*callback_precompute)(double*), void(*callback_postcompute)(void), double time_step_size)
 {
-  double rudder_angle = 0.0;
-  while(callback_precompute(&rudder_angle))
+  if(asv)
   {
-    wave_glider_compute_dynamics(asv, rudder_angle, time_step_size);
-    callback_postcompute();
+    clear_error_msg(&asv->error_msg);
+    double rudder_angle = 0.0;
+    while(callback_precompute(&rudder_angle))
+    {
+      wave_glider_compute_dynamics(asv, rudder_angle, time_step_size);
+      callback_postcompute();
+      if(asv->error_msg)
+      {
+        // Some error occurred.
+        return;
+      }
+    }
+  }
+  else
+  {
+    set_error_msg(&asv->error_msg, error_null_pointer);
   }
 }
