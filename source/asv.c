@@ -32,6 +32,7 @@ struct Asv_dynamics
   // Input
   double time_step_size; //!< Time step size in milliseconds.
   double time; //!< Time since start of simulation in seconds.
+  double tuning_factor_thrust; //!< Thrust tuning factor for wave glider.
   union Rigid_body_DOF M; //!< Mass + added mass in Kg. 
   union Rigid_body_DOF C; //!< Drag force coefficients. 
   union Rigid_body_DOF K; //!< Stiffness. 
@@ -691,6 +692,7 @@ struct Asv* asv_new(const struct Asv_specification specification,
       return NULL;
     }
     
+    asv->dynamics.tuning_factor_thrust = 1.0;
     for(int k = 0; k < COUNT_DOF; ++k)
     {
       asv->dynamics.M.array          [k] = 0.0;
@@ -1008,6 +1010,20 @@ struct Asv_specification asv_get_spec(struct Asv* asv)
   else
   {
     set_error_msg(&asv->error_msg, error_null_pointer);
+  }
+}
+
+void wave_glider_set_thrust_tuning_factor(struct Asv* asv, double tuning_factor)
+{
+  if(asv)
+  {
+    clear_error_msg(&asv->error_msg);
+    asv->dynamics.tuning_factor_thrust = tuning_factor;
+  }
+  else
+  {
+    set_error_msg(&asv->error_msg, error_null_pointer);
+    return (union Coordinates_3D){0.0, 0.0, 0.0};
   }
 }
 

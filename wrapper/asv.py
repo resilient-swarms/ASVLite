@@ -200,6 +200,17 @@ class Asv(ctypes.Structure):
         self.__check_error_throw_exception()
         return result
 
+    def wg_set_thrust_tuning_factor(self, tuning_factor):
+        '''
+        Overwrite the default tuning factor of 1 used for computing wave glider thrust.
+        :param float tuning_factor: tuning factor.
+        '''
+        wave_glider_set_thrust_tuning_factor = dll.dll.wave_glider_set_thrust_tuning_factor
+        wave_glider_set_thrust_tuning_factor.restype = None
+        result = wave_glider_set_thrust_tuning_factor(self.__c_base_object, ctypes.c_double(tuning_factor))
+        self.__check_error_throw_exception()
+        return result
+
     def wg_compute_dynamics(self, rudder_angle, time_step_size):
         '''
         Similar to function compute_dynamics but should be used only for a wave glider.
