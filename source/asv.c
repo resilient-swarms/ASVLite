@@ -504,8 +504,6 @@ static void set_wave_glider_thrust(struct Asv* asv, double rudder_angle)
   V = asv->dynamics.V.keys.surge;
   C_L = (1.8 * PI * lambda * alpha_k) / (cos(chi) * sqrt(lambda*lambda/pow(cos(chi), 4) + 4) + 1.8) + (C_DC/ lambda * alpha_k*alpha_k);
   double F_L_rudder = 0.5 * SEA_WATER_DENSITY * C_L * A * V * V;
-  // The rudder lift force computed might be a huge over estimation, therefore, scale it down.
-  F_L_rudder *= 0.2; 
   double yaw_moment = F_L_rudder * sin(alpha_f) * asv->spec.L_wl/2.0;
   yaw_moment = (rudder_angle < 0.0)? -yaw_moment: yaw_moment;
   asv->dynamics.F_thruster.keys.yaw = yaw_moment;
