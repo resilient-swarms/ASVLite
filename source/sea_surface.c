@@ -7,10 +7,10 @@
 #include "constants.h"
 #include "geometry.h"
 #include "regular_wave.h"
-#include "wave.h"
+#include "sea_surface.h"
 #include "errors.h"
 
-struct Wave
+struct Sea_surface
 {
   // Input variables
   // ---------------
@@ -32,7 +32,7 @@ struct Wave
   char* error_msg;                  //!< Output variable. Error message, if any.
 };
 
-const char* wave_get_error_msg(const struct Wave* wave)
+const char* sea_surface_get_error_msg(const struct Sea_surface* wave)
 {
   if(wave)
   {
@@ -42,20 +42,20 @@ const char* wave_get_error_msg(const struct Wave* wave)
 }
 
 
-struct Wave* wave_new(const double sig_wave_ht,
+struct Sea_surface* sea_surface_new(const double sig_wave_ht,
                       const double wave_heading, 
                       const int rand_seed,
                       const int count_wave_spectral_directions,
                       const int count_wave_spectral_frequencies)
 {
-  struct Wave* wave = NULL;
+  struct Sea_surface* wave = NULL;
 
   if(sig_wave_ht > 0.0 && 
      count_wave_spectral_directions > 1 && 
      count_wave_spectral_frequencies > 1)
   {
     // Initialise the pointers...
-    if(wave = (struct Wave*)malloc(sizeof(struct Wave)))
+    if(wave = (struct Sea_surface*)malloc(sizeof(struct Sea_surface)))
     {
       if(wave->spectrum = (struct Regular_wave**)malloc(sizeof(struct Regular_wave*) * count_wave_spectral_directions * count_wave_spectral_frequencies)) 
       {
@@ -136,7 +136,7 @@ struct Wave* wave_new(const double sig_wave_ht,
         {
           // One or more of the regular wave is NULL. 
           // This is an invalid spectrum.
-          wave_delete(wave);
+          sea_surface_delete(wave);
           wave = NULL;
         }
       }
@@ -151,7 +151,7 @@ struct Wave* wave_new(const double sig_wave_ht,
   return wave;
 }
 
-void wave_delete(struct Wave* wave)
+void sea_surface_delete(struct Sea_surface* wave)
 {
   if(wave)
   {
@@ -170,7 +170,7 @@ void wave_delete(struct Wave* wave)
   }
 }
 
-double wave_get_elevation(const struct Wave* wave, 
+double sea_surface_get_elevation(const struct Sea_surface* wave, 
                           const union Coordinates_3D location,
                           double time)
 {
@@ -185,11 +185,11 @@ double wave_get_elevation(const struct Wave* wave,
       {
         for(int j = 0; j < wave->count_wave_spectral_frequencies; ++j)
         {
-          const struct Regular_wave* regular_wave = wave_get_regular_wave_at(wave, i, j);
+          const struct Regular_wave* regular_wave = sea_surface_get_regular_wave_at(wave, i, j);
           if(!regular_wave)
           {
             // Something really wrong happened.
-            // Error should already be set by wave_get_regular_wave_at().
+            // Error should already be set by sea_surface_get_regular_wave_at().
             return 0.0;
           }
           double regular_wave_elevation = regular_wave_get_elevation(regular_wave, location, time);
@@ -220,7 +220,7 @@ double wave_get_elevation(const struct Wave* wave,
   }
 }
 
-int wave_get_count_wave_spectral_directions(const struct Wave* wave)
+int sea_surface_get_count_wave_spectral_directions(const struct Sea_surface* wave)
 {
   if(wave)
   {
@@ -233,7 +233,7 @@ int wave_get_count_wave_spectral_directions(const struct Wave* wave)
   }
 }
 
-int wave_get_count_wave_spectral_frequencies(const struct Wave* wave)
+int sea_surface_get_count_wave_spectral_frequencies(const struct Sea_surface* wave)
 {
   if(wave)
   {
@@ -246,7 +246,7 @@ int wave_get_count_wave_spectral_frequencies(const struct Wave* wave)
   }
 }
 
-const struct Regular_wave* wave_get_regular_wave_at(const struct Wave* wave, int d, int f)
+const struct Regular_wave* sea_surface_get_regular_wave_at(const struct Sea_surface* wave, int d, int f)
 {
   if(wave)
   {
@@ -269,7 +269,7 @@ const struct Regular_wave* wave_get_regular_wave_at(const struct Wave* wave, int
   }
 }
 
-double wave_get_min_spectral_frequency(const struct Wave* wave)
+double sea_surface_get_min_spectral_frequency(const struct Sea_surface* wave)
 {
   if(wave)
   {
@@ -282,7 +282,7 @@ double wave_get_min_spectral_frequency(const struct Wave* wave)
   }
 }
 
-double wave_get_max_spectral_frequency(const struct Wave* wave)
+double sea_surface_get_max_spectral_frequency(const struct Sea_surface* wave)
 {
   if(wave)
   {
@@ -295,7 +295,7 @@ double wave_get_max_spectral_frequency(const struct Wave* wave)
   }
 }
 
-double wave_get_significant_height(const struct Wave* wave)
+double sea_surface_get_significant_height(const struct Sea_surface* wave)
 {
   if(wave)
   {
@@ -308,7 +308,7 @@ double wave_get_significant_height(const struct Wave* wave)
   }
 }
 
-double wave_get_predominant_heading(const struct Wave* wave)
+double sea_surface_get_predominant_heading(const struct Sea_surface* wave)
 {
   if(wave)
   {

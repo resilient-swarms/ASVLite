@@ -4,7 +4,7 @@
 #include "pid_controller.h"
 #include "simulation.h"
 #include "asv.h"
-#include "wave.h"
+#include "sea_surface.h"
 #include "geometry.h"
 #include "constants.h"
 #include "errors.h"
@@ -345,7 +345,7 @@ static double simulate_for_tunning(struct Asv* asv, double* k_position, double* 
     for(double asv_heading = 0.0; asv_heading < 2.0*PI; asv_heading += PI/4.0)
     {
       // Create the still sea surface.
-      struct Wave* wave = NULL;
+      struct Sea_surface* sea_surface = NULL;
       // Create the thrusters for the ASV by copying data from the existing ASV. 
       struct Thruster** thrusters = asv_get_thrusters(asv);
       struct Thruster** new_thrusters = (struct Thruster**)malloc(sizeof(struct Thruster*)*count_thrusters);
@@ -360,7 +360,7 @@ static double simulate_for_tunning(struct Asv* asv, double* k_position, double* 
       start_attitude.keys.y = 0;
       start_attitude.keys.z = asv_heading;        
       struct Asv_specification spec = asv_get_spec(asv);
-      struct Asv* new_asv = asv_new(spec, wave, start_point, start_attitude);
+      struct Asv* new_asv = asv_new(spec, sea_surface, start_point, start_attitude);
       asv_set_thrusters(new_asv, new_thrusters, count_thrusters);
       free(new_thrusters);
       asvs[j++] = new_asv;

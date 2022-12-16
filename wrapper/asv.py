@@ -1,6 +1,6 @@
 import ctypes
 import dll
-from wave import Wave
+from sea_surface import Sea_surface
 from geometry import Coordinates_3D, Rigid_body_DOF
 
    
@@ -98,17 +98,17 @@ class Asv(ctypes.Structure):
     Class to define an ASV. 
     '''    
 
-    def __init__(self, spec, wave, position, attitude):
+    def __init__(self, spec, sea_surface, position, attitude):
         '''
         Create and initialise an ASV.
         :param Asv_specification spec: Specification of the ASV.
-        :param Wave wave: Sea surface for the ASV.
+        :param Sea_surface sea_surface: Sea surface for the ASV.
         :param Coordinate_3D position: Position of ASV on the sea surface.
         :param Coordinate_3D attitude: Floating attitude of the ASV.
         '''
         asv_new = dll.dll.asv_new
         asv_new.restype = ctypes.POINTER(Asv)
-        result = asv_new(spec, wave.get_c_base_object(), position, attitude)
+        result = asv_new(spec, sea_surface.get_c_base_object(), position, attitude)
         self.__c_base_object = result 
     
     @classmethod
@@ -179,13 +179,13 @@ class Asv(ctypes.Structure):
         thrusters = [result[i] for i in range(count_thruster)]
         return thrusters
     
-    def set_sea_state(self, wave):
+    def set_sea_state(self, sea_surface):
         '''
         Modify the current sea state to a new sea state.
         '''
         asv_set_sea_state = dll.dll.asv_set_sea_state
         asv_set_sea_state.restype = None
-        result = asv_set_sea_state(self.__c_base_object, wave.get_c_base_object())
+        result = asv_set_sea_state(self.__c_base_object, sea_surface.get_c_base_object())
         self.__check_error_throw_exception()
         return result
 
@@ -231,7 +231,7 @@ class Asv(ctypes.Structure):
         '''
         Simulate the wave glider for multiple time steps. 
         :param callback_precompute: callback at the beginning of each time step. Can be used for setting rudder angle
-        for the time step, modify the wave for the time step, etc. callback_precompute takes as argument a pointer to the 
+        for the time step, modify the sea_surface for the time step, etc. callback_precompute takes as argument a pointer to the 
         rudder angle that is to be set. The return value of the callback is used to continue
         or exit from the simulation. If the callback returned false, simulation is terminated.
         :param callback_postcompute: callback at the end of each time step. Can be used for fetching/printing the results 
@@ -246,15 +246,15 @@ class Asv(ctypes.Structure):
         self.__check_error_throw_exception()
         return result
     
-    def get_wave(self):
+    def get_sea_surface(self):
         '''
         Get the sea surface initialised for the ASV.
         '''
-        asv_get_wave = dll.dll.asv_get_wave
-        asv_get_wave.restype = ctypes.POINTER(Wave)
-        result = asv_get_wave(self.__c_base_object)
+        asv_get_sea_surface = dll.dll.asv_get_sea_surface
+        asv_get_sea_surface.restype = ctypes.POINTER(Sea_surface)
+        result = asv_get_sea_surface(self.__c_base_object)
         self.__check_error_throw_exception()
-        return Wave.from_c_base_object(result)
+        return Sea_surface.from_c_base_object(result)
     
     def get_position_cog(self):
         '''

@@ -26,7 +26,7 @@ SET( SOURCE
   source/errors.c
   source/geometry.c
   source/regular_wave.c
-  source/wave.c
+  source/sea_surface.c
   source/asv.c
   source/pid_controller.c
   source/simulation.c

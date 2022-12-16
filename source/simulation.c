@@ -6,7 +6,7 @@
 #include "simulation.h"
 #include "pid_controller.h"
 #include "asv.h"
-#include "wave.h"
+#include "sea_surface.h"
 #include "geometry.h"
 #include "errors.h"
 #include "constants.h"
@@ -28,7 +28,7 @@ struct Buffer
   // Sea state
   double sig_wave_ht;  // m
   double wave_heading; // deg
-  double wave_elevation; // Wave elevation at the position of the vehicle, m.
+  double sea_surface_elevation; // Wave elevation at the position of the vehicle, m.
   // Vehicle dynamics
   double F_surge; // N
   double surge_acceleration; // m/s2.
@@ -50,7 +50,7 @@ struct Simulation
   pthread_t thread;
   // Inputs and outputs
   char id[32];
-  struct Wave* wave;
+  struct Wave* sea_surface;
   struct Asv* asv; 
   struct Controller* controller;
   union Coordinates_3D* waypoints;
@@ -101,7 +101,7 @@ static void simulation_write_output(struct Simulation* node, char* out_dir)
             "time(sec) "
             "sig_wave_ht(m) "
             "wave_heading(deg) "
-            "wave_elevation(m) "
+            "sea_surface_elevation(m) "
             "F_surge(N) "
             "surge_acc(m/s2) "
             "surge_vel(m/s) "
@@ -119,7 +119,7 @@ static void simulation_write_output(struct Simulation* node, char* out_dir)
             node->buffer[i].time,
             node->buffer[i].sig_wave_ht,
             node->buffer[i].wave_heading,
-            node->buffer[i].wave_elevation,
+            node->buffer[i].sea_surface_elevation,
             node->buffer[i].F_surge,
             node->buffer[i].surge_acceleration,
             node->buffer[i].surge_velocity,
@@ -159,9 +159,9 @@ static void* simulation_run_per_node_per_time_step(void* current_node)
 
   // save simulated data to buffer. 
   node->buffer[node->buffer_index].time               = current_time;
-  node->buffer[node->buffer_index].sig_wave_ht        = wave_get_significant_height(node->wave);
-  node->buffer[node->buffer_index].wave_heading       = wave_get_predominant_heading(node->wave) * 180.0/PI;
-  node->buffer[node->buffer_index].wave_elevation     = wave_get_elevation(node->wave, cog_position, current_time);
+  node->buffer[node->buffer_index].sig_wave_ht        = sea_surface_get_significant_height(node->sea_surface);
+  node->buffer[node->buffer_index].wave_heading       = sea_surface_get_predominant_heading(node->sea_surface) * 180.0/PI;
+  node->buffer[node->buffer_index].sea_surface_elevation     = sea_surface_get_elevation(node->sea_surface, cog_position, current_time);
   node->buffer[node->buffer_index].F_surge            = asv_get_F(node->asv).keys.pitch;
   node->buffer[node->buffer_index].surge_acceleration = asv_get_A(node->asv).keys.surge;
   node->buffer[node->buffer_index].surge_velocity     = asv_get_V(node->asv).keys.surge;
@@ -345,7 +345,7 @@ struct Simulation* simulation_new_node()
 {
   // Initialise memory
   struct Simulation* node = (struct Simulation*)malloc(sizeof(struct Simulation));
-  node->wave = NULL;
+  node->sea_surface = NULL;
   node->asv = NULL;
   node->controller = NULL;
   node->waypoints = NULL;
@@ -373,7 +373,7 @@ void simulation_delete(struct Simulation* first_node)
   {
   for(struct Simulation* current_node = first_node; current_node != NULL;)
     {
-      wave_delete(current_node->wave);
+      sea_surface_delete(current_node->sea_surface);
       asv_delete(current_node->asv);
       free(current_node->error_msg);
       free(current_node->buffer);
@@ -474,21 +474,21 @@ void simulation_set_input_using_file(struct Simulation* first_node,
     {
       int count_wave_spectral_directions  = 5;
       int count_wave_spectral_frequencies = 15;
-      current->wave = wave_new(wave_ht, 
+      current->sea_surface = sea_surface_new(wave_ht, 
                               normalise_angle_2PI(wave_heading * PI/180.0), 
                               rand_seed, 
                               count_wave_spectral_directions, 
                               count_wave_spectral_frequencies);
-      if(!current->wave)
+      if(!current->sea_surface)
       {
-        snprintf(error_buffer, sizeof(error_buffer), "Could not create wave with height %lf, heading %lf, rand seed %d", wave_ht, wave_heading, rand_seed);
+        snprintf(error_buffer, sizeof(error_buffer), "Could not create sea_surface with height %lf, heading %lf, rand seed %d", wave_ht, wave_heading, rand_seed);
         set_error_msg(&first_node->error_msg, error_buffer);
         return;
       }
     }
     else
     {
-      current->wave = NULL;
+      current->sea_surface = NULL;
     }
     
     // ASV specification
@@ -820,7 +820,7 @@ void simulation_set_input_using_file(struct Simulation* first_node,
     }
 
     // Initialise the asv
-    current->asv = asv_new(asv_spec, current->wave, origin_position, attitude);
+    current->asv = asv_new(asv_spec, current->sea_surface, origin_position, attitude);
 
     // thrusters
     toml_table_t *arrays = toml_array_in(table, "thrusters");
@@ -1009,7 +1009,7 @@ void simulation_set_input_using_asvs(struct Simulation* first_node,
 
       // Create and initialise the sea surface
       current->asv = asvs[n];
-      current->wave = asv_get_wave(current->asv);
+      current->sea_surface = asv_get_sea_surface(current->asv);
     }  
   }
   else

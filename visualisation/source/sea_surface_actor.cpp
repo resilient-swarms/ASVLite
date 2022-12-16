@@ -11,9 +11,9 @@
 using namespace asv_swarm;
 using namespace Visualisation;
 
-Sea_surface_actor::Sea_surface_actor(struct Wave* wave):
+Sea_surface_actor::Sea_surface_actor(struct Sea_surface* sea_surface):
   vtkPolyDataAlgorithm{},
-  wave{wave},
+  sea_surface{sea_surface},
   timer_count{0},
   timer_step_size{0.0},
   field_length {20.0},
@@ -35,7 +35,7 @@ Sea_surface_actor::Sea_surface_actor(struct Wave* wave):
   sea_surface_actor = vtkSmartPointer<vtkActor>::New();
   sea_surface_actor->SetMapper(sea_surface_mapper);
   sea_surface_actor->GetProperty()->SetRepresentationToWireframe();
-  sea_surface_actor->GetProperty()->SetColor(0,0,255); // blue waves
+  sea_surface_actor->GetProperty()->SetColor(0,0,255); // blue sea_surfaces
 }
 
 void Sea_surface_actor::increment_time() 
@@ -186,7 +186,7 @@ void Sea_surface_actor::set_sea_surface_elevations()
   {
     for(auto& point : points_row)
     {
-      point.keys.z = wave_get_elevation(wave, point, current_time);
+      point.keys.z = sea_surface_get_elevation(sea_surface, point, current_time);
     }
   }
 }

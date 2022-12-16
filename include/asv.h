@@ -3,7 +3,7 @@
 
 #include "geometry.h"
 
-struct Wave;
+struct Sea_surface;
 
 /**
  * Struct to hold specification of the vehicle. 
@@ -83,13 +83,13 @@ const union Coordinates_3D thruster_get_position(struct Thruster* thruster);
 /**
  * Create and initialise an asv.
  * @param specification of the ASV. 
- * @param wave is the irregular sea surface for the asv. 
+ * @param sea_surface is the irregular sea surface for the asv. 
  * @param position of the asv on the sea surface. 
  * @param attitude of the asv.
  * @return pointer to the initialised object if the operation was successful; else, returns a null pointer.
  */
 struct Asv* asv_new(const struct Asv_specification specification, 
-                    const struct Wave* wave, 
+                    const struct Sea_surface* sea_surface, 
                     union Coordinates_3D position, 
                     union Coordinates_3D attitude);
 
@@ -128,13 +128,13 @@ int asv_get_count_thrusters(struct Asv* asv);
 
 /**
  * Function to modify the current sea state to a new sea state. If operation was unsuccessful then the 
- * new wave is rejected and the asv instance retains the pointer to its existing wave. Since the asv
- * may retain the pointer to the old wave if error occurred, check for error by calling asv_get_error_msg() before
- * calling wave_delete() on the replaced instance of Wave.  
- * @param wave is a non-null pointer for the new instance of irregular wave. 
- * If memory is to  be cleaned, call wave_delete() on the pointer to the old irregular wave instance.   
+ * new sea_surface is rejected and the asv instance retains the pointer to its existing sea_surface. Since the asv
+ * may retain the pointer to the old sea_surface if error occurred, check for error by calling asv_get_error_msg() before
+ * calling sea_surface_delete() on the replaced instance of Sea_surface.  
+ * @param sea_surface is a non-null pointer for the new instance of irregular sea_surface. 
+ * If memory is to  be cleaned, call sea_surface_delete() on the pointer to the old irregular sea_surface instance.   
  */
-void asv_set_sea_state(struct Asv* asv, const struct Wave* wave);
+void asv_set_sea_state(struct Asv* asv, const struct Sea_surface* sea_surface);
 
 /**
  * Function to compute dynamics of the ASV by incrementing time.
@@ -164,7 +164,7 @@ void wave_glider_compute_dynamics(struct Asv* asv,
 /**
  * Simulate the wave glider for multiple time steps. 
  * @param callback_precompute callback at the beginning of each time step. Can be used for setting rudder angle
- * for the time step, modify the wave for the time step, etc. callback_precompute takes as argument a pointer to the 
+ * for the time step, modify the sea_surface for the time step, etc. callback_precompute takes as argument a pointer to the 
  * rudder angle that is to be set. The return value of the callback is used to continue
  * or exit from the simulation. If the callback returned false, simulation is terminated. 
  * @param callback_postcompute callback at the end of each time step. Can be used for fetching/printing the results 
@@ -175,7 +175,7 @@ void wave_glider_run(struct Asv* asv, bool(*callback_precompute)(double*), void(
 /**
  * Get the sea state initialised for the asv.
  */
-struct Wave* asv_get_wave(struct Asv* asv); 
+struct Sea_surface* asv_get_sea_surface(struct Asv* asv); 
 
 /**
  * Get the position of the asv using the COG of the vehicle. 

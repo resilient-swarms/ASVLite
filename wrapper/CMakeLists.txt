@@ -48,7 +48,7 @@ SET( INCLUDE
   ../include/errors.h
   ../include/geometry.h
   ../include/regular_wave.h  
-  ../include/wave.h 
+  ../include/sea_surface.h 
   ../include/asv.h 
   ../include/pid_controller.h
   ../include/simulation.h
@@ -62,7 +62,7 @@ SET( SOURCE
   ../source/errors.c
   ../source/geometry.c
   ../source/regular_wave.c
-  ../source/wave.c
+  ../source/sea_surface.c
   ../source/asv.c
   ../source/pid_controller.c
   ../source/simulation.c

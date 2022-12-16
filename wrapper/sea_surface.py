@@ -3,7 +3,7 @@ import dll
 from geometry import Coordinates_3D
 from regular_wave import Regular_wave
       
-class Wave(ctypes.Structure):
+class Sea_surface(ctypes.Structure):
     '''
     Class to define a sea surface. 
     '''
@@ -17,9 +17,9 @@ class Wave(ctypes.Structure):
         :param int count_wave_spectral_directions: The number of discrete direction bands in the wave spectrum. Value should be greater than 1.
         :param int count_wave_spectral_frequencies: The number of discrete frequency bands in the wave spectrum. Value should be greater than 1.
         '''
-        wave_new = dll.dll.wave_new
-        wave_new.restype = ctypes.POINTER(Wave)
-        result = wave_new(ctypes.c_double(sig_wave_height), 
+        sea_surface_new = dll.dll.sea_surface_new
+        sea_surface_new.restype = ctypes.POINTER(Sea_surface)
+        result = sea_surface_new(ctypes.c_double(sig_wave_height), 
                           ctypes.c_double(wave_heading), 
                           ctypes.c_int(rand_seed), 
                           ctypes.c_int(count_wave_spectral_directions), 
@@ -29,31 +29,31 @@ class Wave(ctypes.Structure):
     @classmethod
     def from_c_base_object(cls, c_base_object):
         '''
-        Create and initialise a wave from a c object. 
+        Create and initialise a sea_surface from a c object. 
         '''
-        wave = cls(0.0, 0.0, 0, 0, 0)
-        wave.__delete()
-        wave.__c_base_object = c_base_object
-        return wave
+        sea_surface = cls(0.0, 0.0, 0, 0, 0)
+        sea_surface.__delete()
+        sea_surface.__c_base_object = c_base_object
+        return sea_surface
 
     def __del__(self):
         self.__delete()
     
     def __delete(self):
         '''
-        Free memory allocated for the wave. 
+        Free memory allocated for the sea_surface. 
         '''
-        wave_delete = dll.dll.wave_delete
-        wave_delete.restype = None 
-        wave_delete(self.__c_base_object)
+        sea_surface_delete = dll.dll.sea_surface_delete
+        sea_surface_delete.restype = None 
+        sea_surface_delete(self.__c_base_object)
     
     def __get_error_msg(self):
         '''
-        Returns error message related to the last function called for the instance of Wave.
+        Returns error message related to the last function called for the instance of Sea_surface.
         '''
-        wave_get_error_msg = dll.dll.wave_get_error_msg
-        wave_get_error_msg.restype = ctypes.c_char_p
-        result = wave_get_error_msg(self.__c_base_object)
+        sea_surface_get_error_msg = dll.dll.sea_surface_get_error_msg
+        sea_surface_get_error_msg.restype = ctypes.c_char_p
+        result = sea_surface_get_error_msg(self.__c_base_object)
         return result
     
     def __check_error_throw_exception(self):
@@ -73,9 +73,9 @@ class Wave(ctypes.Structure):
         :param Coordinates_3D location: Location at which the elevation is to be calculated. All coordinates in meter.
         :param float time: Time for which the elevation is to be calculated. Time is measured in seconds from the start of simulation. Time should be non-negative.
         '''
-        wave_get_elevation = dll.dll.wave_get_elevation
-        wave_get_elevation.restype = ctypes.c_double
-        result = wave_get_elevation(self.__c_base_object, location, ctypes.c_double(time))
+        sea_surface_get_elevation = dll.dll.sea_surface_get_elevation
+        sea_surface_get_elevation.restype = ctypes.c_double
+        result = sea_surface_get_elevation(self.__c_base_object, location, ctypes.c_double(time))
         self.__check_error_throw_exception()
         return result
     
@@ -83,9 +83,9 @@ class Wave(ctypes.Structure):
         '''
         Get the number of direction bands in the wave spectrum.
         '''
-        wave_get_count_wave_spectral_directions = dll.dll.wave_get_count_wave_spectral_directions
-        wave_get_count_wave_spectral_directions.restype = ctypes.c_int
-        result = wave_get_count_wave_spectral_directions(self.__c_base_object)
+        sea_surface_get_count_wave_spectral_directions = dll.dll.sea_surface_get_count_wave_spectral_directions
+        sea_surface_get_count_wave_spectral_directions.restype = ctypes.c_int
+        result = sea_surface_get_count_wave_spectral_directions(self.__c_base_object)
         self.__check_error_throw_exception()
         return result
     
@@ -93,9 +93,9 @@ class Wave(ctypes.Structure):
         '''
         Get the number of frequency bands in the wave spectrum.
         '''
-        wave_get_count_wave_spectral_frequencies = dll.dll.wave_get_count_wave_spectral_frequencies
-        wave_get_count_wave_spectral_frequencies.restype = ctypes.c_int
-        result = wave_get_count_wave_spectral_frequencies(self.__c_base_object)
+        sea_surface_get_count_wave_spectral_frequencies = dll.dll.sea_surface_get_count_wave_spectral_frequencies
+        sea_surface_get_count_wave_spectral_frequencies.restype = ctypes.c_int
+        result = sea_surface_get_count_wave_spectral_frequencies(self.__c_base_object)
         self.__check_error_throw_exception()
         return result
     
@@ -103,9 +103,9 @@ class Wave(ctypes.Structure):
         '''
         Get the regular wave at spectrum[d][f].
         '''
-        wave_get_regular_wave_at = dll.dll.wave_get_regular_wave_at
-        wave_get_regular_wave_at.restype = ctypes.POINTER(Regular_wave)
-        result = wave_get_regular_wave_at(self.__c_base_object, ctypes.c_int(d), ctypes.c_int(f))
+        sea_surface_get_regular_wave_at = dll.dll.sea_surface_get_regular_wave_at
+        sea_surface_get_regular_wave_at.restype = ctypes.POINTER(Regular_wave)
+        result = sea_surface_get_regular_wave_at(self.__c_base_object, ctypes.c_int(d), ctypes.c_int(f))
         self.__check_error_throw_exception()
         return Regular_wave.from_c_base_object(result)
 
@@ -113,9 +113,9 @@ class Wave(ctypes.Structure):
         '''
         Get the minimum spectral frequency, in Hz, for the wave spectrum.
         '''
-        wave_get_min_spectral_frequency = dll.dll.wave_get_min_spectral_frequency
-        wave_get_min_spectral_frequency.restype = ctypes.c_double
-        result = wave_get_min_spectral_frequency(self.__c_base_object)
+        sea_surface_get_min_spectral_frequency = dll.dll.sea_surface_get_min_spectral_frequency
+        sea_surface_get_min_spectral_frequency.restype = ctypes.c_double
+        result = sea_surface_get_min_spectral_frequency(self.__c_base_object)
         self.__check_error_throw_exception()
         return result
 
@@ -123,9 +123,9 @@ class Wave(ctypes.Structure):
         '''
         Get the maximum spectral frequency, in Hz, for the wave spectrum.
         '''
-        wave_get_max_spectral_frequency = dll.dll.wave_get_max_spectral_frequency
-        wave_get_max_spectral_frequency.restype = ctypes.c_double
-        result = wave_get_max_spectral_frequency(self.__c_base_object)
+        sea_surface_get_max_spectral_frequency = dll.dll.sea_surface_get_max_spectral_frequency
+        sea_surface_get_max_spectral_frequency.restype = ctypes.c_double
+        result = sea_surface_get_max_spectral_frequency(self.__c_base_object)
         self.__check_error_throw_exception()
         return result
     
@@ -133,9 +133,9 @@ class Wave(ctypes.Structure):
         '''
         Get the significant wave height, in meter, for the sea state.
         '''
-        wave_get_significant_height = dll.dll.wave_get_significant_height
-        wave_get_significant_height.restype = ctypes.c_double
-        result = wave_get_significant_height(self.__c_base_object)
+        sea_surface_get_significant_height = dll.dll.sea_surface_get_significant_height
+        sea_surface_get_significant_height.restype = ctypes.c_double
+        result = sea_surface_get_significant_height(self.__c_base_object)
         self.__check_error_throw_exception()
         return result
 
@@ -143,8 +143,8 @@ class Wave(ctypes.Structure):
         '''
         Get the predominant wave heading, in radians, for the sea state.
         '''
-        wave_get_predominant_heading = dll.dll.wave_get_predominant_heading
-        wave_get_predominant_heading.restype = ctypes.c_double
-        result = wave_get_predominant_heading(self.__c_base_object)
+        sea_surface_get_predominant_heading = dll.dll.sea_surface_get_predominant_heading
+        sea_surface_get_predominant_heading.restype = ctypes.c_double
+        result = sea_surface_get_predominant_heading(self.__c_base_object)
         self.__check_error_throw_exception()
         return result

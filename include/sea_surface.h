@@ -1,27 +1,27 @@
-#ifndef WAVE_H
-#define WAVE_H
+#ifndef SEA_SURFACE_H
+#define SEA_SURFACE_H
 
 #include "geometry.h"
 
 /**
  * @file
- * An instance of Wave should only be created by calling the function wave_new(). 
+ * An instance of Sea_surface should only be created by calling the function sea_surface_new(). 
  * This function allocates and initialises a block of memory on the stack, and 
- * therefore all calls to wave_new() should be paired with a call to wave_delete() 
+ * therefore all calls to sea_surface_new() should be paired with a call to sea_surface_delete() 
  * to avoid memory leaks. 
  * 
- * All functions operating on an instance of a Wave have a mechanism to notify of 
- * exceptions. All instances of Wave have a member variable that holds a pointer 
+ * All functions operating on an instance of a Sea_surface have a mechanism to notify of 
+ * exceptions. All instances of Sea_surface have a member variable that holds a pointer 
  * to an error message. When there are no errors, the pointer is set to null. If 
- * an error occurs in a call to a function that takes an instance of Wave, an error 
+ * an error occurs in a call to a function that takes an instance of Sea_surface, an error 
  * message is set within the instance. The error message can be fetched using the 
- * function wave_get_error_msg(). The expected usage is to pair all function calls 
- * that take an instance of Wave with a call to wave_get_error_msg() and check for 
+ * function sea_surface_get_error_msg(). The expected usage is to pair all function calls 
+ * that take an instance of Sea_surface with a call to sea_surface_get_error_msg() and check for 
  * a null pointer. If a null pointer is returned, there is no error; otherwise, an 
  * error has occurred. Any subsequent calls to other functions that take an instance 
- * of Wave will reset the last know error message. 
+ * of Sea_surface will reset the last know error message. 
  */
-struct Wave;
+struct Sea_surface;
 
 /**
  * Create and initialise an irregular sea surface.
@@ -38,22 +38,22 @@ struct Wave;
  * @return pointer to the initialised object if the operation was successful; 
  * else, returns a null pointer.
  */
-struct Wave* wave_new(double sig_wave_ht,
+struct Sea_surface* sea_surface_new(double sig_wave_ht,
                       double wave_heading, 
                       int rand_seed,
                       int count_wave_spectral_directions,
                       int count_wave_spectral_frequencies);
 /**
  * Free memory allocated for the wave.
- * @param wave is a non-null pointer to an instance of Wave to be deallocated.
+ * @param wave is a non-null pointer to an instance of Sea_surface to be deallocated.
  */
-void wave_delete(struct Wave* wave);
+void sea_surface_delete(struct Sea_surface* wave);
 
 /**
- * Returns error message related to the last function called for the instance of Wave.
+ * Returns error message related to the last function called for the instance of Sea_surface.
  * @return pointer to the error msg, if any, else returns a null pointer. 
  */
-const char* wave_get_error_msg(const struct Wave* wave);
+const char* sea_surface_get_error_msg(const struct Sea_surface* wave);
 
 /**
  * Get sea surface elevation at the given location for the given time. 
@@ -62,19 +62,19 @@ const char* wave_get_error_msg(const struct Wave* wave);
  * from start of simulation.
  * @return wave elevation in meter. 
  */
-double wave_get_elevation(const struct Wave* wave, 
+double sea_surface_get_elevation(const struct Sea_surface* wave, 
                           union Coordinates_3D location, 
                           double time);
 
 /**
  * Function to get the number of direction bands in the wave spectrum.
  */ 
-int wave_get_count_wave_spectral_directions(const struct Wave* wave);
+int sea_surface_get_count_wave_spectral_directions(const struct Sea_surface* wave);
 
 /** 
  * Function to get the number of frequency bands in the wave spectrum.
  */
-int wave_get_count_wave_spectral_frequencies(const struct Wave* wave);
+int sea_surface_get_count_wave_spectral_frequencies(const struct Sea_surface* wave);
 
 /**
  * Function to get the regular wave at spectrum[d][f].
@@ -82,26 +82,26 @@ int wave_get_count_wave_spectral_frequencies(const struct Wave* wave);
  * @param f is the index for frequency and should be in the range [0, count_wave_spectral_frequencies)
  * @return pointer to the regular wave if found; else returns a null pointer.
  */
-const struct Regular_wave* wave_get_regular_wave_at(const struct Wave* wave, int d, int f); 
+const struct Regular_wave* sea_surface_get_regular_wave_at(const struct Sea_surface* wave, int d, int f); 
 
 /**
  * Function to get the minimum spectral frequency, in Hz, for the wave spectrum.
  */ 
-double wave_get_min_spectral_frequency(const struct Wave* wave);
+double sea_surface_get_min_spectral_frequency(const struct Sea_surface* wave);
 
 /**
  * Function to get the maximum spectral frequency, in Hz, for the wave spectrum.
  */ 
-double wave_get_max_spectral_frequency(const struct Wave* wave);
+double sea_surface_get_max_spectral_frequency(const struct Sea_surface* wave);
 
 /**
  * Function to get the significant wave height, in meter, for the sea state.
  */ 
-double wave_get_significant_height(const struct Wave* wave);
+double sea_surface_get_significant_height(const struct Sea_surface* wave);
 
 /**
  * Function to get the predominant wave heading, in radians, for the sea state.
  */ 
-double wave_get_predominant_heading(const struct Wave* wave);
+double sea_surface_get_predominant_heading(const struct Sea_surface* wave);
 
-#endif // WAVE_H
+#endif // SEA_SURFACE_H

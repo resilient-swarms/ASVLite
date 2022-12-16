@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include "asv.h"
-#include "wave.h"
+#include "sea_surface.h"
 #include "regular_wave.h"
 #include "errors.h"
 #include "constants.h"
@@ -65,7 +65,7 @@ struct Asv
   struct Asv_specification spec; //!< ASV specification.
   int count_thrusters;           //!< Number of thrusters attached to the ASV.
   struct Thruster** thrusters;   //!< Array of thrusters.
-  struct Wave* wave;       //!< Irregular wave instance. 
+  struct Sea_surface* sea_surface;       //!< Irregular sea_surface instance. 
   
   // Initial used for input but later contains results. 
   union Coordinates_3D origin_position; //!< Position of the origin of the body-fixed frame in 
@@ -250,7 +250,7 @@ static void set_stiffness(struct Asv* asv)
 
 static void set_unit_wave_pressure(struct Asv* asv)
 {
-  if(asv->wave)
+  if(asv->sea_surface)
   {
     const char* error_computation_failed = "Unit pressure computation failed.";
     double H_w = 1.0; // unit wave height in m.
@@ -293,7 +293,7 @@ static void set_unit_wave_pressure(struct Asv* asv)
 // Function to compute the wave force for the current time step.
 static void set_wave_force(struct Asv* asv)
 {
-  if(asv->wave)
+  if(asv->sea_surface)
   {
     const char* error_computation_failed = "Wave force computation failed.";
 
@@ -312,14 +312,14 @@ static void set_wave_force(struct Asv* asv)
     }
 
     // For each wave in the wave spectrum
-    int count_wave_spectral_directions  = wave_get_count_wave_spectral_directions(asv->wave); 
-    int count_wave_spectral_frequencies = wave_get_count_wave_spectral_frequencies(asv->wave); 
+    int count_wave_spectral_directions  = sea_surface_get_count_wave_spectral_directions(asv->sea_surface); 
+    int count_wave_spectral_frequencies = sea_surface_get_count_wave_spectral_frequencies(asv->sea_surface); 
     for(int i = 0; i < count_wave_spectral_directions; ++i)
     {
       for(int j = 0; j < count_wave_spectral_frequencies; ++j)
       {
         // Regular wave
-        const struct Regular_wave* wave = wave_get_regular_wave_at(asv->wave, i,j);
+        const struct Regular_wave* wave = sea_surface_get_regular_wave_at(asv->sea_surface, i,j);
 
         // Compute the encounter frequency
         double wave_direction = regular_wave_get_direction(wave);
@@ -657,7 +657,7 @@ void thruster_set_thrust(struct Thruster* thruster, const union Coordinates_3D o
 } 
 
 struct Asv* asv_new(const struct Asv_specification specification, 
-                    const struct Wave* wave, 
+                    const struct Sea_surface* sea_surface, 
                     union Coordinates_3D position, 
                     union Coordinates_3D attitude)
 {
@@ -671,8 +671,8 @@ struct Asv* asv_new(const struct Asv_specification specification,
     // Initialise time record 
     asv->dynamics.time = 0.0;
 
-    // set the wave for the ASV
-    asv->wave = (struct Wave*)wave;
+    // set the sea_surface for the ASV
+    asv->sea_surface = (struct Sea_surface*)sea_surface;
 
     // Initialise all the vectors matrices to zero.
     if(asv->dynamics.P_unit_wave = (double*)malloc(sizeof(double) * COUNT_ASV_SPECTRAL_FREQUENCIES * 2))
@@ -711,11 +711,11 @@ struct Asv* asv_new(const struct Asv_specification specification,
     asv->attitude = attitude;
     asv->attitude.keys.z = normalise_angle_2PI(asv->attitude.keys.z);
     asv->origin_position = position;
-    if(wave)
+    if(sea_surface)
     {
-      // Place the asv vertically in the correct position W.R.T wave
-      asv->origin_position.keys.z = wave_get_elevation(asv->wave, asv->origin_position, 0.0) - asv->spec.T; 
-      const char* error_msg = wave_get_error_msg(asv->wave);
+      // Place the asv vertically in the correct position W.R.T sea_surface
+      asv->origin_position.keys.z = sea_surface_get_elevation(asv->sea_surface, asv->origin_position, 0.0) - asv->spec.T; 
+      const char* error_msg = sea_surface_get_error_msg(asv->sea_surface);
       if(error_msg)
       {
         asv_delete(asv);
@@ -724,8 +724,8 @@ struct Asv* asv_new(const struct Asv_specification specification,
 
       // Set minimum and maximum encounter frequency
       double max_speed_for_spectrum = 2.0 * asv->spec.max_speed;
-      double wave_min_spectral_frequency = wave_get_min_spectral_frequency(asv->wave); 
-      double wave_max_spectral_frequency = wave_get_max_spectral_frequency(asv->wave); 
+      double wave_min_spectral_frequency = sea_surface_get_min_spectral_frequency(asv->sea_surface); 
+      double wave_max_spectral_frequency = sea_surface_get_max_spectral_frequency(asv->sea_surface); 
       asv->dynamics.P_unit_wave_freq_min = get_encounter_frequency(wave_min_spectral_frequency, max_speed_for_spectrum, 0);
       asv->dynamics.P_unit_wave_freq_max = get_encounter_frequency(wave_max_spectral_frequency, max_speed_for_spectrum, PI);
       // Set the wave force for unit waves
@@ -755,14 +755,14 @@ struct Asv* asv_new(const struct Asv_specification specification,
   }
 }
 
-void asv_set_sea_state(struct Asv* asv, const struct Wave* wave)
+void asv_set_sea_state(struct Asv* asv, const struct Sea_surface* sea_surface)
 { 
   if(asv)
   {
     clear_error_msg(&asv->error_msg);
-    const struct Wave* old_wave = asv->wave;
-    // set the wave for the ASV
-    asv->wave = (struct Wave*)wave;
+    const struct Sea_surface* old_sea_surface = asv->sea_surface;
+    // set the sea_surface for the ASV
+    asv->sea_surface = (struct Sea_surface*)sea_surface;
 
     // Initialise all the vectors matrices to zero.
     for(int i = 0; i < COUNT_ASV_SPECTRAL_FREQUENCIES; ++i)
@@ -773,22 +773,22 @@ void asv_set_sea_state(struct Asv* asv, const struct Wave* wave)
       }
     }
 
-    if(wave)
+    if(sea_surface)
     {
-      // Place the asv vertically in the correct position W.R.T wave
-      asv->origin_position.keys.z = wave_get_elevation(asv->wave, asv->origin_position, asv->dynamics.time) - asv->spec.T; 
-      const char* error_msg = wave_get_error_msg(asv->wave);
+      // Place the asv vertically in the correct position W.R.T sea_surface
+      asv->origin_position.keys.z = sea_surface_get_elevation(asv->sea_surface, asv->origin_position, asv->dynamics.time) - asv->spec.T; 
+      const char* error_msg = sea_surface_get_error_msg(asv->sea_surface);
       if(error_msg)
       {
         set_error_msg(&asv->error_msg, error_msg);
-        asv_set_sea_state(asv, old_wave);
+        asv_set_sea_state(asv, old_sea_surface);
         return;
       }
 
       // Set minimum and maximum encounter frequency
       double max_speed_for_spectrum = 2.0 * asv->spec.max_speed;
-      double wave_min_spectral_frequency = wave_get_min_spectral_frequency(asv->wave); 
-      double wave_max_spectral_frequency = wave_get_max_spectral_frequency(asv->wave); 
+      double wave_min_spectral_frequency = sea_surface_get_min_spectral_frequency(asv->sea_surface); 
+      double wave_max_spectral_frequency = sea_surface_get_max_spectral_frequency(asv->sea_surface); 
       asv->dynamics.P_unit_wave_freq_min = get_encounter_frequency(wave_min_spectral_frequency, max_speed_for_spectrum, 0);
       asv->dynamics.P_unit_wave_freq_max = get_encounter_frequency(wave_max_spectral_frequency, max_speed_for_spectrum, PI);
       
@@ -797,7 +797,7 @@ void asv_set_sea_state(struct Asv* asv, const struct Wave* wave)
       if(asv->error_msg)
       {
         // Some error occurred in the call to set_unit_wave_pressure.
-        asv_set_sea_state(asv, old_wave);
+        asv_set_sea_state(asv, old_sea_surface);
         return;
       }
     }
@@ -902,12 +902,12 @@ int asv_get_count_thrusters(struct Asv* asv)
   }
 }
 
-struct Wave* asv_get_wave(struct Asv* asv)
+struct Sea_surface* asv_get_sea_surface(struct Asv* asv)
 {
   if(asv)
   {
     clear_error_msg(&asv->error_msg);
-    return asv->wave;
+    return asv->sea_surface;
   }
   else
   {
@@ -1023,7 +1023,6 @@ void wave_glider_set_thrust_tuning_factor(struct Asv* asv, double tuning_factor)
   else
   {
     set_error_msg(&asv->error_msg, error_null_pointer);
-    return (union Coordinates_3D){0.0, 0.0, 0.0};
   }
 }
 
