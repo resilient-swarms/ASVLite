@@ -32,11 +32,11 @@ struct Sea_surface
   char* error_msg;                  //!< Output variable. Error message, if any.
 };
 
-const char* sea_surface_get_error_msg(const struct Sea_surface* wave)
+const char* sea_surface_get_error_msg(const struct Sea_surface* sea_surface)
 {
-  if(wave)
+  if(sea_surface)
   {
-    return wave->error_msg;
+    return sea_surface->error_msg;
   }
   return NULL;
 }
@@ -48,26 +48,26 @@ struct Sea_surface* sea_surface_new(const double sig_wave_ht,
                       const int count_wave_spectral_directions,
                       const int count_wave_spectral_frequencies)
 {
-  struct Sea_surface* wave = NULL;
+  struct Sea_surface* sea_surface = NULL;
 
   if(sig_wave_ht > 0.0 && 
      count_wave_spectral_directions > 1 && 
      count_wave_spectral_frequencies > 1)
   {
     // Initialise the pointers...
-    if(wave = (struct Sea_surface*)malloc(sizeof(struct Sea_surface)))
+    if(sea_surface = (struct Sea_surface*)malloc(sizeof(struct Sea_surface)))
     {
-      if(wave->spectrum = (struct Regular_wave**)malloc(sizeof(struct Regular_wave*) * count_wave_spectral_directions * count_wave_spectral_frequencies)) 
+      if(sea_surface->spectrum = (struct Regular_wave**)malloc(sizeof(struct Regular_wave*) * count_wave_spectral_directions * count_wave_spectral_frequencies)) 
       {
-        wave->error_msg = NULL;
+        sea_surface->error_msg = NULL;
         // ... and then the other member variables.
-        wave->random_number_seed = rand_seed;
-        srand(wave->random_number_seed);
-        wave->heading = normalise_angle_2PI(wave_heading);
-        wave->count_wave_spectral_directions = count_wave_spectral_directions;
-        wave->count_wave_spectral_frequencies = count_wave_spectral_frequencies;
-        wave->min_spectral_wave_heading = normalise_angle_2PI(wave->heading - PI/2.0);
-        wave->max_spectral_wave_heading = normalise_angle_2PI(wave->heading + PI/2.0);
+        sea_surface->random_number_seed = rand_seed;
+        srand(sea_surface->random_number_seed);
+        sea_surface->heading = normalise_angle_2PI(wave_heading);
+        sea_surface->count_wave_spectral_directions = count_wave_spectral_directions;
+        sea_surface->count_wave_spectral_frequencies = count_wave_spectral_frequencies;
+        sea_surface->min_spectral_wave_heading = normalise_angle_2PI(sea_surface->heading - PI/2.0);
+        sea_surface->max_spectral_wave_heading = normalise_angle_2PI(sea_surface->heading + PI/2.0);
         
         // Bretschneider spectrum
         // Ref: Proceedings of the 23rd ITTC - Vol II, Table A.2, A.3.
@@ -85,10 +85,10 @@ struct Sea_surface* sea_surface_new(const double sig_wave_ht,
         double B = 4.0*alpha*G*G / (pow(2.0*PI, 4.0)* H_s*H_s);
         double f_p = 0.946 * pow(B, 0.25);
 
-        wave->significant_wave_height = H_s;
-        wave->peak_spectral_frequency = f_p;
-        wave->min_spectral_frequency = 0.652 * f_p;
-        wave->max_spectral_frequency = 5.946 * f_p;
+        sea_surface->significant_wave_height = H_s;
+        sea_surface->peak_spectral_frequency = f_p;
+        sea_surface->min_spectral_frequency = 0.652 * f_p;
+        sea_surface->max_spectral_frequency = 5.946 * f_p;
 
         // Create regular waves
         bool has_NULL_in_spectrum = false; // A flag that will be set to true if any of the created component wave turns out to be NULL.
@@ -98,12 +98,12 @@ struct Sea_surface* sea_surface_new(const double sig_wave_ht,
         for(int i = 0; i < count_wave_spectral_directions; ++i)
         {
           mu += wave_heading_step_size;
-          double frequency_step_size = (wave->max_spectral_frequency - 
-                                        wave->min_spectral_frequency) /
+          double frequency_step_size = (sea_surface->max_spectral_frequency - 
+                                        sea_surface->min_spectral_frequency) /
                                         (count_wave_spectral_frequencies - 1);
           for(int j = 0; j < count_wave_spectral_frequencies; ++j)
           {
-            double f = wave->min_spectral_frequency + j * frequency_step_size;
+            double f = sea_surface->min_spectral_frequency + j * frequency_step_size;
             double S = (A/pow(f,5.0)) * exp(-B/pow(f,4.0)) * frequency_step_size;
           
             // Direction function G = (2/PI) * cos(mu)*cos(mu) * delta_mu
@@ -113,11 +113,11 @@ struct Sea_surface* sea_surface_new(const double sig_wave_ht,
             // Create a wave
             double amplitude = sqrt(2.0 * S * G_spectrum); 
             double phase = rand(); 
-            double wave_heading = normalise_angle_2PI(mu + wave->heading);
+            double wave_heading = normalise_angle_2PI(mu + sea_surface->heading);
             struct Regular_wave* regular_wave = regular_wave_new(amplitude, f, phase, wave_heading);
             if(regular_wave)
             {
-              wave->spectrum[i*count_wave_spectral_frequencies + j] = regular_wave;
+              sea_surface->spectrum[i*count_wave_spectral_frequencies + j] = regular_wave;
             }
             else 
             {
@@ -136,56 +136,56 @@ struct Sea_surface* sea_surface_new(const double sig_wave_ht,
         {
           // One or more of the regular wave is NULL. 
           // This is an invalid spectrum.
-          sea_surface_delete(wave);
-          wave = NULL;
+          sea_surface_delete(sea_surface);
+          sea_surface = NULL;
         }
       }
       else
       {
-        free(wave);
-        wave = NULL;
+        free(sea_surface);
+        sea_surface = NULL;
       }
     }
   }
   
-  return wave;
+  return sea_surface;
 }
 
-void sea_surface_delete(struct Sea_surface* wave)
+void sea_surface_delete(struct Sea_surface* sea_surface)
 {
-  if(wave)
+  if(sea_surface)
   {
-    for(int i = 0; i < (wave->count_wave_spectral_directions * wave->count_wave_spectral_frequencies); ++i)
+    for(int i = 0; i < (sea_surface->count_wave_spectral_directions * sea_surface->count_wave_spectral_frequencies); ++i)
     {
-      if(wave->spectrum[i])
+      if(sea_surface->spectrum[i])
       {
-        regular_wave_delete(wave->spectrum[i]);
+        regular_wave_delete(sea_surface->spectrum[i]);
       }
     }
     
-    free(wave->spectrum);
-    free(wave->error_msg);
-    free(wave);
-    wave = NULL;
+    free(sea_surface->spectrum);
+    free(sea_surface->error_msg);
+    free(sea_surface);
+    sea_surface = NULL;
   }
 }
 
-double sea_surface_get_elevation(const struct Sea_surface* wave, 
+double sea_surface_get_elevation(const struct Sea_surface* sea_surface, 
                           const union Coordinates_3D location,
                           double time)
 {
-  if(wave)
+  if(sea_surface)
   {
-    clear_error_msg(&wave->error_msg);
+    clear_error_msg(&sea_surface->error_msg);
     // check if time is negative
     if(time >= 0.0)
     {
       double elevation = 0.0;
-      for(int i = 0; i < wave->count_wave_spectral_directions; ++i)
+      for(int i = 0; i < sea_surface->count_wave_spectral_directions; ++i)
       {
-        for(int j = 0; j < wave->count_wave_spectral_frequencies; ++j)
+        for(int j = 0; j < sea_surface->count_wave_spectral_frequencies; ++j)
         {
-          const struct Regular_wave* regular_wave = sea_surface_get_regular_wave_at(wave, i, j);
+          const struct Regular_wave* regular_wave = sea_surface_get_regular_wave_at(sea_surface, i, j);
           if(!regular_wave)
           {
             // Something really wrong happened.
@@ -197,7 +197,7 @@ double sea_surface_get_elevation(const struct Sea_surface* wave,
           if(error_msg)
           {
             // Something went wrong when getting wave elevation for the regular_wave.
-            set_error_msg(&wave->error_msg, error_msg);
+            set_error_msg(&sea_surface->error_msg, error_msg);
             return 0.0;
           }
           else
@@ -210,7 +210,7 @@ double sea_surface_get_elevation(const struct Sea_surface* wave,
     }
     else
     {
-      set_error_msg(&wave->error_msg, error_negative_time);
+      set_error_msg(&sea_surface->error_msg, error_negative_time);
       return 0.0;
     }
   }
@@ -220,12 +220,12 @@ double sea_surface_get_elevation(const struct Sea_surface* wave,
   }
 }
 
-int sea_surface_get_count_wave_spectral_directions(const struct Sea_surface* wave)
+int sea_surface_get_count_wave_spectral_directions(const struct Sea_surface* sea_surface)
 {
-  if(wave)
+  if(sea_surface)
   {
-    clear_error_msg(&wave->error_msg);
-    return wave->count_wave_spectral_directions;
+    clear_error_msg(&sea_surface->error_msg);
+    return sea_surface->count_wave_spectral_directions;
   }
   else
   {
@@ -233,12 +233,12 @@ int sea_surface_get_count_wave_spectral_directions(const struct Sea_surface* wav
   }
 }
 
-int sea_surface_get_count_wave_spectral_frequencies(const struct Sea_surface* wave)
+int sea_surface_get_count_wave_spectral_frequencies(const struct Sea_surface* sea_surface)
 {
-  if(wave)
+  if(sea_surface)
   {
-    clear_error_msg(&wave->error_msg);
-    return wave->count_wave_spectral_frequencies;
+    clear_error_msg(&sea_surface->error_msg);
+    return sea_surface->count_wave_spectral_frequencies;
   }
   else
   {
@@ -246,20 +246,20 @@ int sea_surface_get_count_wave_spectral_frequencies(const struct Sea_surface* wa
   }
 }
 
-const struct Regular_wave* sea_surface_get_regular_wave_at(const struct Sea_surface* wave, int d, int f)
+const struct Regular_wave* sea_surface_get_regular_wave_at(const struct Sea_surface* sea_surface, int d, int f)
 {
-  if(wave)
+  if(sea_surface)
   {
-    clear_error_msg(&wave->error_msg);
-    if(d >= 0 && d < wave->count_wave_spectral_directions &&
-      f >= 0 && f < wave->count_wave_spectral_frequencies)
+    clear_error_msg(&sea_surface->error_msg);
+    if(d >= 0 && d < sea_surface->count_wave_spectral_directions &&
+      f >= 0 && f < sea_surface->count_wave_spectral_frequencies)
     {
-      return wave->spectrum[d*wave->count_wave_spectral_frequencies + f];
+      return sea_surface->spectrum[d*sea_surface->count_wave_spectral_frequencies + f];
     }
     else
     {
       // Incorrect index
-      set_error_msg(&wave->error_msg, error_invalid_index);
+      set_error_msg(&sea_surface->error_msg, error_invalid_index);
       return NULL;
     }
   }
@@ -269,12 +269,12 @@ const struct Regular_wave* sea_surface_get_regular_wave_at(const struct Sea_surf
   }
 }
 
-double sea_surface_get_min_spectral_frequency(const struct Sea_surface* wave)
+double sea_surface_get_min_spectral_frequency(const struct Sea_surface* sea_surface)
 {
-  if(wave)
+  if(sea_surface)
   {
-    clear_error_msg(&wave->error_msg);
-    return wave->min_spectral_frequency;
+    clear_error_msg(&sea_surface->error_msg);
+    return sea_surface->min_spectral_frequency;
   }
   else
   {
@@ -282,12 +282,12 @@ double sea_surface_get_min_spectral_frequency(const struct Sea_surface* wave)
   }
 }
 
-double sea_surface_get_max_spectral_frequency(const struct Sea_surface* wave)
+double sea_surface_get_max_spectral_frequency(const struct Sea_surface* sea_surface)
 {
-  if(wave)
+  if(sea_surface)
   {
-    clear_error_msg(&wave->error_msg);
-    return wave->max_spectral_frequency;
+    clear_error_msg(&sea_surface->error_msg);
+    return sea_surface->max_spectral_frequency;
   }
   else
   {
@@ -295,12 +295,12 @@ double sea_surface_get_max_spectral_frequency(const struct Sea_surface* wave)
   }
 }
 
-double sea_surface_get_significant_height(const struct Sea_surface* wave)
+double sea_surface_get_significant_height(const struct Sea_surface* sea_surface)
 {
-  if(wave)
+  if(sea_surface)
   {
-    clear_error_msg(&wave->error_msg);
-    return wave->significant_wave_height;
+    clear_error_msg(&sea_surface->error_msg);
+    return sea_surface->significant_wave_height;
   }
   else
   {
@@ -308,12 +308,12 @@ double sea_surface_get_significant_height(const struct Sea_surface* wave)
   }
 }
 
-double sea_surface_get_predominant_heading(const struct Sea_surface* wave)
+double sea_surface_get_predominant_heading(const struct Sea_surface* sea_surface)
 {
-  if(wave)
+  if(sea_surface)
   {
-    clear_error_msg(&wave->error_msg);
-    return wave->heading;
+    clear_error_msg(&sea_surface->error_msg);
+    return sea_surface->heading;
   }
   else
   {

@@ -44,16 +44,16 @@ struct Sea_surface* sea_surface_new(double sig_wave_ht,
                       int count_wave_spectral_directions,
                       int count_wave_spectral_frequencies);
 /**
- * Free memory allocated for the wave.
- * @param wave is a non-null pointer to an instance of Sea_surface to be deallocated.
+ * Free memory allocated for the sea_surface.
+ * @param sea_surface is a non-null pointer to an instance of Sea_surface to be deallocated.
  */
-void sea_surface_delete(struct Sea_surface* wave);
+void sea_surface_delete(struct Sea_surface* sea_surface);
 
 /**
  * Returns error message related to the last function called for the instance of Sea_surface.
  * @return pointer to the error msg, if any, else returns a null pointer. 
  */
-const char* sea_surface_get_error_msg(const struct Sea_surface* wave);
+const char* sea_surface_get_error_msg(const struct Sea_surface* sea_surface);
 
 /**
  * Get sea surface elevation at the given location for the given time. 
@@ -62,19 +62,19 @@ const char* sea_surface_get_error_msg(const struct Sea_surface* wave);
  * from start of simulation.
  * @return wave elevation in meter. 
  */
-double sea_surface_get_elevation(const struct Sea_surface* wave, 
+double sea_surface_get_elevation(const struct Sea_surface* sea_surface, 
                           union Coordinates_3D location, 
                           double time);
 
 /**
  * Function to get the number of direction bands in the wave spectrum.
  */ 
-int sea_surface_get_count_wave_spectral_directions(const struct Sea_surface* wave);
+int sea_surface_get_count_wave_spectral_directions(const struct Sea_surface* sea_surface);
 
 /** 
  * Function to get the number of frequency bands in the wave spectrum.
  */
-int sea_surface_get_count_wave_spectral_frequencies(const struct Sea_surface* wave);
+int sea_surface_get_count_wave_spectral_frequencies(const struct Sea_surface* sea_surface);
 
 /**
  * Function to get the regular wave at spectrum[d][f].
@@ -82,26 +82,26 @@ int sea_surface_get_count_wave_spectral_frequencies(const struct Sea_surface* wa
  * @param f is the index for frequency and should be in the range [0, count_wave_spectral_frequencies)
  * @return pointer to the regular wave if found; else returns a null pointer.
  */
-const struct Regular_wave* sea_surface_get_regular_wave_at(const struct Sea_surface* wave, int d, int f); 
+const struct Regular_wave* sea_surface_get_regular_wave_at(const struct Sea_surface* sea_surface, int d, int f); 
 
 /**
  * Function to get the minimum spectral frequency, in Hz, for the wave spectrum.
  */ 
-double sea_surface_get_min_spectral_frequency(const struct Sea_surface* wave);
+double sea_surface_get_min_spectral_frequency(const struct Sea_surface* sea_surface);
 
 /**
  * Function to get the maximum spectral frequency, in Hz, for the wave spectrum.
  */ 
-double sea_surface_get_max_spectral_frequency(const struct Sea_surface* wave);
+double sea_surface_get_max_spectral_frequency(const struct Sea_surface* sea_surface);
 
 /**
  * Function to get the significant wave height, in meter, for the sea state.
  */ 
-double sea_surface_get_significant_height(const struct Sea_surface* wave);
+double sea_surface_get_significant_height(const struct Sea_surface* sea_surface);
 
 /**
  * Function to get the predominant wave heading, in radians, for the sea state.
  */ 
-double sea_surface_get_predominant_heading(const struct Sea_surface* wave);
+double sea_surface_get_predominant_heading(const struct Sea_surface* sea_surface);
 
 #endif // SEA_SURFACE_H
