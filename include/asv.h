@@ -1,6 +1,7 @@
 #ifndef ASV_H
 #define ASV_H
 
+#include "stdbool.h"
 #include "geometry.h"
 
 struct Sea_surface;
