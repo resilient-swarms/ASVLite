@@ -3,7 +3,7 @@ from Cython.Build import cythonize
 import pathlib
 
 module_dir  = pathlib.Path(__file__).parent.resolve()
-root_dir    = module_dir.parent
+root_dir    = module_dir.parent.parent
 include_dir = root_dir.joinpath("include")
 source_dir  = root_dir.joinpath("source") 
 
