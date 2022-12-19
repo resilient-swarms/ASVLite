@@ -35,6 +35,10 @@ cdef class py_Coordinates_3D:
         else:
             raise IndexError
 
+    def __reduce__(self):
+        # we return a tuple of class_name to call, and optional parameters to pass when re-creating
+        return (self.__class__, (self._c_object.keys.x, self._c_object.keys.y, self._c_object.keys.z))
+
     @property
     def x(self):
         return self._c_object.keys.x
@@ -100,6 +104,15 @@ cdef class py_Rigid_body_DOF:
             return self._c_object.array[key]
         else:
             raise IndexError
+
+    def __reduce__(self):
+        # we return a tuple of class_name to call, and optional parameters to pass when re-creating
+        return (self.__class__, (self._c_object.keys.surge, 
+                                 self._c_object.keys.sway, 
+                                 self._c_object.keys.heave,
+                                 self._c_object.keys.roll, 
+                                 self._c_object.keys.pitch, 
+                                 self._c_object.keys.yaw))
     
     @property
     def surge(self):

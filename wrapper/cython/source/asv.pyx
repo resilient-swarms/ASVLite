@@ -28,6 +28,19 @@ cdef class py_Asv_specification:
         self._c_object.r_yaw = r_yaw 
         self._c_object.cog = cog._c_object
     
+    def __reduce__(self):
+        # we return a tuple of class_name to call, and optional parameters to pass when re-creating
+        return (self.__class__, (self._c_object.L_wl,
+                                 self._c_object.B_wl,
+                                 self._c_object.D,
+                                 self._c_object.T,
+                                 self._c_object.max_speed,
+                                 self._c_object.disp,
+                                 self._c_object.r_roll,
+                                 self._c_object.r_pitch,
+                                 self._c_object.r_yaw,
+                                 py_Coordinates_3D(self._c_object.cog.keys.x, self._c_object.cog.keys.y, self._c_object.cog.keys.z)))
+    
     @property
     def L_wl(self):
         return self._c_object.L_wl
