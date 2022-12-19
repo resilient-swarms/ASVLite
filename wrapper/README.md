@@ -1,21 +1,17 @@
 # ASVLite-python
 
 ## Introduction
-Python wrapper for ASVLite.
+Python wrapper for ASVLite using `cycthon`.
 
 ## Build instruction
 
-Install dependency - [toml](https://pypi.org/project/toml/).
+Install dependency.
 ```
-pip install toml
+conda install cython
 ```
 
 Build
 ```
-mkdir build
-cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make 
-make install
+cd cython
+python setup.py build_ext -i
 ```
-

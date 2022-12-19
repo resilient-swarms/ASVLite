@@ -29,7 +29,7 @@ build
 
 # Python cache
 # ------------
-*/__pycache__
+__pycache__
 
 # Wrapper binaries
 wrapper/lib
@@ -41,3 +41,8 @@ env
 
 test
 to_delete_later
+
+# Cython wrapper
+# --------------
+wrapper/cython/*.so
+wrapper/cython/source/*.c
