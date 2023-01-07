@@ -137,6 +137,8 @@ int asv_get_count_thrusters(struct Asv* asv);
  */
 void asv_set_sea_state(struct Asv* asv, const struct Sea_surface* sea_surface);
 
+void asv_set_ocean_current(struct Asv* asv, double zonal_velocity, double meridional_velocity);
+
 /**
  * Function to compute dynamics of the ASV by incrementing time.
  * @param time_step_size in milliseconds to increment the current time.

@@ -259,6 +259,13 @@ cdef class py_Asv:
         '''
         self.set_sea_state(sea_surface._c_object)
         self._sea_surface = sea_surface
+    
+    cdef void set_ocean_current(self, double zonal_velocity, double meridional_velocity):
+        asv_set_ocean_current(self._c_object, zonal_velocity, meridional_velocity)
+        self.__check_error_throw_exception()
+    
+    def py_set_ocean_current(self, double zonal_velocity, double meridional_velocity):
+        self.set_ocean_current(zonal_velocity, meridional_velocity)
 
     cdef void compute_dynamics(self, double time_step_size):
         '''

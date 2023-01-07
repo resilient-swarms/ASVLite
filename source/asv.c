@@ -66,6 +66,8 @@ struct Asv
   int count_thrusters;           //!< Number of thrusters attached to the ASV.
   struct Thruster** thrusters;   //!< Array of thrusters.
   struct Sea_surface* sea_surface;       //!< Irregular sea_surface instance. 
+  double zonal_velocity;
+  double meridional_velocity;
   
   // Initial used for input but later contains results. 
   union Coordinates_3D origin_position; //!< Position of the origin of the body-fixed frame in 
@@ -564,10 +566,17 @@ static void set_velocity(struct Asv* asv)
 
 static void set_deflection(struct Asv* asv)
 {
+  // Compute the resultant of the vehicle velocity and ocean current 
+  union Rigid_body_DOF V_net = asv->dynamics.V;
+  V_net.keys.surge += asv->meridional_velocity * cos(asv->attitude.keys.z) + 
+                                asv->zonal_velocity * sin(asv->attitude.keys.z);
+  V_net.keys.sway  += asv->meridional_velocity * sin(asv->attitude.keys.z) - 
+                                asv->zonal_velocity * cos(asv->attitude.keys.z);
+
   // compute the deflection at the end of the time step
   for(int i = 0; i < COUNT_DOF; ++i)
   {
-    asv->dynamics.X.array[i] = asv->dynamics.V.array[i] * asv->dynamics.time_step_size/1000.0; 
+    asv->dynamics.X.array[i] = V_net.array[i] * asv->dynamics.time_step_size/1000.0; 
   }
 }
 
@@ -673,6 +682,8 @@ struct Asv* asv_new(const struct Asv_specification specification,
 
     // set the sea_surface for the ASV
     asv->sea_surface = (struct Sea_surface*)sea_surface;
+    asv->zonal_velocity = 0.0;
+    asv->meridional_velocity = 0.0;
 
     // Initialise all the vectors matrices to zero.
     if(asv->dynamics.P_unit_wave = (double*)malloc(sizeof(double) * COUNT_ASV_SPECTRAL_FREQUENCIES * 2))
@@ -803,6 +814,20 @@ void asv_set_sea_state(struct Asv* asv, const struct Sea_surface* sea_surface)
     }
     // Set the cog position.
     set_cog(asv); // Match the position of the cog with that of origin
+  }
+  else
+  {
+    set_error_msg(&asv->error_msg, error_null_pointer);
+  }
+}
+
+void asv_set_ocean_current(struct Asv* asv, double zonal_velocity, double meridional_velocity)
+{
+  if(asv)
+  {
+    clear_error_msg(&asv->error_msg);
+    asv->zonal_velocity = zonal_velocity;
+    asv->meridional_velocity = meridional_velocity;
   }
   else
   {
