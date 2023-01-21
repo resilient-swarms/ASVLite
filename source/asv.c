@@ -520,7 +520,16 @@ static void set_restoring_force(struct Asv* asv)
 {
   // Heave restoring force
   // Distance of current COG position from still water floating position.
-  double dist = (asv->spec.cog.keys.z -asv->spec.T) - asv->cog_position.keys.z;
+  double surface_elevation = sea_surface_get_elevation(asv->sea_surface, asv->cog_position, asv->dynamics.time);
+  double dist = (asv->cog_position.keys.z - surface_elevation) - asv->spec.cog.keys.z;
+  if(dist > asv->spec.D)
+  {
+    dist = asv->spec.D;
+  }
+  if(dist < -asv->spec.D)
+  {
+    dist = -asv->spec.D;
+  }
   asv->dynamics.F_restoring.keys.heave = asv->dynamics.K.keys.heave * dist;
   
   // Roll restoring force 
