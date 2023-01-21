@@ -136,8 +136,8 @@ static void set_mass(struct Asv* asv)
   double Ar_surge = PI*b*b;
   double Ar_sway = PI*a*a;
   double Ar_heave = PI*a*b;
-  added_mass_surge= SEA_WATER_DENSITY * C_a * Ar_surge * c;
-  added_mass_sway= SEA_WATER_DENSITY * C_a * Ar_sway * c;
+  added_mass_surge= SEA_WATER_DENSITY * C_a * Ar_surge * (2.0*a);
+  added_mass_sway= SEA_WATER_DENSITY * C_a * Ar_sway * (2.0*b);
   added_mass_heave= SEA_WATER_DENSITY * C_a * Ar_heave * c;
 
   // Moment of inertia for angular motions
