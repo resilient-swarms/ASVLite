@@ -403,7 +403,7 @@ static void set_wave_force(struct Asv* asv)
         asv->dynamics.F_wave.keys.sway  += scale * P_diff_trans * A_profile;
         asv->dynamics.F_wave.keys.roll  += scale * P_diff_trans * (A_waterplane/2.0) * lever_trans;
         asv->dynamics.F_wave.keys.pitch += scale * P_diff_long * (A_waterplane/2.0) * lever_long;
-        asv->dynamics.F_wave.keys.yaw   += scale * P_diff_long * (A_profile/2.0) * lever_long * 0.0; // <-- RESTRAIN YAW MOTION.
+        asv->dynamics.F_wave.keys.yaw   += scale * P_diff_long * (A_profile/2.0) * lever_long * 0.0; // <-- CONSTRAIN YAW MOTION. 
       }
     } 
   }
