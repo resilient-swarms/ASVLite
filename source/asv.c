@@ -332,7 +332,7 @@ static void set_wave_force(struct Asv* asv)
         int index = 0;
         // Compute the scaling factor to compute the wave force from unit wave
         double wave_amplitude = regular_wave_get_amplitude(wave);
-        double scale = wave_amplitude * 2.0;
+        double scale = (wave_amplitude * 2.0 < asv->spec.D)? wave_amplitude * 2.0 : asv->spec.D;
 
         // Get the index for unit wave force for the encounter frequency
         double nf = COUNT_ASV_SPECTRAL_FREQUENCIES;
