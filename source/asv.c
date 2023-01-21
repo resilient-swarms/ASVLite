@@ -367,25 +367,21 @@ static void set_wave_force(struct Asv* asv)
         union Coordinates_3D point_aft = asv->cog_position;
         point_aft.keys.x -= (a/4.0)*sin(asv->attitude.keys.z);
         point_aft.keys.y -= (a/4.0)*cos(asv->attitude.keys.z);
-        point_aft.keys.z = regular_wave_get_elevation(wave, point_aft, asv->dynamics.time);
         double phase_aft = regular_wave_get_phase(wave, point_aft, asv->dynamics.time);
         // wave phase at the fore-CL position.
         union Coordinates_3D point_fore = asv->cog_position;
         point_fore.keys.x += (a/4.0)*sin(asv->attitude.keys.z);
         point_fore.keys.y += (a/4.0)*cos(asv->attitude.keys.z);
-        point_fore.keys.z = regular_wave_get_elevation(wave, point_fore, asv->dynamics.time);
         double phase_fore = regular_wave_get_phase(wave, point_fore, asv->dynamics.time);
         // wave phase at the mid-PS position.
         union Coordinates_3D point_ps = asv->cog_position;
         point_ps.keys.x -= (b/4.0)*cos(asv->attitude.keys.z);
         point_ps.keys.y += (b/4.0)*sin(asv->attitude.keys.z);
-        point_ps.keys.z = regular_wave_get_elevation(wave, point_ps, asv->dynamics.time);
         double phase_ps = regular_wave_get_phase(wave, point_ps, asv->dynamics.time);
         // wave phase at the mid-SB position.
         union Coordinates_3D point_sb = asv->cog_position;
         point_sb.keys.x += (b/4.0)*cos(asv->attitude.keys.z);
         point_sb.keys.y -= (b/4.0)*sin(asv->attitude.keys.z);
-        point_sb.keys.z = regular_wave_get_elevation(wave, point_sb, asv->dynamics.time);
         double phase_sb = regular_wave_get_phase(wave, point_sb, asv->dynamics.time);
 
         // Compute the difference between the points
