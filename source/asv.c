@@ -738,20 +738,20 @@ struct Asv* asv_new(const struct Asv_specification specification,
         return NULL;
       }
 
-      // Set minimum and maximum encounter frequency
-      double max_speed_for_spectrum = 2.0 * asv->spec.max_speed;
-      double wave_min_spectral_frequency = sea_surface_get_min_spectral_frequency(asv->sea_surface); 
-      double wave_max_spectral_frequency = sea_surface_get_max_spectral_frequency(asv->sea_surface); 
-      asv->dynamics.P_unit_wave_freq_min = get_encounter_frequency(wave_min_spectral_frequency, max_speed_for_spectrum, 0);
-      asv->dynamics.P_unit_wave_freq_max = get_encounter_frequency(wave_max_spectral_frequency, max_speed_for_spectrum, PI);
-      // Set the wave force for unit waves
-      set_unit_wave_pressure(asv);
-      error_msg = asv_get_error_msg(asv);
-      if(error_msg)
-      {
-        asv_delete(asv);
-        return NULL;
-      }
+      // // Set minimum and maximum encounter frequency
+      // double max_speed_for_spectrum = 2.0 * asv->spec.max_speed;
+      // double wave_min_spectral_frequency = sea_surface_get_min_spectral_frequency(asv->sea_surface); 
+      // double wave_max_spectral_frequency = sea_surface_get_max_spectral_frequency(asv->sea_surface); 
+      // asv->dynamics.P_unit_wave_freq_min = get_encounter_frequency(wave_min_spectral_frequency, max_speed_for_spectrum, 0);
+      // asv->dynamics.P_unit_wave_freq_max = get_encounter_frequency(wave_max_spectral_frequency, max_speed_for_spectrum, PI);
+      // // Set the wave force for unit waves
+      // set_unit_wave_pressure(asv);
+      // error_msg = asv_get_error_msg(asv);
+      // if(error_msg)
+      // {
+      //   asv_delete(asv);
+      //   return NULL;
+      // }
     }
     // Set the cog position.
     set_cog(asv); // Match the position of the cog with that of origin
@@ -1067,7 +1067,7 @@ static void compute_dynamics(struct Asv* asv, bool is_wave_glider, double rudder
     asv->dynamics.time += time_step_size/1000.0; // seconds
 
     // Get the wave force for the current time step
-    set_wave_force(asv);
+    // set_wave_force(asv);
     if(asv->error_msg)
     {
       // Some error occurred.
