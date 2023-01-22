@@ -209,9 +209,8 @@ static void set_drag_coefficient(struct Asv* asv)
   // length of ASV and area equal to waterplane area of ASV.
   // Assuming elliptical waterplane 
   double A_wl = PI *(asv->spec.L_wl/2.0)*(asv->spec.B_wl/2.0); // area of equivalent rectangle.
-  double D = A_wl/(asv->spec.L_wl); // width of equivalent rectangle.
   C_DS = 1.9;
-  asv->dynamics.C.keys.heave = 0.5 * SEA_WATER_DENSITY * C_DS * D * asv->spec.L_wl;
+  asv->dynamics.C.keys.heave = 0.5 * SEA_WATER_DENSITY * C_DS * A_wl;
 
   // roll, pitch and yaw drag coefficient set equal to roll damping coefficient 
   // given in Handbook of Marin Craft Hydrodynamics and motion control, page 125
