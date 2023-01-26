@@ -570,17 +570,10 @@ static void set_velocity(struct Asv* asv)
 
 static void set_deflection(struct Asv* asv)
 {
-  // Compute the resultant of the vehicle velocity and ocean current 
-  union Rigid_body_DOF V_net = asv->dynamics.V;
-  V_net.keys.surge += asv->meridional_velocity * cos(asv->attitude.keys.z) + 
-                                asv->zonal_velocity * sin(asv->attitude.keys.z);
-  V_net.keys.sway  += asv->meridional_velocity * sin(asv->attitude.keys.z) - 
-                                asv->zonal_velocity * cos(asv->attitude.keys.z);
-
   // compute the deflection at the end of the time step
   for(int i = 0; i < COUNT_DOF; ++i)
   {
-    asv->dynamics.X.array[i] = V_net.array[i] * asv->dynamics.time_step_size/1000.0; 
+    asv->dynamics.X.array[i] = asv->dynamics.V.array[i] * asv->dynamics.time_step_size/1000.0; 
   }
 }
 
@@ -588,9 +581,11 @@ static void set_deflection(struct Asv* asv)
 static void set_position(struct Asv* asv)
 {
   double deflection_x = asv->dynamics.X.keys.surge * sin(asv->attitude.keys.z) -
-                        asv->dynamics.X.keys.sway  * cos(asv->attitude.keys.z);
+                        asv->dynamics.X.keys.sway  * cos(asv->attitude.keys.z) + 
+                        asv->zonal_velocity * asv->dynamics.time_step_size/1000.0;
   double deflection_y = asv->dynamics.X.keys.surge * cos(asv->attitude.keys.z) + 
-                        asv->dynamics.X.keys.sway  * sin(asv->attitude.keys.z);                  
+                        asv->dynamics.X.keys.sway  * sin(asv->attitude.keys.z) +
+                        asv->meridional_velocity * asv->dynamics.time_step_size/1000.0;              
   double deflection_z = asv->dynamics.X.keys.heave;
   
   // Update cog position 
