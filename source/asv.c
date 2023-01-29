@@ -195,22 +195,17 @@ static void set_drag_coefficient(struct Asv* asv)
   // operations. Edition July 2017. Appendix B Table B-1, B-2.
   
   // Surge drag coefficient - assuming elliptical waterplane area
-  double C_DS = get_drag_coefficient_ellipse(asv->spec.L_wl, asv->spec.B_wl);
+  // double C_DS = get_drag_coefficient_ellipse(asv->spec.L_wl, asv->spec.B_wl);
+  double C_DS = 1.9;
   asv->dynamics.C.keys.surge = 0.5 * SEA_WATER_DENSITY * C_DS * asv->spec.B_wl * asv->spec.T;
   
   // Sway drag coefficient - assuming elliptical waterplane area
-  C_DS = get_drag_coefficient_ellipse(asv->spec.B_wl, asv->spec.L_wl);
+  // C_DS = get_drag_coefficient_ellipse(asv->spec.B_wl, asv->spec.L_wl);
   asv->dynamics.C.keys.sway = 0.5 * SEA_WATER_DENSITY * C_DS * asv->spec.L_wl * asv->spec.T;
   
   // Heave drag coefficient - consider it as flat plat perpendicular to flow.
-  // Ref: Recommended practices DNVGL-RP-N103 Modelling and analysis of marine
-  //      operations. Edition July 2017. Appendix B page-213
-  // Convert the waterplate to an equivalent rectangle with length equal to 
-  // length of ASV and area equal to waterplane area of ASV.
-  // Assuming elliptical waterplane 
-  double A_wl = PI *(asv->spec.L_wl/2.0)*(asv->spec.B_wl/2.0); // area of equivalent rectangle.
-  C_DS = 1.9;
-  asv->dynamics.C.keys.heave = 0.5 * SEA_WATER_DENSITY * C_DS * A_wl;
+  // C_DS = 1.9;
+  asv->dynamics.C.keys.heave = 0.5 * SEA_WATER_DENSITY * C_DS * asv->spec.L_wl * asv->spec.B_wl;
 
   // roll, pitch and yaw drag coefficient set equal to roll damping coefficient 
   // given in Handbook of Marin Craft Hydrodynamics and motion control, page 125
@@ -331,7 +326,8 @@ static void set_wave_force(struct Asv* asv)
         int index = 0;
         // Compute the scaling factor to compute the wave force from unit wave
         double wave_amplitude = regular_wave_get_amplitude(wave);
-        double scale = (wave_amplitude * 2.0 < asv->spec.D)? wave_amplitude * 2.0 : asv->spec.D;
+        double scale = (wave_amplitude * 2.0 < asv->spec.D)? (wave_amplitude * 2.0) : asv->spec.D;
+        scale = scale / (count_wave_spectral_frequencies * count_wave_spectral_directions);
 
         // Get the index for unit wave force for the encounter frequency
         double nf = COUNT_ASV_SPECTRAL_FREQUENCIES;
@@ -347,15 +343,15 @@ static void set_wave_force(struct Asv* asv)
 
           // fprintf(stderr, "FATAL ERROR! Array index out of bounds.\n");
           // fprintf(stderr, "array index = %i \n", index);
-          // fprintf(stderr, "V[surge] = %f \n", asv->dynamics.V[surge]);
-          // fprintf(stderr, "F_thruster[surge] = %f \n", asv->dynamics.F_thruster[surge]);
+          // fprintf(stderr, "V[surge] = %f \n", asv->dynamics.V.keys.surge);
+          // fprintf(stderr, "F_thruster[surge] = %f \n", asv->dynamics.F_thruster.keys.surge);
           // fprintf(stderr, "encounter freq = %f \n", freq);
           // fprintf(stderr, "freq_step_size = %f \n", freq_step_size);
           // fprintf(stderr, "P_unit_wave_freq_min = %f \n", asv->dynamics.P_unit_wave_freq_min);
-          // fprintf(stderr, "wave->frequency = %f \n", wave->frequency);
+          // fprintf(stderr, "wave->frequency = %f \n", wave_frequency);
           // fprintf(stderr, "angle = %f \n", angle);
-          // fprintf(stderr, "wave->direction = %f \n", wave->direction);
-          // fprintf(stderr, "asv->attitude.z = %f \n", asv->attitude.z);
+          // fprintf(stderr, "wave->direction = %f \n", wave_direction);
+          // fprintf(stderr, "asv->attitude.z = %f \n", asv->attitude.keys.z);
           // exit(1);
         }
 
@@ -732,20 +728,20 @@ struct Asv* asv_new(const struct Asv_specification specification,
         return NULL;
       }
 
-      // // Set minimum and maximum encounter frequency
-      // double max_speed_for_spectrum = 2.0 * asv->spec.max_speed;
-      // double wave_min_spectral_frequency = sea_surface_get_min_spectral_frequency(asv->sea_surface); 
-      // double wave_max_spectral_frequency = sea_surface_get_max_spectral_frequency(asv->sea_surface); 
-      // asv->dynamics.P_unit_wave_freq_min = get_encounter_frequency(wave_min_spectral_frequency, max_speed_for_spectrum, 0);
-      // asv->dynamics.P_unit_wave_freq_max = get_encounter_frequency(wave_max_spectral_frequency, max_speed_for_spectrum, PI);
-      // // Set the wave force for unit waves
-      // set_unit_wave_pressure(asv);
-      // error_msg = asv_get_error_msg(asv);
-      // if(error_msg)
-      // {
-      //   asv_delete(asv);
-      //   return NULL;
-      // }
+      // Set minimum and maximum encounter frequency
+      double max_speed_for_spectrum = 2.0 * asv->spec.max_speed;
+      double wave_min_spectral_frequency = sea_surface_get_min_spectral_frequency(asv->sea_surface); 
+      double wave_max_spectral_frequency = sea_surface_get_max_spectral_frequency(asv->sea_surface); 
+      asv->dynamics.P_unit_wave_freq_min = get_encounter_frequency(wave_min_spectral_frequency, max_speed_for_spectrum, 0);
+      asv->dynamics.P_unit_wave_freq_max = get_encounter_frequency(wave_max_spectral_frequency, max_speed_for_spectrum, PI);
+      // Set the wave force for unit waves
+      set_unit_wave_pressure(asv);
+      error_msg = asv_get_error_msg(asv);
+      if(error_msg)
+      {
+        asv_delete(asv);
+        return NULL;
+      }
     }
     // Set the cog position.
     set_cog(asv); // Match the position of the cog with that of origin
@@ -1061,7 +1057,7 @@ static void compute_dynamics(struct Asv* asv, bool is_wave_glider, double rudder
     asv->dynamics.time += time_step_size/1000.0; // seconds
 
     // Get the wave force for the current time step
-    // set_wave_force(asv);
+    set_wave_force(asv);
     if(asv->error_msg)
     {
       // Some error occurred.
