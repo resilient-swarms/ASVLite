@@ -281,7 +281,6 @@ cdef class py_Asv:
         :param float time_step_size: Step size, in milliseconds, to increment the current time.
         '''
         self.compute_dynamics(time_step_size)
-        self.__check_error_throw_exception()
 
     cdef void wg_set_thrust_tuning_factor(self, double tuning_factor):
         '''
@@ -322,7 +321,6 @@ cdef class py_Asv:
         :param float time_step_size: Step size, in milliseconds, to increment the current time.
         '''
         self.wg_compute_dynamics(rudder_angle, time_step_size)
-        self.__check_error_throw_exception()
 
     cdef void wg_run(self, bint(*callback_precompute)(double*), void(*callback_postcompute)(), double time_step_size):
         '''

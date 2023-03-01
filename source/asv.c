@@ -674,6 +674,7 @@ struct Asv* asv_new(const struct Asv_specification specification,
     asv->spec = specification;
     // Thrusters set to null
     asv->thrusters = NULL;
+    asv->count_thrusters = 0;
     // Initialise time record 
     asv->dynamics.time = 0.0;
 
@@ -719,10 +720,10 @@ struct Asv* asv_new(const struct Asv_specification specification,
     asv->attitude = attitude;
     asv->attitude.keys.z = normalise_angle_2PI(asv->attitude.keys.z);
     asv->origin_position = position;
-    if(sea_surface)
+    if(asv->sea_surface)
     {
       // Place the asv vertically in the correct position W.R.T sea_surface
-      asv->origin_position.keys.z = sea_surface_get_elevation(asv->sea_surface, asv->origin_position, 0.0) - asv->spec.T; 
+      asv->origin_position.keys.z = sea_surface_get_elevation(asv->sea_surface, asv->origin_position, asv->dynamics.time) - asv->spec.T; 
       const char* error_msg = sea_surface_get_error_msg(asv->sea_surface);
       if(error_msg)
       {
@@ -781,7 +782,7 @@ void asv_set_sea_state(struct Asv* asv, const struct Sea_surface* sea_surface)
       }
     }
 
-    if(sea_surface)
+    if(asv->sea_surface)
     {
       // Place the asv vertically in the correct position W.R.T sea_surface
       asv->origin_position.keys.z = sea_surface_get_elevation(asv->sea_surface, asv->origin_position, asv->dynamics.time) - asv->spec.T; 
@@ -1048,7 +1049,7 @@ void wave_glider_set_thrust_tuning_factor(struct Asv* asv, double tuning_factor)
   }
 }
 
-static void compute_dynamics(struct Asv* asv, bool is_wave_glider, double rudder_angle, double time_step_size)
+static void set_dynamics(struct Asv* asv, bool is_wave_glider, double rudder_angle, double time_step_size)
 {
   if(asv)
   {
@@ -1117,7 +1118,7 @@ void asv_compute_dynamics(struct Asv* asv, double time_step_size)
     clear_error_msg(&asv->error_msg);
     if(time_step_size)
     {
-      compute_dynamics(asv, false, 0.0, time_step_size);
+      set_dynamics(asv, false, 0.0, time_step_size);
     }
   }
   
@@ -1132,7 +1133,7 @@ void wave_glider_compute_dynamics(struct Asv* asv, double rudder_angle, double t
     {
       if(time_step_size)
       {
-        compute_dynamics(asv, true, rudder_angle, time_step_size);
+        set_dynamics(asv, true, rudder_angle, time_step_size);
       }
     }
     else
