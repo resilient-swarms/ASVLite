@@ -2,14 +2,18 @@
 #include "scene.h"
 #include <vtkNamedColors.h>
 #include <vtkCamera.h>
+#include <math.h>
 
 using namespace asv_swarm;
 using namespace asv_swarm::Visualisation;
 
 Scene::Scene(struct Simulation* first_node): vtkCommand{}
 {
+  int count_asvs = simulation_get_count_asvs(first_node);
+  struct Asv** asvs = new struct Asv*[count_asvs];
+  simulation_get_asvs(first_node, asvs);
   timer_count = 0;
-  timer_step_size = first_node->asv->dynamics.time_step_size;
+  timer_step_size = 40.0/1000.0; // sec
   this->first_node = first_node;
 
   // Create the renderer, window and interactor 
@@ -35,12 +39,13 @@ Scene::Scene(struct Simulation* first_node): vtkCommand{}
   axes_widget->InteractiveOff();
 
   // Create actor for sea surface
-  this->sea_surface_actor = new Sea_surface_actor(first_node->wave);
+  struct Wave* wave = asv_get_wave(asvs[0]);
+  this->sea_surface_actor = new Sea_surface_actor(wave);
 
   // Create actor for ASV 
-  for(struct Simulation* node = first_node; node != NULL; node = node->next)
+  for(int i = 0; i < count_asvs; ++i)
   {
-    auto asv_actor = new Asv_actor(node->asv);
+    auto asv_actor = new Asv_actor(asvs[i]);
     this->asv_actors.push_back(asv_actor);
   }
 
@@ -54,9 +59,43 @@ Scene::Scene(struct Simulation* first_node): vtkCommand{}
   }
 
   // Set the sea surface mesh 
-  double field_length = get_sea_surface_edge_length();
-  int grid_count = get_count_mesh_cells_along_edge();
-  struct Dimensions sea_surface_position = get_sea_surface_position();
+  double max_x = 0.0;
+  double max_y = 0.0;
+  double min_x = __DBL_MAX__;
+  double min_y = __DBL_MAX__;
+  for(int i = 0; i < count_asvs; ++i)
+  {
+    union Coordinates_3D asv_position = asv_get_position_cog(asvs[i]);
+    max_x = (asv_position.keys.x > max_x)? asv_position.keys.x : max_x;
+    max_y = (asv_position.keys.y > max_y)? asv_position.keys.y : max_y;
+    min_x = (asv_position.keys.x < min_x)? asv_position.keys.x : min_x;
+    min_y = (asv_position.keys.y < min_y)? asv_position.keys.y : min_y;
+
+    int count_waypoints = simulation_get_count_waypoints(first_node, asvs[i]);
+    union Coordinates_3D* waypoints = simulation_get_waypoints(first_node, asvs[i]);
+    for(int j=0; j<count_waypoints; ++j)
+    {
+      union Coordinates_3D waypoint = waypoints[j];
+      max_x = (waypoint.keys.x > max_x)? waypoint.keys.x : max_x;
+      max_y = (waypoint.keys.y > max_y)? waypoint.keys.y : max_y;
+      min_x = (waypoint.keys.x < min_x)? waypoint.keys.x : min_x;
+      min_y = (waypoint.keys.y < min_y)? waypoint.keys.y : min_y;
+    }
+  }
+  double field_length_x = max_x - min_x;
+  double field_length_y = max_y - min_y;
+  double field_length = (field_length_x >= field_length_y)? field_length_x : field_length_y;
+
+  union Coordinates_3D sea_surface_position;
+  sea_surface_position.keys.x = min_x; //m
+  sea_surface_position.keys.y = min_y; //m
+  sea_surface_position.keys.z = 0.0; //m
+
+  int grid_count = 50;
+
+  // Clean the memory
+  delete[] asvs;
+
   sea_surface_actor->set_field_length(field_length);
   sea_surface_actor->set_sea_surface_grid_count(grid_count);
   sea_surface_actor->set_sea_surface_position(sea_surface_position);
@@ -104,11 +143,25 @@ void Scene::Execute(vtkObject *caller,
   increment_time();
 
   // Compute for current time step.
-  bool buffer_exceeded = false;
-  bool has_all_reached_final_waypoint = true;
-  simulation_for_time_step(first_node, timer_count, &buffer_exceeded, &has_all_reached_final_waypoint);
-  // stop if all reached the destination or if buffer exceeded.
-  if(has_all_reached_final_waypoint || buffer_exceeded)
+  simulation_run_a_timestep(first_node);
+  bool has_any_reached_final_waypoint = false;
+  int count_asvs = simulation_get_count_asvs(first_node);
+  struct Asv** asvs = new struct Asv*[count_asvs];
+  simulation_get_asvs(first_node, asvs);
+  for(int i = 0; i < count_asvs; ++i)
+  {
+    union Coordinates_3D p1 = asv_get_position_cog(asvs[i]);
+    union Coordinates_3D p2 = simulation_get_waypoint(first_node, asvs[i]);
+    double distance = sqrt((p1.keys.x-p2.keys.x)*(p1.keys.x-p2.keys.x) + (p1.keys.y-p2.keys.y)*(p1.keys.y-p2.keys.y));
+    if(distance < 5.0)
+    {
+      has_any_reached_final_waypoint = true;
+    }
+  } 
+  delete[] asvs; 
+
+  // stop if all reached the destination.
+  if(has_any_reached_final_waypoint)
   {
     // stop simulation
     interactor->ExitCallback();

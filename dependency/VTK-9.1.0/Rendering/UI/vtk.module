@@ -1,0 +1,12 @@
+NAME
+  VTK::RenderingUI
+LIBRARY_NAME
+  vtkRenderingUI
+IMPLEMENTS
+  VTK::RenderingCore
+GROUPS
+  Rendering
+DEPENDS
+  VTK::RenderingCore
+ORDER_DEPENDS
+  VTK::opengl

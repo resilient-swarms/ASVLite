@@ -11,9 +11,9 @@
 using namespace asv_swarm;
 using namespace Visualisation;
 
-Sea_surface_actor::Sea_surface_actor(struct Wave* wave):
+Sea_surface_actor::Sea_surface_actor(struct Sea_surface* sea_surface):
   vtkPolyDataAlgorithm{},
-  wave{wave},
+  sea_surface{sea_surface},
   timer_count{0},
   timer_step_size{0.0},
   field_length {20.0},
@@ -35,7 +35,7 @@ Sea_surface_actor::Sea_surface_actor(struct Wave* wave):
   sea_surface_actor = vtkSmartPointer<vtkActor>::New();
   sea_surface_actor->SetMapper(sea_surface_mapper);
   sea_surface_actor->GetProperty()->SetRepresentationToWireframe();
-  sea_surface_actor->GetProperty()->SetColor(0,0,255); // blue waves
+  sea_surface_actor->GetProperty()->SetColor(0,0,255); // blue sea_surfaces
 }
 
 void Sea_surface_actor::increment_time() 
@@ -64,10 +64,10 @@ int Sea_surface_actor::RequestData(vtkInformation* request,
     {
       for(auto& point : points_row)
       {
-        double x = point.x;
-        double y = point.y;
+        double x = point.keys.x;
+        double y = point.keys.y;
         //TODO: Correct the formula for z by removing the scaling factor.
-        double z = point.z;
+        double z = point.keys.z;
         sea_surface_mesh_points->SetPoint(sea_surface_mesh_point_id,x,y,z); 
         ++sea_surface_mesh_point_id;
       }
@@ -96,10 +96,10 @@ int Sea_surface_actor::RequestData(vtkInformation* request,
     {
       for(auto& point : points_row)
       {
-        double x = point.x;
-        double y = point.y;
+        double x = point.keys.x;
+        double y = point.keys.y;
         //TODO: Correct the formula for z by removing the scaling factor.
-        double z = point.z;
+        double z = point.keys.z;
         sea_surface_mesh_points->InsertPoint(sea_surface_mesh_point_id,x,y,z); 
         ++sea_surface_mesh_point_id;
       }
@@ -186,7 +186,7 @@ void Sea_surface_actor::set_sea_surface_elevations()
   {
     for(auto& point : points_row)
     {
-      point.z = wave_get_elevation(wave, &point, current_time);
+      point.keys.z = sea_surface_get_elevation(sea_surface, point, current_time);
     }
   }
 }
@@ -202,13 +202,13 @@ void Sea_surface_actor::set_sea_surface_points()
   // Create a 2D array of control points.
   for(unsigned int i = 0; i < sea_surface_grid_size; ++i)
   {
-    std::vector<Dimensions> points_row;
+    std::vector<union Coordinates_3D> points_row;
     for(unsigned int j = 0; j < sea_surface_grid_size; ++j)
     {
-      double x = this->sea_surface_position.x + patch_length * j; // m
-      double y = this->sea_surface_position.y + patch_length * i; // m
+      double x = this->sea_surface_position.keys.x + patch_length * j; // m
+      double y = this->sea_surface_position.keys.y + patch_length * i; // m
       double z = 0.0; // m
-      Dimensions point{x,y,z};
+      union Coordinates_3D point{x,y,z};
       points_row.push_back(point);
     }
     sea_surface_points.push_back(points_row);
@@ -235,7 +235,7 @@ void Sea_surface_actor::set_sea_surface_grid_count(unsigned int grid_size)
   set_sea_surface_points();
 }
 
-void Sea_surface_actor::set_sea_surface_position(struct Dimensions sea_surface_position)
+void Sea_surface_actor::set_sea_surface_position(union Coordinates_3D sea_surface_position)
 {
   this->sea_surface_position = sea_surface_position;
   set_sea_surface_points();

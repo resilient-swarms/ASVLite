@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0)
 
-PROJECT(visualisation)
+PROJECT(ASVLite_visualisation)
 
 # FIND LIBRARIES
 # --------------
@@ -34,13 +34,15 @@ INCLUDE_DIRECTORIES(
 # simulator source files
 SET( SOURCE
   ../dependency/tomlc99/toml.c
+  ../source/geometry.c
+  ../source/errors.c
   ../source/simulation.c
   ../source/regular_wave.c
   ../source/wave.c
   ../source/asv.c
   ../source/pid_controller.c
   )
-#visualisation source files
+# visualisation source files
 SET( SOURCE
   ${SOURCE}
   source/sea_surface_actor.cpp
@@ -52,12 +54,12 @@ SET( SOURCE
 
 # CREATE BINARIES
 # ---------------
-ADD_EXECUTABLE(visualisation ${SOURCE})
+ADD_EXECUTABLE(ASVLite_visualisation ${SOURCE})
 
 # LINK LIBRARIES 
 # --------------
-TARGET_LINK_LIBRARIES(visualisation m ${VTK_LIBRARIES})
+TARGET_LINK_LIBRARIES(ASVLite_visualisation m ${VTK_LIBRARIES})
 vtk_module_autoinit(
-  TARGETS visualisation
+  TARGETS ASVLite_visualisation
   MODULES ${VTK_LIBRARIES}
 )

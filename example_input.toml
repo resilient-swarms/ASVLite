@@ -16,11 +16,9 @@ thrusters = [[0.235, -0.085, -0.0485],
 			 [0.235, 0.085, -0.0485],
 			 [0.065, -0.085, -0.0485],
 			 [0.065, 0.085, -0.0485]] # [[x(m), y(m), z(m)]]
-asv_position = [1000.0, 1000.0] # [X(m), Y(m)]
+asv_position = [1000.0, 1000.0] # [X(m), Y(m)] or [X(latitude), Y(longitude)] if EARTH_COORDINATES is enabled at build time.
 asv_attitude = [0.0, 0.0, 0.0] #[heel(deg), trim(deg), heading(deg)]
-waypoints = [[1000.0, 1100.0], [1100.0, 1100.0]] # [[X(m), Y(m)]]
+waypoints = [[1000.0, 1100.0], [1100.0, 1100.0]] # [[X(m), Y(m)]] or [X(latitude), Y(longitude)] if EARTH_COORDINATES is enabled at build time.
 
-[visualisation]
-sea_surface_edge_length = 10.0 #m
-sea_surface_position = [1000.0, 1000.0] # Position of the bottom-left corner of the simulated surface.
-count_mesh_cells_along_edge = 10 # Number of mesh cells along one edge of the sea surface. A larger number means a finer sea surface mesh.
+[clock]
+time_step_size = 40 # milli-sec

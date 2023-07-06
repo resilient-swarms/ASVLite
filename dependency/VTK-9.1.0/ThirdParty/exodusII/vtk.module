@@ -1,0 +1,10 @@
+NAME
+  VTK::exodusII
+LIBRARY_NAME
+  vtkexodusII
+DEPENDS
+  VTK::hdf5
+  VTK::netcdf
+OPTIONAL_DEPENDS
+  VTK::mpi
+THIRD_PARTY

@@ -1,8 +1,19 @@
 var searchData=
 [
-  ['r_5fpitch_45',['r_pitch',['../struct_asv__specification.html#acf5192dcbca41c676af1690555457f1d',1,'Asv_specification']]],
-  ['r_5froll_46',['r_roll',['../struct_asv__specification.html#ad7f0606f2a3b24a958e74d03c8d1b664',1,'Asv_specification']]],
-  ['r_5fyaw_47',['r_yaw',['../struct_asv__specification.html#a4bb5cad450c408bed9c22bb981f82467',1,'Asv_specification']]],
-  ['random_5fnumber_5fseed_48',['random_number_seed',['../struct_wave.html#ae6dc02b6e5046e9fdf2999e31a5a6a96',1,'Wave']]],
-  ['regular_5fwave_49',['Regular_wave',['../struct_regular__wave.html',1,'']]]
+  ['sea_5fwater_5fdensity_0',['SEA_WATER_DENSITY',['../constants_8h.html#a1374e791b9a41056a1008854a77e6d94',1,'constants.h']]],
+  ['simulation_2eh_1',['simulation.h',['../simulation_8h.html',1,'']]],
+  ['simulation_5fdelete_2',['simulation_delete',['../simulation_8h.html#a736e2177717181f3bf9f0a774f24b097',1,'simulation.h']]],
+  ['simulation_5fget_5fbuffer_3',['simulation_get_buffer',['../simulation_8h.html#a5a640ec52cd6cdf832a09424342e3962',1,'simulation.h']]],
+  ['simulation_5fget_5fbuffer_5flength_4',['simulation_get_buffer_length',['../simulation_8h.html#ad23a987bca7af4580221fa880861bcac',1,'simulation.h']]],
+  ['simulation_5fnew_5',['simulation_new',['../simulation_8h.html#a5bb93c2fa735b4b79e8600980b98bc9b',1,'simulation.h']]],
+  ['simulation_5frun_5fupto_5ftime_6',['simulation_run_upto_time',['../simulation_8h.html#ab2bda0fad8699915a2d51c608a8e3140',1,'simulation.h']]],
+  ['simulation_5frun_5fupto_5fwaypoint_7',['simulation_run_upto_waypoint',['../simulation_8h.html#ab673415d1836be6c67013b4e15ddaa97',1,'simulation.h']]],
+  ['simulation_5fset_5fcontroller_8',['simulation_set_controller',['../simulation_8h.html#a7488153a1286d6b883b218fa5d99fe83',1,'simulation.h']]],
+  ['simulation_5fset_5finput_5fusing_5fasvs_9',['simulation_set_input_using_asvs',['../simulation_8h.html#a5730b4bda8135a71e2cb2e6899925698',1,'simulation.h']]],
+  ['simulation_5fset_5finput_5fusing_5ffile_10',['simulation_set_input_using_file',['../simulation_8h.html#af15fec699f875c35813693ad62a681d6',1,'simulation.h']]],
+  ['simulation_5fset_5fwaypoints_5ffor_5fasv_11',['simulation_set_waypoints_for_asv',['../simulation_8h.html#aee5d5fddf5d6eee6c811b15aac8e3eaf',1,'simulation.h']]],
+  ['simulation_5ftune_5fcontroller_12',['simulation_tune_controller',['../simulation_8h.html#a12d0581467b9c5a797a202c515155933',1,'simulation.h']]],
+  ['simulation_5fwrite_5foutput_13',['simulation_write_output',['../simulation_8h.html#af51cdc80861f3445dda637f1186dc385',1,'simulation.h']]],
+  ['surge_14',['surge',['../union_rigid__body___d_o_f.html#aeea2a9fb31f2c37f809bacfa7124e750',1,'Rigid_body_DOF']]],
+  ['sway_15',['sway',['../union_rigid__body___d_o_f.html#a6ca2f63cf0e3d9fa31e118dd865f6a94',1,'Rigid_body_DOF']]]
 ];

@@ -1,0 +1,26 @@
+NAME
+  VTK::RenderingFreeType
+LIBRARY_NAME
+  vtkRenderingFreeType
+IMPLEMENTABLE
+KIT
+  VTK::Rendering
+IMPLEMENTS
+  VTK::RenderingCore
+GROUPS
+  Rendering
+DEPENDS
+  VTK::CommonCore
+  VTK::CommonExecutionModel
+  VTK::RenderingCore
+  VTK::freetype
+PRIVATE_DEPENDS
+  VTK::CommonDataModel
+  VTK::FiltersGeneral
+TEST_DEPENDS
+  VTK::RenderingContextOpenGL2
+  VTK::RenderingOpenGL2
+  VTK::TestingRendering
+  VTK::ViewsContext2D
+TEST_OPTIONAL_DEPENDS
+  VTK::RenderingMatplotlib

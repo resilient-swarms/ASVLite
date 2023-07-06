@@ -1,0 +1,28 @@
+NAME
+  VTK::ParallelDIY
+DESCRIPTION
+  DIY utility classes to simplify DIY-based filters
+KIT
+  VTK::Parallel
+LIBRARY_NAME
+  vtkParallelDIY
+GROUPS
+  StandAlone
+DEPENDS
+  VTK::CommonCore
+  VTK::CommonDataModel
+  VTK::CommonSystem
+  VTK::ParallelCore
+  VTK::diy2
+OPTIONAL_DEPENDS
+  VTK::ParallelMPI
+PRIVATE_DEPENDS
+  VTK::FiltersGeneral
+  VTK::FiltersGeometry
+  VTK::IOXML
+TEST_DEPENDS
+  VTK::FiltersSources
+  VTK::TestingCore
+TEST_OPTIONAL_DEPENDS
+  VTK::ParallelMPI
+EXCLUDE_WRAP

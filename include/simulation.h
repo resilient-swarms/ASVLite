@@ -1,139 +1,128 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
-#include "asv.h"
-#include "pid_controller.h"
-#include <pthread.h>
+#include <stdbool.h>
+#include "geometry.h"
 
 /**
- * Structure to store an array of waypoints. 
+ * @file
+ * An instance of Simulation should only be created by calling the function simulation_new(). 
+ * This function allocates and initialises a block of memory on the stack, and 
+ * therefore all calls to simulation_new() should be paired with a call to simulation_delete() 
+ * to avoid memory leaks. 
  */
-struct Waypoints
-{
-  int count;
-  struct Dimensions points[COUNT_WAYPOINTS_MAX];
-};
+struct Simulation;
+struct Asv;
 
-/**
- * Structure to record the ASV dynamics at each time step of 
- * the simulation.
+/** 
+ * Initialise a simulation.
  */
-struct Buffer
-{ 
-  double sig_wave_ht; // m
-  double wave_heading; // deg
-  long random_number_seed;
-  double time; // sec.
-  double wave_elevation; // Wave elevation at the position of the vehicle, m.
-  double cog_x;   // m.
-  double cog_y;   // m.
-  double cog_z;   // m.
-  double heel;    // deg.
-  double trim;    // deg. 
-  double heading; // deg.
-  double thrust_fore_ps; // N.
-  double thrust_fore_sb; // N.
-  double thrust_aft_ps;  // N.
-  double thrust_aft_sb;  // N.
-  double surge_velocity; // m/s.
-  double surge_acceleration; // m/s2. 
-  double F_surge; // N
-  double F_sway; //N
-};
+struct Simulation* simulation_new();
 
-/**
- * Struct Simulation is a linked list to store simulation data related to each asv.
+/** 
+ * Free the heap memory.
+ * @param simulation is a non-null pointer to an instance of Simulation to be deallocated.
  */
-struct Simulation
-{
-  // Each simulation runs on its own thread
-  pthread_t thread;
-  // Inputs and outputs
-  char id[32];
-  struct Wave* wave;
-  struct Asv* asv; 
-  struct PID_controller* pid_controller;
-  struct Waypoints* waypoints;
-  struct Buffer* buffer;
-  // Data related to current time step in the simulation
-  long current_time_index;
-  int current_waypoint_index;
-  // Linkes list pointers
-  struct Simulation* previous; // previous in the linked list.
-  struct Simulation* next; // next in the linked list.
-};
-
-/** Initialise a new node for the linked list.
- */
-struct Simulation* simulation_new_node();
-
-/** Free the heap memory.
- * @param node is the first node in the linked list Simulatation_data.
- */
-void simulation_clean(struct Simulation* node);
+void simulation_delete(struct Simulation* simulation);
 
 /**
  * Function to read the input file and set the ASV's input values. 
- * @param node is the first node in the linked list Simulatation_data.
- * @param file is the path to the input toml file.  
+ * @param file is the path to the input toml file with asv specs.  
  * @param wave_ht wave height in meter.
  * @param wave_heading in deg.
- * @param rand_seed seed for random number generator. 
+ * @param rand_seed seed for random number generator.
+ * @param with_time_sync is true when simulations of all asvs are to run synchronous; else false.   
  */
-void simulation_set_input(struct Simulation* node,
-                               char* file,  
-                               double wave_ht, 
-                               double wave_heading, 
-                               long rand_seed);
+void simulation_set_input_using_file(struct Simulation* simulation,
+                                     char* file,  
+                                     double wave_ht, 
+                                     double wave_heading, 
+                                     long rand_seed,
+                                     bool with_time_sync);
 
 /**
- * Function to write the simulated data to file. 
- * @param node is the first node in the linked list Simulatation_data.
- * @param out is the path to the output director or file. If the linked list contain only one node
- * then out is the name of the ouput file, else out is the name of the directory which will contain 
- * output files corresponding to each node.
- * @param simulation_time in sec.
+ * Function to init simulation using an instance of Asv. 
+ * @param asvs array to pointers of asvs used for initialising simulation.
+ * @param count_asvs is the size of the asvs array.  
+ * @param with_time_sync is true when simulations of all asvs are to run synchronous; else false.   
  */
-void simulation_write_output(struct Simulation* node,
-                                  char* out, 
-                                  double simulation_time);
+void simulation_set_input_using_asvs(struct Simulation* simulation,
+                                    struct Asv** asvs,  
+                                    int count_asvs,
+                                    bool with_time_sync);
 
 /**
- * Simulate vehicle dynamics for each time step. This function runs 
- * simultion of each ASV in a independent thread and does not synchronize
- * the simulation for each time step between ASVs. This function is faster
- * compared to the alternative simulate_with_time_sync().
+ * Set a new array of waypoints for an asv. 
+ * @param asv for which the new set of waypoints are to be set.
+ * @param waypoints is the array of new waypoints for the asv.
+ * @param count_waypoints is the size of the array waypoints.
  */
-void simulation_run_without_time_sync(struct Simulation* first_node);
+void simulation_set_waypoints_for_asv(struct Simulation* simulation,
+                                      struct Asv* asv, 
+                                      union Coordinates_3D* waypoints,
+                                      int count_waypoints);
 
 /**
- * Simulate vehicle dynamics for each time step. This function runs 
- * simultion of each ASV in a independent thread and also synchronize
- * the simulation for each time step between ASVs. This function is slower
- * compared to the alternative simulate_without_time_sync() because the function
- * waits and joins the threads at each time step.
+ * Set the controller used for all asvs in the simulation.
+ * @param gain_position is an array of size 3 with gain terms for position in the order - proportional, integral, differential.
+ * @param gain_heading is an array of size 3 with gain terms for heading in the order - proportional, integral, differential.
  */
-void simulation_run(struct Simulation* first_node);
+void simulation_set_controller(struct Simulation* simulation, double* gain_position, double* gain_heading);
 
 /**
- * For all nodes simulate one time step.
+ * Tune the controllers for the asvs.
  */
-void simulation_for_time_step(struct Simulation* first_node, long timer_count, bool* buffer_exceeded, bool* has_all_reached_final_waypoint);
+void simulation_tune_controller(struct Simulation* simulation);
 
 /**
- * Visualisation data from input file. Function to get the sea surface edge length in meter.
+ * Simulate vehicle dynamics for each time step till the vehicle reaches the last waypoint.
+ * The function writes the results of the simulation into a file in the given output directory.
  */
-double get_sea_surface_edge_length();
-
-/** 
- * Visualisation data from input file. Function to get the number of mesh cells along 
- * one edge of the sea surface.
- */
-int get_count_mesh_cells_along_edge();
+void simulation_run_upto_waypoint(struct Simulation* simulation, char* out_dir);
 
 /**
- * Visualisation data from input file. Function to get the bottom left corner of the simulated sea surface.
+ * Simulate vehicle dynamics for each time step for a fixed time. 
+ * The function writes the results of the simulation into a file in the given output directory.
+ * @param max_time is the time to stop simulation.
  */
-struct Dimensions get_sea_surface_position();
+void simulation_run_upto_time(struct Simulation* simulation, double max_time, char* out_dir);
+
+/**
+ * Simulate the next time step. 
+ */
+void simulation_run_a_timestep(struct Simulation* simulation);
+
+/**
+ * Function to get the total number of asvs simulated. 
+ */
+int simulation_get_count_asvs(struct Simulation* simulation);
+
+/**
+ * Function to get all asvs simulated.
+ * @param asvs is the return array with pointers to the asvs simulated. The function assumes that 
+ * the caller has allocated sufficient size for asvs to contain all the pointers to be placed in it.
+ * @return the number of pointers placed into the argument asvs. 
+ */
+int simulation_get_asvs(struct Simulation* simulation, struct Asv** asvs);
+
+/**
+ * Get the current waypoint for an asv.
+ */
+union Coordinates_3D simulation_get_waypoint(struct Simulation* simulation, struct Asv* asv);
+
+/**
+ * Get the number of waypoints for the asv.
+ */
+int simulation_get_count_waypoints(struct Simulation* simulation, struct Asv* asv);
+
+/**
+ * Function to get all waypoints for an asv.
+ */
+union Coordinates_3D* simulation_get_waypoints(struct Simulation* simulation, struct Asv* asv);
+
+/**
+ * Get the position of the asv recorded in the buffer at given index.
+ */
+union Coordinates_3D simulation_get_asv_position_at(struct Simulation* simulation, struct Asv* asv, int index);
 
 #endif // SIMULATION_H

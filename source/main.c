@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include "simulation.h"
+#include "pid_controller.h"
 
 int main(int argc, char** argv)
 {
@@ -17,18 +18,28 @@ int main(int argc, char** argv)
 
   char* p_end; 
   char* in_file = argv[1];
-  char* out_file = argv[2]; 
+  char* out_dir = argv[2]; 
   double wave_height = strtod(argv[3], &p_end);
   double wave_heading = strtod(argv[4], &p_end);
   long rand_seed = strtol(argv[5], &p_end, 10);  
+  bool with_time_sync = false;
 
   // Set simulation inputs
-  struct Simulation* simulation = simulation_new_node();
-  simulation_set_input(simulation,
-                       in_file, 
-                       wave_height,
-                       wave_heading,
-                       rand_seed);
+  struct Simulation* simulation = simulation_new();
+  simulation_set_input_using_file(simulation,
+                                  in_file, 
+                                  wave_height,
+                                  wave_heading,
+                                  rand_seed,
+                                  with_time_sync);
+  // Set PID controller
+  // set gain terms by tuning the controller...
+  // simulation_tune_controller(simulation);
+  // ...or
+  // set gain term manually 
+  double k_position[3] = {1.0, 0.0, 0.0};
+  double k_heading[3]  = {1.0, 0.0, 0.0};
+  simulation_set_controller(simulation, k_position, k_heading);
 
   // Simulate and record the time taken for the simulation.
   struct timespec start, finish;
@@ -37,22 +48,13 @@ int main(int argc, char** argv)
   // time() provides a resolution of only 1 sec so its not good if simulation is really short. 
   // In a unix the better option is to use clock_gettime() along with CLOCK_MONOTONIC. 
   clock_gettime(CLOCK_MONOTONIC, &start);
-  #ifdef DISABLE_MULTI_THREADING
-  simulation_run(simulation);
-  #elif ENABLE_TIME_SYNC
-  simulation_run(simulation);
-  #else
-  simulation_run_without_time_sync(simulation);
-  #endif
+  simulation_run_upto_waypoint(simulation, out_dir);
   clock_gettime(CLOCK_MONOTONIC, &finish);
   elapsed = (finish.tv_sec - start.tv_sec);
   elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
 
-  // write output to file
-  simulation_write_output(simulation, out_file, elapsed);
-
   // Clean the memory
-  simulation_clean(simulation);
+  simulation_delete(simulation);
 
   return 0;
 }

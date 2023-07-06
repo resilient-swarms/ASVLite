@@ -1,0 +1,46 @@
+set(classes
+  vtkArcSource
+  vtkArrowSource
+  vtkButtonSource
+  vtkCapsuleSource
+  vtkCellTypeSource
+  vtkConeSource
+  vtkCubeSource
+  vtkCylinderSource
+  vtkDiagonalMatrixSource
+  vtkDiskSource
+  vtkEllipseArcSource
+  vtkEllipticalButtonSource
+  vtkFrustumSource
+  vtkGlyphSource2D
+  vtkGraphToPolyData
+  vtkHandleSource
+  vtkHyperTreeGridSource
+  vtkLineSource
+  vtkOutlineCornerFilter
+  vtkOutlineCornerSource
+  vtkOutlineSource
+  vtkParametricFunctionSource
+  vtkPartitionedDataSetSource
+  vtkPartitionedDataSetCollectionSource
+  vtkPlaneSource
+  vtkPlatonicSolidSource
+  vtkPointHandleSource
+  vtkPointSource
+  vtkPolyLineSource
+  vtkPolyPointSource
+  vtkProgrammableDataObjectSource
+  vtkProgrammableSource
+  vtkRandomHyperTreeGridSource
+  vtkRectangularButtonSource
+  vtkRegularPolygonSource
+  vtkSelectionSource
+  vtkSphereSource
+  vtkSuperquadricSource
+  vtkTessellatedBoxSource
+  vtkTextSource
+  vtkTexturedSphereSource
+  vtkUniformHyperTreeGridSource)
+
+vtk_module_add_module(VTK::FiltersSources
+  CLASSES ${classes})

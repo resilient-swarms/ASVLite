@@ -27,4 +27,22 @@ build
 # ----------------------------
 .ipynb_checkpoints
 
+# Python cache
+# ------------
+__pycache__
+
+# Wrapper binaries
+wrapper/lib
+
+# Python env
+# ----------
+.env
+env
+
 test
+to_delete_later
+
+# Cython wrapper
+# --------------
+wrapper/cython/*.so
+wrapper/cython/source/*.c

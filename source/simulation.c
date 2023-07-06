@@ -1,67 +1,410 @@
 #include <stdlib.h>
+#include <sys/stat.h> // for creating directory
+#include <pthread.h>
+#include <string.h>
 #include "toml.h"
 #include "simulation.h"
-#include <sys/stat.h> // for creating directory
+#include "pid_controller.h"
+#include "asv.h"
+#include "sea_surface.h"
+#include "geometry.h"
+#include "errors.h"
+#include "constants.h"
 
-// One wave for all ASVs
-static struct Wave wave;
-// Visualisation data
-static double sea_surface_edge_length;
-static struct Dimensions sea_surface_position;
-static int count_mesh_cells_along_edge;
+#define OUTPUT_BUFFER_SIZE 200000 /*!< Output buffer size. */
 
-double get_sea_surface_edge_length()
+struct Thread_args
 {
-  return sea_surface_edge_length;
+  struct Simulation* node;
+  char* out_dir;
+};
+
+/**
+ * Structure to record the sea state and vehicle dynamics for a time step of the simulation.
+ */
+struct Buffer
+{ 
+  double time; // sec.
+  // Sea state
+  double sig_wave_ht;  // m
+  double wave_heading; // deg
+  double sea_surface_elevation; // Wave elevation at the position of the vehicle, m.
+  // Vehicle dynamics
+  double F_surge; // N
+  double surge_acceleration; // m/s2.
+  double surge_velocity; // m/s.
+  double cog_x;   // m.
+  double cog_y;   // m.
+  double cog_z;   // m.
+  double heel;    // deg.
+  double trim;    // deg. 
+  double heading; // deg. 
+};
+
+/**
+ * Simulation is a node in a linked list and it stores simulation data related to a vehicle in simulation.
+ */
+struct Simulation
+{
+  // Each simulation runs on its own thread
+  pthread_t thread;
+  // Inputs and outputs
+  char id[32];
+  struct Wave* sea_surface;
+  struct Asv* asv; 
+  struct Controller* controller;
+  union Coordinates_3D* waypoints;
+  int count_waypoints;
+  struct Buffer* buffer;
+  // Data related to current time step
+  double time_step_size; // milliseconds
+  long current_time_index;
+  int buffer_index;
+  double max_time; // seconds
+  int current_waypoint_index;
+
+  // Link pointers
+  struct Simulation* previous; // previous in the linked list.
+  struct Simulation* next; // next in the linked list.
+  void (*simulation_run)(struct Simulation*, char*); // Pointer to function for executing the simulation. 
+  char* error_msg;
+};
+
+static void simulation_write_output(struct Simulation* node, char* out_dir)
+{
+  // Check if the directory exist and create it if it does not.
+  struct stat st = {0};
+  if (stat(out_dir, &st) == -1) 
+  {
+    mkdir(out_dir, 0700);
+  }
+
+  FILE *fp;
+  // Create file name as out_dir/node_id
+  char file[128];
+  strcpy(file, out_dir);
+  strcat(file, "/");
+  strcat(file, node->id);
+  // Open the file
+  if (!(fp = fopen(file, "a")))
+  {
+    fprintf(stderr, "ERROR: Cannot open output file %s.\n", file);
+    exit(1);
+  }
+  // Check if the file is empty and add header only for empty file.
+  fseek(fp, 0, SEEK_END);
+  long size = ftell(fp);
+  if (size == 0)
+  {
+    // file is empty, add header.
+    fprintf(fp,
+            "time(sec) "
+            "sig_wave_ht(m) "
+            "wave_heading(deg) "
+            "sea_surface_elevation(m) "
+            "F_surge(N) "
+            "surge_acc(m/s2) "
+            "surge_vel(m/s) "
+            "cog_x(m) "
+            "cog_y(m) "
+            "cog_z(m) "
+            "heel(deg) "
+            "trim(deg) "
+            "heading(deg) ");
+  }
+  // write buffer to file and close the file.
+  for (int i = 0; i < node->buffer_index; ++i)
+  {
+    fprintf(fp, "\n%f %f %f %f %f %f %f %f %f %f %f %f %f",
+            node->buffer[i].time,
+            node->buffer[i].sig_wave_ht,
+            node->buffer[i].wave_heading,
+            node->buffer[i].sea_surface_elevation,
+            node->buffer[i].F_surge,
+            node->buffer[i].surge_acceleration,
+            node->buffer[i].surge_velocity,
+            node->buffer[i].cog_x,
+            node->buffer[i].cog_y,
+            node->buffer[i].cog_z,
+            node->buffer[i].heel,
+            node->buffer[i].trim,
+            node->buffer[i].heading);
+  }
+  fclose(fp);
 }
 
-int get_count_mesh_cells_along_edge()
+// Computes dynamics for current node for the current time step.
+static void* simulation_run_per_node_per_time_step(void* current_node)
 {
-  return count_mesh_cells_along_edge;
+  struct Simulation* node = (struct Simulation*)current_node;
+  // Current time
+  double current_time = (node->current_time_index+1) * node->time_step_size/1000.0; //sec
+
+  // Set differential thrust on each thruster.
+  // ------------------------------------------
+  // PID controller estimate thrust to be applied on each thruster.
+  controller_set_thrust(node->controller, node->waypoints[node->current_waypoint_index]);
+
+  // Compute the dynamics of asv for the current time step
+  asv_compute_dynamics(node->asv, node->time_step_size);
+  const char* error_msg = asv_get_error_msg(node->asv);
+  if(error_msg)
+  {
+    set_error_msg(&node->error_msg, error_msg);
+    return NULL;
+  }
+  struct Asv_specification spec = asv_get_spec(node->asv);
+  union Coordinates_3D cog_position = asv_get_position_cog(node->asv);
+  union Coordinates_3D attitude = asv_get_attitude(node->asv);
+
+  // save simulated data to buffer. 
+  node->buffer[node->buffer_index].time               = current_time;
+  node->buffer[node->buffer_index].sig_wave_ht        = sea_surface_get_significant_height(node->sea_surface);
+  node->buffer[node->buffer_index].wave_heading       = sea_surface_get_predominant_heading(node->sea_surface) * 180.0/PI;
+  node->buffer[node->buffer_index].sea_surface_elevation     = sea_surface_get_elevation(node->sea_surface, cog_position, current_time);
+  node->buffer[node->buffer_index].F_surge            = asv_get_F(node->asv).keys.pitch;
+  node->buffer[node->buffer_index].surge_acceleration = asv_get_A(node->asv).keys.surge;
+  node->buffer[node->buffer_index].surge_velocity     = asv_get_V(node->asv).keys.surge;
+  node->buffer[node->buffer_index].cog_x              = cog_position.keys.x;
+  node->buffer[node->buffer_index].cog_y              = cog_position.keys.y;
+  node->buffer[node->buffer_index].cog_z              = cog_position.keys.z - (spec.cog.keys.z - spec.T);
+  node->buffer[node->buffer_index].heel               = attitude.keys.x * 180.0/PI;
+  node->buffer[node->buffer_index].trim               = attitude.keys.y * 180.0/PI;
+  node->buffer[node->buffer_index].heading            = attitude.keys.z * 180.0/PI;
+
+  // Check if reached the waypoint
+  double proximity_margin = 5.0; // target proximity to waypoint
+  int i = node->current_waypoint_index;
+  double x = cog_position.keys.x - node->waypoints[i].keys.x;
+  double y = cog_position.keys.y - node->waypoints[i].keys.y;
+  double distance = sqrt(x*x + y*y);
+  if(distance <= proximity_margin)
+  {
+    // Reached the current waypoint, so increament the index to the next waypoint.
+    // if the current_waypoint_index == waypoint.count ==> reached final waypoint.
+    ++(node->current_waypoint_index);
+  }
+  // Increment buffer counter
+  ++(node->buffer_index);
+  return NULL;
 }
 
-struct Dimensions get_sea_surface_position()
+static void* simulation_run_per_node_without_time_sync(void* args)
 {
-  return sea_surface_position;
+  // Extract the arguments passed
+  struct Simulation* node = (struct Simulation*)((struct Thread_args*)args)->node;
+  char* out_dir = (char*)((struct Thread_args*)args)->out_dir;
+
+  for(node->current_time_index = 0; 
+      node->max_time == 0 || node->current_time_index*node->time_step_size/1000.0 < node->max_time; 
+      ++(node->current_time_index))
+  {
+    if(node->current_waypoint_index < node->count_waypoints)
+    {
+      // Not yet reached the final waypoint, but check if buffer limit reached before further computation.
+      // Check if buffer exceeded
+      if(node->buffer_index >= OUTPUT_BUFFER_SIZE)
+      {
+        // Buffer exceeded. Dump buffer to output file.
+        if(out_dir)
+        {
+          simulation_write_output(node, out_dir); 
+        }  
+        else
+        {
+          // No out_dir provided. Skip writing output to file.
+        }
+        // Reset the buffer
+        node->buffer_index = 0;
+      }
+      if(node->error_msg)
+      {
+        break;
+      }
+      // If buffer not exceeded and no error.
+      simulation_run_per_node_per_time_step((void*)node);
+    }
+    else
+    {
+      // Reached the final waypoint
+      break;
+    }
+  }
+  return NULL;
+}
+
+static void simulation_spawn_nodes_with_time_sync(void* args)
+{
+  // Extract the arguments passed
+  struct Simulation* first_node = (struct Simulation*)((struct Thread_args*)args)->node;
+  char* out_dir = (char*)((struct Thread_args*)args)->out_dir;
+
+  bool buffer_exceeded = false;
+  for(long t = 0; ; ++t)
+  {
+    // Variable to check if all reached the destination.
+    bool has_all_reached_final_waypoint = true;
+
+    // Create threads
+    // int limit_threads = get_nprocs();
+    // spawn threads
+    for(struct Simulation* node = first_node; node != NULL; node = node->next)
+    {
+      // Set time step for the node
+      node->current_time_index = t;
+
+      // Check if simulating for max time and stop if required.
+      if(node->max_time == 0 || 
+         t*node->time_step_size/1000.0 < node->max_time)
+      {
+        // Check if asv reached the final waypoint.
+        if(node->current_waypoint_index < node->count_waypoints)
+        {
+          // Not yet reached the final waypoint, but check if buffer limit reached before further computation.
+          // Check if buffer exceeded
+          if(node->buffer_index >= OUTPUT_BUFFER_SIZE)
+          {
+            // Buffer exceeded. Dump buffer to output file.
+            if(out_dir)
+            {
+              simulation_write_output(node, out_dir); 
+            }  
+            else
+            {
+              // No out_dir provided. Skip writing output to file.
+            }      
+            // Reset buffer
+            node->buffer_index = 0;
+          }
+          has_all_reached_final_waypoint = false;
+          struct Thread_args args;
+          args.node = node;
+          args.out_dir = out_dir;
+          #ifdef DISABLE_MULTI_THREADING
+          simulation_run_per_node_per_time_step((void*)&args);
+          if(node->error_msg)
+          {
+            break;
+          }
+          #else
+          pthread_create(&(node->thread), NULL, &simulation_run_per_node_per_time_step, (void*)&args);
+          #endif
+        }
+      }
+    }
+    // Join threads. Also check if there were errors in any node.
+    bool has_error = false;
+    #ifndef DISABLE_MULTI_THREADING
+    for(struct Simulation* node = first_node; node != NULL; node = node->next)
+    {
+      if(node->current_waypoint_index < node->count_waypoints)
+      {
+        if(node->error_msg)
+        {
+          has_error = true;
+        }
+        pthread_join(node->thread, NULL);
+      }
+    }
+    #endif
+
+    // stop if all reached the destination or if buffer exceeded.
+    if(has_all_reached_final_waypoint || buffer_exceeded || has_error)
+    {
+      break;
+    }
+  }
+}
+
+/**
+ * Simulate vehicle dynamics for each time step. This function runs 
+ * simultion of each ASV in a independent thread and does not synchronize
+ * the simulation for each time step between ASVs. This function is faster
+ * compared to the alternative simulate_with_time_sync().
+ */
+static void simulation_spawn_nodes_without_time_sync(struct Simulation* first_node, char* out_dir)
+{
+  for(struct Simulation* node = first_node; node != NULL; node = node->next)
+  {
+    struct Thread_args args;
+    args.node = node;
+    args.out_dir = out_dir;
+    pthread_create(&(node->thread), NULL, &simulation_run_per_node_without_time_sync, (void*)&args);
+  }
+  // join threads
+  for(struct Simulation* node = first_node; node != NULL; node = node->next)
+  {
+    if(node->current_waypoint_index < node->count_waypoints)
+    {
+      pthread_join(node->thread, NULL);
+    }
+  }
 }
 
 struct Simulation* simulation_new_node()
 {
   // Initialise memory
   struct Simulation* node = (struct Simulation*)malloc(sizeof(struct Simulation));
-  node->wave = &wave;
-  node->asv = (struct Asv*)malloc(sizeof(struct Asv));
-  node->pid_controller = (struct PID_controller*)malloc(sizeof(struct PID_controller));
-  node->waypoints = (struct Waypoint*)malloc(sizeof(struct Waypoints));
+  node->sea_surface = NULL;
+  node->asv = NULL;
+  node->controller = NULL;
+  node->waypoints = NULL;
   node->buffer = (struct Buffer*)malloc(OUTPUT_BUFFER_SIZE * sizeof(struct Buffer));
-  // Initialise pointers and index
   node->previous = NULL;
   node->next = NULL;
+  node->error_msg = NULL;
+  node->simulation_run = NULL;
+  node->count_waypoints = 0;
+  node->time_step_size = 40.0;
   node->current_time_index = 0;
+  node->max_time = 0.0;
   node->current_waypoint_index = 0;
   return node;
 }
 
-void simulation_clean(struct Simulation* first_node)
+struct Simulation* simulation_new()
 {
-  for(struct Simulation* current_node = first_node; current_node != NULL;)
+  return simulation_new_node();
+}
+
+void simulation_delete(struct Simulation* first_node)
+{
+  if(first_node)
   {
-    struct Simulation* next_node = current_node->next;
-    free(current_node->buffer);
-    free(current_node->waypoints);
-    free(current_node->asv);
-    free(current_node->pid_controller);
-    free(current_node);
-    current_node = next_node;
+  for(struct Simulation* current_node = first_node; current_node != NULL;)
+    {
+      sea_surface_delete(current_node->sea_surface);
+      asv_delete(current_node->asv);
+      free(current_node->error_msg);
+      free(current_node->buffer);
+      free(current_node->waypoints);
+      free(current_node);
+      struct Simulation* next_node = current_node->next;
+      current_node->next = NULL;
+      current_node = next_node;
+    }
   }
 }
 
-void simulation_set_input(struct Simulation* first_node,
-                               char *file,  
-                               double wave_ht, 
-                               double wave_heading, 
-                               long rand_seed)
+void simulation_set_input_using_file(struct Simulation* first_node,
+                                     char *file,  
+                                     double wave_ht, 
+                                     double wave_heading, 
+                                     long rand_seed,
+                                     bool with_time_sync)
 {
+  char error_buffer[100];
+  char* error_missing_table = "Error in input file. Missing %s.";
+  char* error_missing_variable = "Error in input file. Missing variable %s in %s[%d].";
+  char* error_bad_value = "Error in input file. Bad value for variable %s in %s[%d].";
+
+  if(!first_node)
+  {
+    set_error_msg(&first_node->error_msg, error_null_pointer);
+    return;
+  }
+  clear_error_msg(&first_node->error_msg);
+
   // buffer to hold raw data from input file.
   const char *raw;
 
@@ -69,8 +412,16 @@ void simulation_set_input(struct Simulation* first_node,
   FILE *fp = fopen(file, "r");
   if (fp == 0)
   {
-    fprintf(stderr, "Error: cannot open file \"%s\".\n", file);
-    exit(1);
+    if(sizeof(file) > 70)
+    {
+      snprintf(error_buffer, sizeof(error_buffer), "Cannot open input file.");
+    }
+    else
+    {
+      snprintf(error_buffer, sizeof(error_buffer), "Cannot open input file %s.", file);
+    }
+    set_error_msg(&first_node->error_msg, error_buffer);
+    return;
   }
 
   // Read the input file into the root table.
@@ -79,17 +430,17 @@ void simulation_set_input(struct Simulation* first_node,
   fclose(fp);
   if (input == 0)
   {
-    fprintf(stderr, "ERROR: %s\n", errbuf);
-    exit(1);
+    set_error_msg(&first_node->error_msg, "Error parsing toml file.");
+    return;
   }
 
   // Read tables [asv]
-  toml_table_t *tables = toml_array_in(input, "asv");
+  toml_array_t *tables = toml_array_in(input, "asv");
   if (tables == 0)
   {
-    fprintf(stderr, "ERROR: missing [[asv]].\n");
-    toml_free(input);
-    exit(1);
+    snprintf(error_buffer, sizeof(error_buffer), error_missing_table, "[[asv]]");
+    set_error_msg(&first_node->error_msg, error_buffer);
+    return;
   }
   
   // get number of asvs
@@ -109,13 +460,47 @@ void simulation_set_input(struct Simulation* first_node,
       current->previous = previous;
     } 
     
+    // Set the Pointer to function for executing the simulation.
+    if(with_time_sync)
+    {
+      current->simulation_run = simulation_spawn_nodes_with_time_sync;
+    }
+    else
+    {
+      current->simulation_run = simulation_spawn_nodes_without_time_sync;
+    }
+    // Create and initialise the sea surface
+    if(wave_ht)
+    {
+      int count_wave_spectral_directions  = 5;
+      int count_wave_spectral_frequencies = 15;
+      current->sea_surface = sea_surface_new(wave_ht, 
+                              normalise_angle_2PI(wave_heading * PI/180.0), 
+                              rand_seed, 
+                              count_wave_spectral_directions, 
+                              count_wave_spectral_frequencies);
+      if(!current->sea_surface)
+      {
+        snprintf(error_buffer, sizeof(error_buffer), "Could not create sea_surface with height %lf, heading %lf, rand seed %d", wave_ht, wave_heading, rand_seed);
+        set_error_msg(&first_node->error_msg, error_buffer);
+        return;
+      }
+    }
+    else
+    {
+      current->sea_surface = NULL;
+    }
+    
+    // ASV specification
+    struct Asv_specification asv_spec;
+    
     // Get toml table to set the input data
     toml_table_t *table = toml_table_at(tables, n);
     if (table == 0)
     {
-      fprintf(stderr, "ERROR: missing table [asv][%d].\n", n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_table, "[asv]");
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     // Extract values in table [asv]
     // id
@@ -123,15 +508,15 @@ void simulation_set_input(struct Simulation* first_node,
     char* id;
     if(raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'id' in [asv][%d].\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "id", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     if (toml_rtos(raw, &id))
     {
-      fprintf(stderr, "ERROR: bad value in '[asv][%d].L_wl'\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "id", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     else
     {
@@ -142,298 +527,235 @@ void simulation_set_input(struct Simulation* first_node,
     raw = toml_raw_in(table, "L_wl");
     if (raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'L_wl' in [asv][%d].\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "L_wl", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
-    if (toml_rtod(raw, &(current->asv->spec.L_wl)))
+    if (toml_rtod(raw, &(asv_spec.L_wl)))
     {
-      fprintf(stderr, "ERROR: bad value in '[asv][%d].L_wl'\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "L_wl", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     // B_wl
     raw = toml_raw_in(table, "B_wl");
     if (raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'B_wl' in [asv][%d].\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "B_wl", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
-    if (toml_rtod(raw, &(current->asv->spec.B_wl)))
+    if (toml_rtod(raw, &(asv_spec.B_wl)))
     {
-      fprintf(stderr, "ERROR: bad value in '[asv][%d].B_wl'\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "B_wl", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     // D
     raw = toml_raw_in(table, "D");
     if (raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'D' in [asv][%d].\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "D", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
-    if (toml_rtod(raw, &(current->asv->spec.D)))
+    if (toml_rtod(raw, &(asv_spec.D)))
     {
-      fprintf(stderr, "ERROR: bad value in '[asv][%d].D'\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "D", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     // T
     raw = toml_raw_in(table, "T");
     if (raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'T' in [asv][%d].\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "T", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
-    if (toml_rtod(raw, &(current->asv->spec.T)))
+    if (toml_rtod(raw, &(asv_spec.T)))
     {
-      fprintf(stderr, "ERROR: bad value in '[asv][%d].T'\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "T", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     // displacement
     raw = toml_raw_in(table, "displacement");
     if (raw == 0) 
     {
-      fprintf(stderr, "ERROR: missing 'displacement' in [asv][%d].\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "displacement", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
-    if (toml_rtod(raw, &(current->asv->spec.disp)))
+    if (toml_rtod(raw, &(asv_spec.disp)))
     {
-      fprintf(stderr, "ERROR: bad value in '[asv][%d].displacement'\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "displacement", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     // max_speed
     raw = toml_raw_in(table, "max_speed");
     if (raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'max_speed' in [asv][%d].\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "max_speed", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
-    if (toml_rtod(raw, &(current->asv->spec.max_speed)))
+    if (toml_rtod(raw, &(asv_spec.max_speed)))
     {
-      fprintf(stderr, "ERROR: bad value in '[asv][%d].max_speed'\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "max_speed", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
 
     // cog
-    toml_table_t *array = toml_array_in(table, "cog");
+    toml_array_t *array = toml_array_in(table, "cog");
     if (array == 0)
     {
-      fprintf(stderr, "ERROR: missing 'cog' in [asv][%d].\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "cog", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     // cog.x
     raw = toml_raw_at(array, 0);
     if (raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'cog[0]' for [asv][%d].cog.\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "cog[0]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
-    if (toml_rtod(raw, &(current->asv->spec.cog.x)))
+    if (toml_rtod(raw, &(asv_spec.cog.keys.x)))
     {
-      fprintf(stderr, "ERROR: bad value in '[asv][%d].cog[0]'\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "cog[0]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     // cog.y
     raw = toml_raw_at(array, 1);
     if (raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'cog[1]' for [asv][%d].cog.\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "cog[1]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
-    if (toml_rtod(raw, &(current->asv->spec.cog.y)))
+    if (toml_rtod(raw, &(asv_spec.cog.keys.y)))
     {
-      fprintf(stderr, "ERROR: bad value in '[asv][%d].cog[1]'\n", n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "cog[1]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     // cog.z
     raw = toml_raw_at(array, 2);
     if (raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'cog[2]' for [asv][%d].cog.\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "cog[2]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
-    if (toml_rtod(raw, &(current->asv->spec.cog.z)))
+    if (toml_rtod(raw, &(asv_spec.cog.keys.z)))
     {
-      fprintf(stderr, "ERROR: bad value in '[asv][%d].cog[2]'\n", n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "cog[2]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
 
     // radius_of_gyration
     array = toml_array_in(table, "radius_of_gyration");
     if (array == 0)
     {
-      fprintf(stderr, "ERROR: missing 'radius_of_gyration' in [asv][%d].\n", n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "radius_of_gyration", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     // radius_of_gyration.x
     raw = toml_raw_at(array, 0);
     if (raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'radius_of_gyration[0]' in [asv][%d].\n", n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "radius_of_gyration[0]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
-    if (toml_rtod(raw, &(current->asv->spec.r_roll)))
+    if (toml_rtod(raw, &(asv_spec.r_roll)))
     {
-      fprintf(stderr, "ERROR: bad value in '[asv][%d].radius_of_gyration[0]'\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "radius_of_gyration[0]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     // radius_of_gyration.pitch
     raw = toml_raw_at(array, 1);
     if (raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'radius_of_gyration[1]' in [asv][%d].\n", n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "radius_of_gyration[1]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
-    if (toml_rtod(raw, &(current->asv->spec.r_pitch)))
+    if (toml_rtod(raw, &(asv_spec.r_pitch)))
     {
-      fprintf(stderr, "ERROR: bad value in '[asv][%d].radius_of_gyration[1]'\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "radius_of_gyration[1]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     // radius_of_gyration.yaw
     raw = toml_raw_at(array, 2);
     if (raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'radius_of_gyration[2]' in [asv][%d].\n", n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "radius_of_gyration[2]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
-    if (toml_rtod(raw, &(current->asv->spec.r_yaw)))
+    if (toml_rtod(raw, &(asv_spec.r_yaw)))
     {
-      fprintf(stderr, "ERROR: bad value in '[asv][%d].radius_of_gyration[2]'\n",n);
-      toml_free(input);
-      exit(1);
-    }
-
-    // thrusters
-    toml_table_t *arrays = toml_array_in(table, "thrusters");
-    if (array == 0)
-    {
-      fprintf(stderr, "ERROR: missing 'thrusters' in [asv][%d].\n",n);
-      toml_free(input);
-      exit(1);
-    }
-    // get number of thrusters
-    current->asv->count_propellers = toml_array_nelem(arrays);
-    if (current->asv->count_propellers > COUNT_PROPELLERS_MAX)
-    {
-      fprintf(stderr, "ERROR: number of thrusters (%d) exceed max limit (%i) in [asv][%d].'\n",
-              current->asv->count_propellers, COUNT_PROPELLERS_MAX, n);
-      toml_free(input);
-      exit(1);
-    }
-    // Set propeller data
-    for (int i = 0; i < current->asv->count_propellers; ++i)
-    {
-      array = toml_array_at(arrays, i);
-      // x
-      raw = toml_raw_at(array, 0);
-      if (raw == 0)
-      {
-        fprintf(stderr, "ERROR: missing 'thrusters[%d][0]' in [asv][%d].\n", i, n);
-        toml_free(input);
-        exit(1);
-      }
-      if (toml_rtod(raw, &(current->asv->propellers[i].position.x)))
-      {
-        fprintf(stderr, "ERROR: bad value in '[asv][%d]thrustes[%d][0]'\n", n, i);
-        toml_free(input);
-        exit(1);
-      }
-      // y
-      raw = toml_raw_at(array, 1);
-      if (raw == 0)
-      {
-        fprintf(stderr, "ERROR: missing 'thrusters[%d][1]' in [asv][%d].\n", i, n);
-        toml_free(input);
-        exit(1);
-      }
-      if (toml_rtod(raw, &(current->asv->propellers[i].position.y)))
-      {
-        fprintf(stderr, "ERROR: bad value in '[asv][%d]thrustes[%d][1]'\n", n, i);
-        toml_free(input);
-        exit(1);
-      }
-      // z
-      raw = toml_raw_at(array, 2);
-      if (raw == 0)
-      {
-        fprintf(stderr, "ERROR: missing 'thrusters[%d][2]' in [asv][%d].\n", i, n);
-        toml_free(input);
-        exit(1);
-      }
-      if (toml_rtod(raw, &(current->asv->propellers[i].position.z)))
-      {
-        fprintf(stderr, "ERROR: bad value in '[asv][%d]thrustes[%d][2]'\n", n, i);
-        toml_free(input);
-        exit(1);
-      }
+      snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "radius_of_gyration[2]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
 
     // asv_position
+    union Coordinates_3D origin_position;
     array = toml_array_in(table, "asv_position");
     if (array == 0)
     {
-      fprintf(stderr, "ERROR: missing 'asv_position' in [asv][%d].\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "asv_position", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     // asv_position.x
     raw = toml_raw_at(array, 0);
     if (raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'asv_position[0]' for [asv][%d].asv_position.\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "asv_position[0]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
-    if (toml_rtod(raw, &(current->asv->origin_position.x)))
+    if (toml_rtod(raw, &(origin_position.keys.x)))
     {
-      fprintf(stderr, "ERROR: bad value in '[asv][%d].asv_position[0]'.\n", n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "asv_position[0]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     // asv_position.y
     raw = toml_raw_at(array, 1);
     if (raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'asv_position[1]' for [asv][%d].asv_position.\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "asv_position[1]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
-    if (toml_rtod(raw, &(current->asv->origin_position.y)))
+    if (toml_rtod(raw, &(origin_position.keys.y)))
     {
-      fprintf(stderr, "ERROR: bad value in '[asv][%d].asv_position[1]'.\n", n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "asv_position[1]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
 
     // asv_attitude
+    union Coordinates_3D attitude;
     array = toml_array_in(table, "asv_attitude");
     if (array == 0)
     {
-      fprintf(stderr, "ERROR: missing 'asv_attitude' in [asv][%d].\n", n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "asv_attitude", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     // Extract values in table [vehicle_attitude]
     // heel
@@ -441,117 +763,198 @@ void simulation_set_input(struct Simulation* first_node,
     raw = toml_raw_at(array, 0);
     if (raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'asv_attitude[0]' for [asv][%d].asv_attitude.\n", n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "asv_attitude[0]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     if (toml_rtod(raw, &(heel)))
     {
-      fprintf(stderr, "ERROR: bad value in '[asv][%d].asv_attitude[0]'\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "asv_attitude[0]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     else
     {
       // convert to radians and set value
-      current->asv->attitude.x = heel * PI / 180.0;
+      attitude.keys.x = heel * PI / 180.0;
     }
     // trim
     double trim = 0.0;
     raw = toml_raw_at(array, 1);
     if (raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'asv_attitude[1]' for [asv][%d].asv_attitude.\n", n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "asv_attitude[1]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     if (toml_rtod(raw, &(trim)))
     {
-      fprintf(stderr, "ERROR: bad value in '[asv][%d].asv_attitude[1]'\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "asv_attitude[1]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     else
     {
       // convert to radians and set value
-      current->asv->attitude.y = trim * PI / 180.0;
+      attitude.keys.y = trim * PI / 180.0;
     }
     // heading
     double heading = 0.0;
     raw = toml_raw_at(array, 2);
     if (raw == 0)
     {
-      fprintf(stderr, "ERROR: missing 'asv_attitude[2]' for [asv][%d].asv_attitude.\n", n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "asv_attitude[2]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     if (toml_rtod(raw, &(heading)))
     {
-      fprintf(stderr, "ERROR: bad value in '[asv][%d].asv_attitude[2]'\n",n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "asv_attitude[2]", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     else
     {
       // convert to radians and set value
-      current->asv->attitude.z = heading * PI / 180.0;
+      attitude.keys.z = normalise_angle_2PI(heading * PI / 180.0);
     }
+
+    // Initialise the asv
+    current->asv = asv_new(asv_spec, current->sea_surface, origin_position, attitude);
+
+    // thrusters
+    toml_table_t *arrays = toml_array_in(table, "thrusters");
+    if (array == 0)
+    {
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "thrusters", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
+    }
+    // get number of thrusters
+    int count_thrusters = toml_array_nelem(arrays);
+    struct Thruster** thrusters = (struct Thruster**)malloc(sizeof(struct Thruster*) * count_thrusters);
+    // Set thruster data
+    for (int i = 0; i < count_thrusters; ++i)
+    {
+      union Coordinates_3D thruster_position;
+      array = toml_array_at(arrays, i);
+      // x
+      raw = toml_raw_at(array, 0);
+      if (raw == 0)
+      {
+        char* thruster_index[16];
+        snprintf(thruster_index, sizeof(thruster_index), "thrusters[%d][0]", i);
+        snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, thruster_index, "[asv]", n);
+        set_error_msg(&first_node->error_msg, error_buffer);
+        return;
+      }
+      if (toml_rtod(raw, &(thruster_position.keys.x)))
+      {
+        char* thruster_index[16];
+        snprintf(thruster_index, sizeof(thruster_index), "thrusters[%d][0]", i);
+        snprintf(error_buffer, sizeof(error_buffer), error_bad_value, thruster_index, "[asv]", n);
+        set_error_msg(&first_node->error_msg, error_buffer);
+        return;
+      }
+      // y
+      raw = toml_raw_at(array, 1);
+      if (raw == 0)
+      {
+        char* thruster_index[16];
+        snprintf(thruster_index, sizeof(thruster_index), "thrusters[%d][1]", i);
+        snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, thruster_index, "[asv]", n);
+        set_error_msg(&first_node->error_msg, error_buffer);
+        return;
+      }
+      if (toml_rtod(raw, &(thruster_position.keys.y)))
+      {
+        char* thruster_index[16];
+        snprintf(thruster_index, sizeof(thruster_index), "thrusters[%d][1]", i);
+        snprintf(error_buffer, sizeof(error_buffer), error_bad_value, thruster_index, "[asv]", n);
+        set_error_msg(&first_node->error_msg, error_buffer);
+        return;
+      }
+      // z
+      raw = toml_raw_at(array, 2);
+      if (raw == 0)
+      {
+        char* thruster_index[16];
+        snprintf(thruster_index, sizeof(thruster_index), "thrusters[%d][2]", i);
+        snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, thruster_index, "[asv]", n);
+        set_error_msg(&first_node->error_msg, error_buffer);
+        return;
+      }
+      if (toml_rtod(raw, &(thruster_position.keys.z)))
+      {
+        char* thruster_index[16];
+        snprintf(thruster_index, sizeof(thruster_index), "thrusters[%d][2]", i);
+        snprintf(error_buffer, sizeof(error_buffer), error_bad_value, thruster_index, "[asv]", n);
+        set_error_msg(&first_node->error_msg, error_buffer);
+        return;
+      }
+      thrusters[i] = thruster_new(thruster_position);
+    }
+    // Set the thrusters on the ASV
+    asv_set_thrusters(current->asv, thrusters, count_thrusters);
+    free(thrusters);
 
     // waypoints
     arrays = toml_array_in(table, "waypoints");
     if (arrays == 0)
     {
-      fprintf(stderr, "ERROR: missing waypoints in [asv][%d].\n", n);
-      toml_free(input);
-      exit(1);
+      snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, "waypoints", "[asv]", n);
+      set_error_msg(&first_node->error_msg, error_buffer);
+      return;
     }
     // get number of waypoints
-    current->waypoints->count = toml_array_nelem(arrays);
-    if (current->waypoints->count > COUNT_WAYPOINTS_MAX)
-    {
-      fprintf(stderr, "ERROR: number of waypoints (%d) in [asv][%d] exceed max limit (%i)'\n",
-              current->waypoints->count, n, COUNT_WAYPOINTS_MAX);
-      toml_free(input);
-      exit(1);
-    }
+    current->count_waypoints = toml_array_nelem(arrays);
+    current->waypoints = (union Coordinates_3D*)malloc(sizeof(union Coordinates_3D) * current->count_waypoints);
     // Set waypoint data
-    for (int i = 0; i < current->waypoints->count; ++i)
+    for (int i = 0; i < current->count_waypoints; ++i)
     {
       array = toml_array_at(arrays, i);
       // x
       raw = toml_raw_at(array, 0);
       if (raw == 0)
       {
-        fprintf(stderr, "ERROR: missing 'waypoints[%d][0]' in [asv][%d].\n", i, n);
-        toml_free(input);
-        exit(1);
+        char* waypoint_index[16];
+        snprintf(waypoint_index, sizeof(waypoint_index), "waypoints[%d][0]", i);
+        snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, waypoint_index, "[asv]", n);
+        set_error_msg(&first_node->error_msg, error_buffer);
+        return;
       }
-      if (toml_rtod(raw, &(current->waypoints->points[i].x)))
+      if (toml_rtod(raw, &(current->waypoints[i].keys.x)))
       {
-        fprintf(stderr, "ERROR: bad value in [asv][%d].waypoints[%d][0]'\n", n, i);
-        toml_free(input);
-        exit(1);
+        char* waypoint_index[16];
+        snprintf(waypoint_index, sizeof(waypoint_index), "waypoints[%d][0]", i);
+        snprintf(error_buffer, sizeof(error_buffer), error_bad_value, waypoint_index, "[asv]", n);
+        set_error_msg(&first_node->error_msg, error_buffer);
+        return;
       }
       // y
       raw = toml_raw_at(array, 1);
       if (raw == 0)
       {
-        fprintf(stderr, "ERROR: missing 'waypoints[%d][1]' in [asv][%d].\n", i, n);
-        toml_free(input);
-        exit(1);
+        char* waypoint_index[16];
+        snprintf(waypoint_index, sizeof(waypoint_index), "waypoints[%d][1]", i);
+        snprintf(error_buffer, sizeof(error_buffer), error_missing_variable, waypoint_index, "[asv]", n);
+        set_error_msg(&first_node->error_msg, error_buffer);
+        return;
       }
-      if (toml_rtod(raw, &(current->waypoints->points[i].y)))
+      if (toml_rtod(raw, &(current->waypoints[i].keys.y)))
       {
-        fprintf(stderr, "ERROR: bad value in [asv][%d].waypoints[%d][1]'\n", n, i);
-        toml_free(input);
-        exit(1);
+        char* waypoint_index[16];
+        snprintf(waypoint_index, sizeof(waypoint_index), "waypoints[%d][1]", i);
+        snprintf(error_buffer, sizeof(error_buffer), error_bad_value, waypoint_index, "[asv]", n);
+        set_error_msg(&first_node->error_msg, error_buffer);
+        return;
       }
     }
   }
 
   // Locate table [clock]
-  double time_step_size = 40.0; // default value for time step size
-  toml_table_t *table = toml_table_in(input, "clock");
+  current->time_step_size = 40.0; // default value for time step size
+  toml_table_t* table = toml_table_in(input, "clock");
   if (table != 0)
   {
     // Extract values in table [clock]
@@ -559,374 +962,404 @@ void simulation_set_input(struct Simulation* first_node,
     raw = toml_raw_in(table, "time_step_size");
     if (raw != 0)
     {
-      if (toml_rtod(raw, &time_step_size))
+      if (toml_rtod(raw, &current->time_step_size))
       {
-        fprintf(stderr, "ERROR: bad value in 'time_step_size'\n");
-        toml_free(input);
-        exit(1);
+        snprintf(error_buffer, sizeof(error_buffer), error_bad_value, "time_step_size", "[clock]", 0);
+        set_error_msg(&first_node->error_msg, error_buffer);
+        return;
       }
     }
-  }
-
-  // Locate table [visualisation]
-  table = toml_table_in(input, "visualisation");
-  if(table != 0)
-  {
-    // Extract value in table [visualisation]
-    // sea_surface_edge_length
-    raw = toml_raw_in(table, "sea_surface_edge_length");
-    if(raw != 0)
-    {
-      if (toml_rtod(raw, &sea_surface_edge_length))
-      {
-        fprintf(stderr, "ERROR: bad value in 'sea_surface_edge_length'\n");
-        toml_free(input);
-        exit(1);
-      }
-    }
-
-    // sea_surface_position
-    toml_table_t *array = toml_array_in(table, "sea_surface_position");
-    if(array != 0)
-    {
-      // sea_surface_position.x
-      raw = toml_raw_at(array, 0);
-      if (raw == 0)
-      {
-        fprintf(stderr, "ERROR: missing 'sea_surface_position[0]'.\n");
-        toml_free(input);
-        exit(1);
-      }
-      if (toml_rtod(raw, &(sea_surface_position.x)))
-      {
-        fprintf(stderr, "ERROR: bad value in 'sea_surface_position[0]'.\n");
-        toml_free(input);
-        exit(1);
-      }
-      // sea_surface_position.y
-      raw = toml_raw_at(array, 1);
-      if (raw == 0)
-      {
-        fprintf(stderr, "ERROR: missing 'sea_surface_position[1]'.\n");
-        toml_free(input);
-        exit(1);
-      }
-      if (toml_rtod(raw, &(sea_surface_position.y)))
-      {
-        fprintf(stderr, "ERROR: bad value in 'sea_surface_position[1]'.\n");
-        toml_free(input);
-        exit(1);
-      }
-    }     
-
-    // count_mesh_cells_along_edge
-    raw = toml_raw_in(table, "count_mesh_cells_along_edge");
-    if(raw != 0)
-    {
-      if (toml_rtoi(raw, &count_mesh_cells_along_edge))
-      {
-        fprintf(stderr, "ERROR: bad value in 'count_mesh_cells_along_edge'\n");
-        toml_free(input);
-        exit(1);
-      }
-    }
-  }
-
-  // Init the irregular wave and the PID controller
-  wave_init(&wave, wave_ht, wave_heading * PI/180.0, rand_seed);
-  // Init all asvs
-  for(struct Simulation* node = first_node; node != NULL; node = node->next)
-  {
-    // Set time step size in all asvs.
-    node->asv->dynamics.time_step_size = time_step_size/1000.0; // sec
-    
-    // Initialise the asv after setting all inputs.
-    asv_init(node->asv, &wave);
-
-    // Initialise the PID controller
-    pid_controller_init(node->pid_controller);
-    // PID controller set gain terms
-    double p_position = 1.0   * node->asv->dynamics.time_step_size;
-    double i_position = 0.1   * node->asv->dynamics.time_step_size;
-    double d_position = -10.0 * node->asv->dynamics.time_step_size;
-    pid_controller_set_gains_position(node->pid_controller, p_position, i_position, d_position);
-    double p_heading = 1.0   * node->asv->dynamics.time_step_size;
-    double i_heading = 0.1   * node->asv->dynamics.time_step_size;
-    double d_heading = -10.0 * node->asv->dynamics.time_step_size;
-    pid_controller_set_gains_heading(node->pid_controller, p_heading, i_heading, d_heading);
   }
 
   // done reading inputs
   toml_free(input);
 }
 
-void simulation_write_output(struct Simulation* first_node,
-                                  char* out, 
-                                  double simulation_time)
+void simulation_set_input_using_asvs(struct Simulation* first_node,
+                                    struct Asv** asvs,  
+                                    int count_asvs,
+                                    bool with_time_sync)
 {
-  bool has_multiple_asvs = false;
-  // Check if single asv or more
-  if(first_node->next != NULL)
+  if(first_node && asvs)
   {
-    has_multiple_asvs = true;
-  }
-
-  // Create director if there are more than one asvs.
-  if(has_multiple_asvs)
-  {
-    // Check if the directory exist
-    struct stat st = {0};
-    if (stat(out, &st) == -1) 
+    clear_error_msg(&first_node->error_msg);
+    struct Simulation* current = first_node;
+    for (int n = 0; n < count_asvs; ++n)
     {
-      mkdir(out, 0700);
-    }
-  }
-
-  for(struct Simulation* node = first_node; node != NULL; node = node->next)
-  {
-    double time = node->current_time_index * node->asv->dynamics.time_step_size; //sec
-    double performance = time / simulation_time;
-    fprintf(stdout, "%s, %f sec, %f sec, %f x \n", node->id, time, simulation_time, performance);
-
-    FILE *fp;
-    // Create the output file in the out dir if there are more than one asvs,
-    // else create an output file with name in out.
-    char file[128];
-    strcpy(file, out);
-    if(has_multiple_asvs)
-    {
-      // More than one asv.
-      strcpy(file, out);
-      strcat(file, "/");
-      strcat(file, node->id);
-    }
-    // Open the file
-    if (!(fp = fopen(file, "a")))
-    {
-      fprintf(stderr, "Error. Cannot open output file %s.\n", file);
-      exit(1);
-    }
-    // Check if the file is empty and add header only for empty file.
-    fseek(fp, 0, SEEK_END);
-    long size = ftell(fp);
-    if (size == 0)
-    {
-      // file is empty, add header.
-      fprintf(fp,
-              "sig_wave_ht(m) "
-              "wave_heading(deg) "
-              "rand_seed "
-              "time(sec) "
-              "wave_elevation(m) "
-              "cog_x(m) "
-              "cog_y(m) "
-              "cog_z(m) "
-              "heel(deg) "
-              "trim(deg) "
-              "heading(deg) "
-              "surge_vel(m/s) "
-              "surge_acc(m/s2) "
-              "F_surge(N) "
-              "F_sway(N)");
-    }
-    // write buffer to file and close the file.
-    for (int i = 0; i < node->current_time_index; ++i)
-    {
-      fprintf(fp, "\n%f %f %ld %f %f %f %f %f %f %f %f %f %f %f %f",
-              node->buffer[i].sig_wave_ht,
-              node->asv->wave->heading * 360.0 / (2.0 * PI),
-              node->asv->wave->random_number_seed,
-              node->buffer[i].time,
-              node->buffer[i].wave_elevation,
-              node->buffer[i].cog_x,
-              node->buffer[i].cog_y,
-              node->buffer[i].cog_z,
-              node->buffer[i].heel,
-              node->buffer[i].trim,
-              node->buffer[i].heading,
-              node->buffer[i].surge_velocity,
-              node->buffer[i].surge_acceleration,
-              node->buffer[i].F_surge,
-              node->buffer[i].F_sway);
-    }
-    fclose(fp);
-  }
-}
-
-// Computes dynamics for current node for the current time step.
-void compute_dynamics(void* current_node)
-{
-  struct Simulation* node = (struct Simulation*)current_node;
-  // Current time
-  double current_time = node->current_time_index * node->asv->dynamics.time_step_size; //sec
-
-  // set propeller thrust and direction
-  // for(int p = 0; p < node->asv->count_propellers; ++p)
-  // {
-  //   node->asv->propellers[p].thrust = 0.25; //N
-  //   node->asv->propellers[p].orientation = (struct Dimensions){0.0, 0.0, 0.0};
-  // }
-
-  // The propeller orientation is fixed. Steering is done by differential thrust.
-  for(int p = 0; p < node->asv->count_propellers; ++p)
-  {
-    // Set a fixed orientation on each propeller
-    node->asv->propellers[p].orientation = (struct Dimensions){0.0, 0.0, 0.0};
-  }
-  // Set differential thrust on each propeller.
-  // ------------------------------------------
-  // In controller set the way point for the current time step
-  pid_controller_set_way_point(node->pid_controller, node->waypoints->points[node->current_waypoint_index]);
-  // Inform PID controller of the current state.
-  pid_controller_set_current_state(node->pid_controller, node->asv->cog_position, node->asv->attitude);
-  // PID controller estimate thrust to be applied on each propeller.
-  pid_controller_set_thrust(node->pid_controller);
-  // Set propeller thrust on each of the 4 propellers
-  node->asv->propellers[0].thrust = node->pid_controller->thrust_fore_ps; //N
-  node->asv->propellers[1].thrust = node->pid_controller->thrust_fore_sb; //N
-  node->asv->propellers[2].thrust = node->pid_controller->thrust_aft_ps;  //N
-  node->asv->propellers[3].thrust = node->pid_controller->thrust_aft_sb;  //N 
-
-
-  // Compute the dynamics of asv for the current time step
-  asv_compute_dynamics(node->asv, current_time);
-
-  // Also compute the wave elevation. 
-  double wave_elevation = 0.0;
-  if(node->asv->wave != NULL)
-  {
-    wave_elevation = wave_get_elevation(node->asv->wave, 
-                                        &(node->asv->cog_position), 
-                                        current_time);
-  }
-
-  // save simulated data to buffer. 
-  node->buffer[node->current_time_index].sig_wave_ht        = node->asv->wave->significant_wave_height;
-  node->buffer[node->current_time_index].wave_heading       = node->asv->wave->heading * 180.0/PI;
-  node->buffer[node->current_time_index].random_number_seed = node->asv->wave->random_number_seed;
-  node->buffer[node->current_time_index].time               = current_time;
-  node->buffer[node->current_time_index].wave_elevation     = wave_elevation;
-  node->buffer[node->current_time_index].cog_x              = node->asv->cog_position.x;
-  node->buffer[node->current_time_index].cog_y              = node->asv->cog_position.y;
-  node->buffer[node->current_time_index].cog_z              = node->asv->cog_position.z - (node->asv->spec.cog.z - node->asv->spec.T);
-  node->buffer[node->current_time_index].heel               = node->asv->attitude.x * 180.0/PI;
-  node->buffer[node->current_time_index].trim               = node->asv->attitude.y * 180.0/PI;
-  node->buffer[node->current_time_index].heading            = node->asv->attitude.z * 180.0/PI;
-  node->buffer[node->current_time_index].surge_velocity     = node->asv->dynamics.V[surge];
-  node->buffer[node->current_time_index].surge_acceleration = node->asv->dynamics.A[surge];
-
-  // Check if reached the waypoint
-  double proximity_margin = 2.0; // target proximity to waypoint
-  int i = node->current_waypoint_index;
-  double x = node->asv->cog_position.x - node->waypoints->points[i].x;
-  double y = node->asv->cog_position.y - node->waypoints->points[i].y;
-  double distance = sqrt(x*x + y*y);
-  if(distance <= proximity_margin)
-  {
-    // Reached the current waypoint, so increament the index to the next waypoint.
-    // if the current_waypoint_index == waypoint.count ==> reached final waypoint.
-    ++(node->current_waypoint_index);
-  }
-}
-
-void compute_dynamics_per_thread_no_time_sync(void* current_node)
-{
-  struct Simulation* node = (struct Simulation*)current_node;
-  for(node->current_time_index = 0; ; ++(node->current_time_index))
-  {
-    if(node->current_waypoint_index < node->waypoints->count)
-    {
-      // Not yet reached the final waypoint, but check if buffer limit reached before further computation.
-      // Check if buffer exceeded
-      if(node->current_time_index >= OUTPUT_BUFFER_SIZE)
+      // Create a new entry to the linked list of simulation data.
+      if(n != 0)
       {
-        // buffer exceeded
-        fprintf(stderr, "ERROR: output buffer exceeded for asv with id '%s'.\n", node->id);
-        break;        
+        struct Simulation* previous = current;
+        // Create a new entry to the linked list.
+        current = simulation_new_node();
+        // Link it to the previous entry in the linked list.
+        previous->next = current; 
+        current->previous = previous;
       }
-      // If buffer not exceeded.
-      compute_dynamics((void*)node);
+
+      // Set the Pointer to function for executing the simulation.
+      if(with_time_sync)
+      {
+        current->simulation_run = simulation_spawn_nodes_with_time_sync;
+      }
+      else
+      {
+        current->simulation_run = simulation_spawn_nodes_without_time_sync;
+      }
+
+      // Create and initialise the sea surface
+      current->asv = asvs[n];
+      current->sea_surface = asv_get_sea_surface(current->asv);
+    }  
+  }
+  else
+  {
+    set_error_msg(&first_node->error_msg, error_null_pointer);
+  } 
+}
+
+void simulation_set_waypoints_for_asv(struct Simulation* first_node,
+                                      struct Asv* asv, 
+                                      union Coordinates_3D* waypoints,
+                                      int count_waypoints)
+{
+  if(first_node && asv)
+  {
+    clear_error_msg(&first_node->error_msg);
+    // Find the asv from the linked list
+    struct Simulation* node = NULL;
+    for(struct Simulation* current_node = first_node; current_node != NULL; current_node = current_node->next)
+    {
+      if(current_node->asv == asv)
+      {
+        // Found it. 
+        node = current_node;
+        break;
+      }
+    }
+    if(node)
+    {
+      if(node->count_waypoints < count_waypoints)
+      {
+        // More waypoints to store. Expand heap. 
+        free(node->waypoints);
+        node->waypoints = (union Coordinates_3D*)malloc(sizeof(union Coordinates_3D)*count_waypoints);
+      }
+      if(waypoints)
+      {
+        for(int i = 0; i < count_waypoints; ++i)
+        {
+          node->waypoints[i] = waypoints[i];
+        }
+        node->count_waypoints = count_waypoints;
+        node->current_waypoint_index = 0;
+      }
+      else
+      {
+        set_error_msg(&first_node->error_msg, error_null_pointer);
+        return;
+      } 
     }
     else
     {
-      // Reached the final waypoint
-      break;
+      set_error_msg(&first_node->error_msg, "Could not find the ASV.");
+      return;
     }
   }
+  else
+  {
+    set_error_msg(&first_node->error_msg, error_null_pointer);
+    return;
+  } 
 }
 
-void simulation_for_time_step(struct Simulation* first_node, long t, bool* buffer_exceeded, bool* has_all_reached_final_waypoint)
+void simulation_set_controller(struct Simulation* first_node, double* gain_position, double* gain_heading)
 {
-  // Create threads
-    // int limit_threads = get_nprocs();
-    // spawn threads
+  if(first_node && gain_position && gain_heading)
+  {
+    clear_error_msg(&first_node->error_msg);
     for(struct Simulation* node = first_node; node != NULL; node = node->next)
     {
-      // Set time step for the node
-      node->current_time_index = t;
-
-      // Check if asv reached the final waypoint.
-      if(node->current_waypoint_index < node->waypoints->count)
-      {
-        // Not yet reached the final waypoint, but check if buffer limit reached before further computation.
-        // Check if buffer exceeded
-        if(node->current_time_index >= OUTPUT_BUFFER_SIZE)
-        {
-          // buffer exceeded
-          *buffer_exceeded = true;
-          fprintf(stderr, "ERROR: output buffer exceeded for asv with id '%s'.\n", node->id);
-          break;        
-        }
-        *has_all_reached_final_waypoint = false;
-        #ifdef DISABLE_MULTI_THREADING
-        compute_dynamics((void*)node);
-        #else
-        pthread_create(&(node->thread), NULL, &compute_dynamics, (void*)node);
-        #endif
-      }
+      node->controller = controller_new(node->asv);
+      // PID controller set gain terms
+      double p_position = gain_position[0];
+      double i_position = gain_position[1];
+      double d_position = gain_position[2];
+      controller_set_gains_position(node->controller, p_position, i_position, d_position);
+      double p_heading = gain_heading[0];
+      double i_heading = gain_heading[1];
+      double d_heading = gain_heading[2];
+      controller_set_gains_heading(node->controller, p_heading, i_heading, d_heading);
     }
-    #ifndef DISABLE_MULTI_THREADING
-    // join threads
+  }
+  else
+  {
+    set_error_msg(&first_node->error_msg, error_null_pointer);
+    return;
+  } 
+}
+
+void simulation_tune_controller(struct Simulation* first_node)
+{
+  if(first_node)
+  {
+    clear_error_msg(&first_node->error_msg);
+    first_node->controller = controller_new(first_node->asv);
+    controller_tune(first_node->controller);
+    union Coordinates_3D k_position = controller_get_gains_position(first_node->controller);
+    union Coordinates_3D k_heading  = controller_get_gains_heading(first_node->controller);
+    // Assuming all asvs will use the controller with same gain terms. 
+    simulation_set_controller(first_node->next, k_position.array, k_heading.array);
+  }
+  else
+  {
+    set_error_msg(&first_node->error_msg, error_null_pointer);
+    return;
+  } 
+}
+
+
+
+void simulation_run_upto_waypoint(struct Simulation* first_node, char* out_dir)
+{
+  if(first_node)
+  {
+    clear_error_msg(&first_node->error_msg);
+    first_node->simulation_run(first_node, out_dir);
+
+    // Check for any errors during simulation and print it. 
     for(struct Simulation* node = first_node; node != NULL; node = node->next)
     {
-      if(node->current_waypoint_index < node->waypoints->count)
+      if(node->error_msg)
       {
-        pthread_join(node->thread, NULL);
+        fprintf(stderr, "ERROR: ASV id = %s. %s\n", node->id, node->error_msg);
       }
     }
-    #endif
+  }
+  else
+  {
+    set_error_msg(&first_node->error_msg, error_null_pointer);
+    return;
+  } 
 }
 
-void simulation_run(struct Simulation* first_node)
+void simulation_run_upto_time(struct Simulation* first_node, double max_time, char* out_dir)
 {
-  bool buffer_exceeded = false;
-  for(long t = 0; ; ++t)
+  if(first_node)
   {
-    // Variable to check if all reached the destination.
-    bool has_all_reached_final_waypoint = true;
-
-    simulation_for_time_step(first_node, t, &buffer_exceeded, &has_all_reached_final_waypoint);
-
-    // stop if all reached the destination or if buffer exceeded.
-    if(has_all_reached_final_waypoint || buffer_exceeded)
+    clear_error_msg(&first_node->error_msg);
+    for(struct Simulation* node = first_node; node != NULL; node = node->next)
     {
-      break;
+      node->max_time = max_time;
     }
+    simulation_run_upto_waypoint(first_node, out_dir);
   }
+  else
+  {
+    set_error_msg(&first_node->error_msg, error_null_pointer);
+    return;
+  } 
 }
 
-void simulation_run_without_time_sync(struct Simulation* first_node)
+void simulation_run_a_timestep(struct Simulation* first_node)
 {
-  for(struct Simulation* node = first_node; node != NULL; node = node->next)
+  if(first_node)
   {
-    pthread_create(&(node->thread), NULL, &compute_dynamics_per_thread_no_time_sync, (void*)node);
-  }
-  // join threads
-  for(struct Simulation* node = first_node; node != NULL; node = node->next)
-  {
-    if(node->current_waypoint_index < node->waypoints->count)
+    clear_error_msg(&first_node->error_msg);
+    for(struct Simulation* node = first_node; node != NULL; node = node->next)
     {
-      pthread_join(node->thread, NULL);
+      simulation_run_per_node_per_time_step(first_node);
+    }
+    // Check for any errors during simulation and print it. 
+    for(struct Simulation* node = first_node; node != NULL; node = node->next)
+    {
+      if(node->error_msg)
+      {
+        fprintf(stderr, "ERROR: ASV id = %s. %s\n", node->id, node->error_msg);
+      }
     }
   }
+  else
+  {
+    set_error_msg(&first_node->error_msg, error_null_pointer);
+    return;
+  } 
+}
+
+union Coordinates_3D simulation_get_waypoint(struct Simulation* first_node, struct Asv* asv)
+{
+  if(first_node)
+  {
+    clear_error_msg(&first_node->error_msg);
+    // Find the asv from the linked list
+    struct Simulation* node = NULL;
+    for(struct Simulation* current_node = first_node; current_node != NULL; current_node = current_node->next)
+    {
+      if(current_node->asv == asv)
+      {
+        // Found it. 
+        node = current_node;
+        break;
+      }
+    }
+    if(node)
+    {
+      return node->waypoints[node->current_waypoint_index];
+    }
+    else
+    {
+      set_error_msg(&first_node->error_msg, "Could not find the ASV.");
+      return (union Coordinates_3D){0.0,0.0,0.0};
+    }
+  }
+  else
+  {
+    set_error_msg(&first_node->error_msg, error_null_pointer);
+    return (union Coordinates_3D){0.0,0.0,0.0};
+  } 
+}
+
+int simulation_get_count_waypoints(struct Simulation* first_node, struct Asv* asv)
+{
+  if(first_node)
+  {
+    clear_error_msg(&first_node->error_msg);
+    // Find the asv from the linked list
+    struct Simulation* node = NULL;
+    for(struct Simulation* current_node = first_node; current_node != NULL; current_node = current_node->next)
+    {
+      if(current_node->asv == asv)
+      {
+        // Found it. 
+        node = current_node;
+        break;
+      }
+    }
+    if(node)
+    {
+      return node->count_waypoints;
+    }
+    else
+    {
+      set_error_msg(&first_node->error_msg, "Could not find the ASV.");
+      return 0;
+    }
+  }
+  else
+  {
+    set_error_msg(&first_node->error_msg, error_null_pointer);
+    return 0;
+  } 
+}
+
+union Coordinates_3D* simulation_get_waypoints(struct Simulation* first_node, struct Asv* asv)
+{
+  if(first_node)
+  {
+    clear_error_msg(&first_node->error_msg);
+    // Find the asv from the linked list
+    struct Simulation* node = NULL;
+    for(struct Simulation* current_node = first_node; current_node != NULL; current_node = current_node->next)
+    {
+      if(current_node->asv == asv)
+      {
+        // Found it. 
+        node = current_node;
+        break;
+      }
+    }
+    if(node)
+    {
+      return node->waypoints;
+    }
+    else
+    {
+      set_error_msg(&first_node->error_msg, "Could not find the ASV.");
+      return NULL;
+    }
+  }
+  else
+  {
+    set_error_msg(&first_node->error_msg, error_null_pointer);
+    return NULL;
+  } 
+}
+
+int simulation_get_count_asvs(struct Simulation* first_node)
+{
+  if(first_node)
+  {
+    clear_error_msg(&first_node->error_msg);
+    int i = 0;
+    for(struct Simulation* node = first_node; node != NULL; node = node->next)
+    {
+      ++i;
+    }
+    return i;
+  }
+  else
+  {
+    set_error_msg(&first_node->error_msg, error_null_pointer);
+    return 0;
+  } 
+}
+
+int simulation_get_asvs(struct Simulation* first_node, struct Asv** asvs)
+{
+  if(first_node)
+  {
+    clear_error_msg(&first_node->error_msg);
+    int i = 0;
+    for(struct Simulation* node = first_node; node != NULL; node = node->next)
+    {
+      asvs[i++] = node->asv;
+    }
+    return i;
+  }
+  else
+  {
+    set_error_msg(&first_node->error_msg, error_null_pointer);
+    return 0;
+  } 
+}
+
+
+union Coordinates_3D simulation_get_asv_position_at(struct Simulation* first_node, struct Asv* asv, int index)
+{
+  if(first_node && asv)
+  {
+    clear_error_msg(&first_node->error_msg);
+    // Find the asv from the linked list
+    struct Simulation* node = NULL;
+    for(struct Simulation* current_node = first_node; current_node != NULL; current_node = current_node->next)
+    {
+      if(current_node->asv == asv)
+      {
+        // Found it. 
+        node = current_node;
+        break;
+      }
+    }
+    if(node)
+    {
+      if(index >= 0 && index < node->buffer_index)
+      {
+        union Coordinates_3D position;
+        position.keys.x = node->buffer[index].cog_x;
+        position.keys.y = node->buffer[index].cog_y;
+        position.keys.z = node->buffer[index].cog_z;
+        return position;
+      }
+    }
+    else
+    {
+      set_error_msg(&first_node->error_msg, "Could not find the ASV.");
+      return (union Coordinates_3D){0.0,0.0,0.0};
+    }
+  }
+  else
+  {
+    set_error_msg(&first_node->error_msg, error_null_pointer);
+    return (union Coordinates_3D){0.0,0.0,0.0};
+  } 
 }

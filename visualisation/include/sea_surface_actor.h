@@ -2,7 +2,8 @@
 #define SEA_SURFACE_ACTOR_H
 
 extern "C" {
-#include "wave.h"
+#include "sea_surface.h"
+#include "geometry.h"
 }
 #include <vector>
 #include <vtkSmartPointer.h>
@@ -33,7 +34,7 @@ public:
   /**
    * Constructor.
    */
-  Sea_surface_actor(struct Wave* wave);
+  Sea_surface_actor(struct Sea_surface* sea_surface);
 
   /**
    * Set the step size for time increment.
@@ -65,7 +66,7 @@ public:
   /**
    * Overide the default position of the simulated sea surface.
    */
-  void set_sea_surface_position(struct Dimensions sea_surface_position);
+  void set_sea_surface_position(union Coordinates_3D sea_surface_position);
 
   /**
    * Increment time count.
@@ -107,11 +108,11 @@ private:
   vtkSmartPointer<vtkPolyDataMapper> sea_surface_mapper {nullptr};
   vtkSmartPointer<vtkActor> sea_surface_actor {nullptr};
   
-  struct Wave* wave;
-  std::vector<std::vector<Dimensions>> sea_surface_points; // A grid of NxN points to represent the square sea surface. 
+  struct Sea_surface* sea_surface;
+  std::vector<std::vector<union Coordinates_3D>> sea_surface_points; // A grid of NxN points to represent the square sea surface. 
   unsigned int sea_surface_grid_size; // sea_surface_grid_size = N. Value must be greater than 1.
   double field_length; // Length in meter of one edge of the square sea surface.
-  struct Dimensions sea_surface_position; // Position of the bottom left corner of the simulated sea surface.
+  union Coordinates_3D sea_surface_position; // Position of the bottom left corner of the simulated sea surface.
 }; // class Sea_surface_actor
 
 } // namespace Visualisation

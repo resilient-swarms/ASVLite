@@ -1,11 +1,24 @@
 var searchData=
 [
-  ['a_0',['A',['../struct_asv__dynamics.html#a5a2a44f196c6961bf68e638bd717c882',1,'Asv_dynamics']]],
-  ['amplitude_1',['amplitude',['../struct_regular__wave.html#ae492fd9731968d5f09e00f2a5227d8ce',1,'Regular_wave']]],
-  ['asv_2',['Asv',['../struct_asv.html',1,'']]],
-  ['asv_5fdynamics_3',['Asv_dynamics',['../struct_asv__dynamics.html',1,'']]],
-  ['asv_5fpropeller_4',['Asv_propeller',['../struct_asv__propeller.html',1,'']]],
-  ['asv_5fspecification_5',['Asv_specification',['../struct_asv__specification.html',1,'']]],
-  ['asvlite_6',['ASVLite',['../index.html',1,'']]],
-  ['attitude_7',['attitude',['../struct_asv.html#a3413a5ad48751239f810f63f0d5b803d',1,'Asv']]]
+  ['air_5fdensity_0',['AIR_DENSITY',['../constants_8h.html#a4b074f12d0fa086fc372a01a4d4f5b4f',1,'constants.h']]],
+  ['array_1',['array',['../union_coordinates__3_d.html#ad6c749a4c6a9c2c4a517cc547a285deb',1,'Coordinates_3D::array()'],['../union_rigid__body___d_o_f.html#a3c09d726e8c45db933e768c73c8c66b4',1,'Rigid_body_DOF::array()']]],
+  ['asv_2eh_2',['asv.h',['../asv_8h.html',1,'']]],
+  ['asv_5fcompute_5fdynamics_3',['asv_compute_dynamics',['../asv_8h.html#a83c43b004d52166e9cd24fc93a3393fc',1,'asv.h']]],
+  ['asv_5fdelete_4',['asv_delete',['../asv_8h.html#a84e411180f97e53b343e240743847912',1,'asv.h']]],
+  ['asv_5fget_5fa_5',['asv_get_A',['../asv_8h.html#ab9b11c6d1d91ed7d02ae5fc6c7d5f594',1,'asv.h']]],
+  ['asv_5fget_5fattitude_6',['asv_get_attitude',['../asv_8h.html#a313c5fab95371cbd65a506511a4d1f69',1,'asv.h']]],
+  ['asv_5fget_5fcount_5fthrusters_7',['asv_get_count_thrusters',['../asv_8h.html#a28a4df4c1fcfa4def5f62d157560e462',1,'asv.h']]],
+  ['asv_5fget_5ferror_5fmsg_8',['asv_get_error_msg',['../asv_8h.html#a812fe08c262717c78ec6e36cd89530a9',1,'asv.h']]],
+  ['asv_5fget_5ff_9',['asv_get_F',['../asv_8h.html#a9fa21c556956ac4c154aa08c453e8d2d',1,'asv.h']]],
+  ['asv_5fget_5fposition_5fcog_10',['asv_get_position_cog',['../asv_8h.html#a14055a685b88556073bc3382eafb8df5',1,'asv.h']]],
+  ['asv_5fget_5fposition_5forigin_11',['asv_get_position_origin',['../asv_8h.html#ad19e85b56ff67cd3e2afe4046dfada0c',1,'asv.h']]],
+  ['asv_5fget_5fspec_12',['asv_get_spec',['../asv_8h.html#a83c2c20c3c0d7b1349a3623197069ad5',1,'asv.h']]],
+  ['asv_5fget_5fthrusters_13',['asv_get_thrusters',['../asv_8h.html#a7d43ccb00732cbde755210e7ec98924e',1,'asv.h']]],
+  ['asv_5fget_5fv_14',['asv_get_V',['../asv_8h.html#ae487af138296358a76d8e01a7e94258a',1,'asv.h']]],
+  ['asv_5fget_5fwave_15',['asv_get_wave',['../asv_8h.html#a2c6512a6954ef555abdca799e80c1526',1,'asv.h']]],
+  ['asv_5fnew_16',['asv_new',['../asv_8h.html#a49ba04cce9735d2f1e6552f78bedc9bd',1,'asv.h']]],
+  ['asv_5fset_5fsea_5fstate_17',['asv_set_sea_state',['../asv_8h.html#a6f775ab30236a02869dab91105a949e5',1,'asv.h']]],
+  ['asv_5fset_5fthrusters_18',['asv_set_thrusters',['../asv_8h.html#af6575b8770df8667e229232fc8f4b2eb',1,'asv.h']]],
+  ['asv_5fspecification_19',['Asv_specification',['../struct_asv__specification.html',1,'']]],
+  ['asvlite_20',['ASVLite',['../index.html',1,'']]]
 ];

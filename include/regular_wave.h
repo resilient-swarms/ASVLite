@@ -4,77 +4,100 @@
 #include "geometry.h"
 
 /**
- * Structure to define a regular wave. 
+ * @file
+ * An instance of Regular_wave should only be created by calling the 
+ * function regular_wave_new(). This function allocates and initialises 
+ * a block of memory on the stack, and therefore all calls to 
+ * regular_wave_new() should be paired with a call to regular_wave_delete() 
+ * to avoid memory leaks. 
+ * 
+ * All functions operating on an instance of a Regular_wave have a mechanism 
+ * to notify of exceptions. All instances of Regular_wave have a member variable 
+ * that holds a pointer to an error message. When there are no errors, the pointer 
+ * is set to null. If an error occurs in a call to a function that takes an 
+ * instance of Regular_wave, an error message is set within the instance. The error 
+ * message can be fetched using the function regular_wave_get_error_msg(). The expected 
+ * usage is to pair all function calls that take an instance of Regular_wave with a 
+ * call to regular_wave_get_error_msg() and check for a null pointer. If a null pointer 
+ * is returned, there is no error; otherwise, an error has occurred. Any subsequent calls 
+ * to other functions that take an instance of Regular_wave will reset the last know 
+ * error message. 
  */
-struct Regular_wave
-{
-  // Input variables
-  // ---------------
-  double amplitude; //!< Input variable. Amplitude of the wave in meter.
-  double frequency; //!< Input variable. Frequency of the wave in Hz.
-  double phase_lag; //!< Input variable. Phase lag of the wave in radian.
-  double direction; //!< Input variable. Direction of propagation of the wave 
-                    //!< with respect to geographic north. Angle measured
-                    //!< positive in clockwise direction such that east is at
-                    //!< PI/2 radians to !< north.
-  
-  // Output variables
-  // ----------------
-  double time_period; //!< Output variable. Time period of the wave in seconds.
-  double wave_length; //!< Output variable. Wave length in meter.
-  double wave_number; //!< Output variable. Wave number. Dimensionless.
-}; 
+struct Regular_wave;
 
 /**
- * Initialise a regular wave.
- * @param wave is the pointer to the wave to be initialised.
+ * Create and initialise a regular wave.
  * @param amplitude of the wave in meter.
  * @param frequency of the wave in Hz.
  * @param phase of the wave in radians. 
  * @param direction of propagation of the wave in radians with respect to the
- * geographic north. Angle measured positive in clockwise direction such that 
- * the east is at PI/2 radians to north.
- * @return 0 if no error encountered. 
- *         1 if wave is a nullptr. 
- *         2 if amplitude is 0 or negative value. 
- *         3 if frequency is 0 or negative value. 
+ * geographic north. The angle measured is positive in the clockwise direction such that 
+ * the geographic east is at PI/2 radians to the north.
+ * @return pointer to initialised object if the operation was successful, else, returns a null pointer. 
  */
-int regular_wave_init(struct Regular_wave* wave, 
-                         double amplitude, 
-                         double frequency, 
-                         double phase_lag, 
-                         double direction);
+struct Regular_wave* regular_wave_new(double amplitude, 
+                                      double frequency, 
+                                      double phase_lag, 
+                                      double direction);
 
 /**
- * Get the wave phase for the given point for the given time.
- * @param wave for which the phase is to be calculated.
- * @param location at which the phase is to be calculated.
- * @param time for which the phase is to be calculated.
- * @return wave phase in radian. Function returns value 0 if wave is nullptr or
- * if time is negative.
+ * Free memory allocated for the regular wave. 
+ * @param wave is a non-null pointer to an instance of Regular_wave to be deallocated.
  */
-double regular_wave_get_phase(struct Regular_wave* wave, 
-                              struct Dimensions* location, 
+void regular_wave_delete(struct Regular_wave* regular_wave);
+
+/**
+ * Returns error message related to the last function called for the instance of Regular_wave.
+ * @return pointer to the error msg, if any, else returns a null pointer. 
+ */
+const char* regular_wave_get_error_msg(const struct Regular_wave* regular_wave);
+
+/**
+ * Get wave amplitude.
+ * @return wave amplitude in meter. 
+ */ 
+double regular_wave_get_amplitude(const struct Regular_wave* regular_wave);
+
+/**
+ * Get wave frequency. 
+ * @return wave frequency in Hz.
+ */ 
+double regular_wave_get_frequency(const struct Regular_wave* regular_wave);
+
+/** 
+ * Get wave direction.
+ * @return direction of propagation of the wave in radians with respect to the
+ * geographic north. The angle measured is positive in the clockwise direction such that 
+ * the geographic east is at PI/2 radians to the north.
+ */ 
+double regular_wave_get_direction(const struct Regular_wave* regular_wave);
+
+/**
+ * Get the phase of the wave at a given point for a given time.
+ * @param location with all coordinates in meter, at which the phase is to be calculated.
+ * @param time for which the phase is to be calculated. Time is measured in seconds from 
+ * the start of simulation. Time should be non-negative.
+ * @return wave phase in radian.
+ */
+double regular_wave_get_phase(const struct Regular_wave* regular_wave, 
+                              union Coordinates_3D location, 
                               double time);
 /**
- * Get wave elevation at a given point for a given time.
- * @param wave for which the elevation is to be calculated.
- * @param location at which the elevation is to be computed.
+ * Get elevation of the wave at a given point for a given time.
+ * @param location with all coordinates in meter, at which the elevation is to be computed.
  * @param time for which elevation is to be computed. Time is measured in 
- * seconds from the start of simulation.
- * @return wave elevation in meter. Function returns value 0 if wave is nullptr
- * or if time is negative. 
+ * seconds from the start of simulation. Time should be non-negative.
+ * @return wave elevation in meter. 
  */
-double regular_wave_get_elevation(struct Regular_wave* wave, 
-                                  struct Dimensions* location, 
+double regular_wave_get_elevation(const struct Regular_wave* regular_wave, 
+                                  union Coordinates_3D location, 
                                   double time);
 
 /**
- * Get wave pressure amplitude at depth z.
- * @param wave for which the pressure amplitude is to be computed. 
- * @z is the depth at which the pressure amplitude is to be computed. 
+ * Get wave pressure amplitude at a given depth.
+ * @param depth in meter at which the pressure amplitude is to be computed. Depth 
+ * should be positive value. 
  * @return pressure amplitude in N/m2.
  */
-double regular_wave_get_pressure_amp(struct Regular_wave* wave, double z);
-
+double regular_wave_get_pressure_amp(const struct Regular_wave* regular_wave, double depth);
 #endif // REGULAR_WAVE_H

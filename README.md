@@ -3,7 +3,7 @@
 ## Introduction
 ASVLite is a simulator that provides a computationally efficient model of ocean waves and dynamics of marine surface vehicles in waves. The simulator is ideal for applications requiring high run-time performance, such as simulation of a swarm of autonomous marine vehicles or developing optimal vehicle control strategies using reinforcement learning techniques. ASVLite also has a low computational overhead making it ideal for on-board simulation for applications such as online learning for adaptation to changes in the environment. When simulating a swarm of ASVs, ASVLite takes advantage of multiple CPU cores, when available, by multi-threading the computation for each ASV on parallel threads. ASVLite has been implemented with a clear and simple programming interface written in the C programming language, making it easy to integrate with any existing or future software. Refer to the section [Using ASVLite as a software library](#using-asvlite-as-a-software-library) for details of the programming interface.
 
-If you are using this simulator for your research, then please cite: [ASVLite: a high-performance simulator for autonomous surface vehicles](https://arxiv.org/abs/2003.04599).
+If you are using this simulator for your research, then please cite: [ASVLite: a high-performance simulator for autonomous surface vehicles](https://ieeexplore.ieee.org/abstract/document/9561815).
 
 The image below show visualisation of the ocean surface and three ASVs simulated by ASVLite.
 
@@ -11,8 +11,8 @@ The image below show visualisation of the ocean surface and three ASVs simulated
 
 ## Build instruction
 ``` 
-git clone --recurse-submodules https://github.com/resilient-swarms/asv-swarm.git
-cd asv-swarm
+git clone --recurse-submodules https://github.com/resilient-swarms/ASVLite.git
+cd ASVLite
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -30,7 +30,7 @@ The simulator requires the following values as command-line arguments:
 
 Example for simulating vehicle dynamics in a sea with a significant wave height of 1.2 m, wave heading of 20<sup>o</sup>North and with a random number seed of 3:
 ```
-asv_simulator input_file out_file 1.2 20.0 3
+ASVLite input_file out_file 1.2 20.0 3
 ```
 
 The `input_file` uses `toml` syntax and should provide the inputs required for the simulation. Given below is an example of an input file. 

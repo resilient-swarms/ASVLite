@@ -1,0 +1,14 @@
+vtk_add_test_python(
+  TestFixedPointRayCasterLinearCropped.py,NO_RT
+  TestFixedPointRayCasterLinear.py,NO_RT
+  TestFixedPointRayCasterNearestCropped.py,NO_RT
+  TestFixedPointRayCasterNearest.py,NO_RT
+  cursor3D.py
+  VolumePicker.py,NO_RT
+  VolumePickerCrop.py
+  gaussian.py
+  TestGPURayCastIndependentComponent.py,NO_RT
+  TestGPURayCastIndependentComponentMIP.py,NO_RT
+  TestGPURayCastIndependentComponentMinIP.py,NO_RT
+  TestGPURayCastUserShader.py
+  )
