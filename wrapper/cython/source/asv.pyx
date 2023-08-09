@@ -322,7 +322,7 @@ cdef class py_Asv:
         '''
         self.wg_compute_dynamics(rudder_angle, time_step_size)
 
-    cdef void wg_run(self, bint(*callback_precompute)(double*), void(*callback_postcompute)(), double time_step_size):
+    cdef void wg_run(self, bint(*callback_precompute)(double*) noexcept, void(*callback_postcompute)() noexcept, double time_step_size):
         '''
         Simulate the wave glider for multiple time steps. 
         :param callback_precompute: callback at the beginning of each time step. Can be used for setting rudder angle

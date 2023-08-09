@@ -69,7 +69,7 @@ cdef class py_Asv:
     cdef void compute_dynamics(self, double time_step_size)
     cdef void wg_set_thrust_tuning_factor(self, double tuning_factor)
     cdef void wg_compute_dynamics(self, double rudder_angle, double time_step_size)
-    cdef void wg_run(self, bint(*callback_precompute)(double*), void(*callback_postcompute)(), double time_step_size)
+    cdef void wg_run(self, bint(*callback_precompute)(double*) noexcept, void(*callback_postcompute)() noexcept, double time_step_size)
     cdef Sea_surface* get_sea_surface(self)
     cdef Coordinates_3D get_position_cog(self)
     cdef Coordinates_3D get_position_origin(self)
