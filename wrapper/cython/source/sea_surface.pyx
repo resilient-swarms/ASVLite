@@ -90,6 +90,20 @@ cdef class py_Sea_surface:
         Get the maximum spectral frequency, in Hz, for the wave spectrum.
         '''
         return self.get_max_spectral_frequency()
+    
+    cdef double get_peak_spectral_frequency(self):
+        '''
+        Get the peak spectral frequency, in Hz, for the wave spectrum.
+        '''
+        cdef double value = sea_surface_get_peak_spectral_frequency(self._c_object)
+        self.__check_error_throw_exception()
+        return value
+    
+    def py_get_peak_spectral_frequency(self) -> float:
+        '''
+        Get the peak spectral frequency, in Hz, for the wave spectrum.
+        '''
+        return self.get_peak_spectral_frequency()
 
     cdef double get_significant_height(self):
         '''

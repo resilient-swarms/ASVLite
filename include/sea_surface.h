@@ -95,6 +95,11 @@ double sea_surface_get_min_spectral_frequency(const struct Sea_surface* sea_surf
 double sea_surface_get_max_spectral_frequency(const struct Sea_surface* sea_surface);
 
 /**
+ * Function to get the peak spectral frequency, in Hz, for the wave spectrum.
+ */ 
+double sea_surface_get_peak_spectral_frequency(const struct Sea_surface* sea_surface);
+
+/**
  * Function to get the significant wave height, in meter, for the sea state.
  */ 
 double sea_surface_get_significant_height(const struct Sea_surface* sea_surface);

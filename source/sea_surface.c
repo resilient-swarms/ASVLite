@@ -295,6 +295,19 @@ double sea_surface_get_max_spectral_frequency(const struct Sea_surface* sea_surf
   }
 }
 
+double sea_surface_get_peak_spectral_frequency(const struct Sea_surface* sea_surface)
+{
+  if(sea_surface)
+  {
+    clear_error_msg(&sea_surface->error_msg);
+    return sea_surface->peak_spectral_frequency;
+  }
+  else
+  {
+    return 0.0;
+  }
+}
+
 double sea_surface_get_significant_height(const struct Sea_surface* sea_surface)
 {
   if(sea_surface)

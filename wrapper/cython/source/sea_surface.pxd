@@ -13,6 +13,7 @@ cdef extern from "sea_surface.h":
     int sea_surface_get_count_wave_spectral_frequencies(Sea_surface* sea_surface)
     double sea_surface_get_min_spectral_frequency(Sea_surface* sea_surface)
     double sea_surface_get_max_spectral_frequency(Sea_surface* sea_surface)
+    double sea_surface_get_peak_spectral_frequency(Sea_surface* sea_surface)
     double sea_surface_get_significant_height(Sea_surface* sea_surface)
     double sea_surface_get_predominant_heading(Sea_surface* sea_surface)
 
@@ -24,5 +25,6 @@ cdef class py_Sea_surface:
     cdef int get_count_wave_spectral_frequencies(self)
     cdef double get_min_spectral_frequency(self)
     cdef double get_max_spectral_frequency(self)
+    cdef double get_peak_spectral_frequency(self)
     cdef double get_significant_height(self)
     cdef double get_predominant_heading(self)
