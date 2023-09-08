@@ -6,8 +6,8 @@ cdef class py_Sea_surface:
     Class to define a sea surface. 
     '''
 
-    def __cinit__(self, double sig_wave_ht=1, double wave_heading=0, int rand_seed=1, int count_wave_spectral_directions=5, int count_wave_spectral_frequencies=15):
-        self._c_object = sea_surface_new(sig_wave_ht, wave_heading, rand_seed, count_wave_spectral_directions, count_wave_spectral_frequencies)
+    def __cinit__(self, double sig_wave_ht=1, double wave_heading=0, int rand_seed=1, int count_component_waves=21):
+        self._c_object = sea_surface_new(sig_wave_ht, wave_heading, rand_seed, count_component_waves)
     
     def __dealloc__(self):
         sea_surface_delete(self._c_object)
@@ -35,33 +35,19 @@ cdef class py_Sea_surface:
         '''
         return self.get_elevation(location._c_object, time)
 
-    cdef int get_count_wave_spectral_directions(self):
+    cdef int get_count_component_waves(self):
         '''
-        Get the number of direction bands in the wave spectrum.
+        Get the number of regular component waves.
         '''
-        cdef int value = sea_surface_get_count_wave_spectral_directions(self._c_object)
+        cdef int value = sea_surface_get_count_component_waves(self._c_object)
         self.__check_error_throw_exception()
         return value
     
-    def py_get_count_wave_spectral_directions(self) -> int:
+    def py_get_count_component_waves(self) -> int:
         '''
-        Get the number of direction bands in the wave spectrum.
+        Get the number of regular component waves.
         '''
-        return self.get_count_wave_spectral_directions()
-
-    cdef int get_count_wave_spectral_frequencies(self):
-        '''
-        Get the number of frequency bands in the wave spectrum.
-        '''
-        cdef int value = sea_surface_get_count_wave_spectral_frequencies(self._c_object)
-        self.__check_error_throw_exception()
-        return value
-    
-    def py_get_count_wave_spectral_frequencies(self) -> int:
-        '''
-        Get the number of frequency bands in the wave spectrum.
-        '''
-        return self.get_count_wave_spectral_frequencies()
+        return self.get_count_component_waves()
 
     cdef double get_min_spectral_frequency(self):
         '''

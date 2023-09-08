@@ -31,18 +31,15 @@ struct Sea_surface;
  * north. The angle measured is positive in the clockwise direction such that the 
  * geographic east is at PI/2 radians to the north.
  * @param rand_seed is the seed for random number generator. 
- * @param count_wave_spectral_directions is the number of discrete direction bands in 
- * the wave spectrum. Value should be greater than 1.
- * @param count_wave_spectral_frequencies is the number of discrete frequency bands in 
- * the wave spectrum. Value should be greater than 1.
+ * @param count_component_waves is the number of regular component waves in 
+ * the wave spectrum. Value should be greater than or equal to 1.
  * @return pointer to the initialised object if the operation was successful; 
  * else, returns a null pointer.
  */
 struct Sea_surface* sea_surface_new(double sig_wave_ht,
                       double wave_heading, 
                       int rand_seed,
-                      int count_wave_spectral_directions,
-                      int count_wave_spectral_frequencies);
+                      int count_component_waves);
 /**
  * Free memory allocated for the sea_surface.
  * @param sea_surface is a non-null pointer to an instance of Sea_surface to be deallocated.
@@ -67,22 +64,16 @@ double sea_surface_get_elevation(const struct Sea_surface* sea_surface,
                           double time);
 
 /**
- * Function to get the number of direction bands in the wave spectrum.
+ * Function to get the number of regular component waves in the spectrum.
  */ 
-int sea_surface_get_count_wave_spectral_directions(const struct Sea_surface* sea_surface);
-
-/** 
- * Function to get the number of frequency bands in the wave spectrum.
- */
-int sea_surface_get_count_wave_spectral_frequencies(const struct Sea_surface* sea_surface);
+int sea_surface_get_count_component_waves(const struct Sea_surface* sea_surface);
 
 /**
  * Function to get the regular wave at spectrum[d][f].
- * @param d is the index for direction and should be in the range [0, count_wave_spectral_directions)
- * @param f is the index for frequency and should be in the range [0, count_wave_spectral_frequencies)
+ * @param i is the index in the range [0, count_component_waves)
  * @return pointer to the regular wave if found; else returns a null pointer.
  */
-const struct Regular_wave* sea_surface_get_regular_wave_at(const struct Sea_surface* sea_surface, int d, int f); 
+const struct Regular_wave* sea_surface_get_regular_wave_at(const struct Sea_surface* sea_surface, int i); 
 
 /**
  * Function to get the minimum spectral frequency, in Hz, for the wave spectrum.
