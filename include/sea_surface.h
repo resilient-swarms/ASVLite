@@ -32,7 +32,7 @@ struct Sea_surface;
  * geographic east is at PI/2 radians to the north.
  * @param rand_seed is the seed for random number generator. 
  * @param count_component_waves is the number of regular component waves in 
- * the wave spectrum. Value should be greater than or equal to 1.
+ * the wave spectrum. Value should be an odd number.
  * @return pointer to the initialised object if the operation was successful; 
  * else, returns a null pointer.
  */
