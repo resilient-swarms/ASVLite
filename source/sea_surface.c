@@ -54,12 +54,12 @@ struct Sea_surface* sea_surface_new(const double sig_wave_ht,
     {
       sea_surface->spectrum = NULL;
       double* wave_frequencies = (double*)malloc(sizeof(double) * count_component_waves); // List of frequencies for the component waves
-      double* wave_freq_step_sizes = (double*)malloc(sizeof(double) * count_component_waves); // Corresponding list of the freq step size
+      double* wave_frequency_band_sizes = (double*)malloc(sizeof(double) * count_component_waves); // Corresponding list of the freq step size
       double* wave_headings = (double*)malloc(sizeof(double) * count_component_waves);  // Corresponding list of headings for the component waves
       sea_surface->spectrum = (struct Regular_wave**)malloc(sizeof(struct Regular_wave*) * count_component_waves);
       if(sea_surface->spectrum && 
          wave_frequencies      && 
-         wave_freq_step_sizes  &&
+         wave_frequency_band_sizes  &&
          wave_headings) // Check if memory has been allocated in all cases. 
       {
         sea_surface->error_msg = NULL;
@@ -95,47 +95,48 @@ struct Sea_surface* sea_surface_new(const double sig_wave_ht,
         // Create regular waves
         bool has_NULL_in_spectrum = false; // A flag that will be set to true if any of the created component wave turns out to be NULL.
         // compute step size for frequency and heading
-        double frequency_step_size = (sea_surface->max_spectral_frequency - sea_surface->min_spectral_frequency) /(count_component_waves - 1);
-        double wave_heading_step_size = PI/(count_component_waves - 1);
+        double frequency_band_size = (sea_surface->max_spectral_frequency - sea_surface->min_spectral_frequency) / count_component_waves;
+        double wave_heading_increment = PI/count_component_waves;
         // Create a list of frequencies and headings
         // The first in the list is the predominant wave with the freq = peak frequency and heading = wave_heading.
         wave_frequencies[0] = f_p;
-        wave_freq_step_sizes[0] = frequency_step_size;
+        wave_frequency_band_sizes[0] = frequency_band_size;
         wave_headings[0] = wave_heading;
         // Now create the rest of the waves
-        if(count_component_waves-1 > 0)
+        if(count_component_waves > 1)
         {
           double mu = -PI/2.0;
           int half_count = (count_component_waves-1)/2; // Half of the component wave count
           // Create frequencies between min_spectral_frequency and f_p
-          frequency_step_size = (f_p - sea_surface->min_spectral_frequency) / half_count;
+          frequency_band_size = ((f_p-frequency_band_size/2.0) - sea_surface->min_spectral_frequency) / half_count;
           for(int i = 0; i < half_count; ++i)
           {
-            double f = sea_surface->min_spectral_frequency + (i * frequency_step_size);
-            mu += wave_heading_step_size;
+            double f = sea_surface->min_spectral_frequency + (i * frequency_band_size);
+            mu += wave_heading_increment;
             double wave_heading = normalise_angle_2PI(mu + sea_surface->heading);
             wave_frequencies[i+1] = f;
-            wave_freq_step_sizes[i+1] = frequency_step_size;
+            wave_frequency_band_sizes[i+1] = frequency_band_size;
             wave_headings[i+1] = wave_heading;
           }
           // Create frequencies between f_p and max_spectral_frequency
           mu = PI/2.0;
-          frequency_step_size = (sea_surface->max_spectral_frequency - f_p) / half_count;
+          frequency_band_size = (sea_surface->max_spectral_frequency - (f_p+frequency_band_size/2.0)) / half_count;
           for(int i = 0; i < half_count; ++i)
           {
-            double f = sea_surface->max_spectral_frequency - (i * frequency_step_size);
-            mu -= wave_heading_step_size;
+            double f = sea_surface->max_spectral_frequency - (i * frequency_band_size);
+            mu -= wave_heading_increment;
             double wave_heading = normalise_angle_2PI(mu + sea_surface->heading);
             wave_frequencies[half_count+1+i] = f;
-            wave_freq_step_sizes[half_count+1+i] = frequency_step_size;
+            wave_frequency_band_sizes[half_count+1+i] = frequency_band_size;
             wave_headings[half_count+1+i] = wave_heading;
           }
         }        
         for(int i = 0; i < count_component_waves; ++i)
         {
           double f = wave_frequencies[i];
+          frequency_band_size = wave_frequency_band_sizes[i];
           double wave_heading = wave_headings[i];
-          double S = (A/pow(f,5.0)) * exp(-B/pow(f,4.0)) * frequency_step_size;
+          double S = (A/pow(f,5.0)) * exp(-B/pow(f,4.0)) * frequency_band_size;
         
           // Create a wave
           double amplitude = sqrt(2.0 * S); 
@@ -162,10 +163,10 @@ struct Sea_surface* sea_surface_new(const double sig_wave_ht,
           free(wave_frequencies);
           wave_frequencies = NULL;
         }
-        if(wave_freq_step_sizes)
+        if(wave_frequency_band_sizes)
         {
-          free(wave_freq_step_sizes);
-          wave_freq_step_sizes = NULL;
+          free(wave_frequency_band_sizes);
+          wave_frequency_band_sizes = NULL;
         }
         if(wave_headings)
         {
@@ -193,10 +194,10 @@ struct Sea_surface* sea_surface_new(const double sig_wave_ht,
           free(wave_frequencies);
           wave_frequencies = NULL;
         }
-        if(wave_freq_step_sizes)
+        if(wave_frequency_band_sizes)
         {
-          free(wave_freq_step_sizes);
-          wave_freq_step_sizes = NULL;
+          free(wave_frequency_band_sizes);
+          wave_frequency_band_sizes = NULL;
         }
         if(wave_headings)
         {
