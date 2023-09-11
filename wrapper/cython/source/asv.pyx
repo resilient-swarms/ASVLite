@@ -290,7 +290,7 @@ cdef class py_Asv:
         asv_set_surge_sway_halt(self._c_object, status)
         self.__check_error_throw_exception()
     
-    def py_set_halt_surge_and_sway(self, bint status):
+    def py_set_surge_sway_halt(self, bint status):
         '''
         Set to true to halt surge and sway motions. All the remainig 4 dof are not ignored.
         :param bint status: set to true if surge and sway motions are to be halted.
