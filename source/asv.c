@@ -68,6 +68,7 @@ struct Asv
   struct Sea_surface* sea_surface;       //!< Irregular sea_surface instance. 
   double zonal_velocity;
   double meridional_velocity;
+  bool ignore_surge_and_swary;  //!< Set variable to true to keep the ASV stationary.
   
   // Initial used for input but later contains results. 
   union Coordinates_3D origin_position; //!< Position of the origin of the body-fixed frame in 
@@ -543,6 +544,11 @@ static void set_net_force(struct Asv* asv)
                              + asv->dynamics.F_drag.array[i]       
                              + asv->dynamics.F_restoring.array[i];
   }
+  if(asv->ignore_surge_and_swary == true)
+  {
+    asv->dynamics.F.keys["surge"] = 0.0; // Ignore surge forces
+    asv->dynamics.F.keys["sway"]  = 0.0; // Ignore sway forces
+  }
 }
 
 static void set_acceleration(struct Asv* asv)
@@ -668,6 +674,7 @@ struct Asv* asv_new(const struct Asv_specification specification,
   {
     asv->error_msg = NULL;
     asv->spec = specification;
+    asv->ignore_surge_and_swary = false;
     // Thrusters set to null
     asv->thrusters = NULL;
     asv->count_thrusters = 0;
@@ -1025,6 +1032,19 @@ struct Asv_specification asv_get_spec(struct Asv* asv)
   {
     clear_error_msg(&asv->error_msg);
     return asv->spec;
+  }
+  else
+  {
+    set_error_msg(&asv->error_msg, error_null_pointer);
+  }
+}
+
+void asv_set_halt_surge_and_sway(bool status)
+{
+  if(asv)
+  {
+    clear_error_msg(&asv->error_msg);
+    asv->ignore_surge_and_sway = status;
   }
   else
   {

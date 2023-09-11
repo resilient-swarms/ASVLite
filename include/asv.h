@@ -146,6 +146,11 @@ void asv_set_ocean_current(struct Asv* asv, double zonal_velocity, double meridi
 void asv_compute_dynamics(struct Asv* asv, double time_step_size);
 
 /**
+ * Set to true to halt surge and sway motions. All the remainig 4 dof are not ignored.
+*/
+void asv_set_halt_surge_and_sway(const struct Asv* asv, bool status);
+
+/**
  * Overwrite the default factor for scaling the thrust computed. The default
  * factor is 1.
  */

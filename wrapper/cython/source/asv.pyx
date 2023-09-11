@@ -281,7 +281,22 @@ cdef class py_Asv:
         :param float time_step_size: Step size, in milliseconds, to increment the current time.
         '''
         self.compute_dynamics(time_step_size)
-
+    
+    cdef void set_halt_surge_and_sway(self, bint status):
+        '''
+        Set to true to halt surge and sway motions. All the remainig 4 dof are not ignored.
+        :param bint status: set to true if surge and sway motions are to be halted.
+        '''
+        asv_set_halt_surge_and_sway(self._c_object, status)
+        self.__check_error_throw_exception()
+    
+    def py_set_halt_surge_and_sway(self, bint status):
+        '''
+        Set to true to halt surge and sway motions. All the remainig 4 dof are not ignored.
+        :param bint status: set to true if surge and sway motions are to be halted.
+        '''
+        self.set_halt_surge_and_sway(status)
+    
     cdef void wg_set_thrust_tuning_factor(self, double tuning_factor):
         '''
         Overwrite the default tuning factor of 1 used for computing wave glider thrust.
