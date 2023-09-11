@@ -282,12 +282,12 @@ cdef class py_Asv:
         '''
         self.compute_dynamics(time_step_size)
     
-    cdef void set_halt_surge_and_sway(self, bint status):
+    cdef void set_surge_sway_halt(self, bint status):
         '''
         Set to true to halt surge and sway motions. All the remainig 4 dof are not ignored.
         :param bint status: set to true if surge and sway motions are to be halted.
         '''
-        asv_set_halt_surge_and_sway(self._c_object, status)
+        asv_set_surge_sway_halt(self._c_object, status)
         self.__check_error_throw_exception()
     
     def py_set_halt_surge_and_sway(self, bint status):
@@ -295,7 +295,7 @@ cdef class py_Asv:
         Set to true to halt surge and sway motions. All the remainig 4 dof are not ignored.
         :param bint status: set to true if surge and sway motions are to be halted.
         '''
-        self.set_halt_surge_and_sway(status)
+        self.set_surge_sway_halt(status)
     
     cdef void wg_set_thrust_tuning_factor(self, double tuning_factor):
         '''

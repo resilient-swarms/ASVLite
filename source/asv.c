@@ -1039,7 +1039,7 @@ struct Asv_specification asv_get_spec(struct Asv* asv)
   }
 }
 
-void asv_set_halt_surge_and_sway(struct Asv* asv, bool status)
+void asv_set_surge_sway_halt(struct Asv* asv, bool status)
 {
   if(asv)
   {
