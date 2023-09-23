@@ -1,8 +1,6 @@
 var searchData=
 [
-  ['thruster_5fdelete_0',['thruster_delete',['../asv_8h.html#a40f0340b5d040c0d7583581000d0ac69',1,'asv.h']]],
-  ['thruster_5fget_5ferror_5fmsg_1',['thruster_get_error_msg',['../asv_8h.html#a9477c54b4a2c2aa92b38cc28062cb850',1,'asv.h']]],
-  ['thruster_5fget_5fposition_2',['thruster_get_position',['../asv_8h.html#a0493e859f2e69bc15c0f937a0cee5fd1',1,'asv.h']]],
-  ['thruster_5fnew_3',['thruster_new',['../asv_8h.html#a5efa9a27c570364e2e7762f242fade0a',1,'asv.h']]],
-  ['thruster_5fset_5fthrust_4',['thruster_set_thrust',['../asv_8h.html#aae10a255e92a421dec4f2ea0f283d6b1',1,'asv.h']]]
+  ['wave_5fglider_5fcompute_5fdynamics_0',['wave_glider_compute_dynamics',['../asv_8h.html#a50149571c6f67e7851b8b773346ac89a',1,'asv.h']]],
+  ['wave_5fglider_5frun_1',['wave_glider_run',['../asv_8h.html#a61128fe07ab5babd5c4bfd5a3b41626f',1,'asv.h']]],
+  ['wave_5fglider_5fset_5fthrust_5ftuning_5ffactor_2',['wave_glider_set_thrust_tuning_factor',['../asv_8h.html#a58148574ca43fc505bf5ed9a3f250377',1,'asv.h']]]
 ];

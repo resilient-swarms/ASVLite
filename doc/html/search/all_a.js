@@ -1,18 +1,5 @@
 var searchData=
 [
-  ['r_5fpitch_0',['r_pitch',['../struct_asv__specification.html#acf5192dcbca41c676af1690555457f1d',1,'Asv_specification']]],
-  ['r_5froll_1',['r_roll',['../struct_asv__specification.html#ad7f0606f2a3b24a958e74d03c8d1b664',1,'Asv_specification']]],
-  ['r_5fyaw_2',['r_yaw',['../struct_asv__specification.html#a4bb5cad450c408bed9c22bb981f82467',1,'Asv_specification']]],
-  ['regular_5fwave_2eh_3',['regular_wave.h',['../regular__wave_8h.html',1,'']]],
-  ['regular_5fwave_5fdelete_4',['regular_wave_delete',['../regular__wave_8h.html#af2ad8c77ee47b33d5ef0d5b8857933f1',1,'regular_wave.h']]],
-  ['regular_5fwave_5fget_5famplitude_5',['regular_wave_get_amplitude',['../regular__wave_8h.html#a0c1cf329d9b79425cd5e2ac3d84dcca2',1,'regular_wave.h']]],
-  ['regular_5fwave_5fget_5fdirection_6',['regular_wave_get_direction',['../regular__wave_8h.html#a7ee4a9a871b50594a1a62f9785d30408',1,'regular_wave.h']]],
-  ['regular_5fwave_5fget_5felevation_7',['regular_wave_get_elevation',['../regular__wave_8h.html#aaea244e1352e35bd13d069835cb16a4b',1,'regular_wave.h']]],
-  ['regular_5fwave_5fget_5ferror_5fmsg_8',['regular_wave_get_error_msg',['../regular__wave_8h.html#a3756d03d43ab8b9fb3e6cc24ec23ca12',1,'regular_wave.h']]],
-  ['regular_5fwave_5fget_5ffrequency_9',['regular_wave_get_frequency',['../regular__wave_8h.html#ac3395a826b0774bee7cc22e3dd8b956c',1,'regular_wave.h']]],
-  ['regular_5fwave_5fget_5fphase_10',['regular_wave_get_phase',['../regular__wave_8h.html#a4335e27701fdde3d777bc614ab61aada',1,'regular_wave.h']]],
-  ['regular_5fwave_5fget_5fpressure_5famp_11',['regular_wave_get_pressure_amp',['../regular__wave_8h.html#a12184089f7752622a94aa991b7ecca1d',1,'regular_wave.h']]],
-  ['regular_5fwave_5fnew_12',['regular_wave_new',['../regular__wave_8h.html#af0f4950a990550d4b9a5159fe52bf194',1,'regular_wave.h']]],
-  ['rigid_5fbody_5fdof_13',['Rigid_body_DOF',['../union_rigid__body___d_o_f.html',1,'']]],
-  ['roll_14',['roll',['../union_rigid__body___d_o_f.html#a4260b6c275948712fef713f5555c6007',1,'Rigid_body_DOF']]]
+  ['normalise_5fangle_5f2pi_0',['normalise_angle_2PI',['../geometry_8h.html#acd4436d22c5bc999b190851cdb482c4c',1,'geometry.h']]],
+  ['normalise_5fangle_5fpi_1',['normalise_angle_PI',['../geometry_8h.html#a69dd811b2113954cc10777af341d3067',1,'geometry.h']]]
 ];

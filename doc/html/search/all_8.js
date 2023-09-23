@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['max_5fspeed_0',['max_speed',['../struct_asv__specification.html#afc63794230f4ed5c00480c299e67ba7c',1,'Asv_specification']]]
+  ['l_5fwl_0',['L_wl',['../struct_asv__specification.html#a9133be69b8a87452c1a38aafdb474fb1',1,'Asv_specification']]]
 ];

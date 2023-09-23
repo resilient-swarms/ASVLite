@@ -9,11 +9,12 @@ var searchData=
   ['asv_5fget_5ff_6',['asv_get_F',['../asv_8h.html#a9fa21c556956ac4c154aa08c453e8d2d',1,'asv.h']]],
   ['asv_5fget_5fposition_5fcog_7',['asv_get_position_cog',['../asv_8h.html#a14055a685b88556073bc3382eafb8df5',1,'asv.h']]],
   ['asv_5fget_5fposition_5forigin_8',['asv_get_position_origin',['../asv_8h.html#ad19e85b56ff67cd3e2afe4046dfada0c',1,'asv.h']]],
-  ['asv_5fget_5fspec_9',['asv_get_spec',['../asv_8h.html#a83c2c20c3c0d7b1349a3623197069ad5',1,'asv.h']]],
-  ['asv_5fget_5fthrusters_10',['asv_get_thrusters',['../asv_8h.html#a7d43ccb00732cbde755210e7ec98924e',1,'asv.h']]],
-  ['asv_5fget_5fv_11',['asv_get_V',['../asv_8h.html#ae487af138296358a76d8e01a7e94258a',1,'asv.h']]],
-  ['asv_5fget_5fwave_12',['asv_get_wave',['../asv_8h.html#a2c6512a6954ef555abdca799e80c1526',1,'asv.h']]],
-  ['asv_5fnew_13',['asv_new',['../asv_8h.html#a49ba04cce9735d2f1e6552f78bedc9bd',1,'asv.h']]],
-  ['asv_5fset_5fsea_5fstate_14',['asv_set_sea_state',['../asv_8h.html#a6f775ab30236a02869dab91105a949e5',1,'asv.h']]],
-  ['asv_5fset_5fthrusters_15',['asv_set_thrusters',['../asv_8h.html#af6575b8770df8667e229232fc8f4b2eb',1,'asv.h']]]
+  ['asv_5fget_5fsea_5fsurface_9',['asv_get_sea_surface',['../asv_8h.html#a7dbd86da7b93586af0afb8edc54184cb',1,'asv.h']]],
+  ['asv_5fget_5fspec_10',['asv_get_spec',['../asv_8h.html#a83c2c20c3c0d7b1349a3623197069ad5',1,'asv.h']]],
+  ['asv_5fget_5fthrusters_11',['asv_get_thrusters',['../asv_8h.html#a7d43ccb00732cbde755210e7ec98924e',1,'asv.h']]],
+  ['asv_5fget_5fv_12',['asv_get_V',['../asv_8h.html#ae487af138296358a76d8e01a7e94258a',1,'asv.h']]],
+  ['asv_5fnew_13',['asv_new',['../asv_8h.html#a12f9b29c7c241c946f2e8ba8c5da9f36',1,'asv.h']]],
+  ['asv_5fset_5fsea_5fstate_14',['asv_set_sea_state',['../asv_8h.html#a813b5dfd80268b7ceaa423c356c2e929',1,'asv.h']]],
+  ['asv_5fset_5fsurge_5fsway_5fhalt_15',['asv_set_surge_sway_halt',['../asv_8h.html#a901baf74ea42ef4d15bbb7a62ef49a9e',1,'asv.h']]],
+  ['asv_5fset_5fthrusters_16',['asv_set_thrusters',['../asv_8h.html#af6575b8770df8667e229232fc8f4b2eb',1,'asv.h']]]
 ];
