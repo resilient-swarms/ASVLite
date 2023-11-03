@@ -113,6 +113,9 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#ifdef _WIN32
+  #define _USE_MATH_DEFINES
+#endif
 #include <math.h>
 
 #define PI M_PI
