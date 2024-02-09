@@ -108,6 +108,20 @@ double regular_wave_get_frequency(const struct Regular_wave* regular_wave)
   }
 }
 
+double regular_wave_get_length(const struct Regular_wave* regular_wave)
+{
+  if(regular_wave)
+  {
+    clear_error_msg(&regular_wave->error_msg);
+    return regular_wave->wave_length;
+  }
+  else
+  {
+    set_error_msg(&regular_wave->error_msg, error_null_pointer);
+    return 0.0;
+  }
+}
+
 
 double regular_wave_get_direction(const struct Regular_wave* regular_wave)
 {
