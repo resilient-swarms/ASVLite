@@ -367,6 +367,19 @@ double sea_surface_get_significant_height(const struct Sea_surface* sea_surface)
   }
 }
 
+int sea_surface_get_rand_seed(const struct Sea_surface* sea_surface)
+{
+  if(sea_surface)
+  {
+    clear_error_msg(&sea_surface->error_msg);
+    return sea_surface->random_number_seed;
+  }
+  else
+  {
+    return 0;
+  }
+}
+
 double sea_surface_get_predominant_heading(const struct Sea_surface* sea_surface)
 {
   if(sea_surface)

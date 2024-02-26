@@ -96,6 +96,11 @@ double sea_surface_get_peak_spectral_frequency(const struct Sea_surface* sea_sur
 double sea_surface_get_significant_height(const struct Sea_surface* sea_surface);
 
 /**
+ * Function to get the rand seed used for generating the component waves.
+ */ 
+int sea_surface_get_rand_seed(const struct Sea_surface* sea_surface);
+
+/**
  * Function to get the predominant wave heading, in radians, for the sea state.
  */ 
 double sea_surface_get_predominant_heading(const struct Sea_surface* sea_surface);
