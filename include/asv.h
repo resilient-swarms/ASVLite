@@ -178,7 +178,7 @@ void wave_glider_compute_dynamics(struct Asv* asv,
  * @param callback_postcompute callback at the end of each time step. Can be used for fetching/printing the results 
  * of the time step. 
  */
-void wave_glider_run(struct Asv* asv, bool(*callback_precompute)(double*), void(*callback_postcompute)(void), double time_step_size);
+void wave_glider_run(struct Asv* asv, int(*callback_precompute)(double*), void(*callback_postcompute)(void), double time_step_size);
 
 /**
  * Get the sea state initialised for the asv.

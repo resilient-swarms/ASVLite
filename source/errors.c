@@ -16,7 +16,7 @@ void set_error_msg(char** p_error_msg, const char* msg)
 {
   if(*p_error_msg)
   {
-    clear_error_msg(*p_error_msg);
+    clear_error_msg(p_error_msg);
   }
   *p_error_msg = (char*)malloc(sizeof(char) * (strlen(msg)+1));
   strcpy(*p_error_msg, msg);
