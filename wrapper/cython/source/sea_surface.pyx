@@ -6,8 +6,11 @@ cdef class py_Sea_surface:
     Class to define a sea surface. 
     '''
 
-    def __cinit__(self, double sig_wave_ht=1, double wave_heading=0, int rand_seed=1, int count_component_waves=21):
-        self._c_object = sea_surface_new(sig_wave_ht, wave_heading, rand_seed, count_component_waves)
+    def __cinit__(self, int option=1, double sig_wave_ht=1, double wave_heading=0, double wind_velocity_u=0, double wind_velocity_v=0, int rand_seed=1, int count_component_waves=21):
+        if option == 1:
+            self._c_object = sea_surface_new(sig_wave_ht, wave_heading, rand_seed, count_component_waves)
+        else:
+            self._c_object = sea_surface_new_from_wind(wind_velocity_u, wind_velocity_v, rand_seed, count_component_waves)
     
     def __dealloc__(self):
         sea_surface_delete(self._c_object)

@@ -39,11 +39,13 @@ const char* sea_surface_get_error_msg(const struct Sea_surface* sea_surface)
   return NULL;
 }
 
-
-struct Sea_surface* sea_surface_new(const double sig_wave_ht,
-                      const double wave_heading, 
-                      const int rand_seed,
-                      const int count_component_waves)
+static struct Sea_surface* sea_surface_from_wave_or_wind(const int option_wave_or_wind,
+                                                         const double sig_wave_ht,
+                                                         const double wave_heading,
+                                                         const double wind_velocity_u,
+                                                         const double wind_velocity_v,
+                                                         const int rand_seed,
+                                                         const int count_component_waves)
 {
   struct Sea_surface* sea_surface = NULL;
 
@@ -84,7 +86,18 @@ struct Sea_surface* sea_surface_new(const double sig_wave_ht,
         double beta = 0.74;
         double A = alpha * G*G * pow(2.0*PI, -4.0);
         double H_s = sig_wave_ht;
-        double B = 4.0*alpha*G*G / (pow(2.0*PI, 4.0)* H_s*H_s);
+        double B = 0.0;
+        if(option_wave_or_wind == 1)
+        {
+          // Using wave
+          B = 4.0*alpha*G*G / (pow(2.0*PI, 4.0)* H_s*H_s);
+        }
+        else
+        {
+          // Using wind
+          double U = pow(wind_velocity_u*wind_velocity_u + wind_velocity_v*wind_velocity_v, 0.5); // Wind speed in m/s
+          B = beta*pow(2.0*PI*U/G, -4.0);
+        }
         double f_p = 0.946 * pow(B, 0.25);
 
         sea_surface->significant_wave_height = H_s;
@@ -212,6 +225,27 @@ struct Sea_surface* sea_surface_new(const double sig_wave_ht,
   
   return sea_surface;
 }
+
+
+struct Sea_surface* sea_surface_new(double sig_wave_ht,
+                                    double wave_heading,
+                                    int rand_seed,
+                                    int count_component_waves)
+{
+  int option = 1; // Using wave
+  return sea_surface_from_wave_or_wind(option, sig_wave_ht, wave_heading, 0.0, 0.0, rand_seed, count_component_waves);
+}
+
+
+struct Sea_surface* sea_surface_new_from_wind(double wind_velocity_u,
+                                              double wind_velocity_v,
+                                              int rand_seed,
+                                              int count_component_waves)
+{
+  int option = 2; // Using wind
+  return sea_surface_from_wave_or_wind(option, 0.0, 0.0, wind_velocity_u, wind_velocity_v, rand_seed, count_component_waves);
+}
+
 
 void sea_surface_delete(struct Sea_surface* sea_surface)
 {

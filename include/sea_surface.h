@@ -40,6 +40,25 @@ struct Sea_surface* sea_surface_new(double sig_wave_ht,
                       double wave_heading, 
                       int rand_seed,
                       int count_component_waves);
+
+/**
+ * Similar to function sea_surface_new(), except here we create and initialise an
+ * irregular sea surface using wind speed as input instead of significant wave height.
+ * @param wind_velocity_u is the eastward component of the 10m wind, indicating air
+ * speed towards the east at 10m above the surface, in m/s.
+ * @param wind_velocity_v is the northward component of the 10m wind, indicating air
+ * speed towards the north at 10m above the surface, in m/s.
+ * @param rand_seed is the seed for random number generator.
+ * @param count_component_waves is the number of regular component waves in
+ * the wave spectrum. Value should be an odd number.
+ * @return pointer to the initialised object if the operation was successful;
+ * else, returns a null pointer.
+ */
+struct Sea_surface* sea_surface_new_from_wind(double wind_velocity_u,
+                                              double wind_velocity_v,
+                                              int rand_seed,
+                                              int count_component_waves);
+
 /**
  * Free memory allocated for the sea_surface.
  * @param sea_surface is a non-null pointer to an instance of Sea_surface to be deallocated.

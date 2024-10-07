@@ -6,6 +6,7 @@ cdef extern from "sea_surface.h":
         pass
     
     Sea_surface* sea_surface_new(double sig_wave_ht,double wave_heading, int rand_seed, int count_component_waves)
+    Sea_surface* sea_surface_new_from_wind(double wind_velocity_u, double wind_velocity_v, int rand_seed, int count_component_waves);
     void sea_surface_delete(Sea_surface* sea_surface)
     char* sea_surface_get_error_msg(Sea_surface* sea_surface)
     double sea_surface_get_elevation(Sea_surface* sea_surface, Coordinates_3D location, double time)
