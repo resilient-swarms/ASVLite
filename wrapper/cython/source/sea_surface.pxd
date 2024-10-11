@@ -16,6 +16,7 @@ cdef extern from "sea_surface.h":
     double sea_surface_get_peak_spectral_frequency(Sea_surface* sea_surface)
     double sea_surface_get_significant_height(Sea_surface* sea_surface)
     double sea_surface_get_predominant_heading(Sea_surface* sea_surface)
+    double sea_surface_get_mean_wavenumber(Sea_surface* sea_surface)
 
 cdef class py_Sea_surface:
     cdef Sea_surface* _c_object
@@ -27,3 +28,4 @@ cdef class py_Sea_surface:
     cdef double get_peak_spectral_frequency(self)
     cdef double get_significant_height(self)
     cdef double get_predominant_heading(self)
+    cdef double get_mean_wavenumber(self)

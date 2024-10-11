@@ -121,3 +121,17 @@ cdef class py_Sea_surface:
         Get the predominant wave heading, in radians, for the sea state.
         '''
         return self.get_predominant_heading()
+
+    cdef double get_mean_wavenumber(self):
+        '''
+        Get the mean wavenumber for the sea state.
+        '''
+        cdef double value = sea_surface_get_mean_wavenumber(self._c_object)
+        self.__check_error_throw_exception()
+        return value
+
+    def py_get_mean_wavenumber(self) -> float:
+        '''
+        Get the mean wavenumber for the sea state.
+        '''
+        return self.get_mean_wavenumber()

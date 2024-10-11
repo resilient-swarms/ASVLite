@@ -426,3 +426,30 @@ double sea_surface_get_predominant_heading(const struct Sea_surface* sea_surface
     return 0.0;
   }
 }
+
+double sea_surface_get_mean_wavenumber(const struct Sea_surface* sea_surface)
+{
+  if(sea_surface)
+  {
+    clear_error_msg(&sea_surface->error_msg);
+    double cumulative_wavenumber = 0.0;
+    for(int i = 0; i < sea_surface->count_component_waves; ++i)
+    {
+      const struct Regular_wave* regular_wave = sea_surface_get_regular_wave_at(sea_surface, i);
+      if(!regular_wave)
+      {
+        // Something really wrong happened.
+        // Error should already be set by sea_surface_get_regular_wave_at().
+        return 0.0;
+      }
+      double wavenumber = regular_wave_get_wavenumber(regular_wave);
+      cumulative_wavenumber += wavenumber;
+    }
+    double mean_wavenumber = cumulative_wavenumber/sea_surface->count_component_waves;
+    return mean_wavenumber;
+  }
+  else
+  {
+    return 0.0;
+  }
+}

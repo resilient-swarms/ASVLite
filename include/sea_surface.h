@@ -124,4 +124,10 @@ int sea_surface_get_rand_seed(const struct Sea_surface* sea_surface);
  */ 
 double sea_surface_get_predominant_heading(const struct Sea_surface* sea_surface);
 
+/**
+ * Function to get the mean wavenumber for the sea state.
+ */
+double sea_surface_get_mean_wavenumber(const struct Sea_surface* sea_surface);
+
+
 #endif // SEA_SURFACE_H
