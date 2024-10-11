@@ -64,6 +64,20 @@ cdef class py_Regular_wave:
         Get wave heading in radians. 
         '''
         return self.get_direction()
+
+    cdef double get_wavenumber(self):
+        '''
+        Get wavenumber. 
+        '''
+        cdef double value = regular_wave_get_wavenumber(self._c_object)
+        self.__check_error_throw_exception()
+        return value
+
+    def py_get_wavenumber(self) -> float:
+        '''
+        Get wavenumber.
+        '''
+        return self.get_wavenumber()
     
     cdef double get_phase(self, Coordinates_3D location, double time):
         '''

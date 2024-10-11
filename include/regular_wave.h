@@ -70,6 +70,12 @@ double regular_wave_get_frequency(const struct Regular_wave* regular_wave);
  */ 
 double regular_wave_get_length(const struct Regular_wave* regular_wave);
 
+/**
+ * Get wavenumber.
+ * @return wavenumber.
+ */
+double regular_wave_get_wavenumber(const struct Regular_wave* regular_wave);
+
 /** 
  * Get wave direction.
  * @return direction of propagation of the wave in radians with respect to the
