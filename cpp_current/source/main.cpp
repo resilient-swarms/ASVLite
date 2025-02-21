@@ -45,7 +45,7 @@ int main() {
     int i = 0;
     while(asv.get_time() < simulation_duration) {
         ++i;
-        auto [thrust_position, thrust_magnitude] = get_wave_glider_thrust(asv, 0.0, 1.0);
+        auto [thrust_position, thrust_magnitude] = get_wave_glider_thrust(asv, 0.0);
         asv.step_simulation(thrust_position, thrust_magnitude);
         
         file    << asv.get_position().keys.x << "," 
