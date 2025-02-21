@@ -58,7 +58,7 @@ void ASVLite::Asv::set_damping_coefficient() {
     // operations. Edition July 2017. Appendix B Table B-1, B-2.
   
     // Surge drag coefficient - assuming elliptical waterplane area
-    const double C_DS = (dynamics.submersion_depth < 0.0)? 0.1 : 0.001;
+    const double C_DS = (dynamics.submersion_depth < 0.0)? 1.9 : 0.1;
     const double C_surge = 0.5 * Constants::SEA_WATER_DENSITY * C_DS * spec.B_wl * spec.T;
   
     // Sway drag coefficient - assuming elliptical waterplane area
@@ -69,9 +69,9 @@ void ASVLite::Asv::set_damping_coefficient() {
 
     // roll, pitch and yaw drag coefficient set equal to roll damping coefficient 
     // given in Handbook of Marin Craft Hydrodynamics and motion control, page 125
-    const double C_roll  = (dynamics.submersion_depth < 0.0)? 1.9 : 0.001;
-    const double C_pitch = (dynamics.submersion_depth < 0.0)? 1.9 : 0.001;
-    const double C_yaw   = (dynamics.submersion_depth < 0.0)? 1.9 : 0.001;
+    const double C_roll  = (dynamics.submersion_depth < 0.0)? 1.9 : 0.1;
+    const double C_pitch = (dynamics.submersion_depth < 0.0)? 1.9 : 0.1;
+    const double C_yaw   = (dynamics.submersion_depth < 0.0)? 1.9 : 0.1;
 
     // Set the drage coeff matrix
     dynamics.C(0, 0) = C_surge;
@@ -98,7 +98,7 @@ void ASVLite::Asv::set_stiffness() {
     // Heave stiffness
     double K_heave = A * Constants::SEA_WATER_DENSITY * Constants::G;
     const double submersion_depth = std::clamp(dynamics.submersion_depth, -spec.D, 0.0);
-    if(submersion_depth > -spec.T) {
+    if(dynamics.position.keys.z >= sea_surface->get_elevation(dynamics.position, dynamics.time)) {
         // tapper down the buoyancy to avoid lifting of ASV from surface.
         // i.e. increase stiffeness for lifting the vehicle out of water.
         K_heave += 3 * K_heave * sin(fabs(submersion_depth) / spec.T) * sin(fabs(submersion_depth) / spec.T);
@@ -235,19 +235,15 @@ void ASVLite::Asv::set_damping_force() {
 
 void ASVLite::Asv::set_restoring_force() {
     set_stiffness();
-
-    if(dynamics.submersion_depth >= 0.0) {
-        dynamics.F_restoring(2) = -dynamics.K(2,2) * spec.T;
-    } else {    
-        // Heave restoring force
-        const double delta_T = dynamics.position.keys.z - sea_surface->get_elevation(dynamics.position, dynamics.time);
-        const Eigen::Vector3d elongation {delta_T, dynamics.attitude.keys.x, dynamics.attitude.keys.y};
-        
-        // Set the restoring force matrix
-        const Eigen::Matrix3d K_sub = dynamics.K.block<3,3>(2,2); // Extract the relevant 3x3 submatrix from K
-        dynamics.F_restoring.segment(2,3) = -K_sub * elongation; // heave, roll, pitch
-        // No restoring force for sway, yaw and surge.
-    }
+ 
+    // Heave restoring force
+    const double delta_T = dynamics.position.keys.z - sea_surface->get_elevation(dynamics.position, dynamics.time);
+    const Eigen::Vector3d elongation {delta_T, dynamics.attitude.keys.x, dynamics.attitude.keys.y};
+    
+    // Set the restoring force matrix
+    const Eigen::Matrix3d K_sub = dynamics.K.block<3,3>(2,2); // Extract the relevant 3x3 submatrix from K
+    dynamics.F_restoring.segment(2,3) = -K_sub * elongation; // heave, roll, pitch
+    // No restoring force for sway, yaw and surge.
 }
 
 void ASVLite::Asv::set_net_force() {
