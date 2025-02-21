@@ -58,7 +58,7 @@ void ASVLite::Asv::set_damping_coefficient() {
     // operations. Edition July 2017. Appendix B Table B-1, B-2.
   
     // Surge drag coefficient - assuming elliptical waterplane area
-    const double C_DS = (dynamics.submersion_depth < 0.0)? 1.9 : 0.001;
+    const double C_DS = (dynamics.submersion_depth < 0.0)? 0.1 : 0.001;
     const double C_surge = 0.5 * Constants::SEA_WATER_DENSITY * C_DS * spec.B_wl * spec.T;
   
     // Sway drag coefficient - assuming elliptical waterplane area
@@ -100,7 +100,8 @@ void ASVLite::Asv::set_stiffness() {
     const double submersion_depth = std::clamp(dynamics.submersion_depth, -spec.D, 0.0);
     if(submersion_depth > -spec.T) {
         // tapper down the buoyancy to avoid lifting of ASV from surface.
-        K_heave += K_heave * sin(fabs(submersion_depth) / spec.T) * sin(fabs(submersion_depth) / spec.T);
+        // i.e. increase stiffeness for lifting the vehicle out of water.
+        K_heave += 3 * K_heave * sin(fabs(submersion_depth) / spec.T) * sin(fabs(submersion_depth) / spec.T);
     }
   
     // Roll stiffness
@@ -184,7 +185,7 @@ void ASVLite::Asv::set_wave_force() {
             const double lever_trans = b / 8;
             const double lever_long  = a / 8;
             // Set the wave pressue force matrix
-            const double scale = 1.0;
+            const double scale = 1/(encountered_wave.amplitude * sea_surface->component_waves.size());
             dynamics.F_wave(0) += (wave_pressure_forward - wave_pressure_aft) * A_trans * scale; // surge
             dynamics.F_wave(1) += (wave_pressure_starboard - wave_pressure_portside) * A_profile * scale; // sway
             // dynamics.F_wave(2) += wave_pressure_centre * A_waterplane * scale; // heave
