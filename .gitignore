@@ -32,17 +32,17 @@ build
 __pycache__
 
 # Wrapper binaries
-wrapper/lib
+c_legacy/wrapper/lib
 
 # Python env
 # ----------
 .env
 env
 
-test
-to_delete_later
+c_legacy/test
+c_legacy/to_delete_later
 
 # Cython wrapper
 # --------------
-wrapper/cython/*.so
-wrapper/cython/source/*.c
+c_legacy/wrapper/cython/*.so
+c_legacy/wrapper/cython/source/*.c
