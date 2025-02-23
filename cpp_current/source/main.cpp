@@ -20,7 +20,7 @@ int main() {
     std::ofstream file(result_file_path); 
 
     // Initialise the sea surface
-    const double wave_ht = 1.5; // m
+    const double wave_ht = 7.50; // m
     const double wave_dp = M_PI/3.0; // rad
     const int count_component_waves = 15;
     const int wave_rand_seed = 1;
@@ -45,7 +45,8 @@ int main() {
     int i = 0;
     while(asv.get_time() < simulation_duration) {
         ++i;
-        auto [thrust_position, thrust_magnitude] = get_wave_glider_thrust(asv, 0.0);
+        auto [thrust_position, thrust_magnitude] = get_wave_glider_thrust(asv, 0.0, sea_surface.significant_wave_height);
+        thrust_magnitude = {0.0, 0.0, 0.0};
         asv.step_simulation(thrust_position, thrust_magnitude);
         
         file    << asv.get_position().keys.x << "," 
@@ -54,10 +55,12 @@ int main() {
                 << asv.get_submersion_depth() << ","
                 << asv.get_wave_force().keys.heave << ","
                 << asv.get_damping_force().keys.heave << ","
+                << asv.get_restoring_force().keys.heave << ","
                 << asv.get_propulsive_thrust().keys.heave << ","
                 << asv.get_net_force().keys.heave << ","
                 << asv.get_velocity().keys.heave << ","
-                << asv.get_attitude().keys.x << "\n";
+                << asv.get_attitude().keys.x << ","
+                << asv.get_velocity().keys.roll << "\n";
     }
 
     return 0;

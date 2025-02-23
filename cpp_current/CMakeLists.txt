@@ -11,7 +11,8 @@ SET(SOURCE
         source/regular_wave.cpp
         source/sea_surface.cpp
         source/asv.cpp
-        source/thrust_tuning_data_generation.cpp
+        # source/thrust_tuning_data_generation.cpp
+        source/main.cpp
 )
 
 ADD_EXECUTABLE(ASVLite ${SOURCE})

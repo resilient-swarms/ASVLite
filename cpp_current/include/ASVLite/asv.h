@@ -188,5 +188,5 @@ namespace ASVLite {
     // param rudder_angle is the angle of the rudder with respect to X axis of the ASV. 
     // Rudder angle must within (-PI/2, PI/2). Angle is positive when the vehicle has to turn 
     // to starboard (ie. aft end of the rudder points to starboard side). 
-    std::pair<Geometry::Coordinates3D, Geometry::Coordinates3D> get_wave_glider_thrust(const Asv& wave_glider, double rudder_angle); 
+    std::pair<Geometry::Coordinates3D, Geometry::Coordinates3D> get_wave_glider_thrust(const Asv& wave_glider, const double rudder_angle, const double significant_wave_ht); 
 }
