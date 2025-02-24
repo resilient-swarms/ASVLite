@@ -35,10 +35,12 @@ std::vector<ASVLite::RegularWave> ASVLite::SeaSurface::calculate_wave_spectrum()
 
     // Compute step size for frequency and heading
     const int half_count = (num_component_waves-1)/2; // Half of the component wave count
-    const double frequency_band_size_min_to_peak = (peak_spectral_frequency - min_spectral_frequency) / (half_count+1);
-    const double frequency_band_size_peak_to_max = (max_spectral_frequency - peak_spectral_frequency) / (half_count+1);
-    const double frequency_band_size_peak = (frequency_band_size_min_to_peak + frequency_band_size_peak_to_max) / 2.0;
-    const double wave_heading_increment = M_PI/(num_component_waves+1);
+    const double frequency_band_size_peak = (max_spectral_frequency - min_spectral_frequency) / num_component_waves;
+    const double peak_freq_band_low_limit = peak_spectral_frequency - frequency_band_size_peak/2;
+    const double peak_freq_band_upp_limit = peak_spectral_frequency + frequency_band_size_peak/2;
+    const double frequency_band_size_min_to_peak = (peak_freq_band_low_limit  - min_spectral_frequency) / half_count;
+    const double frequency_band_size_peak_to_max = (max_spectral_frequency - peak_freq_band_upp_limit) / half_count;
+    const double wave_heading_increment = M_PI/num_component_waves;
 
     // Init random number generator
     static std::mt19937 gen(random_number_seed); // Mersenne Twister PRNG
@@ -67,18 +69,18 @@ std::vector<ASVLite::RegularWave> ASVLite::SeaSurface::calculate_wave_spectrum()
 
     // Create waves - min to peak freq
     double mu = -M_PI/2.0;
-    for(size_t i = 1; i <= half_count; ++i) {
-        const double freq = min_spectral_frequency + (i * frequency_band_size_min_to_peak);
-        const double mu = -M_PI/2.0 + (i * wave_heading_increment);
+    for(size_t i = 0; i < half_count; ++i) {
+        const double freq = min_spectral_frequency + (i * frequency_band_size_min_to_peak) + frequency_band_size_min_to_peak/2.0;
+        const double mu = -M_PI/2.0 + (i * wave_heading_increment) + wave_heading_increment/2.0;
         const double wave_heading = Geometry::normalise_angle_2PI(mu + predominant_wave_heading);
         construct_regular_wave(freq, frequency_band_size_min_to_peak, wave_heading);
     }
     // Create wave - peak
     construct_regular_wave(peak_spectral_frequency, frequency_band_size_peak, predominant_wave_heading);
     // Create waves - peak to max freq
-    for(size_t i = 1; i <= half_count; ++i) {
-        const double freq = peak_spectral_frequency + (i * frequency_band_size_peak_to_max);
-        const double mu = i * wave_heading_increment;
+    for(size_t i = 0; i < half_count; ++i) {
+        const double freq = peak_freq_band_upp_limit + (i * frequency_band_size_peak_to_max) + frequency_band_size_peak_to_max/2.0;
+        const double mu = wave_heading_increment/2.0 + i * wave_heading_increment + wave_heading_increment/2.0;
         const double wave_heading = Geometry::normalise_angle_2PI(mu + predominant_wave_heading);
         construct_regular_wave(freq, frequency_band_size_peak_to_max, wave_heading);
     }
