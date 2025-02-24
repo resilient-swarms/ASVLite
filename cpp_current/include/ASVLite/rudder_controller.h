@@ -15,7 +15,7 @@ namespace ASVLite {
             double get_rudder_angle(const Asv& asv, const Geometry::Coordinates3D& waypoint);
         
         private:
-            double get_relative_heading(const Asv& asv, const Geometry::Coordinates3D& waypoint);
+            double get_relative_heading(const Asv& asv, const Geometry::Coordinates3D& waypoint) const;
         
         private:
             const AsvSpecification asv_spec;

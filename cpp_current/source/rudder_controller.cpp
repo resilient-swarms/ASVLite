@@ -19,7 +19,7 @@ asv_spec {asv_spec} {
 }
 
 
-double ASVLite::RudderController::get_relative_heading(const ASVLite::Asv& asv, const ASVLite::Geometry::Coordinates3D& waypoint) {
+double ASVLite::RudderController::get_relative_heading(const ASVLite::Asv& asv, const ASVLite::Geometry::Coordinates3D& waypoint) const {
     const Geometry::Coordinates3D& p1 = asv.get_position();
     const Geometry::Coordinates3D& attitude = asv.get_attitude();
     // Instantiate a Rotation2D object

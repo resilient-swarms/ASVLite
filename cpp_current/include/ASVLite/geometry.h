@@ -15,6 +15,12 @@ namespace ASVLite {
                 double z; 
             } keys; // To access the coordinate values using the keys x, y, z.
             double array[COUNT_COORDINATES]; // To access the coordinate values using index 0, 1, 2.
+
+            bool operator==(const Coordinates3D& rhs) {
+                return (this->keys.x == rhs.keys.x) &&
+                       (this->keys.y == rhs.keys.y) &&
+                       (this->keys.z == rhs.keys.z);
+            }
         };
 
 
