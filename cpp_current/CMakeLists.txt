@@ -11,6 +11,7 @@ SET(SOURCE
         source/regular_wave.cpp
         source/sea_surface.cpp
         source/asv.cpp
+        source/rudder_controller.cpp
         # source/thrust_tuning_data_generation.cpp
         source/main.cpp
 )
