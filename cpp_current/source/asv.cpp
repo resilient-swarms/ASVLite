@@ -11,67 +11,175 @@ static double get_encounter_frequency(double wave_freq, double asv_speed, double
 }
 
 
-void ASVLite::Asv::set_mass() {
-    // Mass of the ASV
-    const double asv_mass = spec.L_wl * spec.B_wl * spec.T * Constants::SEA_WATER_DENSITY;
-
-    // Added mass of the ASV
-    // ---------------------
-    // ASV shape idealisation:
-    // For the purpose of calculating the added mass the shape of the ASV is
-    // assumed to be a elliptic-cylinder.
-    const double a = spec.L_wl/2.0;
-    const double b = spec.B_wl/2.0; 
-    const double c = -std::clamp(dynamics.submersion_depth, -spec.D, 0.0);
-
-    // Ref: DNVGL-RP-N103 Table A-1 (page 205)
-    // Surge added mass = rho * Ca * Ar
-    constexpr double C_a = 1.0;
-    const double Ar_surge = M_PI*b*b;
-    const double Ar_sway  = M_PI*a*a;
-    const double Ar_heave = M_PI*a*b;
-    const double added_mass_surge = Constants::SEA_WATER_DENSITY * C_a * Ar_surge * (2.0*a);
-    const double added_mass_sway  = Constants::SEA_WATER_DENSITY * C_a * Ar_sway * (2.0*b);
-    const double added_mass_heave = Constants::SEA_WATER_DENSITY * C_a * Ar_heave * c;
-
-    // Moment of inertia for angular motions
-    const double I_roll = (1.0 / 12.0) * asv_mass * (spec.B_wl * spec.B_wl + spec.D * spec.D); // Roll
-    const double I_pitch = (1.0 / 12.0) * asv_mass * (spec.L_wl * spec.L_wl + spec.D * spec.D);  // Pitch
-    const double I_yaw = (1.0 / 12.0) * asv_mass * (spec.L_wl * spec.L_wl + spec.B_wl * spec.B_wl);  // Yaw
-  
-    const double added_mass_roll  = Constants::SEA_WATER_DENSITY * M_PI/8.0 * b * (2*a);
-    const double added_mass_pitch = Constants::SEA_WATER_DENSITY * M_PI/8.0 * a * (2*b);
-    const double added_mass_yaw   = Constants::SEA_WATER_DENSITY * M_PI/8.0 * (a*a-b*b)*(a*a-b*b);
-
-    // Set the mass matrixs
-    dynamics.M(0, 0) = asv_mass;// + added_mass_surge;
-    dynamics.M(1, 1) = asv_mass;// + added_mass_sway;
-    dynamics.M(2, 2) = asv_mass;// + added_mass_heave;
-    dynamics.M(3, 3) = I_roll  ;// + added_mass_roll;
-    dynamics.M(4, 4) = I_pitch ;// + added_mass_pitch;
-    dynamics.M(5, 5) = I_yaw   ;// + added_mass_yaw;
+double ASVLite::Asv::get_submerged_volume(const double submersion_depth) const {
+    // Assuming a hemi-ellipsoid shape for the submerged part of the ASV
+    const double d = -std::clamp(submersion_depth, -spec.D, 0.0);
+    double volume = M_PI/6.0 * spec.L_wl * spec.B_wl * d * (3.0 - d/spec.D);
+    return volume;
 }
 
 
-void ASVLite::Asv::set_damping_coefficient() {
+double ASVLite::Asv::get_added_mass_coeff() const {
+    // Ref: DNVGL-RP-N103 Table A-2 (page 209)
+    // Waterplane is assumed to be elliptical.
+    // Define the table of b/a and CA values
+    std::vector<std::pair<double, double>> table = {
+        {std::numeric_limits<double>::infinity(), 1.0},
+        {14.3, 0.991},
+        {12.8, 0.989},
+        {10.0, 0.984},
+        {7.0, 0.972},
+        {6.0, 0.964},
+        {5.0, 0.952},
+        {4.0, 0.933},
+        {3.0, 0.9},
+        {2.0, 0.826},
+        {1.5, 0.758},
+        {1.0, 0.637}
+    };
+    
+    // Check if ba is within bounds
+    const double ba = spec.L_wl / spec.B_wl;
+    if (ba >= table.front().first) return table.front().second;
+    if (ba <= table.back().first) return table.back().second;
+    
+    // Find the correct interval and interpolate
+    for (size_t i = 0; i < table.size() - 1; ++i) {
+        if (ba <= table[i].first && ba >= table[i + 1].first) {
+            const double ba1 = table[i].first; 
+            const double ba2 = table[i + 1].first;
+            const double CA1 = table[i].second; 
+            const double CA2 = table[i + 1].second;
+            return CA1 + (CA2 - CA1) * ((ba - ba1) / (ba2 - ba1));
+        }
+    }
+    return -1; // Should not reach here
+}
+
+
+void ASVLite::Asv::set_mass() {
+    // Mass of the ASV
+    const double submerged_volume = get_submerged_volume(-spec.T);
+    const double asv_mass = submerged_volume * Constants::SEA_WATER_DENSITY;
+
+    // Moment of inertia for angular motions considering an elliptical waterplane.
+    const double I_roll =  (1.0 / 20.0) * asv_mass * (spec.B_wl*spec.B_wl + spec.T*spec.T); // Roll
+    const double I_pitch = (1.0 / 20.0) * asv_mass * (spec.L_wl*spec.L_wl + spec.T*spec.T);  // Pitch
+    const double I_yaw =   (1.0 / 20.0) * asv_mass * (spec.L_wl*spec.L_wl + spec.B_wl*spec.B_wl);  // Yaw
+
+    // Added mass of the ASV - only associated with oscillatory motions.
+    const double added_mass_surge = 0.0;
+    const double added_mass_sway  = 0.0;
+    const double added_mass_yaw = 0.0;
+    // Heave added mass:
+    const double C_linear = get_added_mass_coeff();
+    if(C_linear < 0.0) {
+        throw std::runtime_error("Invalid added mass coefficient");
+    }
+    const double V_r = M_PI/6.0 * spec.B_wl*spec.B_wl * spec.L_wl;
+    const double C_angular = 0.2;
+    
+    double added_mass_heave = 0.0;
+    double added_mass_roll  = 0.0;
+    double added_mass_pitch = 0.0;
+    for(const RegularWave& wave : sea_surface->component_waves) {
+        const double encounter_freq = get_encounter_frequency(wave.frequency, 0.0, wave.heading);
+        added_mass_heave += encounter_freq*encounter_freq/sea_surface->num_component_waves * C_linear * Constants::SEA_WATER_DENSITY * V_r;   
+        added_mass_roll  += encounter_freq*encounter_freq/sea_surface->num_component_waves * C_angular * Constants::SEA_WATER_DENSITY * submerged_volume * (spec.B_wl*spec.B_wl + spec.T*spec.T)/5.0;
+        added_mass_pitch += encounter_freq*encounter_freq/sea_surface->num_component_waves * C_angular * Constants::SEA_WATER_DENSITY * submerged_volume * (spec.L_wl*spec.L_wl + spec.T*spec.T)/5.0;
+    } 
+
+    // Set the mass matrixs
+    dynamics.M(0, 0) = asv_mass + added_mass_surge;
+    dynamics.M(1, 1) = asv_mass + added_mass_sway;
+    dynamics.M(2, 2) = asv_mass + added_mass_heave;
+    dynamics.M(3, 3) = I_roll   + added_mass_roll;
+    dynamics.M(4, 4) = I_pitch  + added_mass_pitch;
+    dynamics.M(5, 5) = I_yaw    + added_mass_yaw;
+}
+
+
+double ASVLite::Asv::get_drag_coefficient_parallel_flow(const double l, const double d) const {
+    // Ref: DNVGL-RP-N103 Table B-1 (page 215)
+    // Waterplane is assumed to be elliptical.
+    // Define the table of d/l and C_ds values
+    std::vector<std::pair<double, double>> table = {
+        {0.125, 0.22},
+        {0.25, 0.3},
+        {0.5, 0.6},
+        {1.0, 1.0},
+        {2.0, 1.6},
+    };
+    
+    // Check if ba is within bounds
+    const double dl = d / l;
+    if (dl >= table.front().first) return table.front().second;
+    if (dl <= table.back().first) return table.back().second;
+    
+    // Find the correct interval and interpolate
+    for (size_t i = 0; i < table.size() - 1; ++i) {
+        if (dl <= table[i].first && dl >= table[i + 1].first) {
+            const double dl1 = table[i].first; 
+            const double dl2 = table[i + 1].first;
+            const double Cds1 = table[i].second; 
+            const double Cds2 = table[i + 1].second;
+            return Cds1 + (Cds2 - Cds1) * ((dl - dl1) / (dl2 - dl1));
+        }
+    }
+    return -1; // Should not reach here
+}
+
+
+double ASVLite::Asv::get_drag_coefficient_prependicular_flow(const double b, const double h) const {
+    // Ref: DNVGL-RP-N103 Table B-2 (page 217)
+    // Waterplane is assumed to be rectangular.
+    // Define the table of b/h and C_ds values
+    std::vector<std::pair<double, double>> table = {
+        {1.0, 1.16},
+        {5.0, 1.2},
+        {10.0, 1.5},
+        {std::numeric_limits<double>::infinity(), 1.9},
+    };
+    
+    // Check if ba is within bounds
+    const double bh = b / h;
+    if (bh >= table.front().first) return table.front().second;
+    if (bh <= table.back().first) return table.back().second;
+    
+    // Find the correct interval and interpolate
+    for (size_t i = 0; i < table.size() - 1; ++i) {
+        if (bh <= table[i].first && bh >= table[i + 1].first) {
+            const double bh1 = table[i].first; 
+            const double bh2 = table[i + 1].first;
+            const double Cds1 = table[i].second; 
+            const double Cds2 = table[i + 1].second;
+            return Cds1 + (Cds2 - Cds1) * ((bh - bh1) / (bh2 - bh1));
+        }
+    }
+    return -1; // Should not reach here
+}
+
+
+void ASVLite::Asv::set_drag_coefficient() {
     // Ref: Recommended practices DNVGL-RP-N103 Modelling and analysis of marine
     // operations. Edition July 2017. Appendix B Table B-1, B-2.
   
     // Surge drag coefficient - assuming elliptical waterplane area
-    const double C_DS = (dynamics.submersion_depth < 0.0)? 1.9 : 0.1;
-    const double C_surge = 0.5 * Constants::SEA_WATER_DENSITY * C_DS * spec.B_wl * spec.T;
-  
-    // Sway drag coefficient - assuming elliptical waterplane area
-    const double C_sway = 0.5 * Constants::SEA_WATER_DENSITY * C_DS * spec.L_wl * spec.T;
-  
+    const double C_DS_surge = get_drag_coefficient_parallel_flow(spec.L_wl, spec.B_wl);
+    const double C_DS_sway  = get_drag_coefficient_parallel_flow(spec.B_wl, spec.L_wl);
+    const double C_surge = 0.5 * Constants::SEA_WATER_DENSITY * C_DS_surge * spec.B_wl * (-dynamics.submersion_depth);
+    const double C_sway  = 0.5 * Constants::SEA_WATER_DENSITY * C_DS_sway  * spec.L_wl * (-dynamics.submersion_depth);
+
     // Heave drag coefficient - consider it as flat plat perpendicular to flow.
-    const double C_heave = 0.5 * Constants::SEA_WATER_DENSITY * C_DS * spec.L_wl * spec.B_wl;
+    const double C_DS_heave = get_drag_coefficient_prependicular_flow(spec.L_wl, spec.B_wl);
+    const double C_heave  = 0.5 * Constants::SEA_WATER_DENSITY * C_DS_heave  * spec.L_wl * spec.B_wl;
+    
 
     // roll, pitch and yaw drag coefficient set equal to roll damping coefficient 
     // given in Handbook of Marin Craft Hydrodynamics and motion control, page 125
-    const double C_roll  = (dynamics.submersion_depth < 0.0)? 1.9 : 0.1;
-    const double C_pitch = (dynamics.submersion_depth < 0.0)? 1.9 : 0.1;
-    const double C_yaw   = (dynamics.submersion_depth < 0.0)? 1.9 : 0.1;
+    const double C_roll  = 1.5 * Constants::SEA_WATER_DENSITY * spec.B_wl*spec.B_wl*spec.B_wl * spec.T;
+    const double C_pitch = 1.5 * Constants::SEA_WATER_DENSITY * spec.L_wl*spec.L_wl*spec.L_wl * spec.T;
+    const double C_yaw   = 1.5 * Constants::SEA_WATER_DENSITY * spec.B_wl*spec.B_wl*spec.B_wl * spec.L_wl;
 
     // Set the drage coeff matrix
     dynamics.C(0, 0) = C_surge;
@@ -83,26 +191,43 @@ void ASVLite::Asv::set_damping_coefficient() {
 }
 
 
+void ASVLite::Asv::set_drag_force() {
+    set_drag_coefficient();
+
+    // Compute the quadratic velocity term explicitly to avoid unnecessary temporaries
+    Eigen::VectorXd velocity_square = dynamics.V.cwiseProduct(dynamics.V.cwiseAbs());
+
+    // Set the drag force matrix
+    dynamics.F_drag = -dynamics.C * velocity_square;
+
+    // For heave the drag should be relative to the water surface velocity
+    if(dynamics.submersion_depth >= 0.0) {
+        dynamics.F_drag = Eigen::Matrix<double, 6, 1>::Ones();
+    } else {
+        const double sea_surface_elevation_0 = sea_surface->get_elevation(dynamics.position, dynamics.time - dynamics.time_step_size/1000.0);
+        const double sea_surface_elevation_1 = sea_surface->get_elevation(dynamics.position, dynamics.time);
+        const double sea_surface_velocity =  (sea_surface_elevation_1 - sea_surface_elevation_0) / (dynamics.time_step_size/1000.0);
+        dynamics.F_drag(2) = -dynamics.C(2,2) * (dynamics.V(2) - sea_surface_velocity) * std::abs(dynamics.V(2) - sea_surface_velocity);
+    }
+}
+
+
 void ASVLite::Asv::set_stiffness() {
     constexpr double K_surge = 0.0;
     constexpr double K_sway  = 0.0;
     constexpr double K_yaw   = 0.0;
    
     // Assuming elliptical shape for the water plane area.
-    const double a = spec.L_wl / 2.0;
-    const double b = spec.B_wl / 2.0;
+    // Get the dimensions of the ellipse for the waterplane at the given submersion depth.
+    const double c = -std::clamp(dynamics.submersion_depth, -spec.D, 0.0);
+    const double a = spec.L_wl/2.0 * sqrt(1 - (spec.D - c)/spec.D);
+    const double b = spec.B_wl/2.0 * sqrt(1 - (spec.D - c)/spec.D);
     const double A = M_PI * a * b;
-    const double I_xx = M_PI * a * pow(b, 3) / 4;
-    const double I_yy = M_PI * b * pow(a, 3) / 4;
+    const double I_xx = M_PI/16.0 * a * pow(b, 3);
+    const double I_yy = M_PI/16.0 * b * pow(a, 3);
     
     // Heave stiffness
     double K_heave = A * Constants::SEA_WATER_DENSITY * Constants::G;
-    const double submersion_depth = std::clamp(dynamics.submersion_depth, -spec.D, 0.0);
-    if(dynamics.position.keys.z >= sea_surface->get_elevation(dynamics.position, dynamics.time)) {
-        // tapper down the buoyancy to avoid lifting of ASV from surface.
-        // i.e. increase stiffeness for lifting the vehicle out of water.
-        K_heave += 3 * K_heave * sin(fabs(submersion_depth) / spec.T) * sin(fabs(submersion_depth) / spec.T);
-    }
   
     // Roll stiffness
     // Using the same formula as mentioned for pitch in below ref.
@@ -124,10 +249,11 @@ void ASVLite::Asv::set_stiffness() {
 
 
 void ASVLite::Asv::set_wave_force() {
-    // Dimensions of ellipsoid
-    const double a = spec.L_wl/ 2.0;
-    const double b = spec.B_wl/ 2.0;
+    // Assuming elliptical shape for the water plane area.
+    // Get the dimensions of the ellipse for the waterplane at the given submersion depth.
     const double c = -std::clamp(dynamics.submersion_depth, -spec.D, 0.0);
+    const double a = spec.L_wl/2.0 * sqrt(1 - (spec.D - c)/spec.D);
+    const double b = spec.B_wl/2.0 * sqrt(1 - (spec.D - c)/spec.D);
     const double A_trans = M_PI/2.0 * b * c;
     const double A_profile = M_PI/2.0 * a * c;
     const double A_waterplane = M_PI/2 * a * b;
@@ -185,13 +311,13 @@ void ASVLite::Asv::set_wave_force() {
             const double lever_trans = b / 8;
             const double lever_long  = a / 8;
             // Set the wave pressue force matrix
-            const double scale = 1/(encountered_wave.amplitude * sea_surface->component_waves.size());
+            const double scale = 1.0/(sea_surface->component_waves.size());
             dynamics.F_wave(0) += (wave_pressure_forward - wave_pressure_aft) * A_trans * scale; // surge
             dynamics.F_wave(1) += (wave_pressure_starboard - wave_pressure_portside) * A_profile * scale; // sway
-            // dynamics.F_wave(2) += wave_pressure_centre * A_waterplane * scale; // heave
+            dynamics.F_wave(2) += wave_pressure_centre * A_waterplane * scale; // heave
             dynamics.F_wave(3) += (wave_pressure_starboard - wave_pressure_portside) * A_waterplane * lever_trans * scale; // roll
             dynamics.F_wave(4) += (wave_pressure_forward - wave_pressure_aft) * A_waterplane * lever_long * scale; // pitch
-            // dynamics.F_wave(5) += (wave_pressure_forward - wave_pressure_aft) * A_profile * lever_long * scale; // yaw
+            dynamics.F_wave(5) += (wave_pressure_forward - wave_pressure_aft) * A_profile * lever_long * scale; // yaw
         }
     } 
 
@@ -222,39 +348,27 @@ void ASVLite::Asv::set_thrust(const Geometry::Coordinates3D& thrust_position, co
 }
 
 
-void ASVLite::Asv::set_damping_force() {
-    set_damping_coefficient();
-
-    // Compute the quadratic velocity term explicitly to avoid unnecessary temporaries
-    Eigen::VectorXd velocity_square = dynamics.V.cwiseProduct(dynamics.V.cwiseAbs());
-
-    // Set the drag force matrix
-    dynamics.F_damping = -dynamics.C * velocity_square;
-
-    // Correct the damping force for heave. The velocity used should be the relative velocity between the ASV and the sea surface.
-    const double sea_surface_elevation_0 = sea_surface->get_elevation(dynamics.position, dynamics.time - dynamics.time_step_size/1000.0);
-    const double sea_surface_elevation_1 = sea_surface->get_elevation(dynamics.position, dynamics.time);
-    const double sea_surface_velocity =  (sea_surface_elevation_1 - sea_surface_elevation_0) / (dynamics.time_step_size/1000.0);
-    dynamics.F_damping(2) = -dynamics.C(2,2) * (dynamics.V(2) - sea_surface_velocity) * std::abs(dynamics.V(2) - sea_surface_velocity);
-}
-
-
 void ASVLite::Asv::set_restoring_force() {
     set_stiffness();
  
     // Heave restoring force
-    const double delta_T = dynamics.position.keys.z - sea_surface->get_elevation(dynamics.position, dynamics.time);
+    const double delta_T = spec.T + dynamics.submersion_depth;
     const Eigen::Vector3d elongation {delta_T, dynamics.attitude.keys.x, dynamics.attitude.keys.y};
     
     // Set the restoring force matrix
     const Eigen::Matrix3d K_sub = dynamics.K.block<3,3>(2,2); // Extract the relevant 3x3 submatrix from K
     dynamics.F_restoring.segment(2,3) = -K_sub * elongation; // heave, roll, pitch
+    // Overwrite the heave restoring force with the buoyancy - weight 
+    double buoyancy = get_submerged_volume(dynamics.submersion_depth) * Constants::SEA_WATER_DENSITY * Constants::G;
+    double weight = get_submerged_volume(-spec.T) * Constants::SEA_WATER_DENSITY * Constants::G;
+    dynamics.F_restoring(2) = buoyancy - weight;
     // No restoring force for sway, yaw and surge.
 }
 
+
 void ASVLite::Asv::set_net_force() {
     // Set the net force matrix
-    dynamics.F = dynamics.F_thrust + dynamics.F_wave + dynamics.F_damping + dynamics.F_restoring;
+    dynamics.F = dynamics.F_thrust + dynamics.F_wave + dynamics.F_drag + dynamics.F_restoring;
     if(halt_surge_and_sway) {
         dynamics.F(0) = 0.0;
         dynamics.F(1) = 0.0;
@@ -345,7 +459,7 @@ void ASVLite::Asv::step_simulation(const Geometry::Coordinates3D& thrust_positio
     set_mass();
     set_wave_force();
     set_thrust(thrust_position, thrust_magnitude);
-    set_damping_force();
+    set_drag_force();
     set_restoring_force();
     set_net_force();
     set_acceleration();
@@ -361,11 +475,11 @@ void ASVLite::Asv::set_sea_state(const SeaSurface* sea_surface) {
     }
 
     // Calculate the current submersion depth before changing the sea surface
-    const double submersion_depth = sea_surface->get_elevation(dynamics.position, dynamics.time) - dynamics.position.keys.z;
+    const double vertical_position_error = sea_surface->get_elevation(dynamics.position, dynamics.time) - dynamics.position.keys.z;
     // set the sea_surface for the ASV
     this->sea_surface = sea_surface;
     // Place the asv vertically in the correct position W.R.T new sea_surface
-    dynamics.position.keys.z = sea_surface->get_elevation(dynamics.position, dynamics.time) + submersion_depth;
+    dynamics.position.keys.z = sea_surface->get_elevation(dynamics.position, dynamics.time) + vertical_position_error;
 }
 
 

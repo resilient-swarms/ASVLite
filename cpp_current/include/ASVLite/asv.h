@@ -37,7 +37,7 @@ namespace ASVLite {
         Eigen::Matrix<double, 6, 1> F           = Eigen::Matrix<double, 6, 1>::Zero(); // Net force. 
         Eigen::Matrix<double, 6, 1> F_wave      = Eigen::Matrix<double, 6, 1>::Zero(); // Wave force. 
         Eigen::Matrix<double, 6, 1> F_thrust    = Eigen::Matrix<double, 6, 1>::Zero(); // Thruster force. 
-        Eigen::Matrix<double, 6, 1> F_damping   = Eigen::Matrix<double, 6, 1>::Zero(); // Quadratic force force. 
+        Eigen::Matrix<double, 6, 1> F_drag      = Eigen::Matrix<double, 6, 1>::Zero(); // Quadratic force.
         Eigen::Matrix<double, 6, 1> F_restoring = Eigen::Matrix<double, 6, 1>::Zero(); // Hydrostatic restoring force.  
     };
 
@@ -110,11 +110,11 @@ namespace ASVLite {
                 return force;
             }
 
-            // Get damping force magnitude, N, for current time as a vector.
-            Geometry::RigidBodyDOF get_damping_force() const {
+            // Get drag force magnitude, N, for current time as a vector.
+            Geometry::RigidBodyDOF get_drag_force() const {
                 Geometry::RigidBodyDOF force;
                 for(size_t i = 0; i < Geometry::COUNT_DOF; ++i){
-                    force.array[i] = dynamics.F_damping(i);
+                    force.array[i] = dynamics.F_drag(i);
                 }
                 return force;
             }
@@ -146,6 +146,15 @@ namespace ASVLite {
                 return force;
             }
 
+            // Get acceleration, in m/s2.
+            Geometry::RigidBodyDOF get_acceleration() const {
+                Geometry::RigidBodyDOF acceleration;
+                for(size_t i = 0; i < Geometry::COUNT_DOF; ++i){
+                    acceleration.array[i] = dynamics.A(i);
+                }
+                return acceleration;
+            }
+
             // Get currnt vehicle velocity. 
             Geometry::RigidBodyDOF get_velocity() const {
                 Geometry::RigidBodyDOF velocity;
@@ -155,18 +164,31 @@ namespace ASVLite {
                 return velocity;
             }
 
+            // Get mass. 
+            Geometry::RigidBodyDOF get_mass() const {
+                Geometry::RigidBodyDOF mass;
+                for(size_t i = 0; i < Geometry::COUNT_DOF; ++i){
+                    mass.array[i] = dynamics.M(i,i);
+                }
+                return mass;
+            }
+
             // Get vechicle specification.
             AsvSpecification get_spec() const {
                 return spec;
             }
 
         private:
+            double get_submerged_volume(const double submersion_depth) const; // submerged depth should be -ve.
+            double get_added_mass_coeff() const;
+            double get_drag_coefficient_parallel_flow(const double l, const double d) const; // l --> dimension along the flow, d --> dimension perpendicular to the flow.
+            double get_drag_coefficient_prependicular_flow(const double b, const double h) const; // b --> longer edge, h --> short edge.
             void set_mass();
-            void set_damping_coefficient();
+            void set_drag_coefficient();
             void set_stiffness();
             void set_wave_force();
             void set_thrust(const Geometry::Coordinates3D& thrust_position, const Geometry::Coordinates3D& thrust_magnitude);
-            void set_damping_force();
+            void set_drag_force();
             void set_restoring_force();
             void set_net_force();
             void set_acceleration();
