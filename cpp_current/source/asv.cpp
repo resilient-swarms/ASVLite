@@ -230,6 +230,12 @@ void ASVLite::Asv::set_damping_force() {
 
     // Set the drag force matrix
     dynamics.F_damping = -dynamics.C * velocity_square;
+
+    // Correct the damping force for heave. The velocity used should be the relative velocity between the ASV and the sea surface.
+    const double sea_surface_elevation_0 = sea_surface->get_elevation(dynamics.position, dynamics.time - dynamics.time_step_size/1000.0);
+    const double sea_surface_elevation_1 = sea_surface->get_elevation(dynamics.position, dynamics.time);
+    const double sea_surface_velocity =  (sea_surface_elevation_1 - sea_surface_elevation_0) / (dynamics.time_step_size/1000.0);
+    dynamics.F_damping(2) = -dynamics.C(2,2) * (dynamics.V(2) - sea_surface_velocity) * std::abs(dynamics.V(2) - sea_surface_velocity);
 }
 
 
