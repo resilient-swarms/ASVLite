@@ -46,7 +46,6 @@ int main() {
     while(asv.get_time() < simulation_duration) {
         ++i;
         auto [thrust_position, thrust_magnitude] = get_wave_glider_thrust(asv, 0.0, sea_surface.significant_wave_height);
-        thrust_magnitude = {0.0, 0.0, 0.0};
         asv.step_simulation(thrust_position, thrust_magnitude);
         
         file<< asv.get_position().keys.x << "," 

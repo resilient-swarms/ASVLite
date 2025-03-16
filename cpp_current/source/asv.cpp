@@ -317,7 +317,7 @@ void ASVLite::Asv::set_wave_force() {
             dynamics.F_wave(2) += wave_pressure_centre * A_waterplane * scale; // heave
             dynamics.F_wave(3) += (wave_pressure_starboard - wave_pressure_portside) * A_waterplane * lever_trans * scale; // roll
             dynamics.F_wave(4) += (wave_pressure_forward - wave_pressure_aft) * A_waterplane * lever_long * scale; // pitch
-            dynamics.F_wave(5) += (wave_pressure_forward - wave_pressure_aft) * A_profile * lever_long * scale; // yaw
+            // dynamics.F_wave(5) += (wave_pressure_forward - wave_pressure_aft) * A_profile * lever_long * scale; // yaw
         }
     } 
 
