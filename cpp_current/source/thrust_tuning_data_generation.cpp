@@ -19,7 +19,7 @@ int main() {
         return 1;
     }
     // Open the results file to write data
-    std::filesystem::path result_file_path = results_dir/("simulation_data.csv");
+    std::filesystem::path result_file_path = results_dir/("thrust_tuning_data_output.csv");
     std::ofstream result_file(result_file_path); 
 
     if (!result_file.is_open()) {
@@ -30,7 +30,7 @@ int main() {
     }
     
     // Open the onboard data file.
-    std::filesystem::path data_file_path = data_dir/("tuning_data.csv");
+    std::filesystem::path data_file_path = data_dir/("thrust_tuning_data_input.csv");
     std::ifstream data_file(data_file_path);
     
     if (!data_file.is_open()) {
@@ -40,6 +40,8 @@ int main() {
 
     std::string line;
     bool has_read_header = false;
+    double tuning_factor = 0.1;
+    double cumulative_tuning_factor = 0.0;
     // Process each line in the file
     int line_count = 0;
     while (std::getline(data_file, line)) {
@@ -80,7 +82,6 @@ int main() {
                 .T = 0.15,   // m
             };
 
-            double tuning_factor = 0.5;
             bool found_optimal_tuning = false;
             while(!found_optimal_tuning){
                 // Init ASV
@@ -92,7 +93,7 @@ int main() {
                 int i = 0;
                 while(asv.get_time() < sim_duration) {
                     ++i;
-                    auto [thrust_position, thrust_magnitude] = get_wave_glider_thrust(asv, 0.0);
+                    auto [thrust_position, thrust_magnitude] = get_wave_glider_thrust(asv, 0.0, wave_ht);
                     thrust_magnitude.keys.x = tuning_factor * thrust_magnitude.keys.x;
                     asv.step_simulation(thrust_position, thrust_magnitude);
                 }
@@ -107,6 +108,10 @@ int main() {
                     found_optimal_tuning = true;
                     std::cout << line_count << " Optimal tuning for x1 = " << x1 << " y1 = " << y1 << " tuning factor = " << tuning_factor << "\n\n";
                     result_file << y1 << "," << x1 << "," << wave_ht << "," << tuning_factor << "\n";
+                    // Update tuning factor used to start the next line of simulation 
+                    // based on the average tuning factor of all the lines processed so far.
+                    cumulative_tuning_factor += tuning_factor;
+                    tuning_factor = cumulative_tuning_factor / line_count;
                 } else {
                     tuning_factor = tuning_factor / speed_ratio;
                 }

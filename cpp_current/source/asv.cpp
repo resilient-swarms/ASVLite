@@ -515,21 +515,21 @@ std::pair<ASVLite::Geometry::Coordinates3D, ASVLite::Geometry::Coordinates3D> AS
     const double C_L_1 = (1.8 * M_PI * lambda * alpha_k) / (cos(chi) * sqrt(lambda*lambda/pow(cos(chi), 4) + 4) + 1.8) + (C_DC/ lambda * alpha_k*alpha_k);
     const double C_D = C_DO + C_L_1*C_L_1 / (0.9 * M_PI * lambda);
     const double V_heave = wave_glider.get_velocity().keys.heave;
-    const double F_L = 0.5 * Constants::SEA_WATER_DENSITY * C_L_1 * A * V_heave * V_heave;
-    const double F_D = 0.5 * Constants::SEA_WATER_DENSITY * C_D * A * V_heave * V_heave;
+    const double F_L = 0.5 * Constants::SEA_WATER_DENSITY * C_L_1 * A * V_heave*V_heave;
+    const double F_D = 0.5 * Constants::SEA_WATER_DENSITY * C_D * A * V_heave*V_heave;
     const double thrust_per_hydrofoil = F_L * sin(alpha_f_1) - F_D * cos(alpha_f_1);
     const double thrust = count_hydrofoils * thrust_per_hydrofoil;
     double thrust_tuning_factor = 0.0;
-    if(significant_wave_ht < 1.0) {
-        thrust_tuning_factor = 1.35;
-    } else if(significant_wave_ht >= 1.0 && significant_wave_ht < 1.5) {
-        thrust_tuning_factor = 0.9;
-    } else if (significant_wave_ht >= 1.5 && significant_wave_ht < 2.5) {
+    if(significant_wave_ht < 0.5) {
+        thrust_tuning_factor = 0.93;
+    } else if(significant_wave_ht >= 0.5 && significant_wave_ht < 1.0) {
         thrust_tuning_factor = 0.55;
-    } else if (significant_wave_ht >= 2.5 && significant_wave_ht < 3.5) {
-        thrust_tuning_factor = 0.39;
+    } else if (significant_wave_ht >= 1.0 && significant_wave_ht < 1.5) {
+        thrust_tuning_factor = 0.54;
+    } else if (significant_wave_ht >= 1.5 && significant_wave_ht < 2.0) {
+        thrust_tuning_factor = 0.2;
     } else {
-        thrust_tuning_factor = 0.26;
+        thrust_tuning_factor = 0.08;
     }
     return_value.second.keys.x = thrust_tuning_factor * thrust;
 
