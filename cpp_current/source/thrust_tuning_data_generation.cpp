@@ -9,7 +9,7 @@ using namespace ASVLite;
 
 int main() {
     std::filesystem::path root_dir = std::filesystem::current_path().parent_path();
-    std::filesystem::path data_dir = root_dir/"data";
+    std::filesystem::path data_dir = root_dir/"data"/"wave_glider_thrust_tuning";
     std::filesystem::path results_dir = root_dir/"results_thrust";
     if (!std::filesystem::exists(results_dir)) {
         std::filesystem::create_directory(results_dir);
@@ -19,7 +19,7 @@ int main() {
         return 1;
     }
     // Open the results file to write data
-    std::filesystem::path result_file_path = results_dir/("thrust_tuning_data_output.csv");
+    std::filesystem::path result_file_path = results_dir/("thrust_tuning_factors.csv");
     std::ofstream result_file(result_file_path); 
 
     if (!result_file.is_open()) {
@@ -30,7 +30,7 @@ int main() {
     }
     
     // Open the onboard data file.
-    std::filesystem::path data_file_path = data_dir/("thrust_tuning_data_input.csv");
+    std::filesystem::path data_file_path = data_dir/("wave_glider_onboard_data_filtered.csv");
     std::ifstream data_file(data_file_path);
     
     if (!data_file.is_open()) {
@@ -62,11 +62,9 @@ int main() {
             continue;
         } else {
             // Convert text to numbers
-            const double y1 = std::stod(row[2]); // m
-            const double x1 = std::stod(row[3]); // m
-            const double wave_ht = std::stod(row[6]); // m
-            const double sim_duration = std::stod(row[7]); // sec
-            const double target_speed = std::stod(row[9]); // m/s
+            const double wave_ht = std::stod(row[3]); // m
+            const double sim_duration = std::stod(row[13]); // sec
+            const double target_speed = std::stod(row[15]); // m/s
 
             // Initialise the sea surface
             const double wave_dp = M_PI/3.0; // rad
@@ -85,6 +83,8 @@ int main() {
             bool found_optimal_tuning = false;
             while(!found_optimal_tuning){
                 // Init ASV
+                const double x1 = 500.0; // m
+                const double y1 = 500.0; // m
                 const Geometry::Coordinates3D position {x1, y1, 0.0};
                 const Geometry::Coordinates3D attitude {0, 0, 0};
                 Asv asv {asv_spec, &sea_surface, position, attitude};
@@ -106,7 +106,7 @@ int main() {
                 const double speed_ratio = sim_speed / target_speed;
                 if(speed_ratio >= 0.95 && speed_ratio <= 1.05) {
                     found_optimal_tuning = true;
-                    std::cout << line_count << " Optimal tuning for x1 = " << x1 << " y1 = " << y1 << " tuning factor = " << tuning_factor << "\n\n";
+                    std::cout << "Data row " << line_count << ", tuning factor = " << tuning_factor << "\n\n";
                     result_file << y1 << "," << x1 << "," << wave_ht << "," << tuning_factor << "\n";
                     // Update tuning factor used to start the next line of simulation 
                     // based on the average tuning factor of all the lines processed so far.
