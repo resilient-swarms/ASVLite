@@ -81,6 +81,8 @@ namespace ASVLite {
 
             // Get current attitude of the vehicle. 
             Geometry::Coordinates3D get_attitude() const {
+                Geometry::Coordinates3D attitude = dynamics.attitude;
+                attitude.keys.z = M_PI/2.0 - attitude.keys.z; // Convert yaw from w.r.t East to w.r.t North.
                 return dynamics.attitude;
             }
 

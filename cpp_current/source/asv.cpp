@@ -312,8 +312,8 @@ void ASVLite::Asv::set_wave_force() {
             const double lever_long  = a / 8;
             // Set the wave pressue force matrix
             const double scale = 1.0/(sea_surface->component_waves.size());
-            dynamics.F_wave(0) += (wave_pressure_forward - wave_pressure_aft) * A_trans * scale; // surge
-            dynamics.F_wave(1) += (wave_pressure_starboard - wave_pressure_portside) * A_profile * scale; // sway
+            // dynamics.F_wave(0) += (wave_pressure_forward - wave_pressure_aft) * A_trans * scale; // surge
+            // dynamics.F_wave(1) += (wave_pressure_starboard - wave_pressure_portside) * A_profile * scale; // sway
             dynamics.F_wave(2) += wave_pressure_centre * A_waterplane * scale; // heave
             dynamics.F_wave(3) += (wave_pressure_starboard - wave_pressure_portside) * A_waterplane * lever_trans * scale; // roll
             dynamics.F_wave(4) += (wave_pressure_forward - wave_pressure_aft) * A_waterplane * lever_long * scale; // pitch
@@ -446,7 +446,8 @@ ASVLite::Asv::Asv(const AsvSpecification& spec, const SeaSurface* sea_surface, c
     dynamics.position.keys.z = sea_surface->get_elevation(position, dynamics.time);
     dynamics.attitude.keys.x = Geometry::normalise_angle_PI(attitude.keys.x);
     dynamics.attitude.keys.y = Geometry::normalise_angle_PI(attitude.keys.y);
-    dynamics.attitude.keys.z = Geometry::normalise_angle_PI(attitude.keys.z);
+    // Note: yaw is provided as w.r.t North. Chage it to w.r.t East (x-axis) so as to match the intrinsic Z-Y-X rotation sequence.
+    dynamics.attitude.keys.z = Geometry::normalise_angle_PI(M_PI/2.0 - attitude.keys.z);
 }
 
 
