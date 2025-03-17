@@ -165,10 +165,11 @@ void ASVLite::Asv::set_drag_coefficient() {
     // operations. Edition July 2017. Appendix B Table B-1, B-2.
   
     // Surge drag coefficient - assuming elliptical waterplane area
+    const double c = -std::clamp(dynamics.submersion_depth, -spec.D, 0.0);
     const double C_DS_surge = get_drag_coefficient_parallel_flow(spec.L_wl, spec.B_wl);
     const double C_DS_sway  = get_drag_coefficient_parallel_flow(spec.B_wl, spec.L_wl);
-    const double C_surge = 0.5 * Constants::SEA_WATER_DENSITY * C_DS_surge * spec.B_wl * (-dynamics.submersion_depth);
-    const double C_sway  = 0.5 * Constants::SEA_WATER_DENSITY * C_DS_sway  * spec.L_wl * (-dynamics.submersion_depth);
+    const double C_surge = 0.5 * Constants::SEA_WATER_DENSITY * C_DS_surge * spec.B_wl * c;
+    const double C_sway  = 0.5 * Constants::SEA_WATER_DENSITY * C_DS_sway  * spec.L_wl * c;
 
     // Heave drag coefficient - consider it as flat plat perpendicular to flow.
     const double C_DS_heave = get_drag_coefficient_prependicular_flow(spec.L_wl, spec.B_wl);
@@ -202,7 +203,7 @@ void ASVLite::Asv::set_drag_force() {
 
     // For heave the drag should be relative to the water surface velocity
     if(dynamics.submersion_depth >= 0.0) {
-        dynamics.F_drag = Eigen::Matrix<double, 6, 1>::Ones();
+        dynamics.F_drag = Eigen::Matrix<double, 6, 1>::Zero();
     } else {
         const double sea_surface_elevation_0 = sea_surface->get_elevation(dynamics.position, dynamics.time - dynamics.time_step_size/1000.0);
         const double sea_surface_elevation_1 = sea_surface->get_elevation(dynamics.position, dynamics.time);
@@ -312,8 +313,8 @@ void ASVLite::Asv::set_wave_force() {
             const double lever_long  = a / 8;
             // Set the wave pressue force matrix
             const double scale = 1.0/(sea_surface->component_waves.size());
-            // dynamics.F_wave(0) += (wave_pressure_forward - wave_pressure_aft) * A_trans * scale; // surge
-            // dynamics.F_wave(1) += (wave_pressure_starboard - wave_pressure_portside) * A_profile * scale; // sway
+            dynamics.F_wave(0) += (wave_pressure_forward - wave_pressure_aft) * A_trans * scale; // surge
+            dynamics.F_wave(1) += (wave_pressure_starboard - wave_pressure_portside) * A_profile * scale; // sway
             dynamics.F_wave(2) += wave_pressure_centre * A_waterplane * scale; // heave
             dynamics.F_wave(3) += (wave_pressure_starboard - wave_pressure_portside) * A_waterplane * lever_trans * scale; // roll
             dynamics.F_wave(4) += (wave_pressure_forward - wave_pressure_aft) * A_waterplane * lever_long * scale; // pitch
