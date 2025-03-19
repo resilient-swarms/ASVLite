@@ -47,7 +47,7 @@ std::vector<ASVLite::RegularWave> ASVLite::SeaSurface::calculate_wave_spectrum()
     // Create a thread-local random engine
     thread_local std::mt19937 rng(random_number_seed); 
     // Define a uniform distribution
-    std::uniform_int_distribution<int> dist(0.0, M_PI);
+    std::uniform_real_distribution<double> dist(0.0, M_PI);
 
     // Lambda to construct the wave
     auto construct_regular_wave = [&](const double freq, const double freq_band_size, const double wave_heading) {
