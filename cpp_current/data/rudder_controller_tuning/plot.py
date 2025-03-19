@@ -4,7 +4,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
 # Load CSV file
-search_type = "gradient_descent"
+search_type = "exhaustive_search"
 data = pd.read_csv(search_type + ".csv")
 # data = pd.read_csv("exhaustive_search.csv")
 
@@ -41,10 +41,8 @@ cbar.set_label("Error")
 
 # Show legend
 ax.legend()
-
-# Show plot
-plt.show()
 plt.savefig(search_type + ".png")
+plt.show()
 
 # Print the optimal values
 print(f"Minimum Error: {min_error:.4f} at P={min_P}, I={min_I}, D={min_D}")
@@ -64,5 +62,5 @@ plt.xlabel("X Position")
 plt.ylabel("Y Position")
 plt.title("Vehicle Path")
 plt.grid(True)
-plt.show()
 plt.savefig("waypoint_navigation.png")
+plt.show()
