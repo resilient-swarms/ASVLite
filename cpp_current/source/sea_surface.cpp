@@ -2,6 +2,7 @@
 #include "ASVLite/sea_surface.h"
 #include <cmath>
 #include <stdexcept>
+#include <thread>
 
 ASVLite::SeaSurface::SeaSurface(const double significant_wave_height, const double predominant_wave_heading, const int random_number_seed, const int num_component_waves) : 
 significant_wave_height {significant_wave_height},
@@ -43,8 +44,10 @@ std::vector<ASVLite::RegularWave> ASVLite::SeaSurface::calculate_wave_spectrum()
     const double wave_heading_increment = M_PI/num_component_waves;
 
     // Init random number generator
-    static std::mt19937 gen(random_number_seed); // Mersenne Twister PRNG
-    static std::uniform_real_distribution<double> rand_from_uniform_dist(0.0, 2.0 * M_PI); // Random number generator that generates a random number in [0, 2PI]
+    // Create a thread-local random engine
+    thread_local std::mt19937 rng(random_number_seed); 
+    // Define a uniform distribution
+    std::uniform_int_distribution<int> dist(0.0, M_PI);
 
     // Lambda to construct the wave
     auto construct_regular_wave = [&](const double freq, const double freq_band_size, const double wave_heading) {
@@ -63,7 +66,7 @@ std::vector<ASVLite::RegularWave> ASVLite::SeaSurface::calculate_wave_spectrum()
         const double B = 4.0 * alpha * Constants::G*Constants::G / (pow(2.0*M_PI, 4.0) * significant_wave_height*significant_wave_height);
         const double S = (A / pow(freq, 5.0)) * exp(-B / pow(freq, 4.0)) * freq_band_size;
         const double amplitude = sqrt(2.0 * S); 
-        const double phase = rand_from_uniform_dist(gen);  // Generate a random number
+        const double phase = dist(rng);  // Generate a random number
         spectrum.emplace_back(RegularWave(amplitude, freq, phase, wave_heading));
     };
 
