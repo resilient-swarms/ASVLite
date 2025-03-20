@@ -265,7 +265,34 @@ void ASVLite::Asv::set_wave_force() {
     if(dynamics.submersion_depth >= 0.0) {
         dynamics.F_wave = Eigen::Matrix<double, 6, 1>::Zero();
     } else {
-        // For each wave in the wave spectrum
+        // Compute the coordinates of fore, aft, port side, starboard side and centre position of the vehicle for calculating wave pressure.
+        // Step 1: Create rotation matrix (intrinsic Z-Y-X: yaw -> pitch -> roll)
+        const Eigen::Matrix3d R (Eigen::AngleAxisd(dynamics.attitude.keys.z, Eigen::Vector3d::UnitZ())*  // yaw  
+                                Eigen::AngleAxisd(dynamics.attitude.keys.y, Eigen::Vector3d::UnitY())*  // pitch 
+                                Eigen::AngleAxisd(dynamics.attitude.keys.x, Eigen::Vector3d::UnitX())); // roll 
+        // Step 2: Define the direction vectors in the body frame
+        const Eigen::Vector3d forward_direction_local_frame(1.0, 0.0, 0.0);
+        const Eigen::Vector3d aft_direction_local_frame(-1.0, 0.0, 0.0);
+        const Eigen::Vector3d starboard_direction_local_frame(0.0, 1.0, 0.0);
+        const Eigen::Vector3d portside_direction_local_frame(1.0, -1.0, 0.0);
+        // Step 3: Rotate direction vectors into world frame
+        const Eigen::Vector3d forward_direction_world_frame   = R * forward_direction_local_frame;
+        const Eigen::Vector3d aft_direction_world_frame       = R * aft_direction_local_frame;
+        const Eigen::Vector3d starboard_direction_world_frame = R * starboard_direction_local_frame;
+        const Eigen::Vector3d portside_direction_world_frame  = R * portside_direction_local_frame;
+        // Step 4: Compute coordinates of the positions in world frame
+        const Eigen::Vector3d position_centre(dynamics.position.keys.x, dynamics.position.keys.y, dynamics.position.keys.z);
+        const Eigen::Vector3d position_forward   = position_centre + (a/2 * forward_direction_world_frame);
+        const Eigen::Vector3d position_aft       = position_centre + (a/2 * aft_direction_world_frame);
+        const Eigen::Vector3d position_starboard = position_centre + (b/2 * starboard_direction_world_frame);
+        const Eigen::Vector3d position_portside  = position_centre + (b/2 * portside_direction_world_frame);
+        // Construct Coordinate3D objects for these positions
+        const Geometry::Coordinates3D pos_centre{position_centre(0), position_centre(1), position_centre(2)};
+        const Geometry::Coordinates3D pos_forward{position_forward(0), position_forward(1), position_forward(2)};
+        const Geometry::Coordinates3D pos_aft{position_aft(0), position_aft(1), position_aft(2)};
+        const Geometry::Coordinates3D pos_starboard{position_starboard(0), position_starboard(1), position_starboard(2)};
+        const Geometry::Coordinates3D pos_porside{position_portside(0), position_portside(1), position_portside(2)};
+        // For each wave in the wave spectrum, compute the wave pressure force
         for(const RegularWave& wave : sea_surface->component_waves) {
             // Compute relative wave heading
             const double wave_heading_global   = Geometry::normalise_angle_PI(wave.heading);
@@ -273,33 +300,6 @@ void ASVLite::Asv::set_wave_force() {
             // Get encounter frequency
             const double surge_velocity = dynamics.V(0,0);
             const double encounter_freq = get_encounter_frequency(wave.frequency, surge_velocity, wave_heading_relative);
-            // Compute the coordinates of fore, aft, port side, starboard side and centre position of the vehicle for calculating wave pressure.
-            // Step 1: Create rotation matrix (intrinsic Z-Y-X: yaw -> pitch -> roll)
-            const Eigen::Matrix3d R (Eigen::AngleAxisd(dynamics.attitude.keys.z, Eigen::Vector3d::UnitZ())*  // yaw  
-                                    Eigen::AngleAxisd(dynamics.attitude.keys.y, Eigen::Vector3d::UnitY())*  // pitch 
-                                    Eigen::AngleAxisd(dynamics.attitude.keys.x, Eigen::Vector3d::UnitX())); // roll 
-            // Step 2: Define the direction vectors in the body frame
-            const Eigen::Vector3d forward_direction_local_frame(1.0, 0.0, 0.0);
-            const Eigen::Vector3d aft_direction_local_frame(-1.0, 0.0, 0.0);
-            const Eigen::Vector3d starboard_direction_local_frame(0.0, 1.0, 0.0);
-            const Eigen::Vector3d portside_direction_local_frame(1.0, -1.0, 0.0);
-            // Step 3: Rotate direction vectors into world frame
-            const Eigen::Vector3d forward_direction_world_frame   = R * forward_direction_local_frame;
-            const Eigen::Vector3d aft_direction_world_frame       = R * aft_direction_local_frame;
-            const Eigen::Vector3d starboard_direction_world_frame = R * starboard_direction_local_frame;
-            const Eigen::Vector3d portside_direction_world_frame  = R * portside_direction_local_frame;
-            // Step 4: Compute coordinates of the positions in world frame
-            const Eigen::Vector3d position_centre(dynamics.position.keys.x, dynamics.position.keys.y, dynamics.position.keys.z);
-            const Eigen::Vector3d position_forward   = position_centre + (a/2 * forward_direction_world_frame);
-            const Eigen::Vector3d position_aft       = position_centre + (a/2 * aft_direction_world_frame);
-            const Eigen::Vector3d position_starboard = position_centre + (b/2 * starboard_direction_world_frame);
-            const Eigen::Vector3d position_portside  = position_centre + (b/2 * portside_direction_world_frame);
-            // Construct Coordinate3D objects for these positions
-            const Geometry::Coordinates3D pos_centre{position_centre(0), position_centre(1), position_centre(2)};
-            const Geometry::Coordinates3D pos_forward{position_forward(0), position_forward(1), position_forward(2)};
-            const Geometry::Coordinates3D pos_aft{position_aft(0), position_aft(1), position_aft(2)};
-            const Geometry::Coordinates3D pos_starboard{position_starboard(0), position_starboard(1), position_starboard(2)};
-            const Geometry::Coordinates3D pos_porside{position_portside(0), position_portside(1), position_portside(2)};
             // Construct the encountered wave
             const RegularWave encountered_wave(wave.amplitude, encounter_freq, wave.phase_lag, wave.heading);
             // Get the wave pressure amplitude for the encountered wave
