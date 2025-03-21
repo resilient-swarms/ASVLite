@@ -13,8 +13,8 @@ SET(SOURCE
         source/asv.cpp
         source/rudder_controller.cpp
         # source/main_thrust_tuning.cpp
-        # source/main.cpp
-        source/main_rudder_controller_tuning.cpp
+        source/main.cpp
+        # source/main_rudder_controller_tuning.cpp
 )
 
 ADD_EXECUTABLE(ASVLite ${SOURCE})
