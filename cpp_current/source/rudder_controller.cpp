@@ -14,15 +14,15 @@ asv_spec {asv_spec}, K {initial_K} {
 }
 
 
-double ASVLite::RudderController::get_relative_heading(const ASVLite::Asv& asv, const ASVLite::Geometry::Coordinates3D& waypoint) const {
-    const Geometry::Coordinates3D& p1 = asv.get_position();
-    const Geometry::Coordinates3D& attitude = asv.get_attitude();
+double ASVLite::RudderController::get_relative_heading( const Geometry::Coordinates3D& asv_position, 
+                                                        const Geometry::Coordinates3D& asv_attitude, 
+                                                        const Geometry::Coordinates3D& waypoint) const {
     // Instantiate a Rotation2D object
-    Eigen::Rotation2D<double> rot(attitude.keys.z);
+    Eigen::Rotation2D<double> rot(asv_attitude.keys.z);
     // Define the direction vector for heading
     const Eigen::Vector2d v1 = rot * Eigen::Vector2d(1.0, 0.0);
 
-    const Eigen::Vector2d v_asv_position(p1.keys.x, p1.keys.y);
+    const Eigen::Vector2d v_asv_position(asv_position.keys.x, asv_position.keys.y);
     const Eigen::Vector2d v_waypoint(waypoint.keys.x, waypoint.keys.y);
 
     // Compute direction vector
@@ -37,9 +37,11 @@ double ASVLite::RudderController::get_relative_heading(const ASVLite::Asv& asv, 
 }
 
 
-double ASVLite::RudderController::get_rudder_angle(const Asv& asv, const ASVLite::Geometry::Coordinates3D& waypoint) {
+double ASVLite::RudderController::get_rudder_angle( const Geometry::Coordinates3D& asv_position, 
+                                                    const Geometry::Coordinates3D& asv_attitude, 
+                                                    const Geometry::Coordinates3D& waypoint) {
     // Compute the relative angle between the vehicle heading and the waypoint.
-    const double theta = get_relative_heading(asv, waypoint);
+    const double theta = get_relative_heading(asv_position, asv_attitude, waypoint);
     // Set error as the difference of the current heading and the desired heading.
     previous_error = error;
     error = theta;
@@ -56,14 +58,14 @@ double ASVLite::RudderController::get_rudder_angle(const Asv& asv, const ASVLite
 
 double ASVLite::RudderController::simulate_wave_glider(const double significant_wave_ht, const double asv_heading, const double P, const double I, const double D) const {
     // Init waves
+    const size_t num_component_waves = 15;
     const int rng_seed = 1;
-    const int num_component_waves = 15;
     const double predominant_wave_heading = 0.0;
-    const SeaSurface sea_surface {significant_wave_ht, predominant_wave_heading, rng_seed, num_component_waves};
+    const SeaSurface<num_component_waves> sea_surface {significant_wave_ht, predominant_wave_heading, rng_seed};
     // Init ASV
     const Geometry::Coordinates3D start_position {100.0, 100.0, 0.0};
     const Geometry::Coordinates3D attitude {0.0, 0.0, asv_heading};
-    Asv asv {asv_spec, &sea_surface, start_position, attitude};
+    Asv<num_component_waves> asv {asv_spec, &sea_surface, start_position, attitude};
     // Init rudder controller
     RudderController rudder_controller {asv_spec, {P, I, D}};
     // Simulate
@@ -71,11 +73,11 @@ double ASVLite::RudderController::simulate_wave_glider(const double significant_
     const double sim_duration = 2.0 * 60.0; // Sec
     double heading_error = 0.0;
     while(asv.get_time() < sim_duration) {
-        const double rudder_angle = rudder_controller.get_rudder_angle(asv, waypoint);
+        const double rudder_angle = rudder_controller.get_rudder_angle(asv.get_position(), asv.get_attitude(), waypoint);
         const std::pair<Geometry::Coordinates3D, Geometry::Coordinates3D> thrust_position_magnitude = get_wave_glider_thrust(asv, rudder_angle, significant_wave_ht);
         asv.step_simulation(thrust_position_magnitude.first, thrust_position_magnitude.second);
         // Compute error in heading
-        const double error = rudder_controller.get_relative_heading(asv, waypoint);
+        const double error = rudder_controller.get_relative_heading(asv.get_position(), asv.get_attitude(), waypoint);
         heading_error += (error*error);
     }
     const int num_sim_steps = sim_duration / asv.get_time_step_size() * 1000;
@@ -84,7 +86,7 @@ double ASVLite::RudderController::simulate_wave_glider(const double significant_
 }
 
 
-void ASVLite::RudderController::tune_controller_gradient_descent(const double lower_bound, const double upper_bound, const double step_size) {
+void ASVLite::RudderController::tune_controller_local_search(const double lower_bound, const double upper_bound, const double step_size) {
     std::filesystem::path root_dir = std::filesystem::current_path().parent_path();
     std::filesystem::path results_dir = root_dir/"data"/"rudder_controller_tuning";
     if (!std::filesystem::exists(results_dir)) {
@@ -92,7 +94,7 @@ void ASVLite::RudderController::tune_controller_gradient_descent(const double lo
     }
     
     // Open the results file to write data
-    std::filesystem::path result_file_path = results_dir/("gradient_descent.csv");
+    std::filesystem::path result_file_path = results_dir/("local_search.csv");
     std::ofstream result_file(result_file_path); 
 
     if (!result_file.is_open()) {

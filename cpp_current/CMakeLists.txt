@@ -7,13 +7,10 @@ include_directories(
 )
 
 SET(SOURCE
-        source/geometry.cpp
-        source/regular_wave.cpp
-        source/sea_surface.cpp
-        source/asv.cpp
+        # source/geometry.cpp
         source/rudder_controller.cpp
         # source/main_thrust_tuning.cpp
-        source/main.cpp
+        source/main_runtime_performance.cpp
         # source/main_rudder_controller_tuning.cpp
 )
 

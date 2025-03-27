@@ -2,8 +2,13 @@
 
 namespace ASVLite {
     namespace Constants {
-        constexpr double G = 9.81; // m/s2
-        constexpr double SEA_WATER_DENSITY = 1025.0; // Kg/m3
-        constexpr double AIR_DENSITY = 1.2; // Kg/m3
+
+        /** @brief Gravitational acceleration (m/s²). */
+        constexpr double G = 9.81;
+
+        /** @brief Density of seawater (kg/m³). */
+        constexpr double SEA_WATER_DENSITY = 1025.0;
+
     }
+    
 }

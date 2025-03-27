@@ -4,9 +4,9 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
 # Load CSV file
-search_type = "exhaustive_search"
+search_type = "local_search"
+# search_type = "exhaustive_search"
 data = pd.read_csv(search_type + ".csv")
-# data = pd.read_csv("exhaustive_search.csv")
 
 # Extract columns
 P = data['P']

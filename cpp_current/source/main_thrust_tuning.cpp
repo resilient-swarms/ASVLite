@@ -14,10 +14,6 @@ int main() {
     if (!std::filesystem::exists(results_dir)) {
         std::filesystem::create_directory(results_dir);
     }
-    else {
-        std::cout << results_dir << " already exists." << std::endl;
-        return 1;
-    }
     // Open the results file to write data
     std::filesystem::path result_file_path = results_dir/("thrust_tuning_factors.csv");
     std::ofstream result_file(result_file_path); 
@@ -67,10 +63,10 @@ int main() {
             const double target_speed = std::stod(row[15]); // m/s
 
             // Initialise the sea surface
+            const size_t count_component_waves = 15;
             const double wave_dp = M_PI/3.0; // rad
-            const int count_component_waves = 15;
             const int wave_rand_seed = 1;
-            const SeaSurface sea_surface {wave_ht, wave_dp, wave_rand_seed, count_component_waves};
+            const SeaSurface<count_component_waves> sea_surface {wave_ht, wave_dp, wave_rand_seed};
 
             // Set ASV spec
             AsvSpecification asv_spec {
@@ -81,6 +77,9 @@ int main() {
             };
 
             bool found_optimal_tuning = false;
+            bool is_first_iteration = true;
+            double previous_sim_speed;
+            double previous_tuning_factor;
             while(!found_optimal_tuning){
                 // Init ASV
                 const double x1 = 500.0; // m
@@ -90,9 +89,7 @@ int main() {
                 Asv asv {asv_spec, &sea_surface, position, attitude};
 
                 // Run simulation
-                int i = 0;
                 while(asv.get_time() < sim_duration) {
-                    ++i;
                     auto [thrust_position, thrust_magnitude] = get_wave_glider_thrust(asv, 0.0, wave_ht);
                     thrust_magnitude.keys.x = tuning_factor * thrust_magnitude.keys.x;
                     asv.step_simulation(thrust_position, thrust_magnitude);
@@ -103,8 +100,8 @@ int main() {
                 const double sim_speed = dist / sim_duration; // m/s
                 std::cout << "tuning factor = " << tuning_factor << " Target speed = " << target_speed << " Sim speed = " << sim_speed << "\n"; 
 
-                const double speed_ratio = sim_speed / target_speed;
-                if(speed_ratio >= 0.95 && speed_ratio <= 1.05) {
+                const double speed_error_ratio = abs(sim_speed - target_speed)/target_speed;
+                if(speed_error_ratio < 0.01) { // Speed error less than 1%
                     found_optimal_tuning = true;
                     std::cout << "Data row " << line_count << ", tuning factor = " << tuning_factor << "\n\n";
                     result_file << y1 << "," << x1 << "," << wave_ht << "," << tuning_factor << "\n";
@@ -113,7 +110,17 @@ int main() {
                     cumulative_tuning_factor += tuning_factor;
                     tuning_factor = cumulative_tuning_factor / line_count;
                 } else {
-                    tuning_factor = tuning_factor / speed_ratio;
+                    double new_tuning_factor;
+                    if(is_first_iteration){
+                        const double speed_ratio = sim_speed/target_speed;
+                        new_tuning_factor = tuning_factor / speed_ratio;
+                        is_first_iteration = false;
+                    } else {
+                        new_tuning_factor = tuning_factor + (target_speed - sim_speed)/(sim_speed - previous_sim_speed) * (tuning_factor - previous_tuning_factor); 
+                    }
+                    previous_tuning_factor = tuning_factor;
+                    previous_sim_speed = sim_speed;
+                    tuning_factor = new_tuning_factor;
                 }
 
             }

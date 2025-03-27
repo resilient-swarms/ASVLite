@@ -20,7 +20,7 @@ bars = plt.bar(grouped_df["wave_ht_group"], grouped_df["tuning_factor"], color='
 
 # Add text labels on top of each bar
 for bar, value in zip(bars, grouped_df["tuning_factor"]):
-    plt.text(bar.get_x() + bar.get_width() / 2, bar.get_height(), f'{value:.2f}', 
+    plt.text(bar.get_x() + bar.get_width() / 2, bar.get_height(), f'{value:.4f}', 
              ha='center', va='bottom', fontsize=10, fontweight='bold')
 
 plt.xlabel("Wave Height Range")

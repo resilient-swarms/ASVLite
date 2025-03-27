@@ -19,14 +19,15 @@ int main() {
     std::ofstream file(result_file_path); 
 
     std::vector<double> simulation_speeds;
+    const int num_simulations = 100;
 
-    for(size_t n = 0; n < 100; ++n) {
+    for(size_t n = 0; n < num_simulations; ++n) {
         // Initialise the sea surface
-        const double wave_ht = 3.50; // m
+        constexpr size_t count_component_waves = 15;
+        const double wave_ht = 7.50; // m
         const double wave_dp = M_PI/3.0; // rad
-        const int count_component_waves = 15;
         const int wave_rand_seed = 1;
-        const SeaSurface sea_surface {wave_ht, wave_dp, wave_rand_seed, count_component_waves};
+        const SeaSurface<count_component_waves> sea_surface {wave_ht, wave_dp, wave_rand_seed};
 
         // Set ASV spec
         AsvSpecification asv_spec {
