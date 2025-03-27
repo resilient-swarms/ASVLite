@@ -39,7 +39,10 @@ namespace ASVLite {
              * @param rhs The right-hand side Coordinates3D to compare.
              * @return true if all coordinate values match, false otherwise.
              */
-            bool operator==(const Coordinates3D& rhs);
+            bool operator==(const Coordinates3D& rhs) const {
+                return keys.x == rhs.keys.x && keys.y == rhs.keys.y && keys.z == rhs.keys.z;
+            }
+
         };
 
 
