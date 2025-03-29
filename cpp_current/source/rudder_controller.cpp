@@ -17,20 +17,15 @@ asv_spec {asv_spec}, K {initial_K} {
 double ASVLite::RudderController::get_relative_heading( const Geometry::Coordinates3D& asv_position, 
                                                         const Geometry::Coordinates3D& asv_attitude, 
                                                         const Geometry::Coordinates3D& waypoint) const {
-    // Instantiate a Rotation2D object
-    Eigen::Rotation2D<double> rot(asv_attitude.keys.z);
-    // Define the direction vector for heading
-    const Eigen::Vector2d v1 = rot * Eigen::Vector2d(1.0, 0.0);
-
+    
+    const double theta_1 = Geometry::normalise_angle_PI(asv_attitude.keys.z);
+    // Compute direction vector to the waypoint
     const Eigen::Vector2d v_asv_position(asv_position.keys.x, asv_position.keys.y);
     const Eigen::Vector2d v_waypoint(waypoint.keys.x, waypoint.keys.y);
-
-    // Compute direction vector
     const Eigen::Vector2d v2 = v_waypoint - v_asv_position;
-
-    // Angle between the two vectors
-    const double theta_1 = std::atan2(v1.y(), v1.x());
+    // Desired heading angle (w.r.t east)
     const double theta_2 = std::atan2(v2.y(), v2.x());
+    // Relative angle
     const double theta = theta_1 - theta_2;
 
     return theta;
@@ -42,6 +37,25 @@ double ASVLite::RudderController::get_rudder_angle( const Geometry::Coordinates3
                                                     const Geometry::Coordinates3D& waypoint) {
     // Compute the relative angle between the vehicle heading and the waypoint.
     const double theta = get_relative_heading(asv_position, asv_attitude, waypoint);
+    // Set error as the difference of the current heading and the desired heading.
+    previous_error = error;
+    error = theta;
+    constexpr double gamma = 0.7; // Rate at which the past errors reduces.
+    cumulative_error = error + (gamma * cumulative_error);
+    delta_error = error - previous_error;
+    // Compute the rudder angle
+    const Eigen::Vector3d E(error, cumulative_error, delta_error); // P, I, D errors.
+    double phi = std::clamp(K.dot(E), -max_rudder_angle, max_rudder_angle); // Limit the rudder angle within the range (-PI/6, PI/6)
+
+    return phi; // radians
+}
+
+
+double ASVLite::RudderController::get_rudder_angle( const double desired_heading, const Geometry::Coordinates3D& asv_attitude) {
+    // Compute the relative angle 
+    const double theta_1 = Geometry::normalise_angle_PI(asv_attitude.keys.z);
+    const double theta_2 = M_PI/2.0 - desired_heading;
+    const double theta = theta_1 - theta_2;
     // Set error as the difference of the current heading and the desired heading.
     previous_error = error;
     error = theta;

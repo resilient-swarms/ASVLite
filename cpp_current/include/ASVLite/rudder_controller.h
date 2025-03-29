@@ -45,6 +45,15 @@ namespace ASVLite {
                                     const Geometry::Coordinates3D& waypoint);
             
             /**
+             * @brief Computes the rudder angle to steer the ASV towards the desired heading using PID control.
+             * 
+             * @param desired_heading The target heading the ASV needs to achieve (in radians).
+             * @param asv_attitude Current attitude of the ASV, including roll, pitch, and yaw (in radians).
+             * @return double The required rudder angle (in radians) to steer the ASV towards the desired heading.
+             */
+            double get_rudder_angle( const double desired_heading, const Geometry::Coordinates3D& asv_attitude);
+            
+            /**
              * @brief Tunes the controller using a local search strategy.
              * 
              * This function tunes the controller's proportional, integral, and derivative (PID) gains 
