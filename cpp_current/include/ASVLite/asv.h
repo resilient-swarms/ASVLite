@@ -48,7 +48,10 @@ namespace ASVLite {
          */
         Geometry::Coordinates3D position;
 
-        /** @brief Attitude of the ASV (roll, pitch, yaw in radians). */
+        /** @brief Attitude of the ASV (roll, pitch, yaw in radians). 
+         * @note Internally, yaw is measured counterclockwise from the East (i.e., the positive X-axis),
+         * but for the class interface, yaw is represented as clockwise from North (i.e., the positive Y-axis).
+         */
         Geometry::Coordinates3D attitude;
 
         /** @brief Depth of submersion of the ASV (in meters). */
@@ -128,7 +131,7 @@ namespace ASVLite {
                 dynamics.attitude.keys.x = Geometry::normalise_angle_PI(attitude.keys.x);
                 dynamics.attitude.keys.y = Geometry::normalise_angle_PI(attitude.keys.y);
                 // Note: yaw is provided as w.r.t North. Chage it to w.r.t East (x-axis) so as to match the intrinsic Z-Y-X rotation sequence.
-                dynamics.attitude.keys.z = Geometry::normalise_angle_PI(M_PI/2.0 - attitude.keys.z);
+                dynamics.attitude.keys.z = Geometry::switch_angle_frame(attitude.keys.z);
             }
             
 
@@ -236,7 +239,7 @@ namespace ASVLite {
              */
             Geometry::Coordinates3D get_attitude() const {
                 Geometry::Coordinates3D attitude = dynamics.attitude;
-                attitude.keys.z = M_PI/2.0 - attitude.keys.z; // Convert yaw from w.r.t East to w.r.t North.
+                attitude.keys.z = Geometry::switch_angle_frame(attitude.keys.z); // Convert yaw from w.r.t East to w.r.t North.
                 return dynamics.attitude;
             }
 
@@ -431,9 +434,7 @@ namespace ASVLite {
              * 
              * @return Eigen::Vector<double, N> Encounter frequencies (in Hz) for each wave component.
              */
-            Eigen::Vector<double, N> get_encounter_frequency(double asv_speed, 
-                Eigen::Vector<double, N> wave_freq, 
-                Eigen::Vector<double, N> relative_wave_heading) {
+            Eigen::Vector<double, N> get_encounter_frequency(double asv_speed, Eigen::Vector<double, N> wave_freq, Eigen::Vector<double, N> relative_wave_heading) {
                 return wave_freq.array() - (wave_freq.array().square()/ASVLite::Constants::G) * asv_speed * relative_wave_heading.array().cos();
             }
 
@@ -777,8 +778,8 @@ namespace ASVLite {
                     // Compute the coordinates of fore, aft, port side, starboard side and centre position of the vehicle for calculating wave pressure.
                     // Step 1: Create rotation matrix (intrinsic Z-Y-X: yaw -> pitch -> roll)
                     const Eigen::Matrix3d R (Eigen::AngleAxisd(dynamics.attitude.keys.z, Eigen::Vector3d::UnitZ())*  // yaw  
-                                            Eigen::AngleAxisd(dynamics.attitude.keys.y, Eigen::Vector3d::UnitY())*  // pitch 
-                                            Eigen::AngleAxisd(dynamics.attitude.keys.x, Eigen::Vector3d::UnitX())); // roll 
+                                             Eigen::AngleAxisd(dynamics.attitude.keys.y, Eigen::Vector3d::UnitY())*  // pitch 
+                                             Eigen::AngleAxisd(dynamics.attitude.keys.x, Eigen::Vector3d::UnitX())); // roll 
                     // Step 2: Define the direction vectors in the body frame
                     const Eigen::Vector3d forward_direction_local_frame(1.0, 0.0, 0.0);
                     const Eigen::Vector3d aft_direction_local_frame(-1.0, 0.0, 0.0);
@@ -1016,12 +1017,9 @@ namespace ASVLite {
              */
             void set_pose() {
                 // First set attitude
-                dynamics.attitude.keys.x += Geometry::normalise_angle_PI(dynamics.X(3));
-                dynamics.attitude.keys.y += Geometry::normalise_angle_PI(dynamics.X(4));
-                dynamics.attitude.keys.z += Geometry::normalise_angle_PI(dynamics.X(5)); 
-                dynamics.attitude.keys.x = Geometry::normalise_angle_PI(dynamics.attitude.keys.x);
-                dynamics.attitude.keys.y = Geometry::normalise_angle_PI(dynamics.attitude.keys.y);
-                dynamics.attitude.keys.z = Geometry::normalise_angle_PI(dynamics.attitude.keys.z);
+                dynamics.attitude.keys.x = Geometry::normalise_angle_PI(dynamics.attitude.keys.x + dynamics.X(3));
+                dynamics.attitude.keys.y = Geometry::normalise_angle_PI(dynamics.attitude.keys.y + dynamics.X(4));
+                dynamics.attitude.keys.z = Geometry::normalise_angle_PI(dynamics.attitude.keys.z + dynamics.X(5)); 
             
                 // Create rotation matrix (intrinsic Z-Y-X: yaw -> pitch -> roll)
                 const Eigen::Matrix3d R (Eigen::AngleAxisd(dynamics.attitude.keys.z, Eigen::Vector3d::UnitZ())*  // yaw  
@@ -1125,21 +1123,21 @@ namespace ASVLite {
         
         double thrust_tuning_factor = 0.0;
         if(significant_wave_ht < 1.0) {
-            thrust_tuning_factor = 0.0501;
+            thrust_tuning_factor = 0.0496;
         } else if(significant_wave_ht >= 1.0 && significant_wave_ht < 2.0) {
-            thrust_tuning_factor = 0.0324;
+            thrust_tuning_factor = 0.0330;
         } else if (significant_wave_ht >= 2.0 && significant_wave_ht < 3.0) {
-            thrust_tuning_factor = 0.0281;
+            thrust_tuning_factor = 0.0288;
         } else if (significant_wave_ht >= 3.0 && significant_wave_ht < 4.0) {
-            thrust_tuning_factor = 0.0243;
+            thrust_tuning_factor = 0.0248;
         } else if (significant_wave_ht >= 4.0 && significant_wave_ht < 5.0) {
-            thrust_tuning_factor = 0.0199;
+            thrust_tuning_factor = 0.0202;
         } else if (significant_wave_ht >= 5.0 && significant_wave_ht < 6.0) {
-            thrust_tuning_factor = 0.0156;
+            thrust_tuning_factor = 0.0157;
         } else if (significant_wave_ht >= 6.0 && significant_wave_ht < 7.0) {
-            thrust_tuning_factor = 0.0146;
+            thrust_tuning_factor = 0.0147;
         } else if (significant_wave_ht >= 7.0 && significant_wave_ht < 8.0) {
-            thrust_tuning_factor = 0.0140;
+            thrust_tuning_factor = 0.0141;
         } else {
             thrust_tuning_factor = 0.0133;
         }

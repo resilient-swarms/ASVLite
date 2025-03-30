@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <Eigen/Dense>
 
 namespace ASVLite {
 
@@ -41,6 +42,17 @@ namespace ASVLite {
              */
             bool operator==(const Coordinates3D& rhs) const {
                 return keys.x == rhs.keys.x && keys.y == rhs.keys.y && keys.z == rhs.keys.z;
+            }
+
+            /**
+             * @brief Converts the coordinate values to an Eigen 3D vector.
+             * 
+             * @return Eigen::Vector3d A vector containing (x, y, z).
+             */
+            Eigen::Vector3d vector() const {
+                Eigen::Vector3d v;
+                v << keys.x, keys.y, keys.z;
+                return v;
             }
 
         };
@@ -113,6 +125,17 @@ namespace ASVLite {
             // Set to range [0, PI)
             value = fmod(angle + 2.0*M_PI, 2.0*M_PI);
             return value;
+        }
+
+        /**
+         * Converts an angle between two reference frames:
+         * - Clockwise from North --> Counterclockwise from East
+         * - Counterclockwise from East --> Clockwise from North
+         * Assumes angle is in radians.
+         * Returns the normalised angle in the range (-PI, PI].
+         */
+        inline double switch_angle_frame(double angle) {
+            return normalise_angle_PI(M_PI / 2.0 - angle);
         }
     
     }

@@ -28,7 +28,7 @@ namespace ASVLite {
             amplitude {amplitude},
             frequency {frequency},
             phase_lag {phase_lag},
-            heading {heading.unaryExpr(&ASVLite::Geometry::normalise_angle_2PI)},
+            heading {heading.unaryExpr(&Geometry::switch_angle_frame)}, // Covert angle to counter-clockwise from geographic east (x-axis). 
             height {2.0 * amplitude},
             time_period {frequency.array().inverse()},
             wave_length {(ASVLite::Constants::G * time_period.array().square())/(2.0 * M_PI)}, 
@@ -53,12 +53,7 @@ namespace ASVLite {
                 // where:
                 // A = wave_number * (x * cos(direction) + y * sin(direction))
                 // B = 2 * PI * frequency * time
-                // NOTE:
-                // In the coordinate system that we use here, angular measurements are made 
-                // with respect to north which is represented by y-axis and not x-axis.
-                // Therefore the above formula needs to be modified as:
-                // A = wave_number * (x * sin(direction) + y * cos(direction))  
-                const Eigen::Vector<double, N> A = wave_number.array() * (location.keys.x * heading.array().sin() + location.keys.y * heading.array().cos());
+                const Eigen::Vector<double, N> A = wave_number.array() * (location.keys.x * heading.array().cos() + location.keys.y * heading.array().sin());
                 const Eigen::Vector<double, N> B = 2.0 * M_PI * frequency * time;
                 return (A - B + phase_lag);
             }

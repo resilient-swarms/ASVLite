@@ -30,13 +30,13 @@ namespace ASVLite {
              */
             SeaSurface(const double significant_wave_height, const double predominant_wave_heading, const int random_number_seed) : 
             significant_wave_height {significant_wave_height},
-            predominant_wave_heading {Geometry::normalise_angle_2PI(predominant_wave_heading)},
+            predominant_wave_heading {Geometry::switch_angle_frame(predominant_wave_heading)}, // Covert angle to counter-clockwise from geographic east (x-axis). 
             random_number_seed {random_number_seed},
             peak_spectral_frequency {calculate_peak_spectral_frequency()},
             min_spectral_frequency {0.652 * peak_spectral_frequency},
             max_spectral_frequency {5.946 * peak_spectral_frequency},
-            min_spectral_wave_heading {Geometry::normalise_angle_2PI(predominant_wave_heading - M_PI/2.0)},
-            max_spectral_wave_heading {Geometry::normalise_angle_2PI(predominant_wave_heading + M_PI/2.0)},
+            min_spectral_wave_heading {Geometry::normalise_angle_PI(predominant_wave_heading - M_PI/2.0)},
+            max_spectral_wave_heading {Geometry::normalise_angle_PI(predominant_wave_heading + M_PI/2.0)},
             component_waves {calculate_wave_spectrum()} {
             }
 
@@ -162,7 +162,7 @@ namespace ASVLite {
                 Eigen::Vector<double, N> frequencys;
                 Eigen::Vector<double, N> phases;
                 Eigen::Vector<double, N> wave_headings;
-                auto construct_regular_wave = [&](const double freq, const double freq_band_size, const double wave_heading, size_t i) {
+                auto construct_regular_wave_parameters = [&](const double freq, const double freq_band_size, const double wave_heading, size_t i) {
                     // Bretschneider spectrum
                     // Ref: Proceedings of the 23rd ITTC - Vol II, Table A.2, A.3.
                     // S(f) = (A/f^5) exp(-B/f^4)
@@ -182,25 +182,25 @@ namespace ASVLite {
                     amplitudes(i) = amplitude;
                     frequencys(i) = freq;
                     phases(i) = phase;
-                    wave_headings(i) = wave_heading;
+                    wave_headings(i) = Geometry::switch_angle_frame(wave_heading); // Convert the heading to be relative to North, as the regular wave interface expects it in this format.
                 };
             
                 // Create wave parameters for - min to peak freq
                 double mu = -M_PI/2.0;
                 for(size_t i = 0; i < half_count; ++i) {
                     const double freq = min_spectral_frequency + (i * frequency_band_size_min_to_peak) + frequency_band_size_min_to_peak/2.0;
-                    const double mu = -M_PI/2.0 + (i * wave_heading_increment) + wave_heading_increment/2.0;
-                    const double wave_heading = Geometry::normalise_angle_2PI(mu + predominant_wave_heading);
-                    construct_regular_wave(freq, frequency_band_size_min_to_peak, wave_heading, i);
+                    const double mu = M_PI/2.0 - (i * wave_heading_increment) + wave_heading_increment/2.0;
+                    const double wave_heading = Geometry::normalise_angle_PI(predominant_wave_heading + mu);
+                    construct_regular_wave_parameters(freq, frequency_band_size_min_to_peak, wave_heading, i);
                 }
                 // Create wave parameters for - peak
-                construct_regular_wave(peak_spectral_frequency, frequency_band_size_peak, predominant_wave_heading, half_count);
+                construct_regular_wave_parameters(peak_spectral_frequency, frequency_band_size_peak, predominant_wave_heading, half_count);
                 // Create wave parameters for - peak to max freq
                 for(size_t i = 0; i < half_count; ++i) {
                     const double freq = peak_freq_band_upp_limit + (i * frequency_band_size_peak_to_max) + frequency_band_size_peak_to_max/2.0;
-                    const double mu = wave_heading_increment/2.0 + i * wave_heading_increment + wave_heading_increment/2.0;
-                    const double wave_heading = Geometry::normalise_angle_2PI(mu + predominant_wave_heading);
-                    construct_regular_wave(freq, frequency_band_size_peak_to_max, wave_heading, half_count+i);
+                    const double mu = (i * wave_heading_increment) + wave_heading_increment/2.0;
+                    const double wave_heading = Geometry::normalise_angle_PI(predominant_wave_heading - mu);
+                    construct_regular_wave_parameters(freq, frequency_band_size_peak_to_max, wave_heading, half_count+i);
                 }
                 // Create regular waves
                 RegularWave<N> spectrum {amplitudes, frequencys, phases, wave_headings}; 

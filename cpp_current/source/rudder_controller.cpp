@@ -18,7 +18,7 @@ double ASVLite::RudderController::get_relative_heading( const Geometry::Coordina
                                                         const Geometry::Coordinates3D& asv_attitude, 
                                                         const Geometry::Coordinates3D& waypoint) const {
     
-    const double theta_1 = Geometry::normalise_angle_PI(asv_attitude.keys.z);
+    const double theta_1 = asv_attitude.keys.z; 
     // Compute direction vector to the waypoint
     const Eigen::Vector2d v_asv_position(asv_position.keys.x, asv_position.keys.y);
     const Eigen::Vector2d v_waypoint(waypoint.keys.x, waypoint.keys.y);
@@ -26,7 +26,7 @@ double ASVLite::RudderController::get_relative_heading( const Geometry::Coordina
     // Desired heading angle (w.r.t east)
     const double theta_2 = std::atan2(v2.y(), v2.x());
     // Relative angle
-    const double theta = theta_1 - theta_2;
+    const double theta = Geometry::normalise_angle_PI(theta_1 - theta_2);
 
     return theta;
 }
@@ -84,7 +84,7 @@ double ASVLite::RudderController::simulate_wave_glider(const double significant_
     RudderController rudder_controller {asv_spec, {P, I, D}};
     // Simulate
     const Geometry::Coordinates3D waypoint {100.0, 10000.0, 0.0};
-    const double sim_duration = 2.0 * 60.0; // Sec
+    const double sim_duration = 5.0 * 60.0; // Sec
     double heading_error = 0.0;
     while(asv.get_time() < sim_duration) {
         const double rudder_angle = rudder_controller.get_rudder_angle(asv.get_position(), asv.get_attitude(), waypoint);
@@ -92,11 +92,11 @@ double ASVLite::RudderController::simulate_wave_glider(const double significant_
         asv.step_simulation(thrust_position_magnitude.first, thrust_position_magnitude.second);
         // Compute error in heading
         const double error = rudder_controller.get_relative_heading(asv.get_position(), asv.get_attitude(), waypoint);
-        heading_error += (error*error);
+        heading_error += abs(error);
     }
-    const int num_sim_steps = sim_duration / asv.get_time_step_size() * 1000;
-    double rms_error = sqrt(heading_error/num_sim_steps);
-    return rms_error;
+    const int num_sim_steps = sim_duration / asv.get_time_step_size() * 1000.0;
+    double mean_error = heading_error/num_sim_steps;
+    return mean_error;
 }
 
 
@@ -125,9 +125,9 @@ void ASVLite::RudderController::tune_controller_local_search(const double lower_
     // Define a uniform distribution
     std::uniform_int_distribution<int> dist(lower_bound, upper_bound);
     // Generate a random number
-    double P_current = dist(rng);
-    double I_current = dist(rng);
-    double D_current = dist(rng);
+    double P_current = K(0);
+    double I_current = K(1);
+    double D_current = K(2);
 
     const size_t num_iterations = 30;
     for (int n = 0; n < num_iterations; ++n) {
