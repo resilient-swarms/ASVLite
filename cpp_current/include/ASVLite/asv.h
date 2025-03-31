@@ -940,10 +940,6 @@ namespace ASVLite {
             void set_net_force() {
                 // Set the net force matrix
                 dynamics.F = dynamics.F_thrust + dynamics.F_wave + dynamics.F_drag + dynamics.F_restoring;
-                if(halt_surge_and_sway) {
-                    dynamics.F(0) = 0.0;
-                    dynamics.F(1) = 0.0;
-                }
             }
 
 
@@ -962,6 +958,10 @@ namespace ASVLite {
             void set_velocity() {
                 // Set velocity matrix
                 dynamics.V = dynamics.V + (dynamics.A * dynamics.time_step_size/1000.0);
+                if(halt_surge_and_sway) {
+                    dynamics.V(0) = 0.0;
+                    dynamics.V(1) = 0.0;
+                }
             }
 
             

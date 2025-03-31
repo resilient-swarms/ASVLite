@@ -53,8 +53,8 @@ double ASVLite::RudderController::get_rudder_angle( const Geometry::Coordinates3
 
 double ASVLite::RudderController::get_rudder_angle( const double desired_heading, const Geometry::Coordinates3D& asv_attitude) {
     // Compute the relative angle 
-    const double theta_1 = Geometry::normalise_angle_PI(asv_attitude.keys.z);
-    const double theta_2 = M_PI/2.0 - desired_heading;
+    const double theta_1 = asv_attitude.keys.z;
+    const double theta_2 = Geometry::switch_angle_frame(desired_heading);
     const double theta = theta_1 - theta_2;
     // Set error as the difference of the current heading and the desired heading.
     previous_error = error;
