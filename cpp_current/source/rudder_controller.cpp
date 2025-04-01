@@ -51,10 +51,10 @@ double ASVLite::RudderController::get_rudder_angle( const Geometry::Coordinates3
 }
 
 
-double ASVLite::RudderController::get_rudder_angle( const double desired_heading, const Geometry::Coordinates3D& asv_attitude) {
+double ASVLite::RudderController::get_rudder_angle( const double target_heading, const Geometry::Coordinates3D& asv_attitude) {
     // Compute the relative angle 
     const double theta_1 = asv_attitude.keys.z;
-    const double theta_2 = Geometry::switch_angle_frame(desired_heading);
+    const double theta_2 = Geometry::switch_angle_frame(target_heading);
     const double theta = theta_1 - theta_2;
     // Set error as the difference of the current heading and the desired heading.
     previous_error = error;
@@ -70,7 +70,7 @@ double ASVLite::RudderController::get_rudder_angle( const double desired_heading
 }
 
 
-double ASVLite::RudderController::simulate_wave_glider(const double significant_wave_ht, const double asv_heading, const double P, const double I, const double D) const {
+double ASVLite::RudderController::simulate_wave_glider(const double significant_wave_ht, const double target_heading, const double P, const double I, const double D) const {
     // Init waves
     const size_t num_component_waves = 15;
     const int rng_seed = 1;
@@ -78,20 +78,21 @@ double ASVLite::RudderController::simulate_wave_glider(const double significant_
     const SeaSurface<num_component_waves> sea_surface {significant_wave_ht, predominant_wave_heading, rng_seed};
     // Init ASV
     const Geometry::Coordinates3D start_position {100.0, 100.0, 0.0};
-    const Geometry::Coordinates3D attitude {0.0, 0.0, asv_heading};
+    const Geometry::Coordinates3D attitude {0.0, 0.0, 0.0};
     Asv<num_component_waves> asv {asv_spec, &sea_surface, start_position, attitude};
     // Init rudder controller
     RudderController rudder_controller {asv_spec, {P, I, D}};
     // Simulate
-    const Geometry::Coordinates3D waypoint {100.0, 10000.0, 0.0};
-    const double sim_duration = 5.0 * 60.0; // Sec
+    const double sim_duration = 30.0 * 60.0; // Sec
     double heading_error = 0.0;
     while(asv.get_time() < sim_duration) {
-        const double rudder_angle = rudder_controller.get_rudder_angle(asv.get_position(), asv.get_attitude(), waypoint);
+        const double rudder_angle = rudder_controller.get_rudder_angle(target_heading, asv.get_attitude());
         const std::pair<Geometry::Coordinates3D, Geometry::Coordinates3D> thrust_position_magnitude = get_wave_glider_thrust(asv, rudder_angle, significant_wave_ht);
         asv.step_simulation(thrust_position_magnitude.first, thrust_position_magnitude.second);
         // Compute error in heading
-        const double error = rudder_controller.get_relative_heading(asv.get_position(), asv.get_attitude(), waypoint);
+        const double theta_1 = asv.get_attitude().keys.z;
+        const double theta_2 = Geometry::switch_angle_frame(target_heading);
+        const double error = theta_1 - theta_2;
         heading_error += abs(error);
     }
     const int num_sim_steps = sim_duration / asv.get_time_step_size() * 1000.0;
@@ -148,8 +149,8 @@ void ASVLite::RudderController::tune_controller_local_search(const double lower_
             double D = std::max(PID[2], 0.0);// Prevent -ve value
             std::vector<std::future<double>> futures;
             for (double significant_wave_ht = 1.0; significant_wave_ht < 10.0; significant_wave_ht += 2.0) {
-                for (double asv_heading = 0.0; asv_heading < 360.0; asv_heading += 45.0) {
-                    futures.push_back(std::async(std::launch::async, &ASVLite::RudderController::simulate_wave_glider, this, significant_wave_ht, asv_heading * M_PI / 180, P, I, D));
+                for (double target_heading = 0.0; target_heading < 360.0; target_heading += 45.0) {
+                    futures.push_back(std::async(std::launch::async, &ASVLite::RudderController::simulate_wave_glider, this, significant_wave_ht, target_heading * M_PI / 180, P, I, D));
                 }
             }
             std::vector<double> results;
@@ -206,8 +207,8 @@ void ASVLite::RudderController::tune_controller_exhaustive_search(const double l
         double P = PID[0], I = PID[1], D = PID[2];
         std::vector<std::future<double>> futures;
         for (double significant_wave_ht = 1.0; significant_wave_ht < 10.0; significant_wave_ht += 2.0) {
-            for (double asv_heading = 0.0; asv_heading < 360.0; asv_heading += 45.0) {
-                futures.push_back(std::async(std::launch::async, &ASVLite::RudderController::simulate_wave_glider, this, significant_wave_ht, asv_heading * M_PI / 180, P, I, D));
+            for (double target_heading = 0.0; target_heading < 360.0; target_heading += 45.0) {
+                futures.push_back(std::async(std::launch::async, &ASVLite::RudderController::simulate_wave_glider, this, significant_wave_ht, target_heading * M_PI / 180, P, I, D));
             }
         }
         std::vector<double> results;
