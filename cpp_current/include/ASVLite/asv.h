@@ -208,6 +208,13 @@ namespace ASVLite {
                 halt_surge_and_sway = set_halt;
             }
 
+            /**
+             * @brief Return true if halting of surge and sway motions of the ASV is set to true.
+             */
+            bool get_surge_sway_halt() {
+                return halt_surge_and_sway;
+            }
+
 
             /**
              * @brief Retrieves the current sea surface model associated with the ASV.
